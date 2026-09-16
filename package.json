@@ -12,7 +12,8 @@
     "test:ui": "vitest run",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "fixtures": "bash scripts/make-fixtures.sh && bash scripts/fixture-expectations.sh"
   },
   "dependencies": {
     "react": "19.3.0",

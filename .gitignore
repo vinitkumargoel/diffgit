@@ -1,6 +1,7 @@
 node_modules/
 dist/
-fixtures/
+fixtures/*
+!fixtures/README.md
 .wrangler/
 playwright-report/
 test-results/

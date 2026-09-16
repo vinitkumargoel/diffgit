@@ -8,6 +8,14 @@ _(none yet)_
 
 ---
 
+## T0.3 — Fixture builder
+
+- `scripts/make-fixtures.sh` builds 27 fixtures (+ `perf-5k` with `FIXTURES_PERF=1`) with the real git CLI in ~6 s; idempotent (`rm -rf fixtures/` first) and deterministic (fixed identity/dates, `GIT_CONFIG_GLOBAL=/dev/null`, `GIT_CONFIG_NOSYSTEM=1`; the script compares `basic/feature` before/after and fails on drift). Verified twice: `d77b2f48…` both runs.
+- `scripts/fixture-expectations.sh` dumps `expected/*.json` per fixture via `jq` (`-z` output parsed for name-status/numstat so paths are safe): refs, ls-files -s, status porcelain v2, merge-base (+ `--all`), name-status 3-dot (±renames), numstat (±`-w`), ls-tree for base/tips, worktree-layer, meta, hash-object (basic/packed/large), check-ignore (ignore). `jq` is required (present on macOS dev box and ubuntu runners) — no `.txt` fallback.
+- `expected/` sits inside each worktree, so the script appends `expected/` to that repo's `info/exclude` (via `git rev-parse --git-path`, correct for the linked worktree too) — git and the engine both ignore it, keeping status parity intact.
+- Decisions: `renames` similar pair scores R058 in git (spec said ~60 %; parity tests read git's number). `unrelated` records a two-dot `main feature` range in `meta.diffRange`, matching T3.2's fallback. `remote`/`remote-master` check out `feature`; `no-origin-head` checks out `main`. `_remotes/` holds local bare origins; `_worktree-main/` backs `worktree-gitdir`.
+- `src/test/fixtures.ts`: `fixturePath`, `hasFixture`, `loadExpected<T>` + typed shapes of every expected file. `.github/workflows/ci.yml` runs `bun run fixtures` before `bun run check`. Biome config migrated to the 2.x `preset: "recommended"` form.
+
 ## T0.1 — Repo & toolchain
 
 - Bun project with Vite 7.3.6, React 19.3.0, TypeScript 5.9.3, Tailwind 4.3.3 (`@tailwindcss/vite`), Biome 2.5.14, vitest 4.1.11 + happy-dom 20.14.5; all versions pinned exactly (no `^`).
