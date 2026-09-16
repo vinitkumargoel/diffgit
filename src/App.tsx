@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { BrowserGate } from "./ui/components/BrowserGate";
 import { HomeScreen } from "./ui/components/HomeScreen";
+import { LiveRegion } from "./ui/components/LiveRegion";
 import { LoadingScreen } from "./ui/components/LoadingScreen";
 import { Toasts } from "./ui/components/Toasts";
 import { useStore } from "./ui/store";
@@ -34,6 +35,7 @@ export function App() {
         </Suspense>
       )}
       <Toasts />
+      <LiveRegion />
     </BrowserGate>
   );
 }

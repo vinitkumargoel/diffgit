@@ -1,6 +1,6 @@
 import { Search, X } from "lucide-react";
-import { useCallback, useRef } from "react";
-import { useKeyShortcut } from "../hooks/useKeyShortcut";
+import { useRef } from "react";
+import { useShortcuts } from "../hooks/useShortcuts";
 
 export interface FileFilterProps {
   value: string;
@@ -14,14 +14,12 @@ export interface FileFilterProps {
  */
 export function FileFilter({ value, onChange }: FileFilterProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  useKeyShortcut(
-    "/",
-    useCallback((e: KeyboardEvent) => {
-      e.preventDefault();
+  useShortcuts({
+    "/": () => {
       inputRef.current?.focus();
       inputRef.current?.select();
-    }, []),
-  );
+    },
+  });
   return (
     <div className="relative flex h-7 w-60 items-center rounded-[6px] border border-line bg-bg focus-within:outline-2 focus-within:outline-accent focus-within:outline-offset-1">
       <Search size={13} aria-hidden className="ml-2 shrink-0 text-muted" />

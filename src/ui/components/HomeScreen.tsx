@@ -1,5 +1,6 @@
 import { BookBookmark, FolderOpen } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useShortcuts } from "../hooks/useShortcuts";
 import {
   ensurePermission,
   listRepos,
@@ -55,19 +56,8 @@ export function HomeScreen() {
     }
   }, [openRepo, addToast]);
 
-  // `o` opens the picker while on Home (T4.4 AC); T5.6 centralises shortcuts.
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
-      if (e.key === "o" && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        e.preventDefault();
-        void openPicker();
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [openPicker]);
+  // `o` opens the picker while on Home (T4.4 AC)
+  useShortcuts({ o: () => void openPicker() });
 
   async function openRecent(repo: StoredRepo): Promise<"granted" | "denied"> {
     const result = await ensurePermission(repo.handle);

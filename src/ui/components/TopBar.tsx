@@ -1,4 +1,4 @@
-import { BookBookmark } from "lucide-react";
+import { BookBookmark, CircleHelp } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { selectCanIncludeWorktree, selectTotals, selectViewedCount, useStore } from "../store";
 import { BranchPicker } from "./BranchPicker";
@@ -15,7 +15,7 @@ function Divider() {
 }
 
 /** Two-row control strip (Design §7.1 + §7.2, Plan §6.1 screen 4). Wraps on narrow widths. */
-export function TopBar() {
+export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
   const repo = useStore((s) => s.repo);
   const diffSource = useStore((s) => s.diffSource);
   const canIncludeWorktree = useStore(selectCanIncludeWorktree);
@@ -81,6 +81,15 @@ export function TopBar() {
           lastAt={refresh.lastAt}
           onRefresh={() => void recompute("manual")}
         />
+        <button
+          type="button"
+          className="btn btn-icon"
+          aria-label="Keyboard shortcuts"
+          title="Keyboard shortcuts (?)"
+          onClick={() => onHelp?.()}
+        >
+          <CircleHelp size={16} aria-hidden />
+        </button>
         <ThemeToggle />
       </div>
       <div className="flex min-h-10 flex-wrap items-center gap-2 bg-bg px-3 py-1 text-xs">

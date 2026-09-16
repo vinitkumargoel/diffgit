@@ -95,7 +95,7 @@ Keep this board updated (edit this file; one line per task):
 | T5.3 | done | ui-agent / 2026-09-16 | Design §7.5–7.6; react-diff-view + Shiki worker; 3,000-line file paints in 88 ms |
 | T5.4 | done | ui-agent / 2026-09-16 | Design §7.7; ImageDiff (blob: URLs, revoked on unmount), Binary/Large/Submodule/Typechange notices, shared Notice |
 | T5.5 | done | ui-agent / 2026-09-16 | Design §3.4, §7.3, §7.8; 21-code warning registry, EmptyState, ErrorScreen actions, Toasts |
-| T5.6 | todo | | Design §3, §8, §9, §11 |
+| T5.6 | done | ui-agent / 2026-09-16 | Design §3, §8, §9, §11; theme cycle, useShortcuts + HelpDialog, skip link, live region, contrast + axe tests, colour guard |
 | T6.0 | todo | | spike, gates T6.2 |
 | T6.1 | todo | | |
 | T6.2 | todo | | |

@@ -125,7 +125,7 @@ describe("HomeScreen", () => {
     );
     fireEvent.keyDown(screen.getByLabelText("typing"), { key: "o" });
     expect(pick).not.toHaveBeenCalled();
-    fireEvent.keyDown(window, { key: "o" });
+    fireEvent.keyDown(document, { key: "o" });
     await waitFor(() => expect(pick).toHaveBeenCalledTimes(1));
   });
 });

@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import type { FileDiff } from "../../engine/types";
-import { useKeyShortcut } from "../hooks/useKeyShortcut";
+import { useShortcuts } from "../hooks/useShortcuts";
 import { requestScrollTo } from "../scrollBus";
 import {
   isViewed,
@@ -143,20 +143,13 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
     },
     [fileRows, rows, activeFileId, activate, virtual, virtualizer],
   );
-  useKeyShortcut(
-    "j",
-    useCallback(() => step(1), [step]),
-  );
-  useKeyShortcut(
-    "k",
-    useCallback(() => step(-1), [step]),
-  );
-  useKeyShortcut(
-    "v",
-    useCallback(() => {
+  useShortcuts({
+    j: () => step(1),
+    k: () => step(-1),
+    v: () => {
       if (activeFileId) toggleViewed(activeFileId);
-    }, [activeFileId, toggleViewed]),
-  );
+    },
+  });
 
   // prioritise stats for the visible window (debounced 100 ms)
   const visibleIds = useMemo(() => {

@@ -1,23 +1,33 @@
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, SunMoon } from "lucide-react";
 import { useStore } from "../store";
-import { isDark } from "../theme";
 
-/** 28 × 28 icon button (Design §7.1 item 8): sun in dark mode, moon in light mode. T5.6 adds "system". */
+const ORDER = ["system", "light", "dark"] as const;
+type Theme = (typeof ORDER)[number];
+
+/** system → light → dark → system (T5.6 amendment). */
+export function nextTheme(theme: Theme): Theme {
+  const i = ORDER.indexOf(theme);
+  return ORDER[(i + 1) % ORDER.length] ?? "system";
+}
+
+const ICON = { system: SunMoon, light: Sun, dark: Moon } as const;
+
+/** 28 × 28 icon button (Design §7.1 item 8) cycling the persisted `prefs.theme`. */
 export function ThemeToggle() {
   const theme = useStore((s) => s.prefs.theme);
   const setPref = useStore((s) => s.setPref);
-  // `theme` is read so the button re-renders after a preference change; the DOM class is the truth.
-  const dark = theme === "dark" || (theme !== "light" && isDark());
-  const next = dark ? "light" : "dark";
+  const next = nextTheme(theme);
+  const Icon = ICON[theme];
   return (
     <button
       type="button"
       className="btn btn-icon"
       aria-label={`Switch to ${next} theme`}
-      title={`Switch to ${next} theme`}
+      title={`Theme: ${theme}. Click to switch to ${next}.`}
+      data-theme={theme}
       onClick={() => setPref("theme", next)}
     >
-      {dark ? <Sun size={16} aria-hidden /> : <Moon size={16} aria-hidden />}
+      <Icon size={16} aria-hidden />
     </button>
   );
 }

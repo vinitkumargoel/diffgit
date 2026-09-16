@@ -1,7 +1,7 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { FileDiff } from "../../engine/types";
-import { useKeyShortcut } from "../hooks/useKeyShortcut";
+import { useShortcuts } from "../hooks/useShortcuts";
 import { onScrollRequest } from "../scrollBus";
 import { selectVisibleFiles, useStore } from "../store";
 import { FileCard } from "./FileCard";
@@ -75,18 +75,14 @@ export function DiffPane({ initialRect }: { initialRect?: { width: number; heigh
   }, [files, virtualizer]);
 
   // `[` / `]` collapse / expand the active card (Plan §6.5)
-  useKeyShortcut(
-    "[",
-    useCallback(() => {
+  useShortcuts({
+    "[": () => {
       if (activeFileId) setCollapsed(activeFileId, true);
-    }, [activeFileId, setCollapsed]),
-  );
-  useKeyShortcut(
-    "]",
-    useCallback(() => {
+    },
+    "]": () => {
       if (activeFileId) setCollapsed(activeFileId, false);
-    }, [activeFileId, setCollapsed]),
-  );
+    },
+  });
 
   return (
     <section

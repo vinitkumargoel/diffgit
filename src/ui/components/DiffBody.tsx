@@ -16,6 +16,7 @@ import {
   Hunk,
   type HunkData,
   type HunkTokens,
+  type RenderGutter,
   type RenderToken,
   type TokenNode,
   type ViewType,
@@ -30,6 +31,25 @@ import { filePathOf } from "../treeModel";
 export const EXPAND_STEP = 20;
 /** Whole-file tokenisation (grammar context, no re-tokenising on expand) below this old-text size. */
 export const FULL_SOURCE_LIMIT = 200_000;
+
+/**
+ * Design §9: the change type is only a colour + a CSS `::before` sign, so the gutter that carries
+ * the line number also gets visually-hidden "added line" / "deleted line" text for screen readers.
+ */
+const renderGutter: RenderGutter = ({ change, side, renderDefault }) => {
+  const label =
+    change.type === "insert" && side === "new"
+      ? "added line"
+      : change.type === "delete" && side === "old"
+        ? "deleted line"
+        : null;
+  return (
+    <>
+      {renderDefault()}
+      {label && <span className="sr-only"> {label}</span>}
+    </>
+  );
+};
 
 /** Shiki tokens carry both theme colours; CSS picks `--shl` or `--shd` (Design §11). */
 const renderToken: RenderToken = (token, renderDefault, i) => {
@@ -184,6 +204,7 @@ export function DiffBody({ file, payload, viewType, expandAllToken }: DiffBodyPr
         hunks={hunks}
         tokens={tokens}
         renderToken={renderToken}
+        renderGutter={renderGutter}
         optimizeSelection
       >
         {(hs) =>

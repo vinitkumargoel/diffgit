@@ -158,7 +158,8 @@
   --checker-b: #0d1117;
   --shadow-popover: 0 8px 24px #010409;
   --backdrop: rgba(1, 4, 9, 0.5);
-  --on-accent: #ffffff;
+  /* T5.6 amendment: white on the dark --success (#3fb950) is 2.54:1; dark ink reads at 7.45:1 */
+  --on-accent: #0d1117;
 }
 
 @theme inline {
@@ -272,6 +273,41 @@
 }
 
 @layer components {
+  /* §9 skip link: first focusable element, visible only while focused */
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 16px;
+    z-index: 40;
+    padding: 6px 10px;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--accent);
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 500;
+  }
+  .skip-link:focus {
+    top: 8px;
+  }
+
+  /* §7.9 HelpDialog: 520px modal, popover shadow, 12px radius, --backdrop */
+  .help-dialog {
+    width: 520px;
+    max-width: calc(100vw - 32px);
+    margin: auto; /* preflight zeroes dialog margins; this recentres the modal */
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-popover);
+  }
+  .help-dialog::backdrop {
+    background: var(--backdrop);
+  }
+
   /* §7.7 image panes: 16px checkerboard from the --checker-* tokens */
   .checkerboard {
     background:
