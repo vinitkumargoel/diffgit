@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -29,8 +30,23 @@ export function previewHeaders(file = resolve(here, "public/_headers")): Record<
   return headers;
 }
 
+/** Short commit id baked into the bundle (help dialog footer; `scripts/check-prod.sh <url> <id>`). */
+export function buildId(): string {
+  if (process.env.BUILD_ID) return process.env.BUILD_ID;
+  try {
+    return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] })
+      .toString()
+      .trim();
+  } catch {
+    return "dev";
+  }
+}
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: {
+    __BUILD_ID__: JSON.stringify(buildId()),
+  },
   build: {
     target: "es2022",
     sourcemap: false,

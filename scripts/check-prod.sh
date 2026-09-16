@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Asserts the deployed site serves the production CSP and no Cloudflare-injected scripts (T0.2, T7.4, T8.2).
-# Usage: scripts/check-prod.sh [url]   (default https://diff.vinitk.dev)
+# Usage: scripts/check-prod.sh [url] [expected build id]   (default https://diff.vinitk.dev)
 set -euo pipefail
 URL="${1:-https://diff.vinitk.dev}"
+EXPECTED_BUILD="${2:-}"
 fail=0
 
 expected_csp=$(grep -i 'Content-Security-Policy' "$(dirname "$0")/../public/_headers" | sed 's/^[[:space:]]*Content-Security-Policy:[[:space:]]*//')
@@ -20,6 +21,13 @@ html=$(curl -s --retry 5 --retry-all-errors "$URL")
 if printf '%s' "$html" | grep -Eiq 'beacon|rocket-loader|cloudflareinsights|zaraz|email-decode'; then
   echo "FAIL Cloudflare-injected script found in HTML"; fail=1
 else echo "OK   no injected scripts (beacon/rocket-loader/cloudflareinsights/zaraz/email-decode)"; fi
+
+if [ -n "$EXPECTED_BUILD" ]; then
+  entry=$(printf '%s' "$html" | grep -oE '/assets/index-[A-Za-z0-9_-]+\.js' | head -1)
+  if [ -n "$entry" ] && curl -s --retry 5 --retry-all-errors "$URL$entry" | grep -q "\"$EXPECTED_BUILD\""; then
+    echo "OK   served bundle $entry carries build id $EXPECTED_BUILD"
+  else echo "FAIL served bundle does not carry build id $EXPECTED_BUILD (entry: ${entry:-none})"; fail=1; fi
+fi
 
 deep=$(curl -s --retry 5 --retry-all-errors -o /dev/null -w '%{http_code}' "$URL/some/deep/link")
 if [ "$deep" = "200" ]; then echo "OK   deep link returns 200 (SPA fallback)"; else echo "FAIL deep link returned $deep"; fail=1; fi

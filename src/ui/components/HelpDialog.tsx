@@ -47,6 +47,9 @@ export function HelpDialog({ open, onClose }: { open: boolean; onClose: () => vo
       </table>
       <h3 className="mt-5 text-sm font-semibold leading-5">Privacy</h3>
       <p className="mt-1 text-[13px] leading-5 text-muted">{PRIVACY_SENTENCES.join(" ")}</p>
+      <p className="mt-3 text-xs leading-5 text-muted" data-testid="build-id">
+        Build {__BUILD_ID__}
+      </p>
     </dialog>
   );
 }
