@@ -8,6 +8,15 @@ _(none yet)_
 
 ---
 
+## T3.4 — Binary/attributes, content loading, text diff & classification
+
+- `src/engine/git/attributes.ts`: `.gitattributes` per directory + `.git/info/attributes` (git precedence), macros (`binary`, `[attr]`), quoted patterns, own gitignore-glob → RegExp (`**`, classes incl. POSIX, no negation, directory patterns never match contents). `isBinary` = `-diff`/`-text`; `isGenerated` = `linguist-generated` or `-diff`.
+- `src/engine/diff/binary.ts` (NUL in first 8000 bytes, `isImagePath`), `contentLoader.ts` (`loadSides` via the T3.2 side table; gitlinks → `kind: "submodule"` with both oids), `language.ts` (~110 extensions/filenames → highlighter ids), `myers.ts` (linear-space Myers on interned line keys with a step budget; 3000 fully changed lines in ~60 ms vs 2.7 s with jsdiff, which is why jsdiff is not used for the hunk model), `textDiff.ts` (`computeStats`, `computeHunks`, `describeFile` → classification + hunks + texts + stats + `FILE_TOO_LARGE`, `toPayload`).
+- `-w` = remove all ASCII whitespace per line (and ignore a missing final newline); `whitespaceOnly` computed by running both views when the exact diff is non-empty. Limits per §6.7: > 1 MB or > 3000 changed lines → `tooLarge` (hunks only with `loadLarge`), > 10 MB → `huge`, stats only when one-sided. Submodules render `Subproject commit <oid>` lines so numstat matches git (1/1).
+- Parity: numstat and numstat -w on all 21 fixtures with a feature branch (attributes `-`, binary `-`, symlink typechange, crlf, large incl. 200000-line huge file). Hunk model unit-tested (context merge at ≤ 2×context, line numbers, empty sides); Myers verified minimal against an LCS oracle on 300 random cases.
+
+---
+
 ## T3.3 — Rename detection
 
 - `src/engine/diff/renames.ts`: `detectRenames(files, load, opts)` → `{ files, warnings, stats }`. Exact pass pairs identical oids (prefers an unused source with the same basename, then the nearest directory; non-regular modes must match, like git). Similarity pass is git's spanhash (`diffcore-delta.c`: chunks at `\n` or 64 bytes, git's rolling hash, byte counts, `score = copied*60000/max_size` then `*100/60000`), greedy best-first with git's tiebreaks; git's size pre-filter at the threshold; CR before LF ignored for text sides. `src/engine/diff/binary.ts` holds the NUL sniff (first 8000 bytes) that T3.4 extends with attributes.
