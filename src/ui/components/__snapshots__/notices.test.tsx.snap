@@ -1,0 +1,281 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > BinaryNotice (dark) 1`] = `
+<div
+  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+>
+  <div>
+    Binary file not shown
+  </div>
+  <div
+    class="text-xs text-muted"
+  >
+    2.0 KB → 4.0 KB
+  </div>
+  <div
+    class="flex items-center gap-2"
+  >
+    <button
+      class="btn btn-sm"
+      type="button"
+    >
+      View as text
+    </button>
+  </div>
+</div>
+`;
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > BinaryNotice (light) 1`] = `
+<div
+  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+>
+  <div>
+    Binary file not shown
+  </div>
+  <div
+    class="text-xs text-muted"
+  >
+    2.0 KB → 4.0 KB
+  </div>
+  <div
+    class="flex items-center gap-2"
+  >
+    <button
+      class="btn btn-sm"
+      type="button"
+    >
+      View as text
+    </button>
+  </div>
+</div>
+`;
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > LargeFileGate huge (dark) 1`] = `
+<div
+  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+>
+  <div>
+    Diff too large to display
+  </div>
+  <div
+    class="text-xs text-muted"
+  >
+    11.4 MB → 11.9 MB
+  </div>
+</div>
+`;
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > LargeFileGate huge (light) 1`] = `
+<div
+  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+>
+  <div>
+    Diff too large to display
+  </div>
+  <div
+    class="text-xs text-muted"
+  >
+    11.4 MB → 11.9 MB
+  </div>
+</div>
+`;
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > LargeFileGate tooLarge (dark) 1`] = `
+<div
+  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+>
+  <div>
+    Large diff
+     (3,412 lines changed)
+    .
+  </div>
+  <div
+    class="flex items-center gap-2"
+  >
+    <button
+      class="btn btn-sm"
+      type="button"
+    >
+      Load diff
+    </button>
+  </div>
+</div>
+`;
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > LargeFileGate tooLarge (light) 1`] = `
+<div
+  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+>
+  <div>
+    Large diff
+     (3,412 lines changed)
+    .
+  </div>
+  <div
+    class="flex items-center gap-2"
+  >
+    <button
+      class="btn btn-sm"
+      type="button"
+    >
+      Load diff
+    </button>
+  </div>
+</div>
+`;
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > Notice (dark) 1`] = `
+<div
+  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+>
+  <div>
+    Message
+  </div>
+  <div
+    class="text-xs text-muted"
+  >
+    detail line
+  </div>
+  <div
+    class="flex items-center gap-2"
+  >
+    <button
+      type="button"
+    >
+      Act
+    </button>
+  </div>
+</div>
+`;
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > Notice (light) 1`] = `
+<div
+  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+>
+  <div>
+    Message
+  </div>
+  <div
+    class="text-xs text-muted"
+  >
+    detail line
+  </div>
+  <div
+    class="flex items-center gap-2"
+  >
+    <button
+      type="button"
+    >
+      Act
+    </button>
+  </div>
+</div>
+`;
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > SubmoduleNotice (dark) 1`] = `
+<div
+  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+>
+  <div>
+    <span
+      class="font-mono"
+    >
+      Subproject commit 
+      339e41b
+       → 
+      a1b2c3d
+    </span>
+  </div>
+</div>
+`;
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > SubmoduleNotice (light) 1`] = `
+<div
+  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+>
+  <div>
+    <span
+      class="font-mono"
+    >
+      Subproject commit 
+      339e41b
+       → 
+      a1b2c3d
+    </span>
+  </div>
+</div>
+`;
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > TypechangeNotice (dark) 1`] = `
+<div
+  class="flex items-center gap-1.5 border-b border-line bg-accent-subtle px-3 py-1.5 text-xs text-ink"
+  role="note"
+>
+  Symlink
+   
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-arrow-right text-muted"
+    fill="none"
+    height="12"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="12"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M5 12h14"
+    />
+    <path
+      d="m12 5 7 7-7 7"
+    />
+  </svg>
+  <span
+    class="sr-only"
+  >
+    to
+  </span>
+   
+  regular file
+</div>
+`;
+
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > TypechangeNotice (light) 1`] = `
+<div
+  class="flex items-center gap-1.5 border-b border-line bg-accent-subtle px-3 py-1.5 text-xs text-ink"
+  role="note"
+>
+  Symlink
+   
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-arrow-right text-muted"
+    fill="none"
+    height="12"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="12"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M5 12h14"
+    />
+    <path
+      d="m12 5 7 7-7 7"
+    />
+  </svg>
+  <span
+    class="sr-only"
+  >
+    to
+  </span>
+   
+  regular file
+</div>
+`;

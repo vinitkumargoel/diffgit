@@ -1,0 +1,45 @@
+{
+  "id": "mock-worktree",
+  "name": "worktree",
+  "headBranch": "feature",
+  "headOid": "e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1",
+  "detached": false,
+  "unborn": false,
+  "headDisplay": "feature",
+  "refs": [
+    {
+      "name": "feature",
+      "fullName": "refs/heads/feature",
+      "kind": "local",
+      "oid": "e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1",
+      "isDefault": false,
+      "isCheckedOut": true
+    },
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2",
+      "isDefault": true,
+      "isCheckedOut": false
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2",
+    "isDefault": true,
+    "isCheckedOut": false
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": [
+    { "code": "AUTOCRLF", "message": "core.autocrlf is set; line-ending-only changes may appear." }
+  ]
+}

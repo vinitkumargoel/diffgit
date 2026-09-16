@@ -1,0 +1,67 @@
+{
+  "id": "mock-basic",
+  "name": "basic",
+  "headBranch": "feature",
+  "headOid": "d77b2f48c7fb90cbf3c4bd5c9ee1f159a73c7c07",
+  "detached": false,
+  "unborn": false,
+  "headDisplay": "feature",
+  "refs": [
+    {
+      "name": "feature",
+      "fullName": "refs/heads/feature",
+      "kind": "local",
+      "oid": "d77b2f48c7fb90cbf3c4bd5c9ee1f159a73c7c07",
+      "isDefault": false,
+      "isCheckedOut": true
+    },
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "37e349c936b45f53ff870925d5002d19c6d2bf10",
+      "isDefault": true,
+      "isCheckedOut": false
+    },
+    {
+      "name": "topic",
+      "fullName": "refs/heads/topic",
+      "kind": "local",
+      "oid": "1111111111111111111111111111111111111111",
+      "isDefault": false,
+      "isCheckedOut": false
+    },
+    {
+      "name": "origin/feature",
+      "fullName": "refs/remotes/origin/feature",
+      "kind": "remote",
+      "oid": "d77b2f48c7fb90cbf3c4bd5c9ee1f159a73c7c07",
+      "isDefault": false,
+      "isCheckedOut": false
+    },
+    {
+      "name": "origin/main",
+      "fullName": "refs/remotes/origin/main",
+      "kind": "remote",
+      "oid": "37e349c936b45f53ff870925d5002d19c6d2bf10",
+      "isDefault": false,
+      "isCheckedOut": false
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "37e349c936b45f53ff870925d5002d19c6d2bf10",
+    "isDefault": true,
+    "isCheckedOut": false
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": []
+}

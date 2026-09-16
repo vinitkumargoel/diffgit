@@ -1,1 +1,557 @@
 @import "tailwindcss";
+
+/*
+ * Design tokens (Design.md §3). The ONLY place in src/ui/** where literal colours may appear.
+ * `.dark` on <html> switches the palette; `@theme inline` exposes every token to Tailwind so
+ * utilities like `bg-surface`, `text-muted`, `border-line` read the runtime variable.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* §3.1 neutrals and accent */
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --surface-raised: #f6f8fa;
+  --line: #d0d7de;
+  --ink: #1f2328;
+  --muted: #656d76;
+  --accent: #0969da;
+  --accent-subtle: #ddf4ff;
+  --success: #1a7f37;
+  --danger: #cf222e;
+  --attention: #9a6700;
+  --done: #8250df;
+
+  /* §3.2 diff colours */
+  --diff-add-bg: #dafbe1;
+  --diff-add-num: #aceebb;
+  --diff-add-word: #abf2bc;
+  --diff-del-bg: #ffebe9;
+  --diff-del-num: #ffcecb;
+  --diff-del-word: #ff818266;
+  --diff-hunk-bg: #ddf4ff;
+  --diff-hunk-ink: #57606a;
+  --diff-ctx-num: #f6f8fa;
+  --diff-empty: repeating-linear-gradient(-45deg, transparent 0 6px, #eaeef2 6px 7px);
+
+  /* §3.3 status squares */
+  --status-m-bg: #fff8c5;
+  --status-m-fg: #9a6700;
+  --status-a-bg: #dafbe1;
+  --status-a-fg: #1a7f37;
+  --status-d-bg: #ffebe9;
+  --status-d-fg: #cf222e;
+  --status-r-bg: #ddf4ff;
+  --status-r-fg: #0969da;
+  --status-t-bg: #fbefff;
+  --status-t-fg: #8250df;
+
+  /* §3.3 chips */
+  --chip-staged-bg: #dafbe1;
+  --chip-staged-fg: #1a7f37;
+  --chip-unstaged-bg: #fff8c5;
+  --chip-unstaged-fg: #9a6700;
+  --chip-untracked-bg: #fbefff;
+  --chip-untracked-fg: #6639ba;
+  --chip-conflict-bg: #ffebe9;
+  --chip-conflict-fg: #cf222e;
+  --chip-generated-bg: #f6f8fa;
+  --chip-generated-fg: #656d76;
+
+  /* §3.3 badges */
+  --badge-head-bg: #dafbe1;
+  --badge-head-fg: #1a7f37;
+  --badge-head-border: #4ac26b;
+  --badge-default-bg: #ddf4ff;
+  --badge-default-fg: #0969da;
+  --badge-default-border: #54aeff;
+  --badge-remote-bg: #f6f8fa;
+  --badge-remote-fg: #656d76;
+  --badge-remote-border: #d0d7de;
+
+  /* §3.4 banners */
+  --banner-warning-bg: #fff8c5;
+  --banner-warning-border: #d4a72c;
+  --banner-info-bg: #ddf4ff;
+  --banner-info-border: #54aeff;
+  --banner-error-bg: #ffebe9;
+  --banner-error-border: #ff8182;
+
+  /* §7.2 progress track, §7.7 checkerboard, §5 shadows, §7.9 backdrop */
+  --progress-track: #e7ecf0;
+  --checker-a: #eef1f4;
+  --checker-b: #ffffff;
+  --shadow-popover: 0 8px 24px rgba(140, 149, 159, 0.2);
+  --backdrop: rgba(1, 4, 9, 0.5);
+  --on-accent: #ffffff;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-raised: #1c2129;
+  --line: #30363d;
+  --ink: #e6edf3;
+  --muted: #8d96a0;
+  --accent: #4493f8;
+  --accent-subtle: #121d2f;
+  --success: #3fb950;
+  --danger: #f85149;
+  --attention: #d29922;
+  --done: #a371f7;
+
+  --diff-add-bg: #12261e;
+  --diff-add-num: #1b4d2b;
+  --diff-add-word: #2ea04366;
+  --diff-del-bg: #25171c;
+  --diff-del-num: #5d2426;
+  --diff-del-word: #f8514966;
+  --diff-hunk-bg: #121d2f;
+  --diff-hunk-ink: #8d96a0;
+  --diff-ctx-num: #161b22;
+  --diff-empty: repeating-linear-gradient(-45deg, transparent 0 6px, #1c2129 6px 7px);
+
+  --status-m-bg: #2d2a16;
+  --status-m-fg: #d29922;
+  --status-a-bg: #12261e;
+  --status-a-fg: #3fb950;
+  --status-d-bg: #25171c;
+  --status-d-fg: #f85149;
+  --status-r-bg: #121d2f;
+  --status-r-fg: #58a6ff;
+  --status-t-bg: #271e3a;
+  --status-t-fg: #a371f7;
+
+  --chip-staged-bg: #12261e;
+  --chip-staged-fg: #3fb950;
+  --chip-unstaged-bg: #2d2a16;
+  --chip-unstaged-fg: #d29922;
+  --chip-untracked-bg: #271e3a;
+  --chip-untracked-fg: #a371f7;
+  --chip-conflict-bg: #25171c;
+  --chip-conflict-fg: #f85149;
+  --chip-generated-bg: #1c2129;
+  --chip-generated-fg: #8d96a0;
+
+  --badge-head-bg: #12261e;
+  --badge-head-fg: #3fb950;
+  --badge-head-border: #3fb95066;
+  --badge-default-bg: #121d2f;
+  --badge-default-fg: #58a6ff;
+  --badge-default-border: #58a6ff66;
+  --badge-remote-bg: #1c2129;
+  --badge-remote-fg: #8d96a0;
+  --badge-remote-border: #30363d;
+
+  --banner-warning-bg: #272115;
+  --banner-warning-border: #9e6a03;
+  --banner-info-bg: #121d2f;
+  --banner-info-border: #1f6feb;
+  --banner-error-bg: #25171c;
+  --banner-error-border: #8e1519;
+
+  --progress-track: #21262d;
+  --checker-a: #161b22;
+  --checker-b: #0d1117;
+  --shadow-popover: 0 8px 24px #010409;
+  --backdrop: rgba(1, 4, 9, 0.5);
+  /* T5.6 amendment: white on the dark --success (#3fb950) is 2.54:1; dark ink reads at 7.45:1 */
+  --on-accent: #0d1117;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-attention: var(--attention);
+  --color-done: var(--done);
+  --color-on-accent: var(--on-accent);
+
+  --color-diff-add-bg: var(--diff-add-bg);
+  --color-diff-add-num: var(--diff-add-num);
+  --color-diff-add-word: var(--diff-add-word);
+  --color-diff-del-bg: var(--diff-del-bg);
+  --color-diff-del-num: var(--diff-del-num);
+  --color-diff-del-word: var(--diff-del-word);
+  --color-diff-hunk-bg: var(--diff-hunk-bg);
+  --color-diff-hunk-ink: var(--diff-hunk-ink);
+  --color-diff-ctx-num: var(--diff-ctx-num);
+
+  --color-status-m-bg: var(--status-m-bg);
+  --color-status-m-fg: var(--status-m-fg);
+  --color-status-a-bg: var(--status-a-bg);
+  --color-status-a-fg: var(--status-a-fg);
+  --color-status-d-bg: var(--status-d-bg);
+  --color-status-d-fg: var(--status-d-fg);
+  --color-status-r-bg: var(--status-r-bg);
+  --color-status-r-fg: var(--status-r-fg);
+  --color-status-t-bg: var(--status-t-bg);
+  --color-status-t-fg: var(--status-t-fg);
+
+  --color-chip-staged-bg: var(--chip-staged-bg);
+  --color-chip-staged-fg: var(--chip-staged-fg);
+  --color-chip-unstaged-bg: var(--chip-unstaged-bg);
+  --color-chip-unstaged-fg: var(--chip-unstaged-fg);
+  --color-chip-untracked-bg: var(--chip-untracked-bg);
+  --color-chip-untracked-fg: var(--chip-untracked-fg);
+  --color-chip-conflict-bg: var(--chip-conflict-bg);
+  --color-chip-conflict-fg: var(--chip-conflict-fg);
+  --color-chip-generated-bg: var(--chip-generated-bg);
+  --color-chip-generated-fg: var(--chip-generated-fg);
+
+  --color-badge-head-bg: var(--badge-head-bg);
+  --color-badge-head-fg: var(--badge-head-fg);
+  --color-badge-head-border: var(--badge-head-border);
+  --color-badge-default-bg: var(--badge-default-bg);
+  --color-badge-default-fg: var(--badge-default-fg);
+  --color-badge-default-border: var(--badge-default-border);
+  --color-badge-remote-bg: var(--badge-remote-bg);
+  --color-badge-remote-fg: var(--badge-remote-fg);
+  --color-badge-remote-border: var(--badge-remote-border);
+
+  --color-banner-warning-bg: var(--banner-warning-bg);
+  --color-banner-warning-border: var(--banner-warning-border);
+  --color-banner-info-bg: var(--banner-info-bg);
+  --color-banner-info-border: var(--banner-info-border);
+  --color-banner-error-bg: var(--banner-error-bg);
+  --color-banner-error-border: var(--banner-error-border);
+
+  --color-progress-track: var(--progress-track);
+  --color-checker-a: var(--checker-a);
+  --color-checker-b: var(--checker-b);
+  --color-backdrop: var(--backdrop);
+
+  --shadow-popover: var(--shadow-popover);
+
+  /* §4 typography — no web fonts */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --radius-control: 6px;
+  --radius-status: 4px;
+  --radius-checkbox: 3px;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 20px;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  button,
+  input,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+}
+
+@layer components {
+  /* §9 skip link: first focusable element, visible only while focused */
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 16px;
+    z-index: 40;
+    padding: 6px 10px;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--accent);
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 500;
+  }
+  .skip-link:focus {
+    top: 8px;
+  }
+
+  /* §7.9 HelpDialog: 520px modal, popover shadow, 12px radius, --backdrop */
+  .help-dialog {
+    width: 520px;
+    max-width: calc(100vw - 32px);
+    margin: auto; /* preflight zeroes dialog margins; this recentres the modal */
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-popover);
+  }
+  .help-dialog::backdrop {
+    background: var(--backdrop);
+  }
+
+  /* §7.7 image panes: 16px checkerboard from the --checker-* tokens */
+  .checkerboard {
+    background:
+      repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 16px 16px;
+  }
+
+  /* Bordered button (Design §5, §8): 1px --line, 6px radius, hover --surface-raised */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) {
+    background: var(--surface-raised);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--success);
+    border-color: var(--success);
+    color: var(--on-accent);
+    font-size: 14px;
+    line-height: 20px;
+    padding: 8px 16px;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--success);
+    filter: brightness(0.95);
+  }
+  .btn-icon {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    justify-content: center;
+  }
+  /* Active/pressed segment or toggle (Design §8) */
+  .pressed {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+  /* kbd hint (Design §7.2): 10px monospace, bordered */
+  .kbd {
+    display: inline-block;
+    padding: 0 4px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--surface);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 14px;
+    font-weight: 500;
+  }
+  /* Small bordered button (Design §7.5 "⇕ Expand all": 2px 6px, 11px) */
+  .btn-sm {
+    padding: 2px 6px;
+    font-size: 11px;
+    line-height: 16px;
+    gap: 4px;
+  }
+  /* 18 × 18 hunk-header mini button (Design §7.6) */
+  .btn-mini {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .btn-mini:hover:not(:disabled) {
+    background: var(--surface-raised);
+    color: var(--ink);
+  }
+  .btn-mini:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  /* DiffBody (Design §7.6) on react-diff-view markup */
+  .dg-diff table.diff {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 20px;
+  }
+  .dg-diff .diff-gutter-col {
+    width: 46px;
+  }
+  .dg-diff .diff-split .diff-gutter-col {
+    width: 44px;
+  }
+  .dg-diff .diff-gutter {
+    padding: 0 8px 0 0;
+    text-align: right;
+    vertical-align: top;
+    color: var(--muted);
+    background: var(--diff-ctx-num);
+    user-select: none;
+  }
+  .dg-diff .diff-gutter-insert {
+    color: var(--ink);
+    background: var(--diff-add-num);
+  }
+  .dg-diff .diff-gutter-delete {
+    color: var(--ink);
+    background: var(--diff-del-num);
+  }
+  .dg-diff .diff-code {
+    position: relative;
+    padding: 0 8px 0 22px;
+    white-space: pre;
+    overflow-wrap: normal;
+    word-break: normal;
+    vertical-align: top;
+  }
+  .dg-diff .diff-code::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 6px;
+    color: var(--muted);
+    user-select: none;
+  }
+  .dg-diff .diff-code-insert {
+    background: var(--diff-add-bg);
+  }
+  .dg-diff .diff-code-insert::before {
+    content: "+";
+  }
+  .dg-diff .diff-code-delete {
+    background: var(--diff-del-bg);
+  }
+  .dg-diff .diff-code-delete::before {
+    content: "−";
+  }
+  .dg-diff .diff-code-edit {
+    border-radius: 2px;
+    background: var(--diff-add-word);
+  }
+  .dg-diff .diff-code-delete .diff-code-edit {
+    background: var(--diff-del-word);
+  }
+  .dg-diff .diff-code-omit,
+  .dg-diff .diff-gutter-omit {
+    background: var(--diff-empty);
+  }
+  .dg-diff .diff-split td:nth-child(3) {
+    border-left: 1px solid var(--line);
+  }
+  .dg-diff .diff-decoration {
+    color: var(--diff-hunk-ink);
+    background: var(--diff-hunk-bg);
+  }
+  .dg-diff .diff-decoration-gutter,
+  .dg-diff .diff-decoration-content {
+    padding: 0;
+  }
+  .dg-diff [data-sh] {
+    color: var(--shl);
+  }
+  .dark .dg-diff [data-sh] {
+    color: var(--shd);
+  }
+  /* Popover surface (Design §5, §7.1) */
+  .popover {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-popover);
+  }
+  /* BranchPicker list (cmdk attributes; Design §7.1) */
+  [cmdk-input] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 20px;
+  }
+  [cmdk-input]:focus {
+    outline: none;
+  }
+  [cmdk-group-heading] {
+    padding: 6px 8px 2px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  [cmdk-item] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 4px;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 20px;
+    cursor: pointer;
+  }
+  [cmdk-item][data-selected="true"] {
+    background: var(--surface-raised);
+  }
+  [cmdk-empty] {
+    padding: 8px 12px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spin {
+      animation: none;
+    }
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}

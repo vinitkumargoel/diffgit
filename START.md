@@ -85,17 +85,17 @@ Keep this board updated (edit this file; one line per task):
 | T3.3 | done | agent / 2026-09-16 | |
 | T3.4 | done | agent / 2026-09-16 | |
 | T3.5 | done | agent / 2026-09-16 | |
-| T4.1 | todo | | |
-| T4.2 | todo | | |
-| T4.3 | todo | | |
-| T4.4 | todo | | Design §7.8 |
-| T5.0 | todo | | spike, gates T5.3; theme via Design §3.2/§3.5 |
-| T5.1 | todo | | Design §7.1–7.2 |
-| T5.2 | todo | | Design §7.4 |
-| T5.3 | todo | | Design §7.5–7.6 |
-| T5.4 | todo | | Design §7.7 |
-| T5.5 | todo | | Design §3.4, §7.3, §7.8 |
-| T5.6 | todo | | Design §3, §8, §9, §11 |
+| T4.1 | done | ui-agent / 2026-09-16 | mock + real client, crash recovery |
+| T4.2 | done | ui-agent / 2026-09-16 | zustand store + selectors |
+| T4.3 | done | ui-agent / 2026-09-16 | idb recents/viewed, localStorage prefs |
+| T4.4 | done | ui-agent / 2026-09-16 | Design §7.8; tokens in index.css |
+| T5.0 | done | ui-agent / 2026-09-16 | ADR-001: react-diff-view + HunkModel, Shiki 4 JS engine in a UI worker |
+| T5.1 | done | ui-agent / 2026-09-16 | Design §7.1–7.2; cmdk 1.1.1; Badge created here |
+| T5.2 | done | ui-agent / 2026-09-16 | Design §7.4; StatusIcon/LayerChip created; react-virtual 3.14.13 |
+| T5.3 | done | ui-agent / 2026-09-16 | Design §7.5–7.6; react-diff-view + Shiki worker; 3,000-line file paints in 88 ms |
+| T5.4 | done | ui-agent / 2026-09-16 | Design §7.7; ImageDiff (blob: URLs, revoked on unmount), Binary/Large/Submodule/Typechange notices, shared Notice |
+| T5.5 | done | ui-agent / 2026-09-16 | Design §3.4, §7.3, §7.8; 21-code warning registry, EmptyState, ErrorScreen actions, Toasts |
+| T5.6 | done | ui-agent / 2026-09-16 | Design §3, §8, §9, §11; theme cycle, useShortcuts + HelpDialog, skip link, live region, contrast + axe tests, colour guard |
 | T6.0 | blocked: owner must run spike page in Chrome (native folder pick) | agent / 2026-09-16 | spikes/s3-observer built; steps in docs/engine-notes.md; T6.2 ships with provisional rules |
 | T6.1 | todo | | |
 | T6.2 | todo | | |

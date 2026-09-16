@@ -28,4 +28,13 @@ guard "instanceof FileSystem* in src/engine" \
 guard "D16 write-capable FSA call in src/" \
   grep -rnE "createWritable|removeEntry|\.move\(|create: true|\"readwrite\"" src --include='*.ts' --include='*.tsx'
 
+# Only the store talks to the engine: components/hooks never import the worker client (T4.2 AC).
+guard "component imports the worker client" \
+  grep -rnE "from ['\"].*(workerClient|engineClient)['\"]" src/ui/components src/ui/hooks --include='*.ts' --include='*.tsx'
+
+# Design §10 / T5.6 AC: literal colours live only in src/index.css; everything else uses tokens.
+# Tests are excluded: contrast.test.ts feeds reference colours to the WCAG maths.
+guard "literal colour outside src/index.css" \
+  grep -rnE "#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(" src/ui src/App.tsx src/main.tsx --include='*.ts' --include='*.tsx' --include='*.css' --exclude='*.test.ts' --exclude='*.test.tsx'
+
 exit $fail

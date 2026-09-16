@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`shared primitives (Design §3.3, §11) > Badge renders the same markup in both themes and matches the snapshot > default 1`] = `"<span class="inline-flex h-4 items-center rounded-full border px-1.5 font-sans text-[11px] font-semibold leading-4 bg-badge-default-bg text-badge-default-fg border-badge-default-border" title="Default branch">default</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > Badge renders the same markup in both themes and matches the snapshot > head 1`] = `"<span class="inline-flex h-4 items-center rounded-full border px-1.5 font-sans text-[11px] font-semibold leading-4 bg-badge-head-bg text-badge-head-fg border-badge-head-border" title="Checked-out branch">HEAD</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > Badge renders the same markup in both themes and matches the snapshot > remote 1`] = `"<span class="inline-flex h-4 items-center rounded-full border px-1.5 font-sans text-[11px] font-semibold leading-4 bg-badge-remote-bg text-badge-remote-fg border-badge-remote-border" title="Remote-tracking branch">remote</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > LayerChip renders the same markup in both themes and matches the snapshot > conflict 1`] = `"<span class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-conflict-bg text-chip-conflict-fg border-chip-conflict-fg/40" role="img" aria-label="Merge conflict" title="Merge conflict">conflict</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > LayerChip renders the same markup in both themes and matches the snapshot > generated 1`] = `"<span class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-generated-bg text-chip-generated-fg border-chip-generated-fg/40" role="img" aria-label="Generated file" title="Generated file">generated</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > LayerChip renders the same markup in both themes and matches the snapshot > staged 1`] = `"<span class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-staged-bg text-chip-staged-fg border-chip-staged-fg/40" role="img" aria-label="Staged change" title="Staged change">staged</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > LayerChip renders the same markup in both themes and matches the snapshot > unstaged 1`] = `"<span class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-unstaged-bg text-chip-unstaged-fg border-chip-unstaged-fg/40" role="img" aria-label="Unstaged change" title="Unstaged change">unstaged</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > LayerChip renders the same markup in both themes and matches the snapshot > untracked 1`] = `"<span class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-untracked-bg text-chip-untracked-fg border-chip-untracked-fg/40" role="img" aria-label="Untracked file" title="Untracked file">untracked</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > StatusIcon renders the same markup in both themes and matches the snapshot > added 1`] = `"<span role="img" aria-label="Added" title="Added" class="inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] leading-none font-bold bg-status-a-bg text-status-a-fg">A</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > StatusIcon renders the same markup in both themes and matches the snapshot > copied 1`] = `"<span role="img" aria-label="Copied" title="Copied" class="inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] leading-none font-bold bg-status-r-bg text-status-r-fg">C</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > StatusIcon renders the same markup in both themes and matches the snapshot > deleted 1`] = `"<span role="img" aria-label="Deleted" title="Deleted" class="inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] leading-none font-bold bg-status-d-bg text-status-d-fg">D</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > StatusIcon renders the same markup in both themes and matches the snapshot > modified 1`] = `"<span role="img" aria-label="Modified" title="Modified" class="inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] leading-none font-bold bg-status-m-bg text-status-m-fg">M</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > StatusIcon renders the same markup in both themes and matches the snapshot > renamed 1`] = `"<span role="img" aria-label="Renamed" title="Renamed" class="inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] leading-none font-bold bg-status-r-bg text-status-r-fg">R</span>"`;
+
+exports[`shared primitives (Design §3.3, §11) > StatusIcon renders the same markup in both themes and matches the snapshot > typechange 1`] = `"<span role="img" aria-label="Type changed" title="Type changed" class="inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] leading-none font-bold bg-status-t-bg text-status-t-fg">T</span>"`;
