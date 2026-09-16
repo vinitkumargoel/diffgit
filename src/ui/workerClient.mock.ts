@@ -18,7 +18,13 @@ import realWorktreeInfo from "../test/recorded/worktree.repoinfo.json";
 import type { UiError } from "./errors";
 import { mockPayload, mockTexts } from "./mock/mockContents";
 import { syntheticLarge } from "./mock/syntheticLarge";
-import type { RestartListener, WorkerClient } from "./workerClient";
+import {
+  approxBytes,
+  type ClientMetrics,
+  newClientMetrics,
+  type RestartListener,
+  type WorkerClient,
+} from "./workerClient";
 
 export interface MockWorkerClient extends WorkerClient {
   isMock: true;
@@ -101,6 +107,7 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
   let lastResult: DiffResult | null = null;
   const restartListeners = new Set<RestartListener>();
   let statsTimer: ReturnType<typeof setTimeout> | null = null;
+  const clientMetricsState: ClientMetrics = newClientMetrics();
   const client: MockWorkerClient = {
     isMock: true,
     latency: opts.latency ?? 0,
@@ -222,6 +229,24 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
     },
     async invalidate() {},
     async forceRehash() {},
+    async metrics() {
+      return {
+        generation,
+        computes: generation,
+        handleCache: 0,
+        io: { reads: 0, bytes: 0, packBytes: 0, packFiles: 0 },
+        memoryEstimate: 0,
+        lastCompute: lastResult
+          ? { files: lastResult.files.length, durationMs: 1, statsMs: 1 }
+          : null,
+      };
+    },
+    clientMetrics() {
+      return {
+        ...clientMetricsState,
+        lastResultBytes: lastResult ? approxBytes(lastResult) : null,
+      };
+    },
     async close() {
       if (statsTimer) clearTimeout(statsTimer);
       current = null;

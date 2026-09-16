@@ -8,6 +8,7 @@
  */
 import type {
   EngineApi,
+  EngineMetrics,
   FileDiffOptions,
   FileDiffPayload,
   FileStats,
@@ -66,6 +67,8 @@ interface Current {
 }
 
 const NO_SESSION = () => new EngineError("INTERNAL", "No repository is open.");
+/** Plan §11 R3: warn when the packs read so far exceed this. */
+export const MEMORY_WARN_BYTES = 300 * 1024 * 1024;
 
 /** Translate anything thrown inside the engine into the plain object that crosses the worker boundary. */
 export function toPublicError(e: unknown, rootGone = false): PublicError {
@@ -121,6 +124,10 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   private statsActive = 0;
   private lastSource: DiffSource | null = null;
   private closed = false;
+  private computes = 0;
+  private lastCompute: EngineMetrics["lastCompute"] = null;
+  private statsStartedAt = 0;
+  private memoryWarned = false;
   private readonly repoWarnings: RepoWarning[] = [];
   private readonly statsLimit: <T>(fn: () => Promise<T>) => Promise<T>;
 
@@ -304,6 +311,10 @@ export class RepoSession implements Omit<EngineApi, "open"> {
         byId: new Map(files.map((f) => [f.id, f])),
         stats: new Map(),
       };
+      this.computes++;
+      this.lastCompute = { files: files.length, durationMs: result.durationMs, statsMs: null };
+      this.statsStartedAt = performance.now();
+      this.checkMemory();
       this.startStats(generation);
       return result;
     } catch (e) {
@@ -574,10 +585,41 @@ export class RepoSession implements Omit<EngineApi, "open"> {
         );
       }
       await Promise.all(workers);
-      if (this.current === cur) flush();
+      if (this.current === cur) {
+        flush();
+        if (this.lastCompute) this.lastCompute.statsMs = performance.now() - this.statsStartedAt;
+      }
     } finally {
       this.statsActive--;
     }
+  }
+
+  // ---- metrics (T7.2) -------------------------------------------------------------------------
+
+  /** R3 memory guard: isomorphic-git keeps every pack it has read; warn once above 300 MB. */
+  private checkMemory(): void {
+    if (this.memoryWarned) return;
+    const { packBytes } = this.fs.ioStats();
+    if (packBytes > MEMORY_WARN_BYTES) {
+      this.memoryWarned = true;
+      RepoSession.emitWarning(this.sink, {
+        code: "PACK_LARGE",
+        message: `About ${Math.round(packBytes / (1024 * 1024))} MB of pack data is held in memory; reload the tab if it becomes sluggish.`,
+        detail: "memory",
+      });
+    }
+  }
+
+  async metrics(): Promise<EngineMetrics> {
+    const io = this.fs.ioStats();
+    return {
+      generation: this.gen,
+      computes: this.computes,
+      handleCache: this.fs.cacheSize(),
+      io,
+      memoryEstimate: io.packBytes,
+      lastCompute: this.lastCompute ? { ...this.lastCompute } : null,
+    };
   }
 
   // ---- probes (polling fallback, T6.3) --------------------------------------------------------

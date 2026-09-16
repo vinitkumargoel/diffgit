@@ -17,7 +17,8 @@
     "record": "bun run scripts/record-fixtures.ts && biome format --write src/test/recorded",
     "deploy": "bun run build && bunx wrangler pages deploy dist --project-name diffgoel",
     "check:prod": "bash scripts/check-prod.sh",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "perf": "bun run scripts/perf.ts"
   },
   "dependencies": {
     "@shikijs/core": "4.4.3",

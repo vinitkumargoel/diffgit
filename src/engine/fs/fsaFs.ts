@@ -76,6 +76,17 @@ export interface FsaFs {
   invalidateAll(): void;
   /** Number of cached handles (tests / debug panel). */
   cacheSize(): number;
+  /** Cumulative reads through this adapter (T7.2 memory guard / debug panel). */
+  ioStats(): IoStats;
+}
+
+export interface IoStats {
+  reads: number;
+  bytes: number;
+  /** Bytes read from `.git/objects/pack/*` — an upper bound of what isomorphic-git's cache may hold. */
+  packBytes: number;
+  /** Distinct pack/idx files read (each is cached once by isomorphic-git). */
+  packFiles: number;
 }
 
 export const MAX_HANDLE_CACHE = 20_000;
@@ -301,9 +312,21 @@ export function createFsaFs(root: DirHandleLike): FsaFs {
     return withHandle(path, "file", "open", async (h) => requireFile(h, path, "open").getFile());
   }
 
+  const io: IoStats = { reads: 0, bytes: 0, packBytes: 0, packFiles: 0 };
+  const packSeen = new Set<string>();
   async function readFile(path: string): Promise<Uint8Array> {
     const f = await openFile(path);
-    return new Uint8Array(await f.arrayBuffer());
+    const bytes = new Uint8Array(await f.arrayBuffer());
+    io.reads++;
+    io.bytes += bytes.byteLength;
+    if (path.includes("/.git/objects/pack/") || path.startsWith(".git/objects/pack/")) {
+      if (!packSeen.has(path)) {
+        packSeen.add(path);
+        io.packFiles++;
+        io.packBytes += bytes.byteLength;
+      }
+    }
+    return bytes;
   }
 
   async function readText(path: string): Promise<string> {
@@ -393,6 +416,7 @@ export function createFsaFs(root: DirHandleLike): FsaFs {
     invalidatePath,
     invalidateAll,
     cacheSize: () => cache.size,
+    ioStats: () => ({ ...io }),
   };
 }
 

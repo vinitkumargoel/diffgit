@@ -8,6 +8,7 @@
  */
 import { create } from "zustand";
 import type {
+  EngineMetrics,
   FileDiffPayload,
   FileStats,
   Progress,
@@ -30,7 +31,9 @@ import { toUiError, type UiError } from "./errors";
 import { Lru } from "./lru";
 import { buildTree, filePathOf, makePathFilter, type TreeNode } from "./treeModel";
 import { viewedKey } from "./viewedKey";
-import type { WorkerClient } from "./workerClient";
+import type { ClientMetrics, WorkerClient } from "./workerClient";
+
+export type { ClientMetrics } from "./workerClient";
 
 export type Screen = "home" | "loading" | "repo" | "error";
 export type ViewMode = "unified" | "split";
@@ -122,6 +125,13 @@ export interface RefreshState {
 }
 
 /** Storage adapters injected by T4.3 (`persistence/index.ts`); defaults are no-ops. */
+/** Debug-panel timings (T7.2): engine phase durations from the last compute + wall time. */
+export interface PerfState {
+  phases: Partial<Record<ProgressPhase, number>>;
+  lastComputeMs: number | null;
+  computeStartedAt: number | null;
+}
+
 export interface StorePersistence {
   loadViewed(keys: string[]): Promise<Set<string>>;
   saveViewed(key: string, viewed: boolean): Promise<void>;
@@ -171,6 +181,7 @@ export interface StoreState {
   activeFileId: string | null;
   collapsed: ReadonlySet<string>; // file ids collapsed in the diff pane
   refresh: RefreshState;
+  perf: PerfState;
   fileDiffs: Lru<string, FileDiffEntry>;
   toasts: Toast[];
   announcement: string; // aria-live text
@@ -186,6 +197,11 @@ export interface StoreState {
   recompute(reason: RefreshReason): Promise<void>;
   /** Entry point for "something may have changed" — routed to the scheduler (T6.1) when present. */
   requestRefresh(reason: RefreshReason, paths?: string[]): void;
+  /** Debug panel snapshot (T7.2). */
+  debugMetrics(): Promise<{
+    engine: EngineMetrics | null;
+    client: ClientMetrics;
+  }>;
   loadFileDiff(id: string, opts?: { loadLarge?: boolean }): Promise<void>;
   cancelFileDiff(id: string): void;
   toggleViewed(id: string): void;
@@ -280,6 +296,11 @@ function cacheKey(id: string, ignoreWhitespace: boolean): string {
 export const useStore = create<StoreState>()((set, get) => {
   const sink: ProgressSink = {
     onProgress(p: Progress) {
+      if (p.durationMs !== undefined && p.phase !== "probe") {
+        set((s) => ({
+          perf: { ...s.perf, phases: { ...s.perf.phases, [p.phase]: p.durationMs } },
+        }));
+      }
       if (p.phase !== "probe") {
         const done = p.durationMs !== undefined && p.phase !== "stats";
         set((s) => ({ refresh: { ...s.refresh, phase: done ? null : p.phase } }));
@@ -337,6 +358,7 @@ export const useStore = create<StoreState>()((set, get) => {
     collapsed: new Set(),
     refresh: { mode: "manual", lastAt: null, busy: false, lastError: null, restarted: false },
     fileDiffs: new Lru(200),
+    perf: { phases: {}, lastComputeMs: null, computeStartedAt: null },
     toasts: [],
     announcement: "",
 
@@ -461,6 +483,19 @@ export const useStore = create<StoreState>()((set, get) => {
       get().requestRefresh("branch-change");
     },
 
+    async debugMetrics() {
+      const c = client();
+      let engine: EngineMetrics | null = null;
+      if (get().repo) {
+        try {
+          engine = await c.metrics();
+        } catch {
+          engine = null; // no session / worker restarting: the panel shows dashes
+        }
+      }
+      return { engine, client: c.clientMetrics() };
+    },
+
     requestRefresh(reason, paths) {
       if (refreshHooks) refreshHooks.request(reason, paths);
       else void get().recompute(reason);
@@ -469,9 +504,15 @@ export const useStore = create<StoreState>()((set, get) => {
     async recompute(_reason) {
       const { diffSource, repo } = get();
       if (!diffSource || !repo) return;
-      set((s) => ({ refresh: { ...s.refresh, busy: true, phase: s.refresh.phase ?? null } }));
+      const startedAt = performance.now();
+      performance.mark?.("diffgoel:compute-start");
+      set((s) => ({
+        refresh: { ...s.refresh, busy: true, phase: s.refresh.phase ?? null },
+        perf: { ...s.perf, computeStartedAt: startedAt },
+      }));
       try {
         const result = await client().computeDiff(diffSource);
+        performance.mark?.("diffgoel:compute-result");
         const current = get();
         // a newer compute may have started meanwhile; comlink resolves in order, but be defensive
         if (current.diff && result.generation < current.diff.generation) return;
@@ -510,7 +551,9 @@ export const useStore = create<StoreState>()((set, get) => {
             phase: null,
           },
           announcement: `Diff updated: ${result.files.length} ${result.files.length === 1 ? "file" : "files"}`,
+          perf: { ...s.perf, lastComputeMs: performance.now() - startedAt, computeStartedAt: null },
         }));
+        performance.mark?.("diffgoel:compute-committed");
       } catch (e) {
         const err = toUiError(e);
         if (err.code === "CANCELLED" || err.code === "STALE") {

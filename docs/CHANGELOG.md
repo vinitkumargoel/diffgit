@@ -15,6 +15,15 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T7.2 — Performance pass
+
+- `scripts/perf.ts` (`bun run perf`, wired into CI): opens a copy of `perf-5k`, times open / first compute / stats / recompute-after-one-edit / 3000-line hunk model, and asserts the structural budgets always (≤ 4 progress messages per compute excluding stats, stats batches ≤ ⌈files/32⌉ + 2, DiffResult ≤ 400 B per file, ≤ 1 handle-cache eviction per single-path refresh); absolute timings only fail under `PERF_STRICT=1`. Measured: open 18 ms, open → list 175 ms, recompute 29 ms, stats 37 ms, 3000-line hunks 207 ms, 376 B per row. `docs/perf.md` records the table, the browser-side status (render 88 ms from T5.3; long tasks, idle CPU and the real-repo open time still to be captured in the T8.2 smoke test) and the decisions (keep the full DiffResult per recompute; batch sizes).
+- Metrics plumbing: `FsaFs.ioStats()` (reads, bytes, distinct pack/idx bytes), `EngineApi.metrics()` → `EngineMetrics` (generation, computes, handle cache, io, memory estimate, last compute timings), `WorkerClient.clientMetrics()` (calls per method, sink message counts, last result size) and `store.debugMetrics()`. R3 memory guard: `RepoSession.checkMemory` emits `PACK_LARGE` (detail `memory`) once when pack bytes read exceed 300 MB.
+- Hidden `/#debug` panel (`DebugPanel`, lazy, follows `hashchange`): phase durations, compute → committed wall time (also `performance.mark` entries `diffgoel:compute-start/-result/-committed`), stats completion, payload size, worker calls, sink counts, handle cache, pack bytes, fs reads.
+- Note: the perf-5k fixture has 480 kB of objects, not the ~30 MB the Plan assumed; pack-heavy behaviour was measured on real repos in Spike S2 (`docs/engine-notes.md`).
+
+---
+
 ## T7.1 — End-to-end smoke suite (Playwright, Chromium)
 
 - Exactly three specs in `e2e/` (plus `helpers.ts` and the T0.4 shim), run against `VITE_E2E=1 bun run build` + `vite preview` so the production CSP applies; memory snapshots of `remote` and `worktree` are served to the worker through the shim's BroadcastChannel. Whole suite: 3 passed in ~11 s locally.

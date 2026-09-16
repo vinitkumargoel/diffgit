@@ -102,6 +102,19 @@ export interface FileDiffOptions {
   loadLarge?: boolean;
 }
 
+/** Engine-side counters for the hidden debug panel and `scripts/perf.ts` (T7.2). */
+export interface EngineMetrics {
+  generation: number;
+  computes: number;
+  /** FsaFs handle cache size. */
+  handleCache: number;
+  io: { reads: number; bytes: number; packBytes: number; packFiles: number };
+  /** Approximate bytes isomorphic-git may hold (pack + idx files read so far). */
+  memoryEstimate: number;
+  /** Last compute: files, wall time, background stats time. */
+  lastCompute: { files: number; durationMs: number; statsMs: number | null } | null;
+}
+
 /** Shape of every error crossing the worker boundary (comlink loses prototypes). */
 export interface PublicError extends EngineErrorJSON {
   code: PublicCode;
@@ -129,5 +142,7 @@ export interface EngineApi {
   probe(tier: ProbeTier): Promise<string>;
   invalidate(scope: InvalidateScope, paths?: string[]): Promise<void>;
   forceRehash(): Promise<void>;
+  /** Counters for the debug panel (T7.2). */
+  metrics(): Promise<EngineMetrics>;
   close(): Promise<void>;
 }

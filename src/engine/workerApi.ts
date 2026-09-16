@@ -53,6 +53,7 @@ export function createEngineApi(
     probe: (tier) => guard(() => need().probe(tier)),
     invalidate: (scope, paths) => guard(() => need().invalidate(scope, paths)),
     forceRehash: () => guard(() => need().forceRehash()),
+    metrics: () => guard(() => need().metrics()),
     close: () =>
       guard(async () => {
         await session?.close();

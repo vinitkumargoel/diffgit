@@ -102,8 +102,8 @@ Keep this board updated (edit this file; one line per task):
 | T6.3 | done | agent / 2026-09-17 | browser CPU number pending T7.2 |
 | T6.4 | done | agent / 2026-09-17 | browser touch -r check pending owner |
 | T7.1 | done | agent / 2026-09-17 | 3 specs, ~11 s locally; CI job added |
-| T7.2 | in-progress | agent / 2026-09-17 | |
-| T7.3 | todo | | |
+| T7.2 | done | agent / 2026-09-17 | browser numbers pending T8.2 smoke |
+| T7.3 | in-progress | agent / 2026-09-17 | |
 | T7.4 | todo | | |
 | T7.5 | todo | | |
 | T8.1 | todo | | |

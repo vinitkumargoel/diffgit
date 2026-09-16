@@ -9,6 +9,7 @@
 import * as Comlink from "comlink";
 import type {
   EngineApi,
+  EngineMetrics,
   FileDiffOptions,
   FileDiffPayload,
   FileStats,
@@ -20,6 +21,44 @@ import type { DiffResult, DiffSource, RepoInfo } from "../engine/types";
 import { toUiError, type UiError } from "./errors";
 
 export type RestartListener = (info: RepoInfo | null, error: UiError | null) => void;
+
+export interface ClientMetrics {
+  calls: Record<string, number>;
+  sink: { progress: number; stats: number; warnings: number };
+  /** Approximate JSON size of the last DiffResult received (bytes). */
+  lastResultBytes: number | null;
+}
+
+export function newClientMetrics(): ClientMetrics {
+  return { calls: {}, sink: { progress: 0, stats: 0, warnings: 0 }, lastResultBytes: null };
+}
+
+/** Rough structured-clone size of a result: JSON length is a fair proxy for the debug panel. */
+export function approxBytes(value: unknown): number {
+  try {
+    return JSON.stringify(value).length;
+  } catch {
+    return 0;
+  }
+}
+
+/** Wraps a sink so the client can count what the worker sends back. */
+export function countingSink(sink: ProgressSink, m: ClientMetrics): ProgressSink {
+  return {
+    onProgress: (p) => {
+      m.sink.progress++;
+      sink.onProgress(p);
+    },
+    onStats: (b) => {
+      m.sink.stats++;
+      sink.onStats(b);
+    },
+    onWarning: (w) => {
+      m.sink.warnings++;
+      sink.onWarning(w);
+    },
+  };
+}
 
 /** What the store sees. Same methods as `EngineApi` plus lifecycle helpers. */
 export interface WorkerClient {
@@ -35,7 +74,10 @@ export interface WorkerClient {
   probe(tier: ProbeTier): Promise<string>;
   invalidate(scope: InvalidateScope, paths?: string[]): Promise<void>;
   forceRehash(): Promise<void>;
+  metrics(): Promise<EngineMetrics>;
   close(): Promise<void>;
+  /** Client-side counters for the debug panel (T7.2): calls per method and sink events received. */
+  clientMetrics(): ClientMetrics;
   /** Called after a crash once the worker has been recreated and re-opened. Returns unsubscribe. */
   onRestart(listener: RestartListener): () => void;
   /** The DiffSource last passed to computeDiff (for the store to recompute after a restart). */
@@ -63,6 +105,10 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
   let retainedSink: ProgressSink | null = null;
   let proxiedSink: (ProgressSink & Comlink.ProxyMarked) | null = null;
   let lastSrc: DiffSource | null = null;
+  const metrics = newClientMetrics();
+  const count = (name: string) => {
+    metrics.calls[name] = (metrics.calls[name] ?? 0) + 1;
+  };
 
   function boot(): void {
     worker = factory();
@@ -80,7 +126,11 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     return remote as Comlink.Remote<EngineApi>;
   }
 
-  async function call<T>(fn: (r: Comlink.Remote<EngineApi>) => Promise<T>): Promise<T> {
+  async function call<T>(
+    fn: (r: Comlink.Remote<EngineApi>) => Promise<T>,
+    name = "call",
+  ): Promise<T> {
+    count(name);
     const r = ensure();
     const pending: Pending = { reject: () => {} };
     const crashed = new Promise<never>((_, reject) => {
@@ -115,7 +165,7 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
       return;
     }
     try {
-      proxiedSink = Comlink.proxy(retainedSink);
+      proxiedSink = Comlink.proxy(countingSink(retainedSink, metrics));
       const info = await (remote as Comlink.Remote<EngineApi>).open(retainedHandle, proxiedSink);
       for (const l of restartListeners) l(info, null);
     } catch (e) {
@@ -129,28 +179,37 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
       retainedHandle = handle;
       retainedSink = sink;
       lastSrc = null;
-      proxiedSink = Comlink.proxy(sink);
-      return call((r) => r.open(handle, proxiedSink as ProgressSink));
+      proxiedSink = Comlink.proxy(countingSink(sink, metrics));
+      return call((r) => r.open(handle, proxiedSink as ProgressSink), "open");
     },
-    info: () => call((r) => r.info()),
-    reloadRefs: () => call((r) => r.reloadRefs()),
-    computeDiff(src) {
+    info: () => call((r) => r.info(), "info"),
+    reloadRefs: () => call((r) => r.reloadRefs(), "reloadRefs"),
+    async computeDiff(src) {
       lastSrc = src;
-      return call((r) => r.computeDiff(src));
+      const result = await call((r) => r.computeDiff(src), "computeDiff");
+      metrics.lastResultBytes = approxBytes(result);
+      return result;
     },
-    fileStats: (generation, ids) => call((r) => r.fileStats(generation, ids)),
-    fileDiff: (generation, id, opts) => call((r) => r.fileDiff(generation, id, opts)),
-    cancelFileDiff: (id) => call((r) => r.cancelFileDiff(id)),
-    fileBytes: (generation, id, side) => call((r) => r.fileBytes(generation, id, side)),
-    prioritise: (ids) => call((r) => r.prioritise(ids)),
-    probe: (tier) => call((r) => r.probe(tier)),
-    invalidate: (scope, paths) => call((r) => r.invalidate(scope, paths)),
-    forceRehash: () => call((r) => r.forceRehash()),
+    fileStats: (generation, ids) => call((r) => r.fileStats(generation, ids), "fileStats"),
+    fileDiff: (generation, id, opts) => call((r) => r.fileDiff(generation, id, opts), "fileDiff"),
+    cancelFileDiff: (id) => call((r) => r.cancelFileDiff(id), "cancelFileDiff"),
+    fileBytes: (generation, id, side) =>
+      call((r) => r.fileBytes(generation, id, side), "fileBytes"),
+    prioritise: (ids) => call((r) => r.prioritise(ids), "prioritise"),
+    probe: (tier) => call((r) => r.probe(tier), "probe"),
+    invalidate: (scope, paths) => call((r) => r.invalidate(scope, paths), "invalidate"),
+    forceRehash: () => call((r) => r.forceRehash(), "forceRehash"),
+    metrics: () => call((r) => r.metrics(), "metrics"),
+    clientMetrics: () => ({
+      calls: { ...metrics.calls },
+      sink: { ...metrics.sink },
+      lastResultBytes: metrics.lastResultBytes,
+    }),
     async close() {
       retainedHandle = null;
       retainedSink = null;
       lastSrc = null;
-      if (remote && !dead) await call((r) => r.close());
+      if (remote && !dead) await call((r) => r.close(), "close");
     },
     onRestart(listener) {
       restartListeners.add(listener);
