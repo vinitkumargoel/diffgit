@@ -9,6 +9,13 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T4.4 — BrowserGate + HomeScreen
+
+- `src/index.css` now holds the full Design §3.1–§3.4 token set for `:root` and `.dark` (neutrals/accent, diff colours, status squares, chips, badges, banner levels, progress track, checkerboard, popover shadow, backdrop) exposed via `@theme inline` (`bg-surface`, `text-muted`, `border-line`, `bg-status-m-bg`, …), the §4 font stacks, base styles (13/20 px, tabular-nums, focus ring per §5, reduced-motion) and `.btn` / `.btn-primary` / `.btn-icon` / `.spin` component classes. T5.6 reconciles.
+- `src/ui/theme.ts`: `applyTheme("system" | "light" | "dark")` toggles `.dark` on `<html>`, following `prefers-color-scheme` via a `matchMedia` listener for "system"; `App` applies `prefs.theme` (toggle UI in T5.6).
+- Components per Design §7.8: `CenteredColumn` shell (560 px, 15 px, 24 px gaps), `BrowserGate` (feature-detects `showDirectoryPicker`; `lucide:monitor-x`), `HomeScreen` (`lucide:book-bookmark` — lucide 1.x renamed `book-marked`; privacy paragraph; `--success` primary button; `showDirectoryPicker({ mode: "read", id: "diffgoel-repo" })` → `upsertRepo` → `openRepo` with remembered branches; AbortError silent, other errors toast; `o` shortcut), `RecentRepoList` (44 px rows, `lucide:folder-git-2`, "opened 3 h ago", × on hover/focus, Enter/Space opens, Delete removes, inline `--danger` "Permission denied. Try again"), `LoadingScreen` (four phases with check/spinner/circle icons, tabular counts, Cancel → `closeRepo`).
+- `App.tsx` switches on `store.screen`; `RepoScreen`/`ErrorScreen` are lazy placeholders completed in T5.x. AC: grep for `#hex`/`rgb(` in the component files returns nothing; vitest covers gate, recents, AbortError, toast, `o` key, denied path, loading phases.
+
 ## T4.3 — Persistence
 
 - `src/ui/persistence/repos.ts` (idb-keyval, DB `diffgoel-repos`): `listRepos` (newest first, max 20), `upsertRepo` (dedupe via `isSameEntry` asked of whichever side still has the method — stored copies lose prototypes — or `snapshotId` for E2E markers), `touchRepo`, `removeRepo`, `getRepo`, `ensurePermission` (query → request, markers always granted).
