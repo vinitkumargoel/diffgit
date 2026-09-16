@@ -9,6 +9,13 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T5.0 — Spike S1: diff renderer (ADR-001)
+
+- `spikes/s1-diff-renderer/` (own Vite root, excluded from the app build): `@git-diff-view/react` page (DiffFile in a Web Worker with `@git-diff-view/shiki`, hydrated via `createInstance`) and `react-diff-view` page (our `HunkModel` → `HunkData`, `markEdits`, `expandFromRawCode`, `Decoration` hunk headers), both styled to Design §7.6 with §3.2 tokens, plus a Shiki 4 JS-engine cost page; `measure.ts` drives them in headless Chromium under `vite preview` with the production CSP.
+- Numbers (gzip / Chromium 153): `@git-diff-view/react` adds 341.6 kB main-thread JS (≈ 300 kB is `lowlight(all)` imported eagerly by `DiffView`) + 380.6 kB worker; renders the 5,600-row case in 908 ms; expand-context and worker mode work; 0 CSP violations. `react-diff-view` adds 23.2 kB; 414 ms for the same case; expand via `expandFromRawCode` works; 0 CSP violations. Shiki 4 core + JS engine + two themes: 55 kB, 16 kB per grammar, 245 ms first tokenise of 252 lines.
+- **Decision:** `react-diff-view@3.3.3` + `HunkModel`, Shiki 4 (`@shikijs/core`, `@shikijs/engine-javascript`, lazy `@shikijs/langs/*`, `github-light`/`github-dark`) in a UI-owned worker, `markEdits` for word-level marks. `@git-diff-view/react` fails the < 250 kB rule, needs patch text plus full contents on the main thread, and its Tailwind-utility markup fights §7.6. Details and comparison table in `docs/adr-001-diff-renderer.md`; T5.3 "Renderer" section rewritten with the API notes.
+- Dependencies: `react-diff-view`, `@shikijs/core|engine-javascript|langs|themes` (4.4.3) moved to runtime deps; `@git-diff-view/*` and the `shiki` meta-package removed (spike README documents how to reinstall to re-run). Also found: `DiffFile` treats per-hunk strings without `---`/`+++` headers as an empty diff.
+
 ## T4.4 — BrowserGate + HomeScreen
 
 - `src/index.css` now holds the full Design §3.1–§3.4 token set for `:root` and `.dark` (neutrals/accent, diff colours, status squares, chips, badges, banner levels, progress track, checkerboard, popover shadow, backdrop) exposed via `@theme inline` (`bg-surface`, `text-muted`, `border-line`, `bg-status-m-bg`, …), the §4 font stacks, base styles (13/20 px, tabular-nums, focus ring per §5, reduced-motion) and `.btn` / `.btn-primary` / `.btn-icon` / `.spin` component classes. T5.6 reconciles.

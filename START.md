@@ -89,7 +89,7 @@ Keep this board updated (edit this file; one line per task):
 | T4.2 | done | ui-agent / 2026-09-16 | zustand store + selectors |
 | T4.3 | done | ui-agent / 2026-09-16 | idb recents/viewed, localStorage prefs |
 | T4.4 | done | ui-agent / 2026-09-16 | Design §7.8; tokens in index.css |
-| T5.0 | todo | | spike, gates T5.3; theme via Design §3.2/§3.5 |
+| T5.0 | done | ui-agent / 2026-09-16 | ADR-001: react-diff-view + HunkModel, Shiki 4 JS engine in a UI worker |
 | T5.1 | todo | | Design §7.1–7.2 |
 | T5.2 | todo | | Design §7.4 |
 | T5.3 | todo | | Design §7.5–7.6 |

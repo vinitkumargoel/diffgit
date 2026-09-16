@@ -1,0 +1,114 @@
+@import "../../src/index.css";
+
+/* Design §7.6 targets both candidates are styled to: fixed table, 46/46/22 px unified gutters, 12/20 px mono. */
+.spike-card {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+  margin: 16px;
+}
+.spike-card header {
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--line);
+  padding: 8px 12px;
+  font: 600 12px / 20px var(--font-mono);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.spike-card header .btn {
+  margin-left: auto;
+}
+
+/* --- @git-diff-view overrides: map its theme variables onto Design §3.2 tokens --- */
+.gdv .diff-tailwindcss-wrapper,
+.gdv [data-theme] {
+  --diff-add-content--: var(--diff-add-bg);
+  --diff-del-content--: var(--diff-del-bg);
+  --diff-add-lineNumber--: var(--diff-add-num);
+  --diff-del-lineNumber--: var(--diff-del-num);
+  --diff-add-content-highlight--: var(--diff-add-word);
+  --diff-del-content-highlight--: var(--diff-del-word);
+  --diff-hunk-content--: var(--diff-hunk-bg);
+  --diff-hunk-lineNumber--: var(--diff-hunk-bg);
+  --diff-plain-content--: transparent;
+  --diff-plain-lineNumber--: var(--diff-ctx-num);
+  --diff-empty-content--: var(--surface-raised);
+  --diff-border--: var(--line);
+  --diff-hunk-content-color--: var(--diff-hunk-ink);
+  --diff-plain-lineNumber-color--: var(--muted);
+  --diff-add-lineNumber-color--: var(--ink);
+  --diff-del-lineNumber-color--: var(--ink);
+}
+.gdv .diff-tailwindcss-wrapper {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+/* --- react-diff-view: style its table to §7.6 --- */
+.rdv .diff {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font: 12px / 20px var(--font-mono);
+}
+.rdv .diff-gutter {
+  width: 46px;
+  text-align: right;
+  padding-right: 8px;
+  color: var(--muted);
+  user-select: none;
+  background: var(--diff-ctx-num);
+}
+.rdv .diff-gutter-insert {
+  background: var(--diff-add-num);
+  color: var(--ink);
+}
+.rdv .diff-gutter-delete {
+  background: var(--diff-del-num);
+  color: var(--ink);
+}
+.rdv .diff-code {
+  white-space: pre;
+  padding-left: 22px;
+  position: relative;
+}
+.rdv .diff-code-insert {
+  background: var(--diff-add-bg);
+}
+.rdv .diff-code-delete {
+  background: var(--diff-del-bg);
+}
+.rdv .diff-code-insert::before {
+  content: "+";
+  position: absolute;
+  left: 6px;
+}
+.rdv .diff-code-delete::before {
+  content: "−";
+  position: absolute;
+  left: 6px;
+}
+.rdv .diff-code-edit {
+  background: var(--diff-add-word);
+  border-radius: 2px;
+}
+.rdv .diff-code-delete .diff-code-edit {
+  background: var(--diff-del-word);
+}
+.rdv .diff-hunk-header {
+  background: var(--diff-hunk-bg);
+  color: var(--diff-hunk-ink);
+  font-size: 11.5px;
+}
+.rdv .diff-hunk-header-content {
+  padding: 6px 12px;
+}
+.rdv .diff-split .diff-gutter {
+  width: 44px;
+}
+.rdv .diff-decoration-content {
+  padding: 2px 12px;
+}
