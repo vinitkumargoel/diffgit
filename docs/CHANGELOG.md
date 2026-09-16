@@ -8,6 +8,13 @@ _(none yet)_
 
 ---
 
+## T1.4 — RefStore
+
+- `src/engine/git/refStore.ts`: `loadRefs(db, config) → RefSnapshot { headBranch, headOid, detached, unborn, headDisplay, refs, defaultRef }`. HEAD via `readSymref("HEAD")` (branch → resolve; unresolvable → unborn) or `resolveRef("HEAD")` (detached). Branches: local + every remote from config, `HEAD` pseudo-entry excluded, dangling refs skipped. Default per D8: `origin/HEAD` symref → `origin/<x>` or local `<x>` → `main` → `master` → checked-out branch → null. Sort: synthetic, checked-out, default, locals A→Z, remotes grouped by remote then A→Z.
+- Synthetic entry `{ name: headDisplay, fullName: "HEAD", isCheckedOut: true, synthetic: true }` only when detached/unborn; `headDisplay` = `main` / `HEAD (detached @ ab12cd3)` / `HEAD (no commits)`.
+- `src/engine/diffSource.ts` (landed in T0.1) is now covered: `defaultDiffSource` and the `isWorktreeSource` truth table, incl. detached/unborn/`rebase-detached` producing a usable `sourceRef: "HEAD"` default.
+- Parity with `refs.json` on basic, packed, remote, remote-master, no-origin-head (`main` beats `master`), detached, unborn, rebase-detached, conflict; sort-order snapshot on `remote`.
+
 ## T1.3 — ObjectDb
 
 - `src/engine/git/objectDb.ts`: isomorphic-git wrapper with one session `cache`; `resolveRef` (oids pass through; `REF_NOT_FOUND` otherwise), `tryResolveRef`, `readSymref` (raw loose-file read; `origin/HEAD` lives only there), `listLocalBranches`, `listRemoteBranches` (drops the `HEAD` pseudo-entry), `readCommit`, `readBlob`, `findMergeBase` → `{ oid: all[0], all }` (unrelated or missing ancestors → `{ null, [] }`, never throws), `flattenTree` (recursive `readTree`, concurrent per level, bytewise-sorted, memoised per oid), `dropCaches(includePacks)`.
