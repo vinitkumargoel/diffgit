@@ -74,7 +74,7 @@ Keep this board updated (edit this file; one line per task):
 | T1.2 | todo | | |
 | T1.3 | todo | | |
 | T1.4 | todo | | |
-| T1.5 | todo | | |
+| T1.5 | done | agent / 2026-09-16 | |
 | T1.6 | todo | | spike, gates Phase 2 |
 | T2.1 | todo | | |
 | T2.2 | todo | | |

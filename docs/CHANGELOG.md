@@ -8,6 +8,12 @@ _(none yet)_
 
 ---
 
+## T1.5 — Git config parser
+
+- `src/engine/git/config.ts`: `parseGitConfig(text)` / `loadGitConfig(fs)` → `GitConfig { remotes, remoteUrls, core, diff, extensions, raw, warnings, get() }`. Handles `[s]`, `[s "sub"]` (escapes), deprecated `[s.sub]`, bare keys (=true), `#`/`;` comments outside quotes, quoted values with `\" \\ \n \t \b`, `\` continuations; section/key names lower-cased, subsections case-sensitive. `include`/`includeIf` skipped with one `CONFIG_INCLUDE_SKIPPED` warning. Missing `.git/config` → empty config.
+- Also exposes `extensions.{objectFormat,partialClone,refStorage}` and generic `get(section,key,sub)` for T1.2's promisor/partial-clone checks. Parser is ~120 lines of logic (182 with types/comments).
+- Tests: every syntax rule, `crlf` → `autocrlf: "true"`, `remote` → `["origin"]`, `partial`/`sha256` fixtures, missing file.
+
 ## T1.1 — FsaFs read-only adapter
 
 - `src/engine/fs/fsaFs.ts`: `createFsaFs(root)` → `{ promises, openFile, readdirWithKinds, getDirHandle, readFile, readText, stat, exists, invalidatePath, invalidateAll, cacheSize }`. `promises` covers everything isomorphic-git binds (`readFile/readdir/stat/lstat/readlink` + `writeFile/unlink/mkdir/rmdir/rm/symlink/chmod/rename`, the latter all throwing `EROFS` before any I/O). `dir` is always `"/"`; paths are normalised to repo-relative POSIX.
