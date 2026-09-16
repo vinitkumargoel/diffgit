@@ -79,7 +79,7 @@ Keep this board updated (edit this file; one line per task):
 | T2.1 | done | agent / 2026-09-16 | perf-5k parse 28 ms |
 | T2.2 | done | agent / 2026-09-16 | |
 | T2.3 | done | agent / 2026-09-16 | |
-| T2.4 | todo | | |
+| T2.4 | done | agent / 2026-09-16 | perf-5k scan 0.5 s quiet machine |
 | T3.1 | todo | | |
 | T3.2 | todo | | |
 | T3.3 | todo | | |

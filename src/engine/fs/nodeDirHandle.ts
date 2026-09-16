@@ -5,6 +5,7 @@
  *    file whose bytes are the target's bytes; a dangling symlink is invisible in `entries()`.
  *  - `lastModified` is an integer millisecond value like `File.lastModified`.
  */
+import type { Dirent } from "node:fs";
 import { open, readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { Readable } from "node:stream";
@@ -110,24 +111,31 @@ export class NodeDirHandle implements DirHandleLike {
   }
 
   async *entries(): AsyncIterable<[string, DirHandleLike | FileHandleLike]> {
-    let names: string[];
+    let dirents: Dirent[];
     try {
-      names = await readdir(this.path);
+      dirents = await readdir(this.path, { withFileTypes: true });
     } catch (e) {
       const code = (e as NodeJS.ErrnoException).code;
       if (code === "ENOENT") throw handleError("NotFoundError", `not found: ${this.path}`);
       throw e;
     }
-    for (const name of names.sort()) {
-      const p = join(this.path, name);
-      let s: Awaited<ReturnType<typeof stat>>;
-      try {
-        s = await stat(p); // follows symlinks; dangling links are skipped like FSA would
-      } catch {
-        continue;
+    dirents.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+    for (const d of dirents) {
+      const p = join(this.path, d.name);
+      let isDir = d.isDirectory();
+      let isFile = d.isFile();
+      if (d.isSymbolicLink()) {
+        // follow symlinks like FSA would; dangling links are invisible
+        try {
+          const s = await stat(p);
+          isDir = s.isDirectory();
+          isFile = s.isFile();
+        } catch {
+          continue;
+        }
       }
-      if (s.isDirectory()) yield [name, new NodeDirHandle(name, p)];
-      else if (s.isFile()) yield [name, new NodeFileHandle(name, p)];
+      if (isDir) yield [d.name, new NodeDirHandle(d.name, p)];
+      else if (isFile) yield [d.name, new NodeFileHandle(d.name, p)];
     }
   }
 }

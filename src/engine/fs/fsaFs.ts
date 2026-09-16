@@ -311,11 +311,15 @@ export function createFsaFs(root: DirHandleLike): FsaFs {
   }
 
   async function readdirWithKinds(path: string): Promise<DirEntryKind[]> {
+    const dirPath = normalizePath(path);
     return withHandle(path, "dir", "scandir", async (h) => {
       const dir = requireDir(h, path, "scandir");
       const out: DirEntryKind[] = [];
       for await (const [name, child] of dir.entries()) {
         out.push({ name, kind: child.kind });
+        // the iteration already produced the child handle: remember it so later per-file
+        // lookups (scanner, content loads) skip a getFileHandle round-trip
+        remember(dirPath === "" ? name : `${dirPath}/${name}`, child);
       }
       return out;
     });
