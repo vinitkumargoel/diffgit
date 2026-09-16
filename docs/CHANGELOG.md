@@ -8,6 +8,15 @@ _(none yet)_
 
 ---
 
+## T3.2 — Diff engine (merge-base compare + worktree layering)
+
+- `src/engine/diff/diffEngine.ts`: `DiffEngine.compute(src, signal)` resolves refs ("HEAD" → headOid, `refs/heads/*`, `refs/remotes/*`), takes `merge-base --all` (first base wins; `MULTIPLE_MERGE_BASES` with all oids in `detail`), falls back to two-dot with `UNRELATED_HISTORIES` (or `SHALLOW` when the repo is shallow), diffs the flattened trees and layers staged/unstaged/untracked/conflict changes from `WorktreeScanner` when the source is the checked-out branch (`isWorktreeSource`); otherwise emits `WORKTREE_NOT_APPLICABLE` and stays committed-only.
+- Elimination: a path whose final new side equals the base (oid + mode) is dropped, so committed changes reverted in the worktree disappear like git. Output also carries a `sides` table (old/new oid, mode, kind tree|index|worktree|untracked, size) so T3.4 knows where to load content from.
+- `SPLIT_INDEX` / `INDEX_TOO_LARGE` from the index reader downgrade to a warning and a committed-only result instead of failing; `REF_NOT_FOUND` for unknown refs; aborted signal → `CANCELLED`.
+- Tests (17): name-status parity on basic/packed/remote/unrelated/crisscross (crisscross verified against `git diff <all[0]> feature` at test time), full layer check on the `worktree` fixture (10 files, `reverted.txt` eliminated, `script.sh` mode change staged), unborn, detached, conflict, same-branch dirty tree, split index, cancellation. Shared rig in `src/test/engineRig.ts`.
+
+---
+
 ## T3.1 — Tree diff
 
 - `src/engine/diff/treeDiff.ts`: `treeDiff(a, b)` over flattened trees (null = empty) → `Record<path, Change>` in git's byte-wise order; added/deleted/modified where modified includes mode-only and type changes (symlink↔file, gitlink oid change) for T3.4 to label. `comparePaths` exported for reuse.
