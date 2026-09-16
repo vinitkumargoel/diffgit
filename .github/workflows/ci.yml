@@ -17,6 +17,7 @@ jobs:
       - run: bun run check
       - run: bun run perf
       - run: bun run build
+      - run: scripts/check-dist.sh
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15

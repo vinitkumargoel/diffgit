@@ -15,6 +15,22 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T7.4 — Security & privacy review
+
+Checklist evidence (2026-09-17):
+
+- Production headers: `scripts/check-prod.sh https://diffgoel.pages.dev` → CSP identical to `public/_headers`, nosniff / no-referrer / COOP present, no injected scripts, deep link 200. The custom hostnames still have no CNAME (owner). E2E spec 3 asserts `connect-src 'none'` and zero requests after open (3/3 passing under the new CSP). Manual DevTools Network check on a real repo: pending owner (T8.2 smoke).
+- CSP tightened: `'wasm-unsafe-eval'` removed. No WebAssembly is used: Shiki runs the JavaScript regex engine and the only "wasm" chunk is the WebAssembly *grammar*; isomorphic-git's zlib is pure JS. `grep WebAssembly dist/assets` finds nothing.
+- `showDirectoryPicker({ mode: "read" })` is the only picker call (`HomeScreen.tsx`); `ensurePermission` queries/requests `mode: "read"`. D16 grep guard (`createWritable|removeEntry|.move(|create: true|"readwrite"`) is in `bun run check` and passes.
+- `FsaFs` write-throw invariant test passes (`fsaFs.test.ts` "INVARIANT"); spy-handle call logs in `fsaFs`, `objectDb`, `worktree`, `ignoreRules` tests show zero write-capable calls.
+- Zero-write proof by mtime (`bun scripts/spike-s2.ts`): this repository (271 index entries) plus copies of `basic`, `worktree`, `packed` → 0 write-capable calls, 0 `.git` files newer than the marker, `git status` and `git fsck` identical before/after.
+- Inert rendering: no `innerHTML` / `dangerouslySetInnerHTML` / `eval` / `new Function` in `src/` (the one `new Function` is the test-only snapshot loader in `src/test/`, absent from the bundle); tokens only set fixed theme colours on CSS variables; SVG via `<img src=blob:>` with revocation on unmount; paths and branch names are text nodes.
+- IndexedDB / localStorage hold handles, names, ref names, viewed keys (repo id + refs + file id + blob oids) and validated prefs only — documented in `docs/privacy.md` with the "Clear site data" instructions.
+- `security-reviewer` agent on `src/ui/**` and `src/engine/fs/**`: no high/critical findings; four info notes — Shiki dynamic imports are local chunks (now asserted by `check-dist.sh`), drop `wasm-unsafe-eval` (done), path-filter RegExp comes only from the local textbox (confirmed, not persisted), and the E2E `MemoryFs` mutation ops are gated by the static `VITE_E2E` guard (now also enforced post-build).
+- New `scripts/check-dist.sh`, run by `bun run deploy` and CI after the build: fails on the E2E shim in the bundle, `eval`/`new Function`/`WebAssembly.`, remote `import()`/`importScripts`, inline or remote scripts in `index.html`, or a `dist/_headers` that differs from `public/_headers`. Verified it catches an E2E build (the Playwright build) and passes a production build.
+
+---
+
 ## T7.3 — Error taxonomy & silent-failure review
 
 - `docs/errors.md`: every public code (thrown by → user copy → action) and every warning code (emitted by → banner subject → level), the fs-tier mapping, the STALE / WORKER_CRASHED flows and the R2 torn-read handling. `src/ui/errors.docs.test.ts` fails when `PUBLIC_CODES` / `WARNING_CODES`, the two tables, `describeError` titles / actions or `WARNING_COPY` subjects / levels drift.

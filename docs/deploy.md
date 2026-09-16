@@ -25,9 +25,13 @@ Static site, project `diffgoel`, custom domain `diff.vinitk.dev` (zone `vinitk.d
 
 ```
 bun run check && bunx playwright test   # green first
-bun run deploy                          # = bun run build && bunx wrangler pages deploy dist --project-name diffgoel
+bun run deploy                          # = bun run build && scripts/check-dist.sh && bunx wrangler pages deploy dist --project-name diffgoel
 scripts/check-prod.sh
 ```
+
+`scripts/check-dist.sh` (T7.4) refuses to ship a bundle that contains the E2E memory-handle shim
+(only present when built with `VITE_E2E=1`), `eval`/`new Function`, WebAssembly, an inline script,
+or a `_headers` file that differs from `public/_headers`.
 
 ## Cloudflare edge injection — must stay OFF (D15 / CSP)
 
