@@ -4,9 +4,17 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ## Follow-ups
 
-_(none yet)_
+- **T3.5**: throw `EngineError#toJSON()` (plain object) at the worker boundary so `code` survives comlink serialisation (T4.1).
 
 ---
+
+## T4.1 — Worker client
+
+- `src/ui/workerClient.ts`: `WorkerClient` interface = `EngineApi` (src/engine/api.ts) + `onRestart`, `lastSource`, `terminate`, `isMock`; comlink proxy with a single proxied `ProgressSink` registered at `open`; every rejection normalised via `toUiError` to `{code, message, hint?}` with `INTERNAL` fallback.
+- Crash recovery: `error`/`messageerror` rejects in-flight calls with `WORKER_CRASHED`, terminates and recreates the worker, re-opens the retained handle + sink and notifies `onRestart(info, error)`; the client keeps the last `DiffSource` for the store to recompute. Tested with a `MessageChannel`-backed fake worker.
+- `src/ui/workerClient.mock.ts` (`VITE_MOCK_ENGINE=1` via `src/ui/engineClient.ts`): serves `src/test/recorded/{basic,worktree}.{repoinfo,diffresult}.json` (hand-written, drop-in names for T3.5's recordings), deterministic texts + LCS hunks (`src/ui/mock/mockContents.ts`), background `onStats` batches, `STALE`/`CANCELLED` semantics, `mutate()` changes `probe()` signatures, `loadLarge` gating, PNG bytes for image ids.
+- `src/ui/errors.ts`: `describeError` for exactly `PUBLIC_CODES` (+ action), `toUiError`. Guard added: components/hooks must not import the worker client.
+- Follow-up for T3.5: throw plain `{code,message,hint}` (e.g. `err.toJSON()`) at the comlink boundary; `Error` instances lose `code` in comlink's default serialisation.
 
 ## T0.2 — Cloudflare Pages pipeline
 

@@ -28,4 +28,8 @@ guard "instanceof FileSystem* in src/engine" \
 guard "D16 write-capable FSA call in src/" \
   grep -rnE "createWritable|removeEntry|\.move\(|create: true|\"readwrite\"" src --include='*.ts' --include='*.tsx'
 
+# Only the store talks to the engine: components/hooks never import the worker client (T4.2 AC).
+guard "component imports the worker client" \
+  grep -rnE "from ['\"].*(workerClient|engineClient)['\"]" src/ui/components src/ui/hooks --include='*.ts' --include='*.tsx'
+
 exit $fail

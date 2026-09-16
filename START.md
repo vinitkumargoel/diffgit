@@ -85,7 +85,7 @@ Keep this board updated (edit this file; one line per task):
 | T3.3 | todo | | |
 | T3.4 | todo | | |
 | T3.5 | todo | | |
-| T4.1 | todo | | |
+| T4.1 | done | ui-agent / 2026-09-16 | mock + real client, crash recovery |
 | T4.2 | todo | | |
 | T4.3 | todo | | |
 | T4.4 | todo | | Design §7.8 |
