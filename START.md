@@ -71,7 +71,7 @@ Keep this board updated (edit this file; one line per task):
 | T0.3 | done | agent / 2026-09-16 | 27 fixtures, jq required |
 | T0.4 | done | agent / 2026-09-16 | shim verified in bun (E2E policy) |
 | T1.1 | done | agent / 2026-09-16 | |
-| T1.2 | todo | | |
+| T1.2 | done | agent / 2026-09-16 | |
 | T1.3 | todo | | |
 | T1.4 | todo | | |
 | T1.5 | done | agent / 2026-09-16 | |

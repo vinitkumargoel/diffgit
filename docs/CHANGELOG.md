@@ -8,6 +8,13 @@ _(none yet)_
 
 ---
 
+## T1.2 — Layout checks
+
+- `src/engine/git/layoutChecks.ts`: `checkLayout(fs, config, opts?) → LayoutReport { ok, fatal?, capabilities, warnings, packBytes }`. Fatal codes: `NOT_A_REPO`, `WORKTREE_GITDIR` (`.git` file with `gitdir:`), `BARE_REPO` (HEAD+objects+refs at root), `REFTABLE` (dir, `refs/heads` file, or `extensions.refStorage`), `OBJECT_FORMAT_SHA256`, `ALTERNATES`, `PARTIAL_CLONE` (`extensions.partialClone`, `remote.*.promisor`, or `*.promisor` packs), `PACK_TOO_LARGE` (> 1 GB). Warnings: `PACK_LARGE` (> 300 MB), `MULTI_PACK_INDEX`, `SHALLOW`, `LFS_PRESENT`, `AUTOCRLF`. Each fatal carries user copy + hint.
+- Only `EACCES` escapes (as `EngineError("PERMISSION")`); every other I/O failure is treated as "absent". Thresholds are injectable for tests. `loadGitConfig` now tolerates `.git` being a file.
+- Tests: fixtures `basic`/`packed` ok, `worktree-gitdir`, `sha256`, `alternates`, `partial`, `crlf`; synthetic bare / reftable / partial variants / pack thresholds / MIDX+shallow+LFS / permission escalation.
+- Decision: `AUTOCRLF` is emitted here at repo level; `RepoSession` (T3.5) de-duplicates warnings by code so the scanner's copy does not double up.
+
 ## T1.5 — Git config parser
 
 - `src/engine/git/config.ts`: `parseGitConfig(text)` / `loadGitConfig(fs)` → `GitConfig { remotes, remoteUrls, core, diff, extensions, raw, warnings, get() }`. Handles `[s]`, `[s "sub"]` (escapes), deprecated `[s.sub]`, bare keys (=true), `#`/`;` comments outside quotes, quoted values with `\" \\ \n \t \b`, `\` continuations; section/key names lower-cased, subsections case-sensitive. `include`/`includeIf` skipped with one `CONFIG_INCLUDE_SKIPPED` warning. Missing `.git/config` → empty config.

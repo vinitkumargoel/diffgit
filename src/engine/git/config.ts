@@ -180,7 +180,9 @@ export async function loadGitConfig(fs: FsaFs): Promise<GitConfig> {
   try {
     text = await fs.readText(".git/config");
   } catch (e) {
-    if ((e as { code?: string }).code !== "ENOENT") throw e;
+    // no .git/config, or .git is a file (linked worktree): layout checks report that separately
+    const code = (e as { code?: string }).code;
+    if (code !== "ENOENT" && code !== "ENOTDIR" && code !== "EISDIR") throw e;
   }
   return parseGitConfig(text);
 }
