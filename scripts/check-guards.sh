@@ -20,4 +20,12 @@ guard() {
 guard "src/engine imports react or src/ui" \
   grep -rnE "from ['\"](react|react-dom|react/.*|\.\./ui|\.\./\.\./ui|.*/src/ui)['\"/]" src/engine --include='*.ts'
 
+# Engine checks `.kind`, never `instanceof FileSystem*` (T0.4).
+guard "instanceof FileSystem* in src/engine" \
+  grep -rnE "instanceof FileSystem" src/engine --include='*.ts'
+
+# D16: nothing in src/ may be able to write through a handle (T0.4 amendment).
+guard "D16 write-capable FSA call in src/" \
+  grep -rnE "createWritable|removeEntry|\.move\(|create: true|\"readwrite\"" src --include='*.ts' --include='*.tsx'
+
 exit $fail

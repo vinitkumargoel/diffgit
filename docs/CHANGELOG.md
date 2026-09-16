@@ -8,6 +8,14 @@ _(none yet)_
 
 ---
 
+## T0.4 — Test harness
+
+- `src/engine/fs/dirHandleLike.ts` (structural FSA view + `handleError`/`isHandleError` with browser error names), `nodeDirHandle.ts` (test-only; follows symlinks like Chrome, integer `lastModified`, dangling links invisible), `memoryDirHandle.ts` (`MemoryFs` + handles that see later mutations; `Mutation` ops write/remove/touch/rename/mkdir/dropRoot; base64 snapshots).
+- Node-only snapshot helpers live in `src/test/memorySnapshot.ts` (`snapshotFromDisk`, `toInitScript`, `fromInitScript`) so the engine file stays free of `node:` imports; `src/test/torn.ts` (T0.3 amendment) provides `truncateIndex`/`restoreIndex`/`swapPack`/`dropRoot` mutations.
+- E2E transport per amendment: `e2e/fsaShim.ts` (`installFsaShim` for `addInitScript`: marker-returning `showDirectoryPicker`, snapshot server, `window.__diffgoel.{mutate,listRoot,emitObserverRecords,setPick}`, `FileSystemObserver` stub); engine side `src/engine/e2e/{protocol,memoryChannel}.ts` and `src/engine/fs/resolveHandle.ts` behind `import.meta.env.VITE_E2E === "1"`. Verified the production bundle contains no `diffgoel-e2e` string (tree-shaken).
+- `playwright.config.ts` (Chromium only, `VITE_E2E=1` build + `vite preview` web server, trace on first retry). Browsers are installed in T7.1. Per the E2E policy (only T7.1's three specs may exist), the shim/rehydration/mutation AC is proven here by `resolveHandle.test.ts` running the real `BroadcastChannel` RPC in Bun; the browser run happens inside T7.1 spec 2/3.
+- Guards added to `scripts/check-guards.sh`: no `instanceof FileSystem*` in `src/engine`, D16 grep (`createWritable`, `removeEntry`, `.move(`, `create: true`, `"readwrite"`) over `src/`.
+
 ## T0.3 — Fixture builder
 
 - `scripts/make-fixtures.sh` builds 27 fixtures (+ `perf-5k` with `FIXTURES_PERF=1`) with the real git CLI in ~6 s; idempotent (`rm -rf fixtures/` first) and deterministic (fixed identity/dates, `GIT_CONFIG_GLOBAL=/dev/null`, `GIT_CONFIG_NOSYSTEM=1`; the script compares `basic/feature` before/after and fails on drift). Verified twice: `d77b2f48…` both runs.
