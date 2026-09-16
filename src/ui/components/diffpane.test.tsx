@@ -191,7 +191,7 @@ describe("FileCard body states", () => {
     const sub = byId("vendor/sub");
     seed({ fileDiffs: entries([["vendor/sub|x", ready(sub)]]) });
     render(card(sub));
-    expect(screen.getByText(/^Submodule/)).toBeTruthy();
+    expect(screen.getByText("Subproject commit 339e41b → a1b2c3d")).toBeTruthy();
   });
 
   it("generated cards start collapsed and open on click", () => {

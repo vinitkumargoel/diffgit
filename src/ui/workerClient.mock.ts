@@ -10,7 +10,7 @@ import basicInfo from "../test/recorded/basic.repoinfo.json";
 import worktreeDiff from "../test/recorded/worktree.diffresult.json";
 import worktreeInfo from "../test/recorded/worktree.repoinfo.json";
 import type { UiError } from "./errors";
-import { mockPayload } from "./mock/mockContents";
+import { mockPayload, mockTexts } from "./mock/mockContents";
 import { syntheticLarge } from "./mock/syntheticLarge";
 import type { RestartListener, WorkerClient } from "./workerClient";
 
@@ -157,10 +157,14 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       const files = requireGen(gen);
       const f = files.find((x) => x.id === id);
       if (!f) throw err("INTERNAL", `unknown file ${id}`);
-      if (!f.image) return null;
       if (side === "old" && f.oldOid === null) return null;
       if (side === "new" && f.newOid === null) return null;
-      return b64(side === "old" ? PNG_RED : PNG_BLUE);
+      if (f.image) return b64(side === "old" ? PNG_RED : PNG_BLUE);
+      const text = mockTexts(f)[side === "old" ? 0 : 1];
+      if (text !== null) return new TextEncoder().encode(text);
+      // opaque binary: deterministic bytes of the recorded size (BinaryNotice "View as text")
+      const size = side === "old" ? f.oldSize : f.newSize;
+      return Uint8Array.from({ length: size }, (_, i) => (i * 37 + 11) & 0xff);
     },
     async prioritise() {},
     async probe(tier) {

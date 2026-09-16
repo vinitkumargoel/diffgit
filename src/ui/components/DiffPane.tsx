@@ -107,13 +107,10 @@ export function DiffPane({ initialRect }: { initialRect?: { width: number; heigh
                 file={f}
                 index={v.index}
                 measureRef={virtualizer.measureElement}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  transform: `translateY(${v.start}px)`,
-                }}
+                // `top` rather than `transform: translateY`: sticky offsets are computed from
+                // the pre-transform layout box, so translated cards would pin their headers to
+                // the card bottom as soon as the pane scrolls.
+                style={{ position: "absolute", top: v.start, left: 0, width: "100%" }}
               />
             ) : null;
           })}

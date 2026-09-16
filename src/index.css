@@ -272,6 +272,12 @@
 }
 
 @layer components {
+  /* §7.7 image panes: 16px checkerboard from the --checker-* tokens */
+  .checkerboard {
+    background:
+      repeating-conic-gradient(var(--checker-a) 0 25%, var(--checker-b) 0 50%) 0 0 / 16px 16px;
+  }
+
   /* Bordered button (Design §5, §8): 1px --line, 6px radius, hover --surface-raised */
   .btn {
     display: inline-flex;

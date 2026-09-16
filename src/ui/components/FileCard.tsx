@@ -5,9 +5,15 @@ import type { FileDiff } from "../../engine/types";
 import { hasCollapsedContext } from "../diff/toHunkData";
 import { isViewed, selectFileDiff, useStore } from "../store";
 import { filePathOf } from "../treeModel";
+import { BinaryNotice } from "./BinaryNotice";
 import { DiffBody } from "./DiffBody";
 import { FileHeader } from "./FileHeader";
+import { ImageDiff } from "./ImageDiff";
+import { LargeFileGate } from "./LargeFileGate";
 import { LoadingSkeleton } from "./LoadingSkeleton";
+import { Notice } from "./Notice";
+import { SubmoduleNotice } from "./SubmoduleNotice";
+import { TypechangeNotice } from "./TypechangeNotice";
 
 export interface FileCardProps {
   file: FileDiff;
@@ -15,28 +21,6 @@ export interface FileCardProps {
   /** Virtualiser measurement ref (DiffPane). */
   measureRef?: (el: HTMLElement | null) => void;
   style?: CSSProperties;
-}
-
-/** Centred body notice (Design §7.5 / §7.7). */
-export function Notice({
-  tone = "muted",
-  icon,
-  children,
-}: {
-  tone?: "muted" | "danger";
-  icon?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className={`flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 ${
-        tone === "danger" ? "text-danger" : "text-muted"
-      }`}
-    >
-      {icon}
-      {children}
-    </div>
-  );
 }
 
 interface BoundaryProps {
@@ -66,41 +50,46 @@ export class CardErrorBoundary extends Component<BoundaryProps, BoundaryState> {
   render(): ReactNode {
     if (!this.state.error) return this.props.children;
     return (
-      <Notice tone="danger" icon={<CircleX size={16} aria-hidden />}>
-        Couldn't render this diff
-        <span className="flex gap-2">
-          <button
-            type="button"
-            className="btn btn-sm"
-            onClick={() => this.setState({ error: null, showRaw: false })}
-          >
-            Retry
-          </button>
-          <button
-            type="button"
-            className="btn btn-sm"
-            aria-pressed={this.state.showRaw}
-            onClick={() => this.setState((s) => ({ showRaw: !s.showRaw }))}
-          >
-            View raw
-          </button>
-        </span>
+      <>
+        <Notice
+          tone="danger"
+          icon={<CircleX size={16} aria-hidden />}
+          action={
+            <>
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={() => this.setState({ error: null, showRaw: false })}
+              >
+                Retry
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm"
+                aria-pressed={this.state.showRaw}
+                onClick={() => this.setState((s) => ({ showRaw: !s.showRaw }))}
+              >
+                View raw
+              </button>
+            </>
+          }
+        >
+          Couldn't render this diff
+        </Notice>
         {this.state.showRaw && this.props.raw !== null && (
-          <pre className="max-h-96 w-full overflow-auto text-left font-mono text-xs text-ink">
+          <pre className="max-h-96 overflow-auto px-3 pb-3 text-left font-mono text-xs text-ink">
             {this.props.raw}
           </pre>
         )}
-      </Notice>
+      </>
     );
   }
 }
 
-const shortOid = (oid: string | null | undefined) => (oid ? oid.slice(0, 7) : "—");
-
 function changedLines(stats: FileDiff["stats"]): string {
   if (!stats) return "";
   const n = stats.additions + stats.deletions;
-  return ` · ${n.toLocaleString()} ${n === 1 ? "line" : "lines"} changed`;
+  return ` · ${n.toLocaleString("en-US")} ${n === 1 ? "line" : "lines"} changed`;
 }
 
 /**
@@ -143,51 +132,56 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
 
   const renderReady = (p: FileDiffPayload): ReactNode => {
     const c = p.classification;
-    if (c.huge) return <Notice>Diff too large to display{changedLines(stats)}</Notice>;
+    // §7.7: the typechange row sits above whatever body the file otherwise gets.
+    const typechange = c.typechange ? (
+      <TypechangeNotice oldMode={p.oldMode} newMode={p.newMode} />
+    ) : null;
+    const wrap = (node: ReactNode) => (
+      <>
+        {typechange}
+        {node}
+      </>
+    );
+    if (c.huge || (c.tooLarge && p.hunks === null)) {
+      return wrap(
+        <LargeFileGate
+          file={file}
+          stats={stats}
+          oldSize={c.oldSize}
+          newSize={c.newSize}
+          huge={c.huge}
+          onLoad={() => void loadFileDiff(id, { loadLarge: true })}
+        />,
+      );
+    }
     if (c.submodule) {
-      return (
-        <Notice>
-          Submodule{" "}
-          <span className="font-mono">
-            {shortOid(p.submodule?.oldOid)} → {shortOid(p.submodule?.newOid)}
-          </span>
-        </Notice>
-      );
+      return wrap(<SubmoduleNotice oldOid={p.submodule?.oldOid} newOid={p.submodule?.newOid} />);
     }
-    if (c.binary || c.image) return <Notice>Binary file not shown</Notice>;
-    if (c.tooLarge && p.hunks === null) {
-      return (
-        <Notice>
-          Large diff{changedLines(stats)}
-          <button
-            type="button"
-            className="btn btn-sm"
-            onClick={() => void loadFileDiff(id, { loadLarge: true })}
-          >
-            Load diff
-          </button>
-        </Notice>
-      );
-    }
+    if (c.image) return wrap(<ImageDiff key={p.generation} file={file} payload={p} />);
+    if (c.binary) return wrap(<BinaryNotice file={file} payload={p} />);
     if (ignoreWhitespace && c.whitespaceOnly) {
-      return (
-        <Notice>
-          Whitespace changes only ·{" "}
-          <button
-            type="button"
-            className="text-accent underline-offset-2 hover:underline"
-            onClick={() => setPref("ignoreWhitespace", false)}
-          >
-            Show them
-          </button>
-        </Notice>
+      return wrap(
+        <Notice
+          action={
+            <button
+              type="button"
+              className="btn btn-sm"
+              onClick={() => setPref("ignoreWhitespace", false)}
+            >
+              Show them
+            </button>
+          }
+        >
+          Whitespace changes only
+        </Notice>,
       );
     }
     if (!p.hunks || p.hunks.hunks.length === 0) {
-      const modeOnly = p.oldMode !== null && p.newMode !== null && p.oldMode !== p.newMode;
-      return <Notice>{modeOnly ? "Mode change only" : "No content changes"}</Notice>;
+      const modeOnly =
+        !c.typechange && p.oldMode !== null && p.newMode !== null && p.oldMode !== p.newMode;
+      return wrap(<Notice>{modeOnly ? "Mode change only" : "No content changes"}</Notice>);
     }
-    return (
+    return wrap(
       <CardErrorBoundary resetKey={p} raw={p.newText ?? p.oldText}>
         <DiffBody
           file={file}
@@ -195,7 +189,7 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
           viewType={viewMode}
           expandAllToken={expandAllToken}
         />
-      </CardErrorBoundary>
+      </CardErrorBoundary>,
     );
   };
 
@@ -215,12 +209,17 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
       body = <LoadingSkeleton />;
     } else if (entry.status === "error") {
       body = (
-        <Notice tone="danger" icon={<CircleX size={16} aria-hidden />}>
+        <Notice
+          tone="danger"
+          icon={<CircleX size={16} aria-hidden />}
+          detail={entry.error.message}
+          action={
+            <button type="button" className="btn btn-sm" onClick={() => void loadFileDiff(id)}>
+              Retry
+            </button>
+          }
+        >
           Couldn't load this diff
-          <span className="text-xs text-muted">{entry.error.message}</span>
-          <button type="button" className="btn btn-sm" onClick={() => void loadFileDiff(id)}>
-            Retry
-          </button>
         </Notice>
       );
     } else {
