@@ -4,9 +4,18 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ## Follow-ups
 
+- **T3.5**: consider `FileDiff.newMtime?: number` for a stricter viewed key on untracked files (T4.2).
 - **T3.5**: throw `EngineError#toJSON()` (plain object) at the worker boundary so `code` survives comlink serialisation (T4.1).
 
 ---
+
+## T4.2 — Store
+
+- `src/ui/store.ts` (zustand): slices `screen/repo/loading/error/diffSource/diff/stats/warnings/prefs/viewed/filter/activeFileId/collapsed/refresh/fileDiffs/toasts/announcement`; actions `openRepo(handle, {id,lastSource,lastTarget})`, `closeRepo`, `setSource/setTarget/swapBranches` (accept a `RepoRef` or a name/full ref), `setIncludeWorktree` (guarded by `isWorktreeSource`), `recompute`, `loadFileDiff` (per-whitespace-variant LRU of 200, `AbortController` + `cancelFileDiff`), `toggleViewed` (collapses the card), filter, prefs, collapse, warnings, toasts, `prioritise`, `fileBytes`.
+- Defaults from `defaultDiffSource(repo)`; remembered branches applied only if they still exist; source falls to `"HEAD"` for detached/unborn repos. Responses are checked against `diff.generation`; `STALE`/`CANCELLED` are dropped silently; `HANDLE_GONE`/`PERMISSION` go to the error screen; other recompute failures become a toast with Retry.
+- Selectors: `selectVisibleFiles` (substring or glob via `treeModel.makePathFilter`), `selectTotals` (merges pushed stats), `selectViewedCount`, `selectCanIncludeWorktree`, `selectTreeModel` (`buildTree` with GitHub-style chain compaction), `selectActiveWarnings`, `selectFileDiff`. Stats arrive via the sink's `onStats`; the store only forwards `prioritise(ids)`.
+- Viewed key `repoId|sourceRef|targetRef|fileId|(newOid ?? "wt:"+newSize)|(oldOid ?? "-")` in `viewedKey.ts`. Follow-up: `FileDiff` has no worktree mtime, so the untracked fallback uses size only; T3.5 could add `newMtime?: number` to tighten it.
+- Persistence is injected via `configurePersistence()` (T4.3 wires IndexedDB/localStorage); `setStoreClient()` is the test seam. Crash restarts from the client trigger a toast + recompute.
 
 ## T4.1 — Worker client
 
