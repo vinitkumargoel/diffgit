@@ -37,6 +37,9 @@ export interface RepoInfo {
   name: string; // folder name
   headBranch: string | null; // null when detached
   headOid: Oid | null; // null for unborn repo
+  detached: boolean; // amendment (T1.4): HEAD is a bare oid
+  unborn: boolean; // amendment (T1.4): HEAD points at a branch with no commits
+  headDisplay: string; // amendment (T1.4): "main" | "HEAD (detached @ ab12cd3)" | "HEAD (no commits)"
   refs: RepoRef[];
   defaultRef: RepoRef | null;
   capabilities: RepoCapabilities;
