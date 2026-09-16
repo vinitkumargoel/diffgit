@@ -8,6 +8,12 @@ _(none yet)_
 
 ---
 
+## T2.1 — IndexReader
+
+- `src/engine/git/indexReader.ts`: `parseIndex(bytes, indexMtimeMs)` (pure) and `readIndex(fs)`. Formats 2/3/4 (v4 prefix compression via git's offset varint), extended flags (skip-worktree, intent-to-add), stage bits → `conflicts` grouped per path with `byPath` holding stage-0 only, sparse-dir entries (trailing `/` stripped, `isSparseDir`, sets `hasSparseIndex`), extension signatures recorded (`link` → `hasSplitIndex`, `sdir` → `hasSparseIndex`), trailer SHA-1 verified → `checksumOk`, `indexMtimeMs` captured, `tooLarge` above 200k entries. Unknown version / bad signature / truncated → `INDEX_UNSUPPORTED`.
+- `readIndex`: missing file → empty snapshot (fresh `git init`); bad checksum, truncated or vanished (`index.lock` rename window) → one retry after 150 ms, then the last read is returned with `checksumOk=false` for the caller to warn (`INDEX_CHECKSUM`).
+- Tests: byte-level builder for v2 (stages, assume-valid, padding, all modes), v3 (extended flags + TREE/REUC/UNTR), v4 (shared prefixes, `sdir`/`link`, sparse dirs), corrupt trailer, unsupported/truncated inputs, 200,001-entry `tooLarge`; fixture parity with `ls-files-s.json` on basic, worktree, index-v3 (intent-to-add), index-v4, conflict, unborn, symlink, submodule; torn-read retry with the memory fs; `perf-5k` parse = 28 ms (budget 50 ms).
+
 ## T2.2 — Blob hashing
 
 - `src/engine/git/hash.ts`: `sha1`, `toHex`, `hashBlob` (crypto.subtle over `"blob <len>\0"+bytes`), `hashBlobStream(stream, size)` (incremental pure-JS `Sha1` class, ~90 lines, written here — `crypto.subtle.digest` cannot stream), `EMPTY_BLOB_OID`.
