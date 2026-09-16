@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>S3 spike: FileSystemObserver on a git repo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 16px; color: #222; }
+      button, input { font: inherit; padding: 4px 8px; }
+      #log { white-space: pre; border: 1px solid #ccc; padding: 8px; height: 60vh; overflow: auto; background: #fafafa; }
+      .muted { color: #777; }
+      .row { margin: 8px 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>Spike S3 — FileSystemObserver event log</h1>
+    <p class="muted">
+      Pick a git working copy (read-only access is enough). Every record is logged with a relative
+      timestamp, type, path, handle kind and a burst id (records &lt; 300 ms apart share a burst).
+      Then run the scenarios from tasks/phase-6-refresh/T6.0 against the folder.
+    </p>
+    <div class="row">
+      <button type="button" id="pick">Pick folder (mode: read)</button>
+      <button type="button" id="pickRw" title="only to confirm read mode is sufficient">Pick folder (mode: readwrite)</button>
+      <input id="scenario" placeholder="scenario label" size="40" />
+      <button type="button" id="mark">Mark scenario</button>
+      <button type="button" id="clear">Clear</button>
+      <button type="button" id="copy">Copy JSON</button>
+      <span id="status" class="muted">no observer</span>
+    </div>
+    <div id="log"></div>
+    <script>
+      const log = document.getElementById("log");
+      const status = document.getElementById("status");
+      const state = { records: [], marks: [], t0: performance.now(), burst: 0, lastAt: -Infinity, handle: null, observer: null, supported: "FileSystemObserver" in self, mode: null };
+      window.__s3 = state;
+      const line = (s) => { log.textContent += `${s}\n`; log.scrollTop = log.scrollHeight; };
+      const rel = () => Math.round(performance.now() - state.t0);
+      line(`FileSystemObserver supported: ${state.supported} — ${navigator.userAgent}`);
+      status.textContent = state.supported ? "ready" : "FileSystemObserver missing in this browser";
+
+      function onRecords(records) {
+        const now = rel();
+        if (now - state.lastAt > 300) state.burst++;
+        state.lastAt = now;
+        for (const r of records) {
+          const path = (r.relativePathComponents || []).join("/");
+          const moved = r.relativePathMovedFrom ? ` (from ${r.relativePathMovedFrom.join("/")})` : "";
+          const kind = r.changedHandle ? r.changedHandle.kind : "-";
+          const entry = { t: now, burst: state.burst, type: r.type, path, kind, moved: moved ? r.relativePathMovedFrom.join("/") : null, rootKind: r.root ? r.root.kind : null };
+          state.records.push(entry);
+          line(`${String(now).padStart(7)}ms  b${String(state.burst).padStart(3)}  ${r.type.padEnd(11)} ${kind.padEnd(9)} ${path}${moved}`);
+          if (r.type === "disappeared" || r.type === "errored") { status.textContent = `observer ${r.type}`; }
+        }
+      }
+
+      async function pick(mode) {
+        try {
+          const handle = await window.showDirectoryPicker({ mode });
+          state.handle = handle; state.mode = mode;
+          if (state.observer) state.observer.disconnect();
+          state.observer = new FileSystemObserver(onRecords);
+          const t = performance.now();
+          await state.observer.observe(handle, { recursive: true });
+          state.t0 = performance.now(); state.lastAt = -Infinity; state.burst = 0;
+          line(`--- observing "${handle.name}" (mode=${mode}, observe() took ${Math.round(performance.now() - t)} ms)`);
+          status.textContent = `observing ${handle.name} (${mode})`;
+        } catch (e) {
+          line(`!!! ${e.name}: ${e.message}`);
+          status.textContent = `error: ${e.name}`;
+        }
+      }
+      document.getElementById("pick").onclick = () => pick("read");
+      document.getElementById("pickRw").onclick = () => pick("readwrite");
+      document.getElementById("mark").onclick = () => {
+        const label = document.getElementById("scenario").value || `mark ${state.marks.length + 1}`;
+        state.marks.push({ t: rel(), label, recordsBefore: state.records.length });
+        line(`=== ${label} @ ${rel()}ms`);
+      };
+      window.__s3mark = (label) => {
+        document.getElementById("scenario").value = label;
+        document.getElementById("mark").onclick();
+      };
+      document.getElementById("clear").onclick = () => { state.records = []; state.marks = []; log.textContent = ""; };
+      document.getElementById("copy").onclick = () => navigator.clipboard.writeText(JSON.stringify({ records: state.records, marks: state.marks, mode: state.mode, ua: navigator.userAgent }, null, 2));
+    </script>
+  </body>
+</html>

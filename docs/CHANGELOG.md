@@ -8,6 +8,13 @@ _(none yet)_
 
 ---
 
+## T6.0 — Spike S3 page (observation pending)
+
+- `spikes/s3-observer/index.html`: vanilla page that picks a folder (read or readwrite mode), observes it recursively with `FileSystemObserver`, logs every record (relative ms, burst id at 300 ms gaps, type, path, handle kind, moved-from) and exposes `window.__s3` + Copy JSON for the write-up. Served by the Vite dev server (`vite preview` only serves `dist`).
+- The live run needs a human gesture on a native folder dialog; the browser automation available to the agent timed out three times and driving the OS dialog on the owner's desktop unattended was not acceptable. `docs/engine-notes.md` "S3 results" holds the run script, the questions the spike must answer and the provisional answers T6.2 is built on. Board: T6.0 blocked on the owner run.
+
+---
+
 ## T3.5 — RepoSession orchestrator + Web Worker entry
 
 - `src/engine/session.ts`: `RepoSession.open(root, sink)` runs config → layout (fatal → public code) → refs → index capabilities, then owns ObjectDb / ignore / attributes / scanner / DiffEngine. `computeDiff` aborts the in-flight compute (superseded call → `CANCELLED`), runs rename detection (`diff.renames`, `diff.renameLimit`), stamps `generation`; `fileStats` / `fileDiff` / `fileBytes(generation, …)` reject `STALE`. Background stats: LIFO queue over 4 workers, `prioritise(ids)` moves visible rows to the front, batches (32 files / 100 ms) go to `sink.onStats`; FileDiff rows are refined in place (stats, binary, sizes, generated). `probe(git|index|untracked)` returns a per-tier signature (untracked tier walks the raw handles so polling sees new files without invalidation) and reports its duration via `Progress`.

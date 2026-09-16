@@ -52,4 +52,46 @@ Observations and decisions:
 
 ## S3 results (T6.0)
 
-_Pending (Phase 6)._
+**Status: spike page built; live observation not yet run.** `FileSystemObserver` needs a real
+`showDirectoryPicker()` gesture in Chrome (a native folder dialog), which the agent cannot drive
+unattended. Everything below the "How to run" block is to be filled in by the owner (or the agent once
+a folder can be picked); the classifier in T6.2 ships with the provisional rules from its task file
+until then.
+
+### How to run (≈ 15 min, Chrome 133+ desktop; this machine has Chrome 153)
+
+1. `cp -R fixtures/worktree /tmp/s3-repo && git -C /tmp/s3-repo remote add origin "$PWD/fixtures/_remotes/basic.git"`
+2. `bunx vite --port 5199` and open `http://127.0.0.1:5199/spikes/s3-observer/index.html`
+   (`vite preview` only serves `dist`; the dev server serves the spike page as-is).
+3. Click **Pick folder (mode: read)** → choose `/tmp/s3-repo` → **View files**. The log shows
+   `--- observing "s3-repo" (mode=read, observe() took N ms)`. If `observe()` throws in read mode,
+   retry with the readwrite button and record it (AC 3).
+4. For each scenario type its label in the box, click **Mark scenario**, run the commands, wait ~3 s:
+   1. `echo more >> /tmp/s3-repo/both.txt` (in-place) and save `both.txt` in VS Code (atomic save).
+   2. `git -C /tmp/s3-repo add both.txt`, `git commit -m x`, `git checkout main`, `git switch -`.
+   3. `git -C /tmp/s3-repo fetch origin`.
+   4. `touch /tmp/s3-repo/new-untracked.txt; rm /tmp/s3-repo/new-untracked.txt; mkdir -p /tmp/s3-repo/newdir2 && touch /tmp/s3-repo/newdir2/{a,b}.txt`
+   5. `git -C /tmp/s3-repo gc`
+   6. `rm -rf /tmp/s3-repo` (expect `disappeared` / `errored`).
+5. Click **Copy JSON** and paste the result under "Raw log" below; summarise per scenario in the table.
+   `window.__s3.records` / `window.__s3.marks` hold the same data.
+
+### What the spike must answer
+
+| Question | Why it matters | Provisional assumption (T6.2 ships with this) |
+|---|---|---|
+| Are records emitted for `.git/objects/**`? How many during `git gc`? | Storm avoidance | Yes, many; classifier ignores everything under `.git/objects/` |
+| Event sequence for `.git/index` rewrite (`index.lock` appeared → moved/modified `index`) | Debounce window | `index.lock` appears then `index` modified/moved within < 50 ms; ignore `*.lock`, react to `index` |
+| Does `git checkout` touch `HEAD`, `refs/heads/*`, `logs/*`, `packed-refs`? | git-tier reasons | `HEAD` + `logs/HEAD` + ref file; `packed-refs` only when packed |
+| VS Code atomic save: `appeared` temp + `moved`, or `modified`? | worktree path list | temp file (e.g. `.both.txt.tmp123`) appears then `moved` onto `both.txt`; treat `moved` target as the path |
+| Burst duration of `git gc`, `git fetch` | Debounce + max-wait | gc bursts up to ~1 s → 300 ms trailing debounce with 2 s max-wait collapses to one recompute |
+| `disappeared` / `errored` record on folder removal | Degradation ladder | Both possible; either → downgrade to polling |
+| Does `observe()` work on a `mode: "read"` handle? | D16 read-only | Yes |
+
+### Per-scenario results
+
+_To be filled by the owner run (record counts, burst count, duration, paths)._
+
+### Raw log
+
+_Paste the "Copy JSON" output here._
