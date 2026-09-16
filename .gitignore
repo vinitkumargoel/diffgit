@@ -1,0 +1,8 @@
+node_modules/
+dist/
+fixtures/
+.wrangler/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.DS_Store
