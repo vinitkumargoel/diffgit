@@ -111,12 +111,15 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
   };
 
   function boot(): void {
-    worker = factory();
-    remote = Comlink.wrap<EngineApi>(worker);
+    const w = factory();
+    worker = w;
+    remote = Comlink.wrap<EngineApi>(w);
     dead = false;
-    worker.addEventListener("error", (ev) => onCrash((ev as ErrorEvent).message ?? "worker error"));
-    worker.addEventListener("messageerror", () =>
-      onCrash("worker message could not be deserialised"),
+    // Bound to `w`: a late event from a worker that was already replaced must not restart again
+    // (amendment: exactly one restart per crash).
+    w.addEventListener("error", (ev) => onCrash(w, (ev as ErrorEvent).message ?? "worker error"));
+    w.addEventListener("messageerror", () =>
+      onCrash(w, "worker message could not be deserialised"),
     );
   }
 
@@ -146,8 +149,8 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     }
   }
 
-  function onCrash(reason: string): void {
-    if (dead || closed) return;
+  function onCrash(source: Worker, reason: string): void {
+    if (dead || closed || source !== worker) return;
     dead = true;
     const err: UiError = { code: "WORKER_CRASHED", message: `Engine worker crashed: ${reason}` };
     for (const p of inflight) p.reject(err);

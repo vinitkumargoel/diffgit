@@ -160,6 +160,16 @@ describe("real worker client (fake worker)", () => {
     expect(opens).toBe(2);
     expect(client.lastSource()).toEqual(SRC);
     expect(await client.probe("index")).toBe("index:1");
+
+    // amendment: exactly one restart per crash, even when `error` and `messageerror` both fire
+    workers[1]?.crash();
+    workers[1]?.dispatchEvent(new MessageEvent("messageerror"));
+    workers[1]?.crash();
+    await vi.waitFor(() => expect(restarted).toHaveBeenCalledTimes(2));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(workers.length).toBe(3);
+    expect(opens).toBe(3);
+    expect(workers[2]?.terminated).toBe(false);
     client.terminate();
   });
 });

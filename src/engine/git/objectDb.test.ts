@@ -10,7 +10,7 @@ import {
 import { snapshotFromDisk } from "../../test/memorySnapshot";
 import { spyHandle } from "../../test/spyHandle";
 import { createFsaFs, type FsaFs } from "../fs/fsaFs";
-import { MemoryFs } from "../fs/memoryDirHandle";
+import { base64ToBytes, MemoryFs } from "../fs/memoryDirHandle";
 import { NodeDirHandle } from "../fs/nodeDirHandle";
 import { ObjectDb } from "./objectDb";
 
@@ -42,6 +42,33 @@ describe("ObjectDb refs", () => {
       expect(spy.counts.unknownAccess).toEqual([]);
     });
   }
+
+  test("packed-refs lock window: loose ref gone, .lock present, packed-refs has it (R2)", async () => {
+    const snap = await snapshotFromDisk(fixturePath("basic"), "b", "basic", {
+      exclude: (p) => p === "expected",
+    });
+    const mem = MemoryFs.fromSnapshot(snap);
+    const fs = createFsaFs(mem.handle());
+    const db = new ObjectDb(fs);
+    const oid = await db.resolveRef("refs/heads/feature");
+    const existing = snap.files[".git/packed-refs"];
+    const packed = existing ? new TextDecoder().decode(base64ToBytes(existing.b64)) : "";
+    mem.apply([
+      { op: "write", path: ".git/packed-refs", text: `${packed}${oid} refs/heads/feature\n` },
+      { op: "write", path: ".git/refs/heads/feature.lock", text: `${oid}\n` },
+      { op: "remove", path: ".git/refs/heads/feature" },
+    ]);
+    const db2 = new ObjectDb(createFsaFs(mem.handle()));
+    expect(await db2.resolveRef("refs/heads/feature")).toBe(oid);
+    expect(await db2.resolveRef("feature")).toBe(oid);
+    expect(await db2.listLocalBranches()).toContain("feature");
+    // gone from both → REF_NOT_FOUND, not a fs-tier error
+    mem.apply([{ op: "write", path: ".git/packed-refs", text: packed }]);
+    const db3 = new ObjectDb(createFsaFs(mem.handle()));
+    await expect(db3.resolveRef("refs/heads/feature")).rejects.toMatchObject({
+      code: "REF_NOT_FOUND",
+    });
+  });
 
   test("REF_NOT_FOUND for unknown refs; tryResolveRef returns null", async () => {
     const { db } = await open("basic");

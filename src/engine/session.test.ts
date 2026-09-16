@@ -169,6 +169,22 @@ describe("RepoSession on fixtures", () => {
     await expect(session.computeDiff(src)).rejects.toMatchObject({ code: "INTERNAL" });
   });
 
+  test("fileBytes refuses sides over 10 MB with TOO_LARGE (large fixture, huge.txt)", async () => {
+    const { session } = await openFixture("large");
+    const info = await session.info();
+    const res = await session.computeDiff(defaultDiffSource(info));
+    expect(res.files.some((f) => f.id === "huge.txt")).toBe(true);
+    await expect(session.fileBytes(res.generation, "huge.txt", "new")).rejects.toMatchObject({
+      code: "TOO_LARGE",
+    });
+    expect(
+      toPublicError(await session.fileBytes(res.generation, "huge.txt", "new").catch((e) => e)),
+    ).toMatchObject({ code: "TOO_LARGE", path: "huge.txt" });
+    const medium = await session.fileBytes(res.generation, "medium.txt", "new");
+    expect(medium?.byteLength).toBeGreaterThan(1024 * 1024);
+    await session.close();
+  });
+
   test("binary fixture: image/binary classification and raw bytes for the image viewer", async () => {
     const { session, batches } = await openFixture("binary");
     const info = await session.info();

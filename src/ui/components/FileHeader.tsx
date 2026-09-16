@@ -1,4 +1,4 @@
-import { Check, ChevronDown, ChevronRight, Copy, UnfoldVertical } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Copy, UnfoldVertical, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { FileDiff } from "../../engine/types";
 import { filePathOf } from "../treeModel";
@@ -46,7 +46,7 @@ export function FileHeader({
   const rename = file.status === "renamed" || file.status === "copied";
   const modeChanged =
     file.oldMode !== null && file.newMode !== null && file.oldMode !== file.newMode;
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
     () => () => {
@@ -55,14 +55,16 @@ export function FileHeader({
     [],
   );
   const copy = async () => {
+    if (timer.current) clearTimeout(timer.current);
     try {
-      await navigator.clipboard?.writeText(path);
-      setCopied(true);
-      if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setCopied(false), 1500);
+      if (!navigator.clipboard) throw new Error("clipboard unavailable");
+      await navigator.clipboard.writeText(path);
+      setCopied("done");
     } catch {
-      /* clipboard unavailable (permissions / insecure context): nothing to report */
+      // clipboard blocked (permissions / insecure context): say so instead of failing silently (T7.3)
+      setCopied("failed");
     }
+    timer.current = setTimeout(() => setCopied("idle"), 1500);
   };
 
   return (
@@ -103,11 +105,19 @@ export function FileHeader({
         <button
           type="button"
           className="flex size-6 items-center justify-center rounded-[4px] text-muted hover:bg-surface hover:text-ink"
-          aria-label={copied ? "Path copied" : "Copy path"}
-          title={copied ? "Copied" : "Copy path"}
+          aria-label={
+            copied === "done" ? "Path copied" : copied === "failed" ? "Copy failed" : "Copy path"
+          }
+          title={copied === "done" ? "Copied" : copied === "failed" ? "Copy failed" : "Copy path"}
           onClick={() => void copy()}
         >
-          {copied ? <Check size={14} aria-hidden /> : <Copy size={14} aria-hidden />}
+          {copied === "done" ? (
+            <Check size={14} aria-hidden />
+          ) : copied === "failed" ? (
+            <X size={14} aria-hidden />
+          ) : (
+            <Copy size={14} aria-hidden />
+          )}
         </button>
         <button
           type="button"

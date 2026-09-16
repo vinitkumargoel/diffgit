@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { FileDiffPayload } from "../../engine/api";
 import type { FileDiff } from "../../engine/types";
+import { describeError, toUiError } from "../errors";
 import { formatBytes } from "../format";
 import { useStore } from "../store";
 import { Notice } from "./Notice";
@@ -20,16 +21,24 @@ export function BinaryNotice({ file, payload }: { file: FileDiff; payload: FileD
   const { oldSize, newSize } = payload.classification;
   const canView = Math.max(oldSize, newSize) < VIEW_AS_TEXT_LIMIT;
   const [text, setText] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const side = file.status === "deleted" ? "old" : "new";
 
   const view = async () => {
     setBusy(true);
+    setError(null);
     try {
       const bytes = await fileBytes(file.id, side);
       setText(bytes ? new TextDecoder("utf-8", { fatal: false }).decode(bytes) : "");
-    } catch {
-      setText("");
+    } catch (e) {
+      // T7.3: never show an empty pane for a failed read; STALE/CANCELLED mean a newer diff is
+      // on its way, so the notice simply stays as it was.
+      const err = toUiError(e);
+      if (err.code !== "STALE" && err.code !== "CANCELLED") {
+        const d = describeError(err.code);
+        setError(`${d.title}: ${d.message}`);
+      }
     } finally {
       setBusy(false);
     }
@@ -52,7 +61,7 @@ export function BinaryNotice({ file, payload }: { file: FileDiff; payload: FileD
   }
   return (
     <Notice
-      detail={sizesLabel(oldSize, newSize, file.status)}
+      detail={error ?? sizesLabel(oldSize, newSize, file.status)}
       action={
         canView ? (
           <button type="button" className="btn btn-sm" disabled={busy} onClick={() => void view()}>

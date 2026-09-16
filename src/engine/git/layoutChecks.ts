@@ -85,14 +85,18 @@ function permission(e: unknown): never {
   throw new EngineError("PERMISSION", "Permission to read the folder was denied.", { cause: e });
 }
 
-/** Probe helper: resolves to the kind of the entry, or null when absent. Permission errors escalate. */
+/**
+ * Probe helper: resolves to the kind of the entry, or null when absent. Permission errors
+ * escalate to PERMISSION; anything else (EIO, unknown) propagates and becomes IO_ERROR at the
+ * boundary (T7.3: a failed read must never be mistaken for "not a repository").
+ */
 async function kindOf(fs: FsaFs, path: string): Promise<"file" | "dir" | null> {
   try {
     return (await fs.stat(path)).type;
   } catch (e) {
     if (ioMissing(e)) return null;
     if (code(e) === "EACCES") permission(e);
-    return null; // EIO etc.: treat as absent; later stages surface real read failures
+    throw e;
   }
 }
 
@@ -102,7 +106,7 @@ async function readTextOrNull(fs: FsaFs, path: string): Promise<string | null> {
   } catch (e) {
     if (ioMissing(e)) return null;
     if (code(e) === "EACCES") permission(e);
-    return null;
+    throw e;
   }
 }
 
@@ -187,6 +191,7 @@ export async function checkLayout(
       entries = await fs.readdirWithKinds(".git/objects/pack");
     } catch (e) {
       if (code(e) === "EACCES") permission(e);
+      if (!ioMissing(e)) throw e;
     }
     if (entries.some((e) => e.kind === "file" && e.name.endsWith(".promisor")))
       return report("PARTIAL_CLONE");
@@ -196,6 +201,7 @@ export async function checkLayout(
         packBytes += (await fs.stat(`.git/objects/pack/${e.name}`)).size;
       } catch (err) {
         if (code(err) === "EACCES") permission(err);
+        if (!ioMissing(err)) throw err; // a pack vanished mid-listing (git gc) is fine
       }
     }
     if (packBytes > (opts.packTooLargeBytes ?? PACK_TOO_LARGE_BYTES))

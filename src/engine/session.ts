@@ -22,7 +22,7 @@ import { isImagePath } from "./diff/binary";
 import { loadSide, loadSides } from "./diff/contentLoader";
 import { type DiffComputation, DiffEngine } from "./diff/diffEngine";
 import { detectRenames } from "./diff/renames";
-import { describeFile, LARGE_FILE_BYTES, toPayload } from "./diff/textDiff";
+import { describeFile, HUGE_FILE_BYTES, LARGE_FILE_BYTES, toPayload } from "./diff/textDiff";
 import { EngineError, type EngineErrorJSON, errorCode, isPublicCode } from "./errors";
 import type { DirHandleLike } from "./fs/dirHandleLike";
 import { createFsaFs, type FsaFs } from "./fs/fsaFs";
@@ -496,10 +496,18 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     this.fileDiffAborts.delete(id);
   }
 
+  /** Raw bytes of one side (image viewer, "View as text"). Sides over 10 MB are refused with TOO_LARGE. */
   async fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null> {
     const cur = this.requireGeneration(generation);
     const f = this.requireFile(cur, id);
-    return loadSide(f, side, cur.comp.sides, { db: this.db, fs: this.fs });
+    const bytes = await loadSide(f, side, cur.comp.sides, { db: this.db, fs: this.fs });
+    if (bytes && bytes.byteLength > HUGE_FILE_BYTES) {
+      throw new EngineError("TOO_LARGE", `${id} (${side}) is ${bytes.byteLength} bytes.`, {
+        hint: "Files over 10 MB are never transferred to the page.",
+        path: f.newPath ?? f.oldPath ?? id,
+      });
+    }
+    return bytes;
   }
 
   // ---- background stats -----------------------------------------------------------------------

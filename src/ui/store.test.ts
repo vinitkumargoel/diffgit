@@ -185,6 +185,22 @@ describe("store", () => {
     expect(useStore.getState().fileDiffs.size).toBe(0);
   });
 
+  it("drops STALE file diffs silently: no toast, no error, no stuck loading entry", async () => {
+    await openBasic();
+    const original = mock.fileDiff.bind(mock);
+    let calls = 0;
+    mock.fileDiff = async (gen, id, o) => {
+      if (calls++ === 0) throw { name: "EngineError", code: "STALE", message: "old generation" };
+      return original(gen, id, o);
+    };
+    await useStore.getState().loadFileDiff("docs/guide.md");
+    expect(useStore.getState().fileDiffs.get("docs/guide.md|x")).toBeUndefined();
+    expect(useStore.getState().toasts).toEqual([]);
+    expect(useStore.getState().screen).toBe("repo");
+    await useStore.getState().loadFileDiff("docs/guide.md");
+    expect(useStore.getState().fileDiffs.get("docs/guide.md|x")?.status).toBe("ready");
+  });
+
   it("LRU evicts the oldest entry beyond max", () => {
     const lru = new Lru<string, number>(3);
     lru.set("a", 1);

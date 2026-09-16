@@ -45,4 +45,9 @@ guard "computeDiff called outside store.ts / workerClient" \
 guard "recompute() called outside store.ts / refresh/scheduler.ts" \
   grep -rnE "\.recompute\(" src/ui src/App.tsx src/main.tsx --include='*.ts' --include='*.tsx' --exclude='*.test.ts' --exclude='*.test.tsx' --exclude='store.ts' --exclude='scheduler.ts'
 
+# T7.3: every catch rethrows, converts to a typed error, or emits a warning; an empty body (even
+# across lines) is a swallowed failure. Comment-only bodies are allowed when they say why.
+guard "empty catch body in src/" \
+  bash -c 'find src -type f \( -name "*.ts" -o -name "*.tsx" \) -print0 | xargs -0 perl -0777 -ne '"'"'while (/catch(?:\s*\([^)]*\))?\s*\{\s*\}/g) { my $l = () = substr($_, 0, $-[0]) =~ /\n/g; print "$ARGV:", $l + 1, ": empty catch\n" }'"'"
+
 exit $fail
