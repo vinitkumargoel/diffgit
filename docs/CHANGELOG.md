@@ -8,6 +8,15 @@ _(none yet)_
 
 ---
 
+## T3.3 — Rename detection
+
+- `src/engine/diff/renames.ts`: `detectRenames(files, load, opts)` → `{ files, warnings, stats }`. Exact pass pairs identical oids (prefers an unused source with the same basename, then the nearest directory; non-regular modes must match, like git). Similarity pass is git's spanhash (`diffcore-delta.c`: chunks at `\n` or 64 bytes, git's rolling hash, byte counts, `score = copied*60000/max_size` then `*100/60000`), greedy best-first with git's tiebreaks; git's size pre-filter at the threshold; CR before LF ignored for text sides. `src/engine/diff/binary.ts` holds the NUL sniff (first 8000 bytes) that T3.4 extends with attributes.
+- Limits follow the amendment: similarity pass only when `renameLimit² ≥ |D|×|A|` (default 1000, `diff.renameLimit` via `opts.limit`), otherwise `RENAME_LIMIT`; `opts.maxSideBytes` (8 MB) skips oversized sides with a `RENAME_LIMIT` warning (`detail: "maxSideBytes"`). Untracked sides without an oid are hashed lazily for the exact pass.
+- Renamed entries: `id = newPath`, layers = union in canonical order; old content lives at `sides[oldPath]`, new at `sides[newPath]`.
+- Decision: returns a result object instead of the spec's bare `FileDiff[]` so the warning can travel with the files. Parity: all 21 fixtures with a feature branch match `git diff -M --name-status`; the `renames` fixture's partial rename scores exactly R058 (no deviation); ~50–75 ms on that fixture (strict < 200 ms).
+
+---
+
 ## T3.2 — Diff engine (merge-base compare + worktree layering)
 
 - `src/engine/diff/diffEngine.ts`: `DiffEngine.compute(src, signal)` resolves refs ("HEAD" → headOid, `refs/heads/*`, `refs/remotes/*`), takes `merge-base --all` (first base wins; `MULTIPLE_MERGE_BASES` with all oids in `detail`), falls back to two-dot with `UNRELATED_HISTORIES` (or `SHALLOW` when the repo is shallow), diffs the flattened trees and layers staged/unstaged/untracked/conflict changes from `WorktreeScanner` when the source is the checked-out branch (`isWorktreeSource`); otherwise emits `WORKTREE_NOT_APPLICABLE` and stays committed-only.
