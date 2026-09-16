@@ -11,6 +11,7 @@ import worktreeDiff from "../test/recorded/worktree.diffresult.json";
 import worktreeInfo from "../test/recorded/worktree.repoinfo.json";
 import type { UiError } from "./errors";
 import { mockPayload } from "./mock/mockContents";
+import { syntheticLarge } from "./mock/syntheticLarge";
 import type { RestartListener, WorkerClient } from "./workerClient";
 
 export interface MockWorkerClient extends WorkerClient {
@@ -38,6 +39,8 @@ function b64(s: string): Uint8Array {
 const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult }> = {
   basic: { info: basicInfo as RepoInfo, diff: basicDiff as DiffResult },
   worktree: { info: worktreeInfo as RepoInfo, diff: worktreeDiff as DiffResult },
+  // synthetic 5,000-file repo (Plan §6.7) for virtualisation checks; handle name "large"
+  large: syntheticLarge({ info: basicInfo as RepoInfo, diff: basicDiff as DiffResult }),
 };
 
 function err(code: UiError["code"], message: string): UiError {
