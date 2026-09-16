@@ -75,7 +75,7 @@ Keep this board updated (edit this file; one line per task):
 | T1.3 | done | agent / 2026-09-16 | flattenTree perf-5k ≈ 30–150 ms |
 | T1.4 | done | agent / 2026-09-16 | |
 | T1.5 | done | agent / 2026-09-16 | |
-| T1.6 | todo | | spike, gates Phase 2 |
+| T1.6 | done | agent / 2026-09-16 | spike passed on 3 real repos; MIDX supported |
 | T2.1 | todo | | |
 | T2.2 | todo | | |
 | T2.3 | todo | | |

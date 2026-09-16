@@ -8,6 +8,13 @@ _(none yet)_
 
 ---
 
+## T1.6 — Spike S2: read-only verification on real repos
+
+- `scripts/spike-s2.ts` runs layout → config → refs → merge-base → flattenTree ×2 → readBlob ×20 through the read-only spy handle, times every step, counts fs calls, and applies three zero-write proofs (no write-capable call, `find .git -newer marker -type f` empty, `git status`/`git fsck --connectivity-only` identical before and after). Exit 1 on any violation.
+- Ran on pinpoint (small), news-scrapper (13 packs, 72 MB, `node_modules`, 270 refs, has a multi-pack-index) and a scratchpad copy of opencode after `git gc` + `git multi-pack-index write` (shallow); plus the `sha256`/`alternates`/`partial` fixtures. All reads succeeded, zero writes everywhere, refusals fire before any object read. Full table in `docs/engine-notes.md` ("S2 results").
+- Decision: multi-pack-index repos are supported (isomorphic-git reads the `.idx` files directly); `MULTI_PACK_INDEX` stays a warning. Note for T7.2: first-touch pack SHA-1 verification dominates (≈ 0.5 s for 72 MB across 13 packs).
+- The owner did not pre-name repos (START.md §4), so the agent picked three on disk; only the copy was modified (in the scratchpad). No follow-up changes to T1.1–T1.4 were needed.
+
 ## T1.4 — RefStore
 
 - `src/engine/git/refStore.ts`: `loadRefs(db, config) → RefSnapshot { headBranch, headOid, detached, unborn, headDisplay, refs, defaultRef }`. HEAD via `readSymref("HEAD")` (branch → resolve; unresolvable → unborn) or `resolveRef("HEAD")` (detached). Branches: local + every remote from config, `HEAD` pseudo-entry excluded, dangling refs skipped. Default per D8: `origin/HEAD` symref → `origin/<x>` or local `<x>` → `main` → `master` → checked-out branch → null. Sort: synthetic, checked-out, default, locals A→Z, remotes grouped by remote then A→Z.
