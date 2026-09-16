@@ -10,8 +10,18 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 - **Design §3.1 / §7.8** (from T5.6): dark-theme `--on-accent` is now `#0d1117` instead of white — white on the dark `--success` `#3fb950` measures 2.54:1 and fails §9. Update the Design tables to match (light stays `#ffffff`, 5.08:1).
 - **Design §8** (from T5.3/T5.6): the 120 ms collapse transition is not implemented; collapsed card bodies unmount so the virtualised pane stays cheap. Reconsider once T7.1 measures a variant that keeps the body mounted.
 - **Design §7.4** (from T5.2): flat-mode rows truncate with an end ellipsis rather than a middle ellipsis (no CSS primitive; a JS measurer would need to run per virtualised row).
-- **T7.1**: run browser axe (`@axe-core/playwright`) on the repo screen with a real diff; the vitest axe pass covers Home / Empty / Error / Help / Toasts / banners only.
+- ~~**T7.1**: run browser axe on the repo screen~~ — done in `e2e/open-and-diff.spec.ts`.
 - **Engine (T3.x)**: `RepoWarning` carries `message` + optional `detail`; the UI shows its own copy and appends `detail`. If the engine wants to steer the banner text, add `RepoWarning.userMessage?: string` to `src/engine/types.ts` — the UI would prefer it over the registry copy.
+
+---
+
+## T7.1 — End-to-end smoke suite (Playwright, Chromium)
+
+- Exactly three specs in `e2e/` (plus `helpers.ts` and the T0.4 shim), run against `VITE_E2E=1 bun run build` + `vite preview` so the production CSP applies; memory snapshots of `remote` and `worktree` are served to the worker through the shim's BroadcastChannel. Whole suite: 3 passed in ~11 s locally.
+  - `open-and-diff.spec.ts` (`remote`): Home → Open → repo screen; compare = `feature`, base = `origin/main`; "Files changed (5)" and five cards; the first card has hunks with Shiki tokens (`[data-sh]`); Unified → Split swaps `table.diff-unified` for `table.diff-split`; axe on the rendered repo screen (colour-contrast rule off, covered by the vitest contrast table) → zero serious/critical; base = `origin/feature` recomputes to the empty state (every other ref in that fixture also yields five files); base = compare → "is compared with itself".
+  - `worktree-and-refresh.spec.ts` (`worktree`): staged / unstaged / untracked chips; "Include uncommitted changes" off → committed layer only (`feature-only.txt` + `reverted.txt`, whose worktree revert no longer cancels it) and chips gone, on → back; a tracked-file mutation through the channel plus one observer record changes the row from `+1 −1` to `+3 −4` within 5 s with no click (Live mode); a new untracked file appears; the sidebar Viewed checkbox collapses the card (pane scrolled to top — it is virtualised) and moves the counter; the filter narrows the list.
+  - `errors-and-privacy.spec.ts`: CSP header present; a folder without `.git` → "Not a git repository" + "Choose another folder"; open `remote`, reload, reopen from recents through the marker permission path; every request across the spec stays on the app origin and none at all happens after the repo is open (lazy chunks and workers are same-origin static assets loaded once, so the literal "zero requests after load" is read as "zero requests after the repo is open, and never to another origin").
+- `bun run e2e`; CI gets an `e2e` job (Chromium only, 1 worker, retries 1, report uploaded on failure). `e2e/` moved from the UI tsconfig to the node one (specs import `src/test` helpers). Dependency (exact): `@axe-core/playwright 4.13.0`.
 
 ---
 

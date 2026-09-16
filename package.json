@@ -16,7 +16,8 @@
     "fixtures": "bash scripts/make-fixtures.sh && bash scripts/fixture-expectations.sh",
     "record": "bun run scripts/record-fixtures.ts && biome format --write src/test/recorded",
     "deploy": "bun run build && bunx wrangler pages deploy dist --project-name diffgoel",
-    "check:prod": "bash scripts/check-prod.sh"
+    "check:prod": "bash scripts/check-prod.sh",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@shikijs/core": "4.4.3",
@@ -38,6 +39,7 @@
     "zustand": "5.0.15"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@biomejs/biome": "2.5.14",
     "@playwright/test": "1.63.0",
     "@tailwindcss/vite": "4.3.3",

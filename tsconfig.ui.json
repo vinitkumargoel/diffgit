@@ -6,6 +6,6 @@
     "jsx": "react-jsx",
     "types": ["vite/client"]
   },
-  "include": ["src/ui", "src/main.tsx", "src/App.tsx", "src/vite-env.d.ts", "e2e"],
+  "include": ["src/ui", "src/main.tsx", "src/App.tsx", "src/vite-env.d.ts"],
   "exclude": ["src/ui/**/*.test.ts", "src/ui/**/*.test.tsx"]
 }

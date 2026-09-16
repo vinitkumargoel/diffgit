@@ -9,6 +9,7 @@
   "include": [
     "vite.config.ts",
     "playwright.config.ts",
+    "e2e/**/*.ts",
     "scripts/**/*.ts",
     "src/test",
     "src/engine/**/*.test.ts",
