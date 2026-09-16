@@ -77,7 +77,7 @@ Keep this board updated (edit this file; one line per task):
 | T1.5 | done | agent / 2026-09-16 | |
 | T1.6 | done | agent / 2026-09-16 | spike passed on 3 real repos; MIDX supported |
 | T2.1 | todo | | |
-| T2.2 | todo | | |
+| T2.2 | done | agent / 2026-09-16 | |
 | T2.3 | todo | | |
 | T2.4 | todo | | |
 | T3.1 | todo | | |

@@ -8,6 +8,11 @@ _(none yet)_
 
 ---
 
+## T2.2 — Blob hashing
+
+- `src/engine/git/hash.ts`: `sha1`, `toHex`, `hashBlob` (crypto.subtle over `"blob <len>\0"+bytes`), `hashBlobStream(stream, size)` (incremental pure-JS `Sha1` class, ~90 lines, written here — `crypto.subtle.digest` cannot stream), `EMPTY_BLOB_OID`.
+- Tests: `hash-object.json` parity on `basic` and `large` (incl. the 1.5 MB and 11 MB files), stream vs buffer equality on the 11 MB file, pure-JS vs subtle on awkward chunk boundaries and padding-edge lengths, subarray views, size mismatch rejection.
+
 ## T1.6 — Spike S2: read-only verification on real repos
 
 - `scripts/spike-s2.ts` runs layout → config → refs → merge-base → flattenTree ×2 → readBlob ×20 through the read-only spy handle, times every step, counts fs calls, and applies three zero-write proofs (no write-capable call, `find .git -newer marker -type f` empty, `git status`/`git fsck --connectivity-only` identical before and after). Exit 1 on any violation.
