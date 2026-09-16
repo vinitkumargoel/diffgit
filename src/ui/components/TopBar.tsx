@@ -79,7 +79,8 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
           mode={refresh.mode}
           busy={refresh.busy}
           lastAt={refresh.lastAt}
-          onRefresh={() => requestRefresh("manual")}
+          phase={refresh.phase ?? null}
+          onRefresh={(force) => requestRefresh(force ? "force" : "manual")}
         />
         <button
           type="button"

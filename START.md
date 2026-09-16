@@ -100,7 +100,7 @@ Keep this board updated (edit this file; one line per task):
 | T6.1 | done | agent / 2026-09-17 | |
 | T6.2 | done | agent / 2026-09-17 | provisional classifier (S3 pending); manual real-repo check pending owner |
 | T6.3 | done | agent / 2026-09-17 | browser CPU number pending T7.2 |
-| T6.4 | in-progress | agent / 2026-09-17 | |
+| T6.4 | done | agent / 2026-09-17 | browser touch -r check pending owner |
 | T7.1 | todo | | 3 smoke specs only |
 | T7.2 | todo | | |
 | T7.3 | todo | | |

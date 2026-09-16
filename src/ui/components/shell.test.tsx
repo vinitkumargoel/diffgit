@@ -97,7 +97,7 @@ describe("HelpDialog", () => {
   it("lists every shortcut with a kbd and the three privacy sentences", () => {
     render(<HelpDialog open onClose={() => {}} />);
     const rows = screen.getAllByRole("row");
-    expect(rows.length).toBe(11);
+    expect(rows.length).toBe(12);
     expect(rows.map((r) => r.querySelector("kbd")?.textContent)).toContain("Esc");
     expect(rows.map((r) => r.querySelector("kbd")?.textContent)).toContain("?");
     for (const s of PRIVACY_SENTENCES)

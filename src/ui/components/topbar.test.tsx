@@ -237,7 +237,7 @@ describe("TopBar row 1", () => {
     render(<TopBar />);
     const btn = screen.getByRole("button", { name: /^Refresh \(Manual\)/ }) as HTMLButtonElement;
     expect(btn.textContent).toContain("Manual");
-    expect(btn.getAttribute("title")).toMatch(/^Last refreshed 1[23] s ago$/);
+    expect(btn.getAttribute("title")).toMatch(/^Last refreshed 1[23] s ago\. Force refresh/);
     fireEvent.click(btn);
     expect(a.recompute).toHaveBeenCalledWith("manual");
     cleanup();
@@ -247,8 +247,57 @@ describe("TopBar row 1", () => {
     render(<TopBar />);
     const busy = screen.getByRole("button", { name: /^Refresh \(Live\)/ }) as HTMLButtonElement;
     expect(busy.disabled).toBe(true);
-    expect(busy.getAttribute("title")).toBe("Not refreshed yet");
+    expect(busy.getAttribute("title")).toMatch(/^Not refreshed yet\. Force refresh/);
     expect(busy.textContent).toContain("Live");
+  });
+
+  it('force refresh (T6.4): Shift+click, long-press and Shift+R dispatch "force"; phase shows while busy', () => {
+    vi.useFakeTimers();
+    try {
+      const a = seed({
+        refresh: { mode: "manual", lastAt: null, busy: false, lastError: null, restarted: false },
+      });
+      render(<TopBar />);
+      const btn = screen.getByRole("button", { name: /^Refresh \(Manual\)/ }) as HTMLButtonElement;
+      expect(btn.getAttribute("title")).toContain("Shift+click, hold, or Shift+R");
+      fireEvent.click(btn, { shiftKey: true });
+      expect(a.recompute).toHaveBeenLastCalledWith("force");
+      fireEvent.click(btn);
+      expect(a.recompute).toHaveBeenLastCalledWith("manual");
+      // long-press: pointerdown, hold 600 ms → force; the release click is swallowed
+      a.recompute.mockClear();
+      fireEvent.pointerDown(btn, { button: 0 });
+      vi.advanceTimersByTime(599);
+      expect(a.recompute).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(1);
+      expect(a.recompute).toHaveBeenCalledWith("force");
+      fireEvent.pointerUp(btn);
+      fireEvent.click(btn);
+      expect(a.recompute).toHaveBeenCalledTimes(1);
+      // a short press cancels the timer
+      fireEvent.pointerDown(btn, { button: 0 });
+      vi.advanceTimersByTime(100);
+      fireEvent.pointerUp(btn);
+      vi.advanceTimersByTime(1000);
+      expect(a.recompute).toHaveBeenCalledTimes(1);
+      cleanup();
+      seed({
+        refresh: {
+          mode: "live",
+          lastAt: null,
+          busy: true,
+          lastError: null,
+          restarted: false,
+          phase: "worktree",
+        },
+      });
+      render(<TopBar />);
+      const busy = screen.getByRole("button", { name: /^Refresh \(Live\)/ }) as HTMLButtonElement;
+      expect(busy.textContent).toContain("Scanning working tree…");
+      expect(busy.disabled).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

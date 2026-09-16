@@ -6,7 +6,7 @@ import { dropRoot, swapPack } from "../test/torn";
 import type { Progress, ProgressSink, StatsBatch } from "./api";
 import { defaultDiffSource } from "./diffSource";
 import { EngineError, fsError } from "./errors";
-import { MemoryFs } from "./fs/memoryDirHandle";
+import { bytesToBase64, MemoryFs } from "./fs/memoryDirHandle";
 import { NodeDirHandle } from "./fs/nodeDirHandle";
 import { RepoSession, toPublicError } from "./session";
 import type { RepoWarning } from "./types";
@@ -268,6 +268,36 @@ describe("RepoSession on memory repos (mutations)", () => {
     expect(third.files.find((f) => f.id === "unstaged-mod.txt")?.newOid).toBe(
       after?.newOid as string,
     );
+    await session.close();
+  });
+
+  test("R1: a same-size same-mtime edit is missed by the stat cache and caught by forceRehash", async () => {
+    const { session, mem } = await openMemory("worktree");
+    const src = defaultDiffSource(await session.info());
+    const first = await session.computeDiff(src);
+    const before = first.files.find((f) => f.id === "unstaged-mod.txt");
+    expect(before).toBeDefined();
+    const original = mem.readBytes("unstaged-mod.txt") as Uint8Array;
+    const entry = mem.lookup("unstaged-mod.txt");
+    const mtime = entry && entry.kind === "file" ? entry.mtime : 0;
+    // flip one byte, keep the size and the mtime → git's own heuristic cannot see it either
+    const edited = new Uint8Array(original);
+    edited[0] = edited[0] === 65 ? 66 : 65;
+    mem.apply([{ op: "write", path: "unstaged-mod.txt", b64: bytesToBase64(edited), mtime }]);
+    // no observer told us about this path: a plain recompute trusts the stat cache (git does too)
+    const second = await session.computeDiff(src);
+    expect(second.files.find((f) => f.id === "unstaged-mod.txt")?.newOid).toBe(
+      before?.newOid as string,
+    );
+    await session.forceRehash();
+    const third = await session.computeDiff(src);
+    const after = third.files.find((f) => f.id === "unstaged-mod.txt");
+    expect(after?.newOid).not.toBe(before?.newOid);
+    expect(
+      new TextDecoder().decode(
+        (await session.fileBytes(third.generation, "unstaged-mod.txt", "new")) as Uint8Array,
+      ),
+    ).toBe(new TextDecoder().decode(edited));
     await session.close();
   });
 

@@ -117,6 +117,8 @@ export interface RefreshState {
   lastError: UiError | null;
   /** Set when the worker was recreated after a crash (UI shows "Engine restarted, refreshing"). */
   restarted: boolean;
+  /** Engine phase in flight during a recompute (T6.4 progress in the refresh control). */
+  phase?: ProgressPhase | null;
 }
 
 /** Storage adapters injected by T4.3 (`persistence/index.ts`); defaults are no-ops. */
@@ -278,6 +280,10 @@ function cacheKey(id: string, ignoreWhitespace: boolean): string {
 export const useStore = create<StoreState>()((set, get) => {
   const sink: ProgressSink = {
     onProgress(p: Progress) {
+      if (p.phase !== "probe") {
+        const done = p.durationMs !== undefined && p.phase !== "stats";
+        set((s) => ({ refresh: { ...s.refresh, phase: done ? null : p.phase } }));
+      }
       const step = stepForPhase(p.phase);
       if (!step) return;
       set((s) => {
@@ -463,7 +469,7 @@ export const useStore = create<StoreState>()((set, get) => {
     async recompute(_reason) {
       const { diffSource, repo } = get();
       if (!diffSource || !repo) return;
-      set((s) => ({ refresh: { ...s.refresh, busy: true } }));
+      set((s) => ({ refresh: { ...s.refresh, busy: true, phase: s.refresh.phase ?? null } }));
       try {
         const result = await client().computeDiff(diffSource);
         const current = get();
@@ -501,6 +507,7 @@ export const useStore = create<StoreState>()((set, get) => {
             lastAt: Date.now(),
             lastError: null,
             restarted: false,
+            phase: null,
           },
           announcement: `Diff updated: ${result.files.length} ${result.files.length === 1 ? "file" : "files"}`,
         }));

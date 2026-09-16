@@ -15,6 +15,13 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T6.4 — Force refresh
+
+- `RefreshControl`: click → `requestRefresh("manual")`; **Shift+click** or a **600 ms long-press** → `requestRefresh("force")` (the release click after a long-press is swallowed; a short press cancels the timer). Tooltip: "Force refresh re-reads every file (use if a change isn't showing): Shift+click, hold, or Shift+R". While busy the button shows the engine phase from `Progress` ("Scanning working tree…", "Computing diff…", "Detecting renames…", …) via the new optional `refresh.phase` in the store, cleared when the compute lands. `Shift+R` added to the `SHORTCUTS` table (help dialog now lists 12 rows); `RepoScreen` binds it. The scheduler's `force` path (`forceRehash()` + `invalidate("all")` + `reloadRefs()` before compute) was tested in T6.1.
+- R1 proof (engine, `session.test.ts`): a one-byte edit that keeps size and mtime is invisible to a plain recompute (the stat cache, like git's own heuristic, trusts size+mtime) and is picked up after `forceRehash()`. The equivalent browser check (`touch -r` in a real repo) is part of the owner's Chrome run with T6.0/T6.2.
+
+---
+
 ## T6.3 — Polling fallback
 
 - `src/ui/refresh/poller.ts`: `startPoller(client, onChange, onError, opts)` consumes the T3.5 `probe()` tiers — `git` every 3 s, `index` every 10 s (doubling up to 30 s while a sweep takes > 500 ms, back to 10 s once fast), `untracked` every 30 s — all ×3 while `document.hidden`; no tier probes while `store.refresh.busy`; a `git` probe fires as soon as the tab becomes visible. Baselines are taken at start so the first change is caught within one interval; a changed signature calls the scheduler with `poll:git` / `poll:worktree`; probe errors go to the scheduler's ladder (`PERMISSION` / `HANDLE_GONE` → manual / error screen). Wired in `src/main.tsx` as `startPoller`, so a browser without `FileSystemObserver` opens in Polling mode.

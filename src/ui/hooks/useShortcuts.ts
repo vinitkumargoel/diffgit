@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 export const SHORTCUTS = [
   { key: "o", description: "Open a repository" },
   { key: "r", description: "Refresh the diff" },
+  { key: "R", label: "Shift+R", description: "Force refresh: re-read every file" },
   { key: "j", description: "Next file" },
   { key: "k", description: "Previous file" },
   { key: "v", description: "Toggle viewed on the active file" },
