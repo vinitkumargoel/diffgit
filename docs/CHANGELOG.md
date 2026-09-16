@@ -8,6 +8,11 @@ _(none yet)_
 
 ---
 
+## T3.1 — Tree diff
+
+- `src/engine/diff/treeDiff.ts`: `treeDiff(a, b)` over flattened trees (null = empty) → `Record<path, Change>` in git's byte-wise order; added/deleted/modified where modified includes mode-only and type changes (symlink↔file, gitlink oid change) for T3.4 to label. `comparePaths` exported for reuse.
+- Parity with `name-status-3dot-no-renames.json` on basic, renames, binary, symlink (git's `T` mapped to our modified + both modes), submodule (160000), attributes, large; pure-function edge cases and ordering (`a-b` < `a/b` < `a0`).
+
 ## T2.4 — WorktreeScanner
 
 - `src/engine/git/worktree.ts`: `WorktreeScanner(fs, db, cfg, ignore, opts).scan(index, headTree, signal) → WorktreeStatus { staged, unstaged, untracked, untrackedInfo, conflicts, warnings, stats }`, `forgetStatCache()` (force refresh: clears cache + one-shot hash-all), `forgetPaths()`. Implements the amended algorithm: `SPLIT_INDEX`/`INDEX_TOO_LARGE` thrown first; staged pass over stage-0 ∪ HEAD minus conflicts/sparse subtrees (intent-to-add = not staged); unstaged pass with cache-first → git's racy-clean rule (`lastModified >= indexMtimeMs` → hash) → stat-clean → hash (stream > 8 MB), symlinks/gitlinks always clean, ENOENT → deleted, EISDIR → deleted + `PATH_TYPE_CHANGED`; untracked DFS with ignore pruning, `.git`-of-either-kind → `EMBEDDED_REPO`, gitlink/sparse dirs skipped, cap → `UNTRACKED_CAPPED`, files ≤ 1 MB hashed into `untrackedInfo`; warnings `INDEX_CHECKSUM`, `SPARSE_INDEX`, `AUTOCRLF`; `AbortSignal` → `CANCELLED`. `Change` gained optional `newSize`/`newLastModified` for viewed keys.

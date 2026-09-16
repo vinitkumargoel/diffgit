@@ -80,7 +80,7 @@ Keep this board updated (edit this file; one line per task):
 | T2.2 | done | agent / 2026-09-16 | |
 | T2.3 | done | agent / 2026-09-16 | |
 | T2.4 | done | agent / 2026-09-16 | perf-5k scan 0.5 s quiet machine |
-| T3.1 | todo | | |
+| T3.1 | done | agent / 2026-09-16 | |
 | T3.2 | todo | | |
 | T3.3 | todo | | |
 | T3.4 | todo | | |
