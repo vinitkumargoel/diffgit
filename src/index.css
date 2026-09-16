@@ -233,8 +233,10 @@
   --shadow-popover: var(--shadow-popover);
 
   /* §4 typography — no web fonts */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
   --radius-control: 6px;
   --radius-status: 4px;
@@ -266,14 +268,6 @@
   select {
     font: inherit;
     color: inherit;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.001ms !important;
-      transition-duration: 0.001ms !important;
-    }
   }
 }
 
@@ -321,6 +315,11 @@
   }
   .spin {
     animation: spin 1s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spin {
+      animation: none;
+    }
   }
   @keyframes spin {
     to {
