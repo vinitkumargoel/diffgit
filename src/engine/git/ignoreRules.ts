@@ -9,6 +9,7 @@
  * from the browser → `GLOBAL_EXCLUDES_UNAVAILABLE` warning once.
  */
 import ignore, { type Ignore } from "ignore";
+import { errorCode } from "../errors";
 import type { FsaFs } from "../fs/fsaFs";
 import type { RepoWarning } from "../types";
 import type { GitConfig } from "./config";
@@ -19,15 +20,11 @@ export interface IgnoreOptions {
   config?: GitConfig;
 }
 
-export const BUILTIN_EXCLUDES = [".DS_Store", "._*", "Thumbs.db", "desktop.ini"];
+const BUILTIN_EXCLUDES = [".DS_Store", "._*", "Thumbs.db", "desktop.ini"];
 
 interface Layer {
   dir: string; // "" for root
   ig: Ignore;
-}
-
-function code(e: unknown): string | undefined {
-  return (e as { code?: string } | null)?.code;
 }
 
 export class IgnoreRules {
@@ -67,7 +64,7 @@ export class IgnoreRules {
     try {
       return await this.fs.readText(path);
     } catch (e) {
-      const c = code(e);
+      const c = errorCode(e);
       if (c === "ENOENT" || c === "ENOTDIR" || c === "EISDIR") return null;
       throw e;
     }

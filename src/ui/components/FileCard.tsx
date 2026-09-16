@@ -34,7 +34,7 @@ interface BoundaryState {
 }
 
 /** Per-card error boundary (T5.3 amendment): a renderer crash never unmounts the pane. */
-export class CardErrorBoundary extends Component<BoundaryProps, BoundaryState> {
+class CardErrorBoundary extends Component<BoundaryProps, BoundaryState> {
   state: BoundaryState = { error: null, showRaw: false };
 
   static getDerivedStateFromError(error: Error): Partial<BoundaryState> {

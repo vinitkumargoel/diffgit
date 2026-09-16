@@ -5,7 +5,7 @@
  */
 import type { FsaFs } from "../fs/fsaFs";
 import type { ObjectDb } from "../git/objectDb";
-import type { FileContents, FileDiff } from "../types";
+import { type FileContents, type FileDiff, MODE_GITLINK } from "../types";
 import { throwIfAborted } from "../util/concurrency";
 import type { FileSides } from "./diffEngine";
 
@@ -19,10 +19,9 @@ export interface LoadedSides extends FileContents {
   submodule?: { oldOid: string | null; newOid: string | null };
 }
 
-export const MODE_GITLINK = 0o160000;
 const isGitlink = (mode: number | null) => mode !== null && (mode & 0o170000) === MODE_GITLINK;
 
-export function sidesFor(
+function sidesFor(
   file: FileDiff,
   sides: Record<string, FileSides>,
 ): { old: FileSides["old"]; new: FileSides["new"] } {

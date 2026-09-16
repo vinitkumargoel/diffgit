@@ -63,7 +63,6 @@ describe("toPublicError", () => {
     });
     expect(toPublicError(fsError("EACCES", "/x")).code).toBe("PERMISSION");
     expect(toPublicError(fsError("ENOENT", "/x")).code).toBe("IO_ERROR");
-    expect(toPublicError(fsError("ENOENT", "/x"), true).code).toBe("HANDLE_GONE");
     expect(toPublicError(fsError("EIO", "/x")).code).toBe("IO_ERROR");
     expect(toPublicError(fsError("EROFS", "/x")).code).toBe("INTERNAL");
     expect(toPublicError(new EngineError("SPLIT_INDEX", "internal tier")).code).toBe("INTERNAL");
@@ -167,6 +166,37 @@ describe("RepoSession on fixtures", () => {
     expect(warnings).toEqual([]);
     await session.close();
     await expect(session.computeDiff(src)).rejects.toMatchObject({ code: "INTERNAL" });
+  });
+
+  test("stats pump re-launches for the new generation when superseded mid-flight (T7.5)", async () => {
+    const { session, batches } = await openFixture("basic");
+    const info = await session.info();
+    type Priv = { statsFor: (cur: unknown, f: unknown) => Promise<unknown> };
+    const priv = session as unknown as Priv;
+    const original = priv.statsFor.bind(session);
+    let slowOnce = true;
+    priv.statsFor = async (cur, f) => {
+      if (slowOnce) {
+        slowOnce = false;
+        await new Promise((r) => setTimeout(r, 120)); // one worker of the first pump is mid-read
+      }
+      return original(cur, f);
+    };
+    const first = await session.computeDiff(defaultDiffSource(info));
+    await new Promise((r) => setTimeout(r, 10));
+    const second = await session.computeDiff({
+      ...defaultDiffSource(info),
+      includeWorktree: false,
+    });
+    expect(second.generation).toBe(first.generation + 1);
+    await waitFor(() => {
+      const got = Object.assign(
+        {},
+        ...batches.filter((b) => b.generation === second.generation).map((b) => b.stats),
+      ) as Record<string, unknown>;
+      return Object.keys(got).length === second.files.length;
+    });
+    await session.close();
   });
 
   test("fileBytes refuses sides over 10 MB with TOO_LARGE (large fixture, huge.txt)", async () => {

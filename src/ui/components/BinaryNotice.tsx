@@ -7,7 +7,7 @@ import { useStore } from "../store";
 import { Notice } from "./Notice";
 
 /** "View as text" is offered below this size (Design §7.7). */
-export const VIEW_AS_TEXT_LIMIT = 1024 * 1024;
+const VIEW_AS_TEXT_LIMIT = 1024 * 1024;
 
 export function sizesLabel(oldSize: number, newSize: number, status: FileDiff["status"]): string {
   if (status === "added") return formatBytes(newSize);

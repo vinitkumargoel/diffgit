@@ -11,7 +11,7 @@ export interface ShNode {
 }
 export type HastLike = ShNode | { type: "text"; value: string };
 
-export const THEMES = { light: "github-light", dark: "github-dark" } as const;
+const THEMES = { light: "github-light", dark: "github-dark" } as const;
 const LIGHT_VAR = "--shiki-light";
 const DARK_VAR = "--shiki-dark";
 

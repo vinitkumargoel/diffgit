@@ -11,7 +11,7 @@
 import { hashBlob } from "../git/hash";
 import type { ChangeLayer, FileDiff, RepoWarning } from "../types";
 import { throwIfAborted } from "../util/concurrency";
-import { looksBinary } from "./binary";
+import { isBinary } from "./binary";
 import { comparePaths } from "./treeDiff";
 
 export type RenameSide = "old" | "new";
@@ -40,9 +40,9 @@ export interface RenameResult {
   };
 }
 
-export const DEFAULT_RENAME_LIMIT = 1000;
-export const DEFAULT_RENAME_THRESHOLD = 50;
-export const DEFAULT_MAX_SIDE_BYTES = 8 * 1024 * 1024;
+const DEFAULT_RENAME_LIMIT = 1000;
+const DEFAULT_RENAME_THRESHOLD = 50;
+const DEFAULT_MAX_SIDE_BYTES = 8 * 1024 * 1024;
 
 /** git's MAX_SCORE; similarity percentages are derived from it exactly as `similarity_index` does. */
 const MAX_SCORE = 60000;
@@ -231,7 +231,7 @@ export async function detectRenames(
         let value: { span: Map<number, number>; size: number } | null = null;
         if (size <= maxSideBytes) {
           const bytes = await load(f, side);
-          value = { span: spanhash(bytes, !looksBinary(bytes)), size: bytes.length };
+          value = { span: spanhash(bytes, !isBinary(bytes)), size: bytes.length };
         } else sizeSkipped++;
         spans.set(f, value);
         return value;

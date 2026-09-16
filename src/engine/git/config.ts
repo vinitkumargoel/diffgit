@@ -28,7 +28,7 @@ export interface GitConfig {
 const TRUE = new Set(["true", "yes", "on", "1"]);
 const FALSE = new Set(["false", "no", "off", "0", ""]);
 
-export function parseBool(v: string | undefined): boolean | undefined {
+function parseBool(v: string | undefined): boolean | undefined {
   if (v === undefined) return undefined;
   const s = v.toLowerCase();
   if (TRUE.has(s)) return true;

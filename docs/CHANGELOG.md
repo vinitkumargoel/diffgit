@@ -15,6 +15,19 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T7.5 — Code review and simplification passes
+
+Reviews (all read-only agents, findings triaged fix-now vs backlog):
+
+- **code-reviewer** — fix-now: the background stats pump could stall for a new generation when a worker of the previous pump was still mid-read (`pumpStats` no-op'd on `statsActive > 0` and nothing re-launched it); the finishing pump now re-launches for `this.current` (regression test in `session.test.ts`). Also: the crash-restart path raced a scheduler-driven `recompute` and produced a spurious "Refresh failed" toast → `WORKER_CRASHED` is now treated like a superseded compute in `recompute` / `loadFileDiff` (the restart listener owns the toast and recompute); dead `rootGone` parameter removed from `toPublicError`; six local `code(e)` helpers plus three inline extractions collapsed into `errorCode` from `src/engine/errors.ts`; UI `isPublicCode` reuses the registry's check.
+- **typescript-reviewer** — no high/critical. fix-now: `fileStats` isolated per file (one unreadable file no longer rejects the batch); `Lru.peek()` for the zustand selector (`selectFileDiff` no longer mutates recency on every store update); `readOffsetVarint` takes an `end` bound. Backlog: B2 (in-place row mutation), B8 (non-fatal UTF-8 decode; comment added).
+- **react-reviewer** — fix-now: live region re-announces identical text (node keyed by `announcementSeq`); `DiffBody` derives expanded hunks from the payload instead of an effect re-sync (no stale frame on whitespace toggle). Backlog: B3–B7. Verified clean: hook cleanup, blob URL lifecycle, long-press handling, keys, aria-labels, dialog focus, no colour-only status.
+- **knip 5** (`bunx knip@5`, entries = main, both workers, scripts, e2e, tests): 38 unused exports → 0 (33 un-exported, 8 dead declarations deleted, `looksBinary` alias and duplicate `MODE_GITLINK` collapsed, dead `getRepo`/`setTokenizer`/`setWorkerClient`/`selectActiveWarnings`/`systemPrefersDark`/`isDark`/`assertKnownRef`/`KNOWN_CODES`/`isFsCode` removed); 35 exported-but-unused types kept (component prop interfaces and engine contract types). Unused deps → B9. Stale agent worktree removed.
+- Engine public surface: the UI imports only `engine/types`, `engine/api`, `engine/errors`, `engine/diffSource`, `engine/diff/language` (mock) and `engine/fs/memoryDirHandle` (E2E marker type).
+- `docs/contributing.md`: toolchain, layout, every guard in `check-guards.sh` with the rule it enforces, related gates, conventions. `bun run check` (228 + 186 tests) and Playwright (3/3) green after the refactors.
+
+---
+
 ## T7.4 — Security & privacy review
 
 Checklist evidence (2026-09-17):

@@ -13,7 +13,7 @@ function byName(a: RepoRef, b: RepoRef): number {
   return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
 }
 
-export function sortRefs(refs: RepoRef[]): RepoRef[] {
+function sortRefs(refs: RepoRef[]): RepoRef[] {
   const synthetic = refs.filter((r) => r.synthetic);
   const checkedOut = refs.filter((r) => !r.synthetic && r.isCheckedOut);
   const def = refs.filter((r) => !r.synthetic && !r.isCheckedOut && r.isDefault);

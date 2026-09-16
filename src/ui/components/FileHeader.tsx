@@ -18,7 +18,7 @@ export interface FileHeaderProps {
 }
 
 /** `100644` for 0o100644; null when the side is absent. */
-export function formatMode(mode: number | null): string | null {
+function formatMode(mode: number | null): string | null {
   return mode === null ? null : mode.toString(8).padStart(6, "0");
 }
 

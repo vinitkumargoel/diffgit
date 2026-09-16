@@ -5,6 +5,8 @@
  * syntax, except negative patterns are not allowed and a pattern matching a directory does not match
  * the paths inside it. `core.attributesFile` lives outside the repo and is not read.
  */
+
+import { errorCode } from "../errors";
 import type { FsaFs } from "../fs/fsaFs";
 
 /** `true` = set, `false` = unset (`-attr`), string = value, `"unspecified"` = `!attr`. */
@@ -23,10 +25,6 @@ interface Layer {
 
 /** git's built-in `binary` macro. */
 const BUILTIN_MACROS: Record<string, string> = { binary: "-diff -merge -text" };
-
-function code(e: unknown): string | undefined {
-  return (e as { code?: string } | null)?.code;
-}
 
 /** Converts one gitignore-style pattern into a matcher against a path relative to the pattern's dir. */
 export function compilePattern(raw: string): ((relPath: string) => boolean) | null {
@@ -195,7 +193,7 @@ export class GitAttributes {
     try {
       return await this.fs.readText(path);
     } catch (e) {
-      const c = code(e);
+      const c = errorCode(e);
       if (c === "ENOENT" || c === "ENOTDIR" || c === "EISDIR") return null;
       throw e;
     }

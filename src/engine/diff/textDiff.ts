@@ -21,12 +21,14 @@ import { languageFor } from "./language";
 import { myersDiff } from "./myers";
 
 export const LARGE_FILE_BYTES = 1024 * 1024; // > 1 MB either side → tooLarge (UI gates)
-export const LARGE_CHANGED_LINES = 3000; // > 3000 changed lines → tooLarge
+const LARGE_CHANGED_LINES = 3000; // > 3000 changed lines → tooLarge
 export const HUGE_FILE_BYTES = 10 * 1024 * 1024; // > 10 MB → never rendered
-export const DEFAULT_CONTEXT = 3;
+const DEFAULT_CONTEXT = 3;
 
+// Non-fatal on purpose: like git, we do not know the file's encoding; invalid UTF-8 sequences become
+// U+FFFD rather than failing the diff. The binary sniff (NUL in the first 8000 bytes) runs first.
 const decoder = new TextDecoder("utf-8");
-export function decodeText(bytes: Uint8Array): string {
+function decodeText(bytes: Uint8Array): string {
   return decoder.decode(bytes);
 }
 
@@ -45,7 +47,7 @@ export function splitLines(text: string): LineSet {
 }
 
 /** Number of lines in raw bytes without decoding (for one-sided huge files). */
-export function countLines(bytes: Uint8Array): number {
+function countLines(bytes: Uint8Array): number {
   let n = 0;
   for (let i = 0; i < bytes.length; i++) if (bytes[i] === 10) n++;
   if (bytes.length > 0 && bytes[bytes.length - 1] !== 10) n++;

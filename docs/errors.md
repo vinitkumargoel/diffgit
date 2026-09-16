@@ -4,8 +4,9 @@ The registry is `src/engine/errors.ts`. Three tiers:
 
 - **fs-tier** (`ENOENT`, `EISDIR`, `ENOTDIR`, `EINVAL`, `EROFS`, `EACCES`, `EIO`): Node-shaped so
   isomorphic-git can branch on them; they never leave the engine. `toPublicError` in
-  `src/engine/session.ts` maps them at the worker boundary: `EACCES → PERMISSION`, `ENOENT` on an
-  unreachable root `→ HANDLE_GONE` otherwise `→ IO_ERROR`, `EIO/EISDIR/ENOTDIR/EINVAL → IO_ERROR`,
+  `src/engine/session.ts` maps them at the worker boundary: `EACCES → PERMISSION`, `ENOENT → IO_ERROR`
+  (a vanished root is detected earlier by `RepoSession.withRootCheck` → `HANDLE_GONE`),
+  `EIO/EISDIR/ENOTDIR/EINVAL → IO_ERROR`,
   `EROFS → INTERNAL` (a write was attempted: a bug, D16).
 - **internal** (`SPLIT_INDEX`, `INDEX_TOO_LARGE`): thrown by `WorktreeScanner`, caught by `DiffEngine`
   and converted into the warning of the same name.
@@ -31,7 +32,7 @@ The registry is `src/engine/errors.ts`. Three tiers:
 | `PACK_TOO_LARGE` | `layoutChecks.checkLayout` (packs on disk > 1 GB) | Repository too large | choose-folder |
 | `INDEX_UNSUPPORTED` | `indexReader.parseIndex` (version other than 2–4, bad signature, unknown mandatory extension) | Unsupported index format | choose-folder |
 | `PERMISSION` | `layoutChecks` probes on `EACCES`; `toPublicError` for `EACCES` / `NotAllowedError` / `SecurityError`; `observer.ts` when `FileSystemObserver.observe` is refused; the store when `ensurePermission` is denied | Permission denied | reopen-permission |
-| `HANDLE_GONE` | `RepoSession.withRootCheck` (any compute failure while `.git` is unreachable); `toPublicError` for `ENOENT` with `rootGone`; `observer.ts` on a `disappeared`/`errored` record for the root | Folder not found | choose-folder |
+| `HANDLE_GONE` | `RepoSession.withRootCheck` (any compute failure while `.git` is unreachable); `observer.ts` on a `disappeared`/`errored` record for the root | Folder not found | choose-folder |
 | `IO_ERROR` | `toPublicError` for `EIO`, `EISDIR`, `ENOTDIR`, `EINVAL`, `ENOENT` (root still present), `NotReadableError`, `TypeMismatchError`, `InvalidStateError` | Read error | retry |
 | `REF_NOT_FOUND` | `ObjectDb.resolveRef` (`NotFoundError` from isomorphic-git); `DiffEngine.compute` when the source or target ref vanished | Branch not found | retry |
 | `CANCELLED` | `RepoSession.computeDiff` / `fileDiff` when superseded or aborted; `util/concurrency.throwIfAborted`; `WorkerClient.terminate` for in-flight calls | Cancelled | – |

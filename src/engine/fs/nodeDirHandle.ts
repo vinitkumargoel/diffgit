@@ -16,7 +16,7 @@ import {
   handleError,
 } from "./dirHandleLike";
 
-export class NodeFileHandle implements FileHandleLike {
+class NodeFileHandle implements FileHandleLike {
   readonly kind = "file" as const;
   constructor(
     readonly name: string,

@@ -179,7 +179,8 @@ export function startObserver(
       });
     });
   } catch (e) {
-    return fail({ code: "INTERNAL", message: `FileSystemObserver failed: ${String(e)}` }), stop;
+    fail({ code: "INTERNAL", message: `FileSystemObserver failed: ${String(e)}` });
+    return stop;
   }
   return stop;
 }

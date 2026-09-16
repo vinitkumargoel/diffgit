@@ -11,7 +11,7 @@ const ROW_PX = 20;
 const MAX_ESTIMATE = 900;
 
 /** Rough card height before measurement: header + a row per changed line (+ context), capped. */
-export function estimateCardHeight(stats: FileDiff["stats"], collapsed: boolean): number {
+function estimateCardHeight(stats: FileDiff["stats"], collapsed: boolean): number {
   if (collapsed) return HEADER_PX;
   const changed = stats ? stats.additions + stats.deletions : 12;
   return Math.min(HEADER_PX + ROW_PX * (changed + 8), MAX_ESTIMATE);

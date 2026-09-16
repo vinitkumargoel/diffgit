@@ -2,7 +2,7 @@
  * User-facing copy for every public engine error code (T4.1). `describeError` covers exactly
  * `PUBLIC_CODES` from `src/engine/errors.ts`; the test iterates that array.
  */
-import { errorCode, PUBLIC_CODES, type PublicCode } from "../engine/errors";
+import { errorCode, isPublicCode as isRegistered, type PublicCode } from "../engine/errors";
 
 export type ErrorAction = "choose-folder" | "retry" | "reopen-permission";
 
@@ -111,8 +111,8 @@ const COPY: Record<PublicCode, ErrorDescription> = {
   },
 };
 
-export function isPublicCode(code: string | undefined): code is PublicCode {
-  return code !== undefined && (PUBLIC_CODES as readonly string[]).includes(code);
+function isPublicCode(code: string | undefined): code is PublicCode {
+  return code !== undefined && isRegistered(code);
 }
 
 /** Copy for a public code; unknown codes fall back to INTERNAL so no raw code is ever shown. */

@@ -3,7 +3,7 @@
  * the extensions that change semantics (`link` = split index, `sdir` = sparse index) and the trailer
  * checksum. Read-only; `readIndex` retries once after 150 ms on a torn read.
  */
-import { EngineError } from "../errors";
+import { EngineError, errorCode } from "../errors";
 import type { FsaFs } from "../fs/fsaFs";
 import type { Oid } from "../types";
 import { sha1, toHex } from "./hash";
@@ -37,8 +37,8 @@ export interface IndexSnapshot {
   tooLarge: boolean; // > MAX_INDEX_ENTRIES
 }
 
-export const MAX_INDEX_ENTRIES = 200_000;
-export const INDEX_RETRY_MS = 150;
+const MAX_INDEX_ENTRIES = 200_000;
+const INDEX_RETRY_MS = 150;
 
 const FLAG_ASSUME_VALID = 0x8000;
 const FLAG_EXTENDED = 0x4000;
@@ -48,11 +48,17 @@ const EXT_SKIP_WORKTREE = 0x4000;
 const EXT_INTENT_TO_ADD = 0x2000;
 
 /** git's "offset encoding" varint (varint.c): MSB continuation, +1 per continuation before shifting. */
-export function readOffsetVarint(bytes: Uint8Array, pos: number): { value: number; next: number } {
+export function readOffsetVarint(
+  bytes: Uint8Array,
+  pos: number,
+  end = bytes.length,
+): { value: number; next: number } {
   let i = pos;
+  if (i >= end) throw new EngineError("INDEX_UNSUPPORTED", "index truncated inside a varint");
   let c = bytes[i++] as number;
   let value = c & 0x7f;
   while (c & 0x80) {
+    if (i >= end) throw new EngineError("INDEX_UNSUPPORTED", "index truncated inside a varint");
     value += 1;
     c = bytes[i++] as number;
     value = value * 128 + (c & 0x7f);
@@ -144,7 +150,7 @@ export async function parseIndex(bytes: Uint8Array, indexMtimeMs = 0): Promise<I
     }
     let path: string;
     if (version === 4) {
-      const { value: strip, next } = readOffsetVarint(bytes, pos);
+      const { value: strip, next } = readOffsetVarint(bytes, pos, end);
       pos = next;
       let nul = pos;
       while (nul < end && bytes[nul] !== 0) nul++;
@@ -236,10 +242,6 @@ export async function parseIndex(bytes: Uint8Array, indexMtimeMs = 0): Promise<I
   };
 }
 
-function code(e: unknown): string | undefined {
-  return (e as { code?: string } | null)?.code;
-}
-
 /**
  * Reads and parses `.git/index`. A missing index (fresh `git init`) yields an empty snapshot.
  * When the checksum fails or the file vanished (git writes `index.lock` then renames), waits
@@ -251,7 +253,7 @@ export async function readIndex(fs: FsaFs, retryMs = INDEX_RETRY_MS): Promise<In
     try {
       file = await fs.openFile(".git/index");
     } catch (e) {
-      if (code(e) === "ENOENT") return null;
+      if (errorCode(e) === "ENOENT") return null;
       throw e;
     }
     const bytes = new Uint8Array(await file.arrayBuffer());
@@ -259,7 +261,10 @@ export async function readIndex(fs: FsaFs, retryMs = INDEX_RETRY_MS): Promise<In
       return await parseIndex(bytes, file.lastModified);
     } catch (e) {
       // a truncated file mid-write parses as garbage; treat like a bad checksum and retry
-      if (code(e) === "INDEX_UNSUPPORTED" && /truncated|too short/.test((e as Error).message)) {
+      if (
+        errorCode(e) === "INDEX_UNSUPPORTED" &&
+        /truncated|too short/.test((e as Error).message)
+      ) {
         return { ...emptySnapshot(file.lastModified), checksumOk: false };
       }
       throw e;

@@ -78,9 +78,6 @@ export type WarningCode = (typeof WARNING_CODES)[number];
 
 export type EngineErrorCode = FsCode | PublicCode | InternalCode;
 
-/** Backwards-compatible alias used by T4.1's `describeError` exhaustiveness test. */
-export const KNOWN_CODES: readonly PublicCode[] = PUBLIC_CODES;
-
 export interface EngineErrorJSON {
   name: "EngineError";
   code: EngineErrorCode;
@@ -163,10 +160,6 @@ export function isEngineError(e: unknown): e is EngineError {
       (e as { name?: unknown }).name === "EngineError" &&
       typeof (e as { code?: unknown }).code === "string")
   );
-}
-
-export function isFsCode(code: string): code is FsCode {
-  return (FS_CODES as readonly string[]).includes(code);
 }
 
 export function isPublicCode(code: string): code is PublicCode {

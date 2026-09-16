@@ -2,6 +2,7 @@
  * Deterministic file contents and a small line diff for the recorded-JSON mock engine (T4.1).
  * UI-only test/demo code; the real engine computes hunks in the worker (T3.4).
  */
+
 import type {
   FileClassification,
   FileDiffPayload,
@@ -9,6 +10,8 @@ import type {
   HunkLine,
   HunkModel,
 } from "../../engine/api";
+import { languageFor } from "../../engine/diff/language";
+
 import type { FileDiff } from "../../engine/types";
 
 function lines(prefix: string, from: number, to: number): string[] {
@@ -194,27 +197,6 @@ export function mockHunks(oldText: string | null, newText: string | null, contex
     k = end;
   }
   return { oldLines: a.length, newLines: b.length, hunks };
-}
-
-export function languageFor(path: string): string {
-  const ext = path.split(".").pop()?.toLowerCase() ?? "";
-  const map: Record<string, string> = {
-    ts: "typescript",
-    tsx: "tsx",
-    js: "javascript",
-    jsx: "jsx",
-    md: "markdown",
-    sh: "shellscript",
-    json: "json",
-    css: "css",
-    html: "html",
-    py: "python",
-    rs: "rust",
-    go: "go",
-    yml: "yaml",
-    yaml: "yaml",
-  };
-  return map[ext] ?? "text";
 }
 
 export function mockPayload(

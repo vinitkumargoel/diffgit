@@ -28,9 +28,9 @@ import { tokenizeHunks } from "../highlight/highlightClient";
 import { filePathOf } from "../treeModel";
 
 /** Lines revealed by one `↑` / `↓` click (GitHub uses 20). */
-export const EXPAND_STEP = 20;
+const EXPAND_STEP = 20;
 /** Whole-file tokenisation (grammar context, no re-tokenising on expand) below this old-text size. */
-export const FULL_SOURCE_LIMIT = 200_000;
+const FULL_SOURCE_LIMIT = 200_000;
 
 /**
  * Design §9: the change type is only a colour + a CSS `::before` sign, so the gutter that carries
@@ -86,7 +86,7 @@ function MiniButton({
 }
 
 /** Hunk header row (Design §7.6): `↑ ↓ all` mini-buttons then `@@ -a,b +c,d @@`. */
-export function HunkHeader({
+function HunkHeader({
   text,
   up,
   down,
@@ -129,8 +129,18 @@ export interface DiffBodyProps {
  */
 export function DiffBody({ file, payload, viewType, expandAllToken }: DiffBodyProps) {
   const initial = useMemo(() => toHunkData(payload.hunks), [payload.hunks]);
-  const [hunks, setHunks] = useState<HunkData[]>(initial);
-  useEffect(() => setHunks(initial), [initial]);
+  // Expanded hunks are keyed to the payload they came from: a new payload (e.g. whitespace toggle)
+  // renders its own hunks in the same frame, with no effect-driven re-sync (T7.5 review).
+  const [expanded, setExpanded] = useState<{ base: HunkData[]; hunks: HunkData[] } | null>(null);
+  const hunks = expanded && expanded.base === initial ? expanded.hunks : initial;
+  const setHunks = useCallback(
+    (update: (hs: HunkData[]) => HunkData[]) =>
+      setExpanded((prev) => {
+        const current = prev && prev.base === initial ? prev.hunks : initial;
+        return { base: initial, hunks: update(current) };
+      }),
+    [initial],
+  );
 
   const oldSource = payload.oldText;
   const totalOld = oldSource === null ? 0 : lineCount(oldSource);
@@ -141,7 +151,7 @@ export function DiffBody({ file, payload, viewType, expandAllToken }: DiffBodyPr
       if (oldSource === null || end <= start) return;
       setHunks((hs) => expandFromRawCode(hs, oldSource, start, end));
     },
-    [oldSource],
+    [oldSource, setHunks],
   );
   const expandAll = useCallback(() => {
     if (oldSource === null) return;
@@ -155,7 +165,7 @@ export function DiffBody({ file, payload, viewType, expandAllToken }: DiffBodyPr
       if (cursor <= totalOld) next = expandFromRawCode(next, oldSource, cursor, totalOld + 1);
       return next;
     });
-  }, [oldSource, totalOld]);
+  }, [oldSource, totalOld, setHunks]);
   const seenToken = useRef(expandAllToken);
   useEffect(() => {
     if (expandAllToken !== seenToken.current) {

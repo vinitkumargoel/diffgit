@@ -109,3 +109,6 @@ export interface FileContents {
   old: Uint8Array | null;
   new: Uint8Array | null;
 } // fetched lazily per file
+
+/** Tree entry mode of a submodule (gitlink). */
+export const MODE_GITLINK = 0o160000;

@@ -18,4 +18,4 @@ export function installPersistence(): void {
 }
 
 export type { StoredRepo } from "./repos";
-export { ensurePermission, getRepo, listRepos, removeRepo, upsertRepo } from "./repos";
+export { ensurePermission, listRepos, removeRepo, upsertRepo } from "./repos";

@@ -23,7 +23,7 @@ import { flattenTree, type TreeDir } from "../treeModel";
 import { FileRow } from "./FileRow";
 
 /** Rows above this count are virtualised (T5.2; Plan §6.7). */
-export const VIRTUALISE_ABOVE = 300;
+const VIRTUALISE_ABOVE = 300;
 const DIR_ROW = 24;
 const FILE_ROW = 26;
 

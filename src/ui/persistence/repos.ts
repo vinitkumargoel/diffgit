@@ -29,7 +29,7 @@ export function resetRepoStore(name = "diffgoel-repos"): void {
 }
 
 /** Handle equality: FSA `isSameEntry`, or `snapshotId` for E2E markers. */
-export async function sameHandle(a: unknown, b: unknown): Promise<boolean> {
+async function sameHandle(a: unknown, b: unknown): Promise<boolean> {
   if (isMemoryHandleMarker(a) || isMemoryHandleMarker(b)) {
     return isMemoryHandleMarker(a) && isMemoryHandleMarker(b) && a.snapshotId === b.snapshotId;
   }
@@ -101,10 +101,6 @@ export async function touchRepo(
 
 export async function removeRepo(id: string): Promise<void> {
   await guarded(() => del(id, repoStore()), undefined);
-}
-
-export async function getRepo(id: string): Promise<StoredRepo | undefined> {
-  return guarded(() => get<StoredRepo>(id, repoStore()), undefined);
 }
 
 /**

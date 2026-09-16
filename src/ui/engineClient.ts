@@ -14,9 +14,3 @@ export function getWorkerClient(): WorkerClient {
   }
   return singleton;
 }
-
-/** Test hook: replace the client (e.g. with a mock) and forget the previous one. */
-export function setWorkerClient(client: WorkerClient | null): void {
-  singleton?.terminate();
-  singleton = client;
-}

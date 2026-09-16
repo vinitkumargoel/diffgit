@@ -6,7 +6,7 @@
  */
 import type { LineOp } from "./textDiff";
 
-export const DEFAULT_STEP_BUDGET = 60_000_000;
+const DEFAULT_STEP_BUDGET = 60_000_000;
 
 export function myersDiff(a: Int32Array, b: Int32Array, budget = DEFAULT_STEP_BUDGET): LineOp[] {
   const out: LineOp[] = [];

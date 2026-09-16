@@ -6,7 +6,7 @@
  * findMergeBase (and walk(TREE) / listRemotes if ever needed). Nothing here may write.
  */
 import git from "isomorphic-git";
-import { EngineError } from "../errors";
+import { EngineError, errorCode } from "../errors";
 import type { FsaFs } from "../fs/fsaFs";
 import type { Oid, RepoWarning } from "../types";
 
@@ -27,11 +27,6 @@ export interface MergeBaseResult {
 const DIR = "/";
 const OID_RE = /^[0-9a-f]{40}$/;
 
-function errCode(e: unknown): string | undefined {
-  const c = (e as { code?: unknown } | null)?.code;
-  return typeof c === "string" ? c : undefined;
-}
-
 /** isomorphic-git reports a vanished/unreadable pack as an InternalError with this text. */
 function isStalePackError(e: unknown): boolean {
   const msg = String((e as { message?: unknown } | null)?.message ?? "");
@@ -39,7 +34,7 @@ function isStalePackError(e: unknown): boolean {
     /Could not read packfile/i.test(msg) ||
     /Packfile trailer mismatch/i.test(msg) ||
     /Packfile payload corrupted/i.test(msg) ||
-    ((errCode(e) === "ENOENT" || errCode(e) === "EIO") && /\.(pack|idx)\b/.test(msg))
+    ((errorCode(e) === "ENOENT" || errorCode(e) === "EIO") && /\.(pack|idx)\b/.test(msg))
   );
 }
 
@@ -102,7 +97,7 @@ export class ObjectDb {
     try {
       return await git.resolveRef({ fs: this.fs, dir: DIR, ref });
     } catch (e) {
-      if (errCode(e) === "NotFoundError") throw this.notFound(ref, e);
+      if (errorCode(e) === "NotFoundError") throw this.notFound(ref, e);
       throw e;
     }
   }
@@ -111,7 +106,7 @@ export class ObjectDb {
     try {
       return await this.resolveRef(ref);
     } catch (e) {
-      if (errCode(e) === "REF_NOT_FOUND") return null;
+      if (errorCode(e) === "REF_NOT_FOUND") return null;
       throw e;
     }
   }
@@ -126,7 +121,7 @@ export class ObjectDb {
     try {
       text = await this.fs.readText(`.git/${ref}`);
     } catch (e) {
-      if (errCode(e) === "ENOENT" || errCode(e) === "ENOTDIR" || errCode(e) === "EISDIR")
+      if (errorCode(e) === "ENOENT" || errorCode(e) === "ENOTDIR" || errorCode(e) === "EISDIR")
         return null;
       throw e;
     }
@@ -175,7 +170,7 @@ export class ObjectDb {
       )) as Oid[];
       return { oid: all[0] ?? null, all };
     } catch (e) {
-      if (errCode(e) === "NotFoundError") return { oid: null, all: [] };
+      if (errorCode(e) === "NotFoundError") return { oid: null, all: [] };
       throw e;
     }
   }

@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { type SidebarLayout, selectVisibleFiles, useStore } from "../store";
 import { FileTree } from "./FileTree";
 
-export const SIDEBAR_MIN = 220;
-export const SIDEBAR_MAX = 480;
-export const clampSidebarWidth = (w: number): number =>
+const SIDEBAR_MIN = 220;
+const SIDEBAR_MAX = 480;
+const clampSidebarWidth = (w: number): number =>
   Math.round(Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, w)));
 
 const LAYOUTS: { value: SidebarLayout; label: string }[] = [

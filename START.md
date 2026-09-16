@@ -105,8 +105,8 @@ Keep this board updated (edit this file; one line per task):
 | T7.2 | done | agent / 2026-09-17 | browser numbers pending T8.2 smoke |
 | T7.3 | done | agent / 2026-09-17 | worker double-restart bug fixed |
 | T7.4 | done | agent / 2026-09-17 | CSP tightened; DevTools check pending T8.2 |
-| T7.5 | in-progress | agent / 2026-09-17 | |
-| T8.1 | todo | | |
+| T7.5 | done | agent / 2026-09-17 | 9 backlog items in docs/backlog.md |
+| T8.1 | in-progress | agent / 2026-09-17 | |
 | T8.2 | todo | | owner: 3 real repos |
 | T8.3 | todo | | |
 

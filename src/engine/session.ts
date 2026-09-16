@@ -68,10 +68,10 @@ interface Current {
 
 const NO_SESSION = () => new EngineError("INTERNAL", "No repository is open.");
 /** Plan §11 R3: warn when the packs read so far exceed this. */
-export const MEMORY_WARN_BYTES = 300 * 1024 * 1024;
+const MEMORY_WARN_BYTES = 300 * 1024 * 1024;
 
 /** Translate anything thrown inside the engine into the plain object that crosses the worker boundary. */
-export function toPublicError(e: unknown, rootGone = false): PublicError {
+export function toPublicError(e: unknown): PublicError {
   const code = errorCode(e);
   const message =
     e instanceof Error ? e.message : typeof e === "string" ? e : "Unknown engine error";
@@ -89,9 +89,7 @@ export function toPublicError(e: unknown, rootGone = false): PublicError {
     case "EACCES":
       return out("PERMISSION", message, "Grant read access to the folder and try again.");
     case "ENOENT":
-      return rootGone
-        ? out("HANDLE_GONE", "The repository folder is no longer reachable.", "Re-open the folder.")
-        : out("IO_ERROR");
+      return out("IO_ERROR"); // a vanished root is detected earlier by RepoSession.withRootCheck
     case "EIO":
     case "EISDIR":
     case "ENOTDIR":
@@ -436,6 +434,12 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     return d.stats;
   }
 
+  /**
+   * Refines the shared FileDiff row in place. `fileDiff()` and the stats pump may both describe the
+   * same file; both run under the same `Current`, so whichever finishes last wins — the fields they
+   * write (sizes, binary/image/tooLarge, stats) do not depend on `ignoreWhitespace` except `stats`,
+   * which the pump computes with the default and the UI reads from the payload, not the row.
+   */
   private applyDescription(f: FileDiff, d: ReturnType<typeof describeFile>): void {
     f.stats = d.stats;
     f.binary = d.classification.binary;
@@ -453,7 +457,19 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       ids.map((id) =>
         this.statsLimit(async () => {
           const f = this.requireFile(cur, id);
-          out[id] = await this.statsFor(cur, f);
+          try {
+            out[id] = await this.statsFor(cur, f);
+          } catch (e) {
+            // one unreadable file must not blank the whole batch (T7.5 review); same as pumpStats
+            if (errorCode(e) === "CANCELLED" || errorCode(e) === "STALE") throw e;
+            out[id] = null;
+            cur.stats.set(id, null);
+            RepoSession.emitWarning(this.sink, {
+              code: "FILE_TOO_LARGE",
+              message: `Could not compute stats for ${id}: ${(e as Error)?.message ?? String(e)}`,
+              detail: id,
+            });
+          }
         }),
       ),
     );
@@ -537,7 +553,10 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   }
 
   private async pumpStats(cur: Current): Promise<void> {
-    if (this.statsActive > 0) return; // the running pump picks up the new queue
+    // A running pump belongs to an older generation once `this.current` moves on; its workers exit
+    // after their in-flight read and the `finally` below re-launches for the new generation
+    // (T7.5 review: previously the new generation's stats never started in that window).
+    if (this.statsActive > 0) return;
     this.statsActive++;
     const batchSize = this.opts.statsBatchSize ?? 32;
     const batchMs = this.opts.statsBatchMs ?? 100;
@@ -599,6 +618,17 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       }
     } finally {
       this.statsActive--;
+      const now = this.current;
+      if (
+        this.statsActive === 0 &&
+        now &&
+        now !== cur &&
+        !this.closed &&
+        this.statsGen === now.generation &&
+        this.statsQueue.length > 0
+      ) {
+        void this.pumpStats(now);
+      }
     }
   }
 

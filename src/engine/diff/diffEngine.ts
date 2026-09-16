@@ -5,7 +5,7 @@
  */
 
 import { isWorktreeSource } from "../diffSource";
-import { EngineError, type WarningCode } from "../errors";
+import type { WarningCode } from "../errors";
 import type { IndexSnapshot } from "../git/indexReader";
 import type { FlatTree, ObjectDb } from "../git/objectDb";
 import type { Change, WorktreeScanner, WorktreeStatus } from "../git/worktree";
@@ -52,11 +52,7 @@ function warning(code: WarningCode, message: string, detail?: string): RepoWarni
 }
 
 /** Resolves a `DiffSource` ref name (`"HEAD"` or a full ref) to an oid; null for an unborn HEAD. */
-export async function resolveSourceRef(
-  db: ObjectDb,
-  refs: RefSnapshot,
-  ref: string,
-): Promise<Oid | null> {
+async function resolveSourceRef(db: ObjectDb, refs: RefSnapshot, ref: string): Promise<Oid | null> {
   if (ref === "HEAD") return refs.headOid;
   return db.resolveRef(ref); // throws REF_NOT_FOUND
 }
@@ -295,14 +291,5 @@ export class DiffEngine {
     }
 
     return { files, mergeBase, sourceOid, targetOid, warnings, worktree, sides, includeWorktree };
-  }
-}
-
-export function assertKnownRef(refs: RefSnapshot, ref: string): void {
-  if (ref === "HEAD") return;
-  if (!refs.refs.some((r) => r.fullName === ref)) {
-    throw new EngineError("REF_NOT_FOUND", `Reference not found: ${ref}`, {
-      hint: "Pick another branch",
-    });
   }
 }

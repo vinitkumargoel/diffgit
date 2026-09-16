@@ -76,7 +76,7 @@ export const LOADING_LABELS: Record<LoadingStep, string> = {
   worktree: "Scanning working tree",
   diff: "Computing diff",
 };
-export function stepForPhase(phase: ProgressPhase): LoadingStep | null {
+function stepForPhase(phase: ProgressPhase): LoadingStep | null {
   switch (phase) {
     case "layout":
     case "config":
@@ -185,6 +185,8 @@ export interface StoreState {
   fileDiffs: Lru<string, FileDiffEntry>;
   toasts: Toast[];
   announcement: string; // aria-live text
+  /** Bumped with every announcement so the live region re-renders even for identical text. */
+  announcementSeq: number;
 
   // actions
   openRepo(handle: unknown, opts?: OpenOptions): Promise<void>;
@@ -361,6 +363,7 @@ export const useStore = create<StoreState>()((set, get) => {
     perf: { phases: {}, lastComputeMs: null, computeStartedAt: null },
     toasts: [],
     announcement: "",
+    announcementSeq: 0,
 
     async openRepo(handle, opts = {}) {
       await get().closeRepo();
@@ -551,12 +554,14 @@ export const useStore = create<StoreState>()((set, get) => {
             phase: null,
           },
           announcement: `Diff updated: ${result.files.length} ${result.files.length === 1 ? "file" : "files"}`,
+          announcementSeq: s.announcementSeq + 1,
           perf: { ...s.perf, lastComputeMs: performance.now() - startedAt, computeStartedAt: null },
         }));
         performance.mark?.("diffgoel:compute-committed");
       } catch (e) {
         const err = toUiError(e);
-        if (err.code === "CANCELLED" || err.code === "STALE") {
+        if (err.code === "CANCELLED" || err.code === "STALE" || err.code === "WORKER_CRASHED") {
+          // superseded, or the worker died: the restart listener toasts and recomputes (T7.5 review)
           set((s) => ({ refresh: { ...s.refresh, busy: false } }));
           return;
         }
@@ -618,7 +623,12 @@ export const useStore = create<StoreState>()((set, get) => {
       } catch (e) {
         const err = toUiError(e);
         const cur = get();
-        if (err.code === "STALE" || err.code === "CANCELLED" || controller.signal.aborted) {
+        if (
+          err.code === "STALE" ||
+          err.code === "CANCELLED" ||
+          err.code === "WORKER_CRASHED" ||
+          controller.signal.aborted
+        ) {
           if (cur.fileDiffs.get(key)?.status === "loading") {
             const updated = cur.fileDiffs.clone();
             updated.delete(key);
@@ -775,15 +785,9 @@ export function selectTreeModel(s: Pick<StoreState, "diff" | "filter">): TreeNod
   return result;
 }
 
-export function selectActiveWarnings(
-  s: Pick<StoreState, "warnings" | "dismissedWarnings">,
-): RepoWarning[] {
-  return s.warnings.filter((w) => !s.dismissedWarnings.has(w.code));
-}
-
 export function selectFileDiff(
   s: Pick<StoreState, "fileDiffs" | "prefs">,
   id: string,
 ): FileDiffEntry | undefined {
-  return s.fileDiffs.get(cacheKey(id, s.prefs.ignoreWhitespace));
+  return s.fileDiffs.peek(cacheKey(id, s.prefs.ignoreWhitespace));
 }

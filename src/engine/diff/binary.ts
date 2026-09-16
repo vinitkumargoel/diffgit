@@ -1,7 +1,7 @@
 /** Content-based binary sniffing, the same rule git uses (`buffer_is_binary`). Attributes are layered on by `classify`. */
 
 /** git inspects at most the first 8000 bytes for a NUL. */
-export const BINARY_SNIFF_BYTES = 8000;
+const BINARY_SNIFF_BYTES = 8000;
 
 export function isBinary(bytes: Uint8Array): boolean {
   const n = Math.min(bytes.length, BINARY_SNIFF_BYTES);
@@ -9,10 +9,7 @@ export function isBinary(bytes: Uint8Array): boolean {
   return false;
 }
 
-/** @deprecated alias kept for the rename detector; use `isBinary`. */
-export const looksBinary = isBinary;
-
-export const IMAGE_EXTENSIONS = new Set([
+const IMAGE_EXTENSIONS = new Set([
   "png",
   "jpg",
   "jpeg",

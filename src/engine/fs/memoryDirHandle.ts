@@ -216,7 +216,7 @@ export class MemoryFs {
   }
 }
 
-export class MemoryFileHandle implements FileHandleLike {
+class MemoryFileHandle implements FileHandleLike {
   readonly kind = "file" as const;
   constructor(
     private readonly fs: MemoryFs,
@@ -251,7 +251,7 @@ export class MemoryFileHandle implements FileHandleLike {
   }
 }
 
-export class MemoryDirHandle implements DirHandleLike {
+class MemoryDirHandle implements DirHandleLike {
   readonly kind = "directory" as const;
   constructor(
     private readonly fs: MemoryFs,

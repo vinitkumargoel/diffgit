@@ -33,7 +33,7 @@ export function parseColor(value: string): Rgb | null {
 }
 
 /** Source-over composite of `fg` (with alpha) on an opaque `bg`. */
-export function composite(fg: Rgb, bg: Rgb): Rgb {
+function composite(fg: Rgb, bg: Rgb): Rgb {
   const a = fg.a;
   return {
     r: fg.r * a + bg.r * (1 - a),
@@ -43,7 +43,7 @@ export function composite(fg: Rgb, bg: Rgb): Rgb {
   };
 }
 
-export function relativeLuminance(c: Rgb): number {
+function relativeLuminance(c: Rgb): number {
   const lin = (v: number) => {
     const s = v / 255;
     return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;

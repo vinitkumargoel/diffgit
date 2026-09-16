@@ -3,7 +3,7 @@
  * with a precise public error code or proceed with recorded warnings and capabilities.
  * Never throws for I/O reasons other than permission (`EACCES` → `PERMISSION`).
  */
-import { EngineError } from "../errors";
+import { EngineError, errorCode } from "../errors";
 import type { FsaFs } from "../fs/fsaFs";
 import type { RepoCapabilities, RepoWarning } from "../types";
 import type { GitConfig } from "./config";
@@ -34,8 +34,8 @@ export interface LayoutOptions {
   packTooLargeBytes?: number;
 }
 
-export const PACK_LARGE_BYTES = 300 * 1024 * 1024;
-export const PACK_TOO_LARGE_BYTES = 1024 * 1024 * 1024;
+const PACK_LARGE_BYTES = 300 * 1024 * 1024;
+const PACK_TOO_LARGE_BYTES = 1024 * 1024 * 1024;
 
 const FATAL_TEXT: Record<LayoutFatalCode, { message: string; hint: string }> = {
   NOT_A_REPO: {
@@ -72,12 +72,8 @@ const FATAL_TEXT: Record<LayoutFatalCode, { message: string; hint: string }> = {
   },
 };
 
-function code(e: unknown): string | undefined {
-  return (e as { code?: string } | null)?.code;
-}
-
 function ioMissing(e: unknown): boolean {
-  const c = code(e);
+  const c = errorCode(e);
   return c === "ENOENT" || c === "ENOTDIR" || c === "EISDIR" || c === "EINVAL";
 }
 
@@ -95,7 +91,7 @@ async function kindOf(fs: FsaFs, path: string): Promise<"file" | "dir" | null> {
     return (await fs.stat(path)).type;
   } catch (e) {
     if (ioMissing(e)) return null;
-    if (code(e) === "EACCES") permission(e);
+    if (errorCode(e) === "EACCES") permission(e);
     throw e;
   }
 }
@@ -105,7 +101,7 @@ async function readTextOrNull(fs: FsaFs, path: string): Promise<string | null> {
     return await fs.readText(path);
   } catch (e) {
     if (ioMissing(e)) return null;
-    if (code(e) === "EACCES") permission(e);
+    if (errorCode(e) === "EACCES") permission(e);
     throw e;
   }
 }
@@ -190,7 +186,7 @@ export async function checkLayout(
     try {
       entries = await fs.readdirWithKinds(".git/objects/pack");
     } catch (e) {
-      if (code(e) === "EACCES") permission(e);
+      if (errorCode(e) === "EACCES") permission(e);
       if (!ioMissing(e)) throw e;
     }
     if (entries.some((e) => e.kind === "file" && e.name.endsWith(".promisor")))
@@ -200,7 +196,7 @@ export async function checkLayout(
       try {
         packBytes += (await fs.stat(`.git/objects/pack/${e.name}`)).size;
       } catch (err) {
-        if (code(err) === "EACCES") permission(err);
+        if (errorCode(err) === "EACCES") permission(err);
         if (!ioMissing(err)) throw err; // a pack vanished mid-listing (git gc) is fine
       }
     }

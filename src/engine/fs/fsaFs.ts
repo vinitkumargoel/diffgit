@@ -17,7 +17,7 @@
  * observer-reported paths); `invalidateAll()` is for repo switch / force refresh. Any
  * NotFound/TypeMismatch on a cached handle evicts that path and retries once.
  */
-import { type FsCode, fsError } from "../errors";
+import { errorCode, type FsCode, fsError } from "../errors";
 import type { DirHandleLike, FileHandleLike, FileLike, HandleLike } from "./dirHandleLike";
 
 export interface FsStats {
@@ -89,7 +89,7 @@ export interface IoStats {
   packFiles: number;
 }
 
-export const MAX_HANDLE_CACHE = 20_000;
+const MAX_HANDLE_CACHE = 20_000;
 
 /** Normalises to a repo-relative POSIX path. Throws EINVAL on `..` segments. */
 export function normalizePath(path: string): string {
@@ -176,7 +176,7 @@ export function createFsaFs(root: DirHandleLike): FsaFs {
       return fsError("EACCES", path, syscall, e);
     }
     if (e instanceof TypeError) return fsError("EINVAL", path, syscall, e);
-    const code = (e as { code?: unknown } | null)?.code;
+    const code = errorCode(e);
     if (
       typeof code === "string" &&
       (["ENOENT", "EISDIR", "ENOTDIR", "EINVAL", "EROFS", "EACCES", "EIO"] as string[]).includes(
@@ -365,7 +365,7 @@ export function createFsaFs(root: DirHandleLike): FsaFs {
       await stat(path);
       return true;
     } catch (e) {
-      const code = (e as { code?: string }).code;
+      const code = errorCode(e);
       if (code === "ENOENT" || code === "ENOTDIR") return false;
       throw e;
     }
@@ -422,6 +422,5 @@ export function createFsaFs(root: DirHandleLike): FsaFs {
 
 /** Node-style code of an fs error thrown by this adapter (or undefined). */
 export function fsCode(e: unknown): FsCode | undefined {
-  const code = (e as { code?: unknown } | null)?.code;
-  return typeof code === "string" ? (code as FsCode) : undefined;
+  return errorCode(e) as FsCode | undefined;
 }

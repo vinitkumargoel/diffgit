@@ -7,7 +7,7 @@ export interface IncludeWorktreeToggleProps {
   onChange: (on: boolean) => void;
 }
 
-export function disabledReason(headDisplay: string): string {
+function disabledReason(headDisplay: string): string {
   return `Only available when the source is the checked-out branch (${headDisplay})`;
 }
 

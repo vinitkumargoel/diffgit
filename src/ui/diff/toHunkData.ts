@@ -9,7 +9,7 @@ export function hunkHeader(
   return `@@ -${h.oldStart},${h.oldCount} +${h.newStart},${h.newCount} @@`;
 }
 
-export function toChange(l: HunkLine): ChangeData {
+function toChange(l: HunkLine): ChangeData {
   switch (l.type) {
     case "add":
       return { type: "insert", isInsert: true, lineNumber: l.new ?? 0, content: l.text };
@@ -30,7 +30,7 @@ export function toChange(l: HunkLine): ChangeData {
  * Orders every run of changed lines as git does (deletions, then insertions) so the split view
  * pairs a removed line with its replacement; context lines keep their place.
  */
-export function normaliseLines(lines: readonly HunkLine[]): HunkLine[] {
+function normaliseLines(lines: readonly HunkLine[]): HunkLine[] {
   const out: HunkLine[] = [];
   let dels: HunkLine[] = [];
   let adds: HunkLine[] = [];

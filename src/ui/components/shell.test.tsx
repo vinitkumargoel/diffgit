@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DiffResult, RepoInfo } from "../../engine/types";
 import basicDiff from "../../test/recorded/showcase.diffresult.json";
@@ -125,10 +125,16 @@ describe("ThemeToggle", () => {
 
 describe("LiveRegion", () => {
   it("mirrors the store announcement in a polite live region", () => {
-    seed({ announcement: "Diff updated: 3 files" });
+    seed({ announcement: "Diff updated: 3 files", announcementSeq: 1 });
     render(<LiveRegion />);
-    const region = screen.getByText("Diff updated: 3 files");
+    const text = screen.getByText("Diff updated: 3 files");
+    const region = text.closest("output") as HTMLElement;
     expect(region.getAttribute("aria-live")).toBe("polite");
     expect(region.getAttribute("aria-atomic")).toBe("true");
+    // the same text announced again gets a fresh node (T7.5: screen readers re-announce)
+    act(() => useStore.setState({ announcement: "Diff updated: 3 files", announcementSeq: 2 }));
+    const again = screen.getByText("Diff updated: 3 files");
+    expect(again).not.toBe(text);
+    expect(again.closest("output")).toBe(region);
   });
 });

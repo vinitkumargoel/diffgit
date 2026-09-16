@@ -43,7 +43,7 @@ export function approxBytes(value: unknown): number {
 }
 
 /** Wraps a sink so the client can count what the worker sends back. */
-export function countingSink(sink: ProgressSink, m: ClientMetrics): ProgressSink {
+function countingSink(sink: ProgressSink, m: ClientMetrics): ProgressSink {
   return {
     onProgress: (p) => {
       m.sink.progress++;

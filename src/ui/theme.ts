@@ -11,10 +11,6 @@ function setDarkClass(dark: boolean): void {
   document.documentElement.classList.toggle("dark", dark);
 }
 
-export function systemPrefersDark(): boolean {
-  return typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: dark)").matches;
-}
-
 /** Applies the theme to <html> and keeps following the OS setting while `theme === "system"`. */
 export function applyTheme(theme: Theme): void {
   if (mediaQuery && listener) {
@@ -32,9 +28,4 @@ export function applyTheme(theme: Theme): void {
     return;
   }
   setDarkClass(theme === "dark");
-}
-
-/** True when the document currently renders the dark palette. */
-export function isDark(): boolean {
-  return document.documentElement.classList.contains("dark");
 }

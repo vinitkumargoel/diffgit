@@ -3,6 +3,11 @@ export class Lru<K, V> {
   private map = new Map<K, V>();
   constructor(readonly max: number) {}
 
+  /** Read without touching recency: for selectors, which React/zustand re-run on every update. */
+  peek(key: K): V | undefined {
+    return this.map.get(key);
+  }
+  /** Read and mark as most recently used. */
   get(key: K): V | undefined {
     const v = this.map.get(key);
     if (v !== undefined) {

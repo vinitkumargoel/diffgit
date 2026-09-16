@@ -1,14 +1,6 @@
 import { markEdits, tokenize } from "react-diff-view";
 import type { TokenizeInput, TokenizeRequest, TokenizeResponse, TokenizeResult } from "./protocol";
 
-type Tokenizer = (input: TokenizeInput) => Promise<TokenizeResult>;
-
-let override: Tokenizer | null = null;
-/** Test seam: replace the worker with a function. */
-export function setTokenizer(t: Tokenizer | null): void {
-  override = t;
-}
-
 /** Word-level marks only, on the calling thread — the fallback when no Worker is available. */
 export function inlineTokenize(input: TokenizeInput): TokenizeResult {
   const source = input.oldSource === null ? {} : { oldSource: input.oldSource };
@@ -63,7 +55,6 @@ function getWorker(): Worker {
  * marks-only inline tokenisation when Workers are unavailable (tests) or the worker fails.
  */
 export function tokenizeHunks(input: TokenizeInput): Promise<TokenizeResult> {
-  if (override) return override(input);
   if (!workerAvailable()) return Promise.resolve(inlineTokenize(input));
   return new Promise<TokenizeResult>((resolve, reject) => {
     const reqId = ++seq;

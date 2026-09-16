@@ -7,10 +7,10 @@
  * pass (FSA cannot see link text or submodule state); mode changes are invisible in the worktree
  * (FSA has no mode) and show only once staged; no autocrlf normalisation; sparse subtrees are opaque.
  */
-import { EngineError } from "../errors";
+import { EngineError, errorCode } from "../errors";
 import type { FileLike } from "../fs/dirHandleLike";
 import type { FsaFs } from "../fs/fsaFs";
-import type { Oid, RepoWarning } from "../types";
+import { MODE_GITLINK, type Oid, type RepoWarning } from "../types";
 import { pLimit, throwIfAborted } from "../util/concurrency";
 import type { GitConfig } from "./config";
 import { hashBlob, hashBlobStream } from "./hash";
@@ -59,7 +59,6 @@ export interface ScannerOptions {
 }
 
 const MODE_SYMLINK = 0o120000;
-const MODE_GITLINK = 0o160000;
 
 interface StatCacheEntry {
   size: number;
@@ -67,11 +66,7 @@ interface StatCacheEntry {
   oid: Oid;
 }
 
-function code(e: unknown): string | undefined {
-  return (e as { code?: string } | null)?.code;
-}
-
-export function entryMtimeMs(e: IndexEntry): number {
+function entryMtimeMs(e: IndexEntry): number {
   return e.mtimeSec * 1000 + Math.floor(e.mtimeNsec / 1e6);
 }
 
@@ -217,7 +212,7 @@ export class WorktreeScanner {
       try {
         entries = await this.fs.readdirWithKinds(dir);
       } catch (err) {
-        if (code(err) === "ENOENT" || code(err) === "ENOTDIR") return;
+        if (errorCode(err) === "ENOENT" || errorCode(err) === "ENOTDIR") return;
         throw err;
       }
       stats.walkedDirs++;
@@ -261,7 +256,7 @@ export class WorktreeScanner {
                 if (oid) stats.hashed++;
                 untrackedInfo[path] = { oid, size: f.size, lastModified: f.lastModified };
               } catch (err) {
-                if (code(err) === "ENOENT" || code(err) === "EISDIR") return; // vanished mid-scan
+                if (errorCode(err) === "ENOENT" || errorCode(err) === "EISDIR") return; // vanished mid-scan
                 throw err;
               }
             }),
@@ -291,7 +286,7 @@ export class WorktreeScanner {
           try {
             f = await this.fs.openFile(e.path);
           } catch (err) {
-            const c = code(err);
+            const c = errorCode(err);
             if (c === "ENOENT" || c === "ENOTDIR") {
               unstaged[e.path] = { oldOid: e.oid, newOid: null, oldMode: e.mode, newMode: null };
               return;

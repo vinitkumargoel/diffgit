@@ -16,8 +16,8 @@ export interface RefreshControlProps {
 }
 
 /** Holding the button this long (ms) triggers a force refresh. */
-export const LONG_PRESS_MS = 600;
-export const FORCE_HINT =
+const LONG_PRESS_MS = 600;
+const FORCE_HINT =
   "Force refresh re-reads every file (use if a change isn't showing): Shift+click, hold, or Shift+R";
 
 const PHASE_LABEL: Partial<Record<ProgressPhase, string>> = {
