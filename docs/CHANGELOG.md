@@ -8,6 +8,13 @@ _(none yet)_
 
 ---
 
+## T0.2 — Cloudflare Pages pipeline
+
+- `wrangler.toml` (`pages_build_output_dir = "dist"`), `public/_headers` (CSP + nosniff, no-referrer, Permissions-Policy, COOP), `public/_redirects` SPA rule, `bun run deploy`, `scripts/check-prod.sh` (CSP identical to the file, security headers, no Cloudflare-injected scripts, deep link 200; GET with retries), `docs/deploy.md`.
+- Project `diffgoel` created on classic Pages (`--force` was needed once because wrangler 4.132 delegates `pages project create` to Workers and fails without an entry point). Hello-world deployed: https://diffgoel.pages.dev — `scripts/check-prod.sh https://diffgoel.pages.dev` passes all six checks.
+- Custom domain `diff.vinitk.dev` registered on the project via the Pages API (wrangler 4.x has no `pages domain` command). Status `pending: CNAME record not set` — the wrangler OAuth token only has `zone:read`, so the CNAME must be added by the owner (dashboard "Set up a custom domain" or a DNS record `diff → diffgoel.pages.dev`, proxied). Everything else in this task is done; the two domain ACs are ticked once DNS exists.
+- Edge-injection settings (Web Analytics, Rocket Loader, Email Obfuscation, Auto Minify, Mirage/Polish, Zaraz) documented in `docs/deploy.md`; the served HTML currently contains none of their markers.
+
 ## T0.4 — Test harness
 
 - `src/engine/fs/dirHandleLike.ts` (structural FSA view + `handleError`/`isHandleError` with browser error names), `nodeDirHandle.ts` (test-only; follows symlinks like Chrome, integer `lastModified`, dangling links invisible), `memoryDirHandle.ts` (`MemoryFs` + handles that see later mutations; `Mutation` ops write/remove/touch/rename/mkdir/dropRoot; base64 snapshots).
