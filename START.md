@@ -72,7 +72,7 @@ Keep this board updated (edit this file; one line per task):
 | T0.4 | done | agent / 2026-09-16 | shim verified in bun (E2E policy) |
 | T1.1 | done | agent / 2026-09-16 | |
 | T1.2 | done | agent / 2026-09-16 | |
-| T1.3 | todo | | |
+| T1.3 | done | agent / 2026-09-16 | flattenTree perf-5k ≈ 30–150 ms |
 | T1.4 | todo | | |
 | T1.5 | done | agent / 2026-09-16 | |
 | T1.6 | todo | | spike, gates Phase 2 |

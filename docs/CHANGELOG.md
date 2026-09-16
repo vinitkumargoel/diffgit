@@ -8,6 +8,14 @@ _(none yet)_
 
 ---
 
+## T1.3 — ObjectDb
+
+- `src/engine/git/objectDb.ts`: isomorphic-git wrapper with one session `cache`; `resolveRef` (oids pass through; `REF_NOT_FOUND` otherwise), `tryResolveRef`, `readSymref` (raw loose-file read; `origin/HEAD` lives only there), `listLocalBranches`, `listRemoteBranches` (drops the `HEAD` pseudo-entry), `readCommit`, `readBlob`, `findMergeBase` → `{ oid: all[0], all }` (unrelated or missing ancestors → `{ null, [] }`, never throws), `flattenTree` (recursive `readTree`, concurrent per level, bytewise-sorted, memoised per oid), `dropCaches(includePacks)`.
+- Stale-pack retry: object reads that fail with isomorphic-git's "Could not read packfile"/trailer-mismatch errors (or ENOENT/EIO naming a `.pack`/`.idx`) drop the pack cache + `.git/objects` handle cache, retry once and emit `STALE_PACK_RETRIED` through an optional `onWarning` sink.
+- Parity: `refs.json` on basic/packed/remote, `merge-base.json` on basic/packed/remote, `unrelated` → null, `crisscross` → both bases from `merge-base-all.json` (we keep `all[0]`; git's single pick happened to match in this fixture), synthetic shallow (loose parent objects removed + `.git/shallow`), `ls-tree.json` on basic/packed/symlink/submodule (120000/160000/100755 modes), blob bytes vs disk from the delta pack, spy-based zero-write check.
+- Measured: `flattenTree` of `perf-5k` tip (5,000 entries, packed) = 31–144 ms in bun (budget 400 ms) with recursive `readTree`; `git.walk(TREE)` was not needed.
+- Fixture tooling fix: the expectations script now passes large `ls-tree` JSON through temp files (`--slurpfile`) — `--argjson` blew the argv limit on `perf-5k`.
+
 ## T1.2 — Layout checks
 
 - `src/engine/git/layoutChecks.ts`: `checkLayout(fs, config, opts?) → LayoutReport { ok, fatal?, capabilities, warnings, packBytes }`. Fatal codes: `NOT_A_REPO`, `WORKTREE_GITDIR` (`.git` file with `gitdir:`), `BARE_REPO` (HEAD+objects+refs at root), `REFTABLE` (dir, `refs/heads` file, or `extensions.refStorage`), `OBJECT_FORMAT_SHA256`, `ALTERNATES`, `PARTIAL_CLONE` (`extensions.partialClone`, `remote.*.promisor`, or `*.promisor` packs), `PACK_TOO_LARGE` (> 1 GB). Warnings: `PACK_LARGE` (> 300 MB), `MULTI_PACK_INDEX`, `SHALLOW`, `LFS_PRESENT`, `AUTOCRLF`. Each fatal carries user copy + hint.

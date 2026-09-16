@@ -134,21 +134,24 @@ dump() { # dump <fixture-name>
     numstat_json "$r" $range > "$exp/numstat.json"
     # shellcheck disable=SC2086
     numstat_json "$r" -w $range > "$exp/numstat-w.json"
-    local defaultOid featureOid baseTree
+    local defaultOid featureOid tmp
     defaultOid=$(G -C "$r" rev-parse "$default"); featureOid=$(G -C "$r" rev-parse feature)
-    if [ -n "$mb" ]; then baseTree=$(ls_tree_json "$r" "$mb"); else baseTree=null; fi
+    # Large trees (perf-5k) exceed the argv limit for --argjson: pass them through files instead.
+    tmp=$(mktemp -d)
+    if [ -n "$mb" ]; then ls_tree_json "$r" "$mb" > "$tmp/base.json"; else echo null > "$tmp/base.json"; fi
+    ls_tree_json "$r" "$defaultOid" > "$tmp/default.json"
+    ls_tree_json "$r" "$featureOid" > "$tmp/feature.json"
     jq -n --arg base "$mb" --arg d "$default" --arg dOid "$defaultOid" --arg fOid "$featureOid" \
-      --argjson baseTree "$baseTree" \
-      --argjson defaultTree "$(ls_tree_json "$r" "$defaultOid")" \
-      --argjson featureTree "$(ls_tree_json "$r" "$featureOid")" \
+      --slurpfile baseTree "$tmp/base.json" --slurpfile defaultTree "$tmp/default.json" --slurpfile featureTree "$tmp/feature.json" \
       '{base: (if $base == "" then null else $base end), default: $d, defaultOid: $dOid, featureOid: $fOid,
-        trees: ({} | .[$dOid] = $defaultTree | .[$fOid] = $featureTree | if $base != "" then .[$base] = $baseTree else . end)}' > "$exp/ls-tree.json"
+        trees: ({} | .[$dOid] = $defaultTree[0] | .[$fOid] = $featureTree[0] | if $base != "" then .[$base] = $baseTree[0] else . end)}' > "$exp/ls-tree.json"
     # working-tree layer: worktree vs merge-base, plus untracked paths
     local wtBase="$mb"; [ -z "$wtBase" ] && wtBase="$default"
-    jq -n --arg base "$wtBase" \
-      --argjson changes "$(name_status_json "$r" --no-renames "$wtBase")" \
-      --argjson untracked "$(jq '[.[] | select(.type == "?") | .path]' "$exp/status-porcelain-v2.json")" \
-      '{base: $base, changes: $changes, untracked: $untracked}' > "$exp/worktree-layer.json"
+    name_status_json "$r" --no-renames "$wtBase" > "$tmp/changes.json"
+    jq '[.[] | select(.type == "?") | .path]' "$exp/status-porcelain-v2.json" > "$tmp/untracked.json"
+    jq -n --arg base "$wtBase" --slurpfile changes "$tmp/changes.json" --slurpfile untracked "$tmp/untracked.json" \
+      '{base: $base, changes: $changes[0], untracked: $untracked[0]}' > "$exp/worktree-layer.json"
+    rm -rf "$tmp"
   fi
   jq -n --arg name "$name" --arg default "$default" --arg headBranch "$headBranch" --arg mb "$mb" --arg range "$range" \
     --argjson hasHead "$hasHead" --argjson hasFeature "$hasFeature" \
