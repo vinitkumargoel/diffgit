@@ -107,8 +107,8 @@ Keep this board updated (edit this file; one line per task):
 | T7.4 | done | agent / 2026-09-17 | CSP tightened; DevTools check pending T8.2 |
 | T7.5 | done | agent / 2026-09-17 | 9 backlog items in docs/backlog.md |
 | T8.1 | done | agent / 2026-09-17 | screenshots via scripts/screenshots.ts |
-| T8.2 | in-progress | agent / 2026-09-17 | owner: 3 real repos |
-| T8.3 | todo | | |
+| T8.2 | blocked | agent / 2026-09-17 | deployed 76c5ce0 on pages.dev; owner: CNAMEs, §13 smoke on 3 repos, tag v1.0.0 |
+| T8.3 | done | agent / 2026-09-17 | V1–V10 + B1–B10 in docs/backlog.md |
 
 Statuses: `todo` → `in-progress` → `review` → `done` (or `blocked: <reason>`).
 

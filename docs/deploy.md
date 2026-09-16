@@ -26,12 +26,15 @@ Static site, project `diffgoel`, custom domain `diff.vinitk.dev` (zone `vinitk.d
 ```
 bun run check && bunx playwright test   # green first
 bun run deploy                          # = bun run build && scripts/check-dist.sh && bunx wrangler pages deploy dist --project-name diffgoel
-scripts/check-prod.sh
+scripts/check-prod.sh https://diff.vinitk.dev "$(git rev-parse --short HEAD)"   # headers + served build id
 ```
 
 `scripts/check-dist.sh` (T7.4) refuses to ship a bundle that contains the E2E memory-handle shim
 (only present when built with `VITE_E2E=1`), `eval`/`new Function`, WebAssembly, an inline script,
 or a `_headers` file that differs from `public/_headers`.
+
+Every build carries the short commit id: `<meta name="build-id">` in `index.html` and "Build <id>"
+in the help dialog (`?`). `check-prod.sh <url> <id>` fails when a host serves a different commit.
 
 ## Cloudflare edge injection — must stay OFF (D15 / CSP)
 

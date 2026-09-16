@@ -15,6 +15,21 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T8.3 — v2 backlog
+
+- `docs/backlog.md`: ten sized v2 candidates (V1–V10), each naming the abstraction that enables it (`DiffSource` kinds, `ObjectDb` commit walk, `Scheduler.request(paths)` + `RepoSession.invalidate`, `detectRenames` spanhash, `GitAttributes`, `MemoryFs`/`DirHandleLike`, plain-JSON `DiffResult`), plus the ten items deferred from v1 by the T7.3–T8.1 reviews (B1–B10).
+
+---
+
+## T8.2 — Deploy v1
+
+- Step 1: `bun run check` (228 engine + 186 UI tests, guards) and Playwright 3/3 green on `main` at every commit of this phase.
+- Step 2: `bun run deploy` (build → `check-dist.sh` → wrangler) deployed `76c5ce0`; `scripts/check-prod.sh https://diffgoel.pages.dev 76c5ce0` → CSP identical to `public/_headers`, nosniff / no-referrer / COOP, no injected scripts, served build id `76c5ce0` (new `<meta name="build-id">`, also "Build 76c5ce0" in the help dialog), deep link 200. The custom hostnames `diff`, `diff-fb`, `diff-ds` still have no CNAME → `diff.vinitk.dev` does not resolve (owner action, `docs/deploy.md` step 4).
+- Step 3 (automated part): zero-write proof (`bun scripts/spike-s2.ts`) on three real repositories — this one (279 index entries, loose objects), `openusage` (47 MB in 5 packs), `harper` (1,830 entries, 21 MB pack): 0 write-capable calls, 0 `.git` files newer than the marker, `git status` and `git fsck` identical. `check-prod.sh` passes on the Pages host. **Owner part pending:** the §13 checklist walked in Chrome on those repos (recents, defaults, parity spot-check against `git diff -M`, badges, live refresh ≤ 1 s / ≤ 3 s, empty state, view controls, images/binaries/huge gate, DevTools Network empty after load).
+- Step 4: no git remote is configured in this checkout, so `v1.0.0` is not tagged or pushed here; owner tags after the smoke test (release notes = this file, T0.1 → T8.3). Step 5 (Git-connected deploys) stays optional as documented.
+
+---
+
 ## T8.1 — README and docs
 
 - `README.md`: what it is, light/dark screenshots (`scripts/screenshots.ts` captures the `worktree` fixture headlessly through the E2E shim), three-step usage, privacy model, supported browsers and why, limitations table (each row names the code/banner or the behaviour that documents it) with the review-round-1 amendments applied (racy edits detected via git's rule + Shift+R; symlinks/submodules committed-or-staged only; built-in excludes on by default; refused layouts listed), size-limit table from Plan §6.7 corrected to the shipped constants (virtualisation from 300 rows, stats streamed with visible rows first), development commands, links to Plan/Design/docs.
