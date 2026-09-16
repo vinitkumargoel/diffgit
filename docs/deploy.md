@@ -56,6 +56,11 @@ Email Obfuscation, scope it with a Configuration Rule that disables them for `di
   (this network shows intermittent TLS resets to Cloudflare edges).
 - Custom domain `diff.vinitk.dev` was registered on the project (status `pending`, "CNAME record not
   set") and is waiting for the owner to add the CNAME as described in step 4.
+- 2026-09-16: `diff-fb.vinitk.dev` registered the same way (owner asked for `diff_fb.vinitk.dev`; the
+  Pages API rejects underscores: "Domain is invalid", and public CAs do not issue certificates for
+  such names). `diff-ds.vinitk.dev` was already present. All three wait for their proxied CNAME
+  `<host> → diffgoel.pages.dev`; none resolves yet. Every custom domain serves the same latest
+  production deployment.
 
 ## Rollback
 
