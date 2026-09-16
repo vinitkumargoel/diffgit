@@ -70,7 +70,7 @@ Keep this board updated (edit this file; one line per task):
 | T0.2 | blocked: owner must add CNAME diff → diffgoel.pages.dev | agent / 2026-09-16 | project + deploy + domain registration done; pages.dev passes check-prod |
 | T0.3 | done | agent / 2026-09-16 | 27 fixtures, jq required |
 | T0.4 | done | agent / 2026-09-16 | shim verified in bun (E2E policy) |
-| T1.1 | todo | | |
+| T1.1 | done | agent / 2026-09-16 | |
 | T1.2 | todo | | |
 | T1.3 | todo | | |
 | T1.4 | todo | | |

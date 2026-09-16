@@ -8,6 +8,14 @@ _(none yet)_
 
 ---
 
+## T1.1 — FsaFs read-only adapter
+
+- `src/engine/fs/fsaFs.ts`: `createFsaFs(root)` → `{ promises, openFile, readdirWithKinds, getDirHandle, readFile, readText, stat, exists, invalidatePath, invalidateAll, cacheSize }`. `promises` covers everything isomorphic-git binds (`readFile/readdir/stat/lstat/readlink` + `writeFile/unlink/mkdir/rmdir/rm/symlink/chmod/rename`, the latter all throwing `EROFS` before any I/O). `dir` is always `"/"`; paths are normalised to repo-relative POSIX.
+- Error mapping: NotFoundError→ENOENT, TypeMismatchError→ENOTDIR (dir expected or intermediate segment) / EISDIR, NotAllowedError/SecurityError→EACCES, TypeError→EINVAL, else EIO; `..`→EINVAL; `readlink`→EINVAL. Semantics follow Node (`readdir("file/x")` is ENOTDIR).
+- Handle cache per path with in-flight de-duplication, cap 20k (clear-all beyond), `invalidatePath` drops the subtree; NotFound/TypeMismatch on a cached handle evicts and retries once (kind changes file↔dir are handled).
+- Tests (`fsaFs.test.ts`, 16) incl. the D16 invariant with `src/test/spyHandle.ts` (a Proxy wrapper exposing only read methods, counting calls and any options argument) and isomorphic-git `resolveRef` on `basic` and `packed`. Note: isomorphic-git probes promise-fs support by calling `readFile()` with no args, so `readFile` must reject rather than throw synchronously.
+- Finding for T3.5: isomorphic-git's ESM build uses a global `Buffer` (and `sha.js` → `safe-buffer` → `buffer`); the worker must install the `buffer` polyfill as `globalThis.Buffer`.
+
 ## T0.2 — Cloudflare Pages pipeline
 
 - `wrangler.toml` (`pages_build_output_dir = "dist"`), `public/_headers` (CSP + nosniff, no-referrer, Permissions-Policy, COOP), `public/_redirects` SPA rule, `bun run deploy`, `scripts/check-prod.sh` (CSP identical to the file, security headers, no Cloudflare-injected scripts, deep link 200; GET with retries), `docs/deploy.md`.
