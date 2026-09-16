@@ -92,7 +92,7 @@ Keep this board updated (edit this file; one line per task):
 | T5.0 | done | ui-agent / 2026-09-16 | ADR-001: react-diff-view + HunkModel, Shiki 4 JS engine in a UI worker |
 | T5.1 | done | ui-agent / 2026-09-16 | Design §7.1–7.2; cmdk 1.1.1; Badge created here |
 | T5.2 | done | ui-agent / 2026-09-16 | Design §7.4; StatusIcon/LayerChip created; react-virtual 3.14.13 |
-| T5.3 | todo | | Design §7.5–7.6 |
+| T5.3 | done | ui-agent / 2026-09-16 | Design §7.5–7.6; react-diff-view + Shiki worker; 3,000-line file paints in 88 ms |
 | T5.4 | todo | | Design §7.7 |
 | T5.5 | todo | | Design §3.4, §7.3, §7.8 |
 | T5.6 | todo | | Design §3, §8, §9, §11 |

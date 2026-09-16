@@ -1,9 +1,10 @@
+import { DiffPane } from "./DiffPane";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 
 /**
- * Repo view shell (Design §6): TopBar (T5.1), Sidebar (T5.2); WarningBanners (T5.5) and DiffPane
- * (T5.3) fill the remaining rows. Default export: React lazy chunk.
+ * Repo view shell (Design §6): TopBar (T5.1), Sidebar (T5.2), DiffPane (T5.3); WarningBanners
+ * (T5.5) slot between the bar and the body. Default export: React lazy chunk.
  */
 export default function RepoScreen() {
   return (
@@ -11,7 +12,7 @@ export default function RepoScreen() {
       <TopBar />
       <div className="flex min-h-0 flex-1">
         <Sidebar />
-        <section id="diff" aria-label="Diff" className="min-h-0 flex-1 overflow-y-auto" />
+        <DiffPane />
       </div>
     </main>
   );

@@ -332,6 +332,122 @@
     line-height: 14px;
     font-weight: 500;
   }
+  /* Small bordered button (Design §7.5 "⇕ Expand all": 2px 6px, 11px) */
+  .btn-sm {
+    padding: 2px 6px;
+    font-size: 11px;
+    line-height: 16px;
+    gap: 4px;
+  }
+  /* 18 × 18 hunk-header mini button (Design §7.6) */
+  .btn-mini {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .btn-mini:hover:not(:disabled) {
+    background: var(--surface-raised);
+    color: var(--ink);
+  }
+  .btn-mini:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  /* DiffBody (Design §7.6) on react-diff-view markup */
+  .dg-diff table.diff {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 20px;
+  }
+  .dg-diff .diff-gutter-col {
+    width: 46px;
+  }
+  .dg-diff .diff-split .diff-gutter-col {
+    width: 44px;
+  }
+  .dg-diff .diff-gutter {
+    padding: 0 8px 0 0;
+    text-align: right;
+    vertical-align: top;
+    color: var(--muted);
+    background: var(--diff-ctx-num);
+    user-select: none;
+  }
+  .dg-diff .diff-gutter-insert {
+    color: var(--ink);
+    background: var(--diff-add-num);
+  }
+  .dg-diff .diff-gutter-delete {
+    color: var(--ink);
+    background: var(--diff-del-num);
+  }
+  .dg-diff .diff-code {
+    position: relative;
+    padding: 0 8px 0 22px;
+    white-space: pre;
+    overflow-wrap: normal;
+    word-break: normal;
+    vertical-align: top;
+  }
+  .dg-diff .diff-code::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 6px;
+    color: var(--muted);
+    user-select: none;
+  }
+  .dg-diff .diff-code-insert {
+    background: var(--diff-add-bg);
+  }
+  .dg-diff .diff-code-insert::before {
+    content: "+";
+  }
+  .dg-diff .diff-code-delete {
+    background: var(--diff-del-bg);
+  }
+  .dg-diff .diff-code-delete::before {
+    content: "−";
+  }
+  .dg-diff .diff-code-edit {
+    border-radius: 2px;
+    background: var(--diff-add-word);
+  }
+  .dg-diff .diff-code-delete .diff-code-edit {
+    background: var(--diff-del-word);
+  }
+  .dg-diff .diff-code-omit,
+  .dg-diff .diff-gutter-omit {
+    background: var(--diff-empty);
+  }
+  .dg-diff .diff-split td:nth-child(3) {
+    border-left: 1px solid var(--line);
+  }
+  .dg-diff .diff-decoration {
+    color: var(--diff-hunk-ink);
+    background: var(--diff-hunk-bg);
+  }
+  .dg-diff .diff-decoration-gutter,
+  .dg-diff .diff-decoration-content {
+    padding: 0;
+  }
+  .dg-diff [data-sh] {
+    color: var(--shl);
+  }
+  .dark .dg-diff [data-sh] {
+    color: var(--shd);
+  }
   /* Popover surface (Design §5, §7.1) */
   .popover {
     background: var(--surface);
