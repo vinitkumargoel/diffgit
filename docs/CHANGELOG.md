@@ -15,6 +15,14 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T8.1 — README and docs
+
+- `README.md`: what it is, light/dark screenshots (`scripts/screenshots.ts` captures the `worktree` fixture headlessly through the E2E shim), three-step usage, privacy model, supported browsers and why, limitations table (each row names the code/banner or the behaviour that documents it) with the review-round-1 amendments applied (racy edits detected via git's rule + Shift+R; symlinks/submodules committed-or-staged only; built-in excludes on by default; refused layouts listed), size-limit table from Plan §6.7 corrected to the shipped constants (virtualisation from 300 rows, stats streamed with visible rows first), development commands, links to Plan/Design/docs.
+- `docs/README.md` index of every document.
+- Accuracy notes: unstaged `chmod` is not detected (the scan compares content) — stated as a limitation; the amendment's "toggle in settings" for built-in excludes does not exist in the UI → stated as "no toggle yet" and logged as backlog B10 rather than built in a docs task.
+
+---
+
 ## T7.5 — Code review and simplification passes
 
 Reviews (all read-only agents, findings triaged fix-now vs backlog):
