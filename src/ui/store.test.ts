@@ -3,6 +3,7 @@ import type { RepoInfo } from "../engine/types";
 import basicInfo from "../test/recorded/basic.repoinfo.json";
 import { Lru } from "./lru";
 import {
+  configurePersistence,
   isViewed,
   selectCanIncludeWorktree,
   selectTotals,
@@ -47,6 +48,23 @@ describe("store", () => {
     expect(selectCanIncludeWorktree(s)).toBe(true);
     await vi.waitFor(() => expect(Object.keys(useStore.getState().stats).length).toBe(12));
     expect(selectTotals(useStore.getState()).additions).toBeGreaterThan(3000);
+  });
+
+  it("stats streamed before the result is committed (slow loadViewed) are not lost", async () => {
+    configurePersistence({
+      loadViewed: async () => {
+        await new Promise((r) => setTimeout(r, 30));
+        return new Set<string>();
+      },
+    });
+    try {
+      await openBasic();
+      // every batch fired (setTimeout 0) while recompute() was still awaiting loadViewed
+      expect(Object.keys(useStore.getState().stats).length).toBe(12);
+      expect(selectTotals(useStore.getState()).additions).toBeGreaterThan(3000);
+    } finally {
+      configurePersistence({});
+    }
   });
 
   it("remembered branches are applied when they still exist", async () => {

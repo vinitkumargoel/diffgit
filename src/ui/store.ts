@@ -205,6 +205,12 @@ export function setStoreClient(client: WorkerClient | null): void {
   restartUnsub = null;
 }
 let restartUnsub: (() => void) | null = null;
+/**
+ * Stats batches that arrive over the sink before `recompute()` has committed the matching
+ * `DiffResult` (the worker streams them while `computeDiff` is still resolving and while we await
+ * `loadViewed`). Keyed by generation; merged into `stats` when the result lands.
+ */
+const pendingStats = new Map<number, Record<string, FileStats>>();
 function client(): WorkerClient {
   const c = clientOverride ?? getWorkerClient();
   if (!restartUnsub) {
@@ -275,8 +281,15 @@ export const useStore = create<StoreState>()((set, get) => {
     },
     onStats(batch: StatsBatch) {
       const s = get();
-      if (!s.diff || batch.generation !== s.diff.generation) return;
-      set({ stats: { ...s.stats, ...batch.stats } });
+      if (s.diff && batch.generation === s.diff.generation) {
+        set({ stats: { ...s.stats, ...batch.stats } });
+        return;
+      }
+      if (s.diff && batch.generation < s.diff.generation) return; // stale generation
+      pendingStats.set(batch.generation, {
+        ...(pendingStats.get(batch.generation) ?? {}),
+        ...batch.stats,
+      });
     },
     onWarning(w: RepoWarning) {
       set((s) =>
@@ -438,6 +451,9 @@ export const useStore = create<StoreState>()((set, get) => {
         for (const f of result.files) if (f.stats) stats[f.id] = f.stats;
         const keys = result.files.map((f) => viewedKey(current.repoId ?? "", result.source, f));
         const viewed = await persistence.loadViewed(keys);
+        // batches streamed before this point were parked by the sink
+        Object.assign(stats, pendingStats.get(result.generation));
+        for (const g of pendingStats.keys()) if (g <= result.generation) pendingStats.delete(g);
         const stillThere = new Set(result.files.map((f) => f.id));
         const activeFileId =
           current.activeFileId && stillThere.has(current.activeFileId)

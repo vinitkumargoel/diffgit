@@ -313,6 +313,76 @@
     padding: 0;
     justify-content: center;
   }
+  /* Active/pressed segment or toggle (Design §8) */
+  .pressed {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+  /* kbd hint (Design §7.2): 10px monospace, bordered */
+  .kbd {
+    display: inline-block;
+    padding: 0 4px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--surface);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 14px;
+    font-weight: 500;
+  }
+  /* Popover surface (Design §5, §7.1) */
+  .popover {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-popover);
+  }
+  /* BranchPicker list (cmdk attributes; Design §7.1) */
+  [cmdk-input] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 20px;
+  }
+  [cmdk-input]:focus {
+    outline: none;
+  }
+  [cmdk-group-heading] {
+    padding: 6px 8px 2px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  [cmdk-item] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 4px;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 20px;
+    cursor: pointer;
+  }
+  [cmdk-item][data-selected="true"] {
+    background: var(--surface-raised);
+  }
+  [cmdk-empty] {
+    padding: 8px 12px;
+    color: var(--muted);
+    font-size: 12px;
+  }
   .spin {
     animation: spin 1s linear infinite;
   }

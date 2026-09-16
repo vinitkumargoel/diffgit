@@ -204,7 +204,8 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       const batch = queue.splice(0, 5);
       if (batch.length === 0) return;
       const stats: Record<string, FileStats> = {};
-      for (const f of batch) stats[f.id] = mockPayload(f, gen, false, true).stats;
+      // Recorded stats win (they match the real engine's numbers); synthesise only when missing.
+      for (const f of batch) stats[f.id] = f.stats ?? mockPayload(f, gen, false, true).stats;
       sink.onStats({ generation: gen, stats });
       sink.onProgress({ phase: "stats", done: files.length - queue.length, total: files.length });
       if (queue.length) statsTimer = setTimeout(tick, client.latency);
