@@ -25,4 +25,6 @@ else echo "FAIL dist/_headers differs from public/_headers"; fail=1; fi
 if grep -q "connect-src 'none'" dist/_headers; then echo "OK   CSP has connect-src 'none'"
 else echo "FAIL CSP lacks connect-src 'none'"; fail=1; fi
 [ -f dist/_redirects ] && echo "OK   _redirects present" || { echo "FAIL _redirects missing"; fail=1; }
+if grep -qE 'name="build-id" content="[0-9a-f]{7,}"' dist/index.html; then echo "OK   build id meta present ($(grep -oE 'name="build-id" content="[^"]+"' dist/index.html | sed 's/.*content="//; s/"$//'))"
+else echo "FAIL build id meta missing or not a commit id (dev build?)"; fail=1; fi
 exit $fail

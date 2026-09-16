@@ -42,10 +42,25 @@ export function buildId(): string {
   }
 }
 
+const BUILD_ID = buildId();
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    {
+      // `<meta name="build-id">` lets scripts/check-prod.sh verify which commit a host serves.
+      name: "diffgoel-build-id-meta",
+      transformIndexHtml(html) {
+        return html.replace(
+          "</head>",
+          `  <meta name="build-id" content="${BUILD_ID}" />\n  </head>`,
+        );
+      },
+    },
+  ],
   define: {
-    __BUILD_ID__: JSON.stringify(buildId()),
+    __BUILD_ID__: JSON.stringify(BUILD_ID),
   },
   build: {
     target: "es2022",

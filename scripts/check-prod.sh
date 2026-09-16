@@ -22,11 +22,11 @@ if printf '%s' "$html" | grep -Eiq 'beacon|rocket-loader|cloudflareinsights|zara
   echo "FAIL Cloudflare-injected script found in HTML"; fail=1
 else echo "OK   no injected scripts (beacon/rocket-loader/cloudflareinsights/zaraz/email-decode)"; fi
 
+served_build=$(printf '%s' "$html" | grep -oE 'name="build-id" content="[^"]+"' | sed 's/.*content="//; s/"$//')
+echo "INFO served build id: ${served_build:-none}"
 if [ -n "$EXPECTED_BUILD" ]; then
-  entry=$(printf '%s' "$html" | grep -oE '/assets/index-[A-Za-z0-9_-]+\.js' | head -1)
-  if [ -n "$entry" ] && curl -s --retry 5 --retry-all-errors "$URL$entry" | grep -q "\"$EXPECTED_BUILD\""; then
-    echo "OK   served bundle $entry carries build id $EXPECTED_BUILD"
-  else echo "FAIL served bundle does not carry build id $EXPECTED_BUILD (entry: ${entry:-none})"; fail=1; fi
+  if [ "$served_build" = "$EXPECTED_BUILD" ]; then echo "OK   served build id matches $EXPECTED_BUILD"
+  else echo "FAIL served build id is '${served_build:-none}', expected $EXPECTED_BUILD"; fail=1; fi
 fi
 
 deep=$(curl -s --retry 5 --retry-all-errors -o /dev/null -w '%{http_code}' "$URL/some/deep/link")
