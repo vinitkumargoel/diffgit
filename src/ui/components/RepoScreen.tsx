@@ -17,7 +17,7 @@ export default function RepoScreen() {
   const empty = useStore((s) => s.diff !== null && s.diff.files.length === 0);
   const [helpOpen, setHelpOpen] = useState(false);
   useShortcuts({
-    r: () => void useStore.getState().recompute("manual"),
+    r: () => useStore.getState().requestRefresh("manual"),
     s: () => {
       const { prefs, setPref } = useStore.getState();
       setPref("viewMode", prefs.viewMode === "split" ? "unified" : "split");

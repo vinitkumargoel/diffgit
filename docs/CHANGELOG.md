@@ -15,6 +15,15 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T6.1 — Refresh scheduler
+
+- `src/ui/refresh/scheduler.ts`: `createScheduler({ client, startObserver?, startPoller?, requestPermission? })` registers itself with the store (`setRefreshHooks`) and is the single "something may have changed" entry point. Bursts coalesce with a trailing 300 ms debounce and a 2 s max-wait; user-initiated reasons (`manual`, `force`, `branch-change`) fire at once when idle so a branch pick is never delayed. Reasons merge into engine calls: any `*:git` → `invalidate("refs")` + `reloadRefs()`; `*:worktree` → per-path `invalidate("worktree", paths)`; `force` → `forceRehash()` + `invalidate("all")`; edits to `.git/config`, `.git/info/exclude`, any `.gitignore` / `.gitattributes` → `invalidate("all")` + `reloadRefs()`. After a ref reload the source follows the checked-out branch (D5) when HEAD moved and a deleted source/target falls back to the defaults.
+- Store: `requestRefresh(reason, paths)` (new action) routes to the scheduler, falling back to `recompute` when none is registered (tests); `openRepo` / `closeRepo` call `stop()` first and `openRepo` calls `start(handle)` after the first compute; branch/target/swap/worktree changes and the Refresh button / `r` go through `requestRefresh`. `recompute` stays the only caller of `computeDiff`.
+- Degradation ladder owned here: observer error → `REFRESH_DEGRADED` warning + polling; poller `PERMISSION` → manual with one toast whose "Re-grant access" action re-requests permission and climbs back to live; `HANDLE_GONE` anywhere → stop everything, error screen. `CANCELLED` / `STALE` are swallowed only here (debug log). Observer (T6.2) and poller (T6.3) plug in through `startObserver` / `startPoller`; until they land the mode is Manual.
+- Guards: `bun run check` now fails if `.computeDiff(` appears outside `store.ts` / the worker clients or `.recompute(` outside `store.ts` / `scheduler.ts`. Tests (11, vitest fake timers + mock client): coalescing, max-wait, reason merging, immediate user reasons, config-path invalidation, HEAD move resets source, deleted target fallback, silent cancellation vs toast, full ladder with single toast and re-grant, HANDLE_GONE, store lifecycle.
+
+---
+
 ## T6.0 — Spike S3 page (observation pending)
 
 - `spikes/s3-observer/index.html`: vanilla page that picks a folder (read or readwrite mode), observes it recursively with `FileSystemObserver`, logs every record (relative ms, burst id at 300 ms gaps, type, path, handle kind, moved-from) and exposes `window.__s3` + Copy JSON for the write-up. Served by the Vite dev server (`vite preview` only serves `dist`).

@@ -37,4 +37,12 @@ guard "component imports the worker client" \
 guard "literal colour outside src/index.css" \
   grep -rnE "#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(" src/ui src/App.tsx src/main.tsx --include='*.ts' --include='*.tsx' --include='*.css' --exclude='*.test.ts' --exclude='*.test.tsx'
 
+# T6.1: the scheduler is the only refresh entry point. `computeDiff` is called by the store's
+# executor only; `recompute(` is called only from the store and the scheduler; everything else
+# goes through `requestRefresh` / `scheduler.request`.
+guard "computeDiff called outside store.ts / workerClient" \
+  grep -rnE "\.computeDiff\(" src/ui src/App.tsx src/main.tsx --include='*.ts' --include='*.tsx' --exclude='*.test.ts' --exclude='*.test.tsx' --exclude='store.ts' --exclude='workerClient.ts' --exclude='workerClient.mock.ts'
+guard "recompute() called outside store.ts / refresh/scheduler.ts" \
+  grep -rnE "\.recompute\(" src/ui src/App.tsx src/main.tsx --include='*.ts' --include='*.tsx' --exclude='*.test.ts' --exclude='*.test.tsx' --exclude='store.ts' --exclude='scheduler.ts'
+
 exit $fail

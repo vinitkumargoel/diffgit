@@ -180,7 +180,10 @@ export interface StoreState {
   setTarget(ref: RepoRef | string): void;
   swapBranches(): void;
   setIncludeWorktree(on: boolean): void;
+  /** Executor: calls the engine once. Everything else goes through `requestRefresh`. */
   recompute(reason: RefreshReason): Promise<void>;
+  /** Entry point for "something may have changed" — routed to the scheduler (T6.1) when present. */
+  requestRefresh(reason: RefreshReason, paths?: string[]): void;
   loadFileDiff(id: string, opts?: { loadLarge?: boolean }): Promise<void>;
   cancelFileDiff(id: string): void;
   toggleViewed(id: string): void;
@@ -197,6 +200,17 @@ export interface StoreState {
 }
 
 let toastSeq = 0;
+/** The refresh scheduler (T6.1) registers here; the store never imports it (no cycle). */
+export interface RefreshHooks {
+  start(handle: unknown): void;
+  stop(): void;
+  request(reason: RefreshReason, paths?: string[]): void;
+}
+let refreshHooks: RefreshHooks | null = null;
+export function setRefreshHooks(hooks: RefreshHooks | null): void {
+  refreshHooks = hooks;
+}
+
 let clientOverride: WorkerClient | null = null;
 /** Test hook: use a specific client instead of `getWorkerClient()`. */
 export function setStoreClient(client: WorkerClient | null): void {
@@ -328,6 +342,7 @@ export const useStore = create<StoreState>()((set, get) => {
         typeof (handle as { name?: unknown }).name === "string"
           ? (handle as { name: string }).name
           : "repository";
+      refreshHooks?.stop();
       set({
         screen: "loading",
         handle,
@@ -359,12 +374,14 @@ export const useStore = create<StoreState>()((set, get) => {
         set({ repo: info, diffSource: src, warnings: [...info.warnings] });
         await get().recompute("initial");
         if (get().screen === "loading") set({ screen: "repo" });
+        if (get().screen === "repo") refreshHooks?.start(handle);
       } catch (e) {
         set({ screen: "error", error: toUiError(e) });
       }
     },
 
     async closeRepo() {
+      refreshHooks?.stop();
       const s = get();
       if (s.repo || s.screen === "loading") {
         try {
@@ -398,7 +415,7 @@ export const useStore = create<StoreState>()((set, get) => {
       const src = guardWorktree(withRef(diffSource, "source", ref), repo);
       set({ diffSource: src });
       void persistence.touchRepo(get().repoId ?? "", { lastSource: ref.fullName });
-      void get().recompute("branch-change");
+      get().requestRefresh("branch-change");
     },
 
     setTarget(refOrName) {
@@ -408,7 +425,7 @@ export const useStore = create<StoreState>()((set, get) => {
       if (!ref) return;
       set({ diffSource: withRef(diffSource, "target", ref) });
       void persistence.touchRepo(get().repoId ?? "", { lastTarget: ref.fullName });
-      void get().recompute("branch-change");
+      get().requestRefresh("branch-change");
     },
 
     swapBranches() {
@@ -426,7 +443,7 @@ export const useStore = create<StoreState>()((set, get) => {
         lastSource: swapped.sourceRef,
         lastTarget: swapped.targetRef,
       });
-      void get().recompute("branch-change");
+      get().requestRefresh("branch-change");
     },
 
     setIncludeWorktree(on) {
@@ -435,7 +452,12 @@ export const useStore = create<StoreState>()((set, get) => {
       if (on && !isWorktreeSource(diffSource, repo)) return;
       if (diffSource.includeWorktree === on) return;
       set({ diffSource: { ...diffSource, includeWorktree: on } });
-      void get().recompute("branch-change");
+      get().requestRefresh("branch-change");
+    },
+
+    requestRefresh(reason, paths) {
+      if (refreshHooks) refreshHooks.request(reason, paths);
+      else void get().recompute(reason);
     },
 
     async recompute(_reason) {
@@ -508,7 +530,7 @@ export const useStore = create<StoreState>()((set, get) => {
         get().addToast({
           level: "error",
           message: `Refresh failed: ${err.message}`,
-          action: { label: "Retry", onClick: () => void get().recompute("manual") },
+          action: { label: "Retry", onClick: () => get().requestRefresh("manual") },
         });
       }
     },

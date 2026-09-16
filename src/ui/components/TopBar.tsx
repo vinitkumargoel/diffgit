@@ -28,7 +28,7 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
   const setTarget = useStore((s) => s.setTarget);
   const swapBranches = useStore((s) => s.swapBranches);
   const setIncludeWorktree = useStore((s) => s.setIncludeWorktree);
-  const recompute = useStore((s) => s.recompute);
+  const requestRefresh = useStore((s) => s.requestRefresh);
   const setFilter = useStore((s) => s.setFilter);
   const setPref = useStore((s) => s.setPref);
 
@@ -79,7 +79,7 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
           mode={refresh.mode}
           busy={refresh.busy}
           lastAt={refresh.lastAt}
-          onRefresh={() => void recompute("manual")}
+          onRefresh={() => requestRefresh("manual")}
         />
         <button
           type="button"
