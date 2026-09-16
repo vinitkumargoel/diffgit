@@ -15,6 +15,14 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T6.3 — Polling fallback
+
+- `src/ui/refresh/poller.ts`: `startPoller(client, onChange, onError, opts)` consumes the T3.5 `probe()` tiers — `git` every 3 s, `index` every 10 s (doubling up to 30 s while a sweep takes > 500 ms, back to 10 s once fast), `untracked` every 30 s — all ×3 while `document.hidden`; no tier probes while `store.refresh.busy`; a `git` probe fires as soon as the tab becomes visible. Baselines are taken at start so the first change is caught within one interval; a changed signature calls the scheduler with `poll:git` / `poll:worktree`; probe errors go to the scheduler's ladder (`PERMISSION` / `HANDLE_GONE` → manual / error screen). Wired in `src/main.tsx` as `startPoller`, so a browser without `FileSystemObserver` opens in Polling mode.
+- Idle cost, from the T3.5 engine measurements on `perf-5k` (bun, quiet machine: git 0.2 ms, index 6–20 ms, untracked 24–85 ms): one visible minute is 20 git + 6 index + 2 untracked probes ≈ 0.1–0.3 s of worker CPU, well under the 3 % budget; the browser-side number and the `index` back-off on a real 5k repo are still to be observed in Chrome (T7.2 `/#debug` panel) — in bun the index sweep never exceeds 500 ms so the back-off is verified with a fake slow probe instead.
+- Tests (6, vitest fake timers): tier cadence over 30 s, single change → single request per tier, pause while busy, hidden ×3 + immediate git probe on visible, back-off and recovery, error propagation with polling continuing.
+
+---
+
 ## T6.2 — FileSystemObserver wiring
 
 - `src/ui/refresh/observer.ts`: `startObserver(handle, onRecords, onError)` feature-detects `FileSystemObserver`, returns `null` when absent (the scheduler then polls), observes recursively and reports `(git, worktreePaths, config)`; `errored` or a root `disappeared` record → `onError` (`HANDLE_GONE` / `INTERNAL`) after disconnecting; `observe()` rejecting with NotAllowed/Security → `PERMISSION`. No toasts here — lifecycle and the ladder belong to T6.1.

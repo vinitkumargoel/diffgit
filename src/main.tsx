@@ -4,6 +4,7 @@ import { App } from "./App";
 import { getWorkerClient } from "./ui/engineClient";
 import { ensurePermission, installPersistence } from "./ui/persistence";
 import { observerStarter } from "./ui/refresh/observer";
+import { pollerStarter } from "./ui/refresh/poller";
 import { createScheduler } from "./ui/refresh/scheduler";
 import "./index.css";
 
@@ -12,6 +13,7 @@ installPersistence();
 createScheduler({
   client: getWorkerClient(),
   startObserver: observerStarter,
+  startPoller: pollerStarter,
   requestPermission: async (handle) => (await ensurePermission(handle)) === "granted",
 });
 
