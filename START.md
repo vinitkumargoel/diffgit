@@ -87,7 +87,7 @@ Keep this board updated (edit this file; one line per task):
 | T3.5 | todo | | |
 | T4.1 | done | ui-agent / 2026-09-16 | mock + real client, crash recovery |
 | T4.2 | done | ui-agent / 2026-09-16 | zustand store + selectors |
-| T4.3 | todo | | |
+| T4.3 | done | ui-agent / 2026-09-16 | idb recents/viewed, localStorage prefs |
 | T4.4 | todo | | Design §7.8 |
 | T5.0 | todo | | spike, gates T5.3; theme via Design §3.2/§3.5 |
 | T5.1 | todo | | Design §7.1–7.2 |

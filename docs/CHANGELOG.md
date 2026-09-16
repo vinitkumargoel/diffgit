@@ -9,6 +9,14 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T4.3 — Persistence
+
+- `src/ui/persistence/repos.ts` (idb-keyval, DB `diffgoel-repos`): `listRepos` (newest first, max 20), `upsertRepo` (dedupe via `isSameEntry` asked of whichever side still has the method — stored copies lose prototypes — or `snapshotId` for E2E markers), `touchRepo`, `removeRepo`, `getRepo`, `ensurePermission` (query → request, markers always granted).
+- `viewed.ts` (DB `diffgoel-viewed`): key → timestamp, pruned to 5,000 by age every 50 writes. `prefs.ts`: localStorage JSON validated field-by-field (`sidebarWidth` clamped 220–480), `setPrefsStorage` test seam.
+- `storage.ts`: every IndexedDB/localStorage op is wrapped; the first failure fires `onStorageError` once → `installPersistence()` turns it into a warning toast with the `STORAGE_UNAVAILABLE` copy. `main.tsx` calls `installPersistence()`, which injects the adapters into the store.
+- Tests use `fake-indexeddb/auto` with `Date.now` spies (vitest fake timers stall fake-indexeddb's scheduler) and a prototype-based mock handle (own-property functions are not structured-cloneable).
+- `HANDLE_GONE` handling ("forget this repo" after confirmation) lands in the ErrorScreen (T5.5) on top of `removeRepo`.
+
 ## T4.2 — Store
 
 - `src/ui/store.ts` (zustand): slices `screen/repo/loading/error/diffSource/diff/stats/warnings/prefs/viewed/filter/activeFileId/collapsed/refresh/fileDiffs/toasts/announcement`; actions `openRepo(handle, {id,lastSource,lastTarget})`, `closeRepo`, `setSource/setTarget/swapBranches` (accept a `RepoRef` or a name/full ref), `setIncludeWorktree` (guarded by `isWorktreeSource`), `recompute`, `loadFileDiff` (per-whitespace-variant LRU of 200, `AbortController` + `cancelFileDiff`), `toggleViewed` (collapses the card), filter, prefs, collapse, warnings, toasts, `prioritise`, `fileBytes`.
