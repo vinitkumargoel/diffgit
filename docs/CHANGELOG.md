@@ -9,6 +9,17 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T5.5 — Empty / error / warning states and toasts
+
+- `src/ui/warnings.ts`: `WARNING_COPY` gives every engine `WarningCode` (21) a banner level and copy (subject + message); levels per the approved amendment — info `WORKTREE_NOT_APPLICABLE`, error `SPLIT_INDEX` / `INDEX_TOO_LARGE`, warning otherwise. `describeWarning` falls back to generic copy so a raw code never reaches the UI. The registry test iterates `WARNING_CODES` from the engine.
+- `WarningBanners.tsx` (Design §3.4 / §7.3): one row per undismissed warning between the top bar and the body — 14 px `triangle-alert` / `info` / `circle-x`, bold subject, message, optional engine `detail` in `--muted`, `×` dismiss → `dismissWarning(code)`; error rows are `role="alert"`. Colours through the `--banner-*` tokens only.
+- `EmptyState.tsx` (Design §7.8, Plan D7): replaces sidebar + pane when the diff has no files (`RepoScreen` switches on `diff.files.length === 0`); "No changes between `feature` and `main`" (or "… is compared with itself"), "Working tree is clean." when the worktree layer was applied, bordered "Change base" that focuses and opens the base `BranchPicker`. `CenteredColumn` gained `as="section"` so the nested column is not a second `<main>`.
+- `ErrorScreen.tsx`: actions follow `describeError().action` — `choose-folder` → "Choose another folder" (`closeRepo`), plus "Forget this repo" for `HANDLE_GONE` (`removeRepo` + close); `retry` → "Retry" re-opens the same handle with the remembered refs; `reopen-permission` → "Grant access" (`ensurePermission`, inline `--danger` "Permission denied. Try again…" on denial); no action → "Back to start". Engine message goes into a collapsed "Details" block; the test renders every `PUBLIC_CODES` entry and asserts the raw code is absent.
+- `Toasts.tsx`: bottom-right host mounted once in `App`; `--surface` / `--line` / popover shadow, level icon, `--accent` action link ("Retry" runs the store's recompute), `×`, 8 s auto-dismiss per toast id. The store already emits "Refresh failed" toasts with a Retry action.
+- Mock engine: `empty` and `warned` recordings (empty diff; `AUTOCRLF`, `WORKTREE_NOT_APPLICABLE`, `UNRELATED_HISTORIES`, `SPLIT_INDEX` with detail) and failing handle names `notarepo` / `gone` / `denied` / `broken` for the error screens.
+- Verified in headless Chromium against the production build: four banners with the §3.4 colours in both themes (warning `#fff8c5`/`#272115`, info `#ddf4ff`/`#121d2f`, error `#ffebe9`/`#25171c`), dismiss removes one row; empty state hides tree and pane and "Change base" opens the picker; `gone` → "Folder not found" with Forget; `denied` → "Permission denied" with Grant access; `notarepo` → Choose another folder returns Home; no console errors. Literal-colour grep over the new files returns nothing.
+- Tests: `states.test.tsx` (registry exhaustiveness + levels, banner snapshots for all 21 codes × 2 themes, dismiss flow, EmptyState snapshots / copy / picker, RepoScreen swap, ErrorScreen snapshots × 2 themes and actions incl. Forget / Retry / Grant access denial, Toasts behaviour with fake timers + snapshots).
+
 ## T5.4 — Image, binary, large, submodule and typechange notices
 
 - `Notice.tsx` (Design §7.7 shared shell): 28 px padding, centred, 13 px `--muted` (or `--danger`), optional `detail` line and `action` slot 8 px below; `FileCard` now uses it for error / retry, "Whitespace changes only · Show them" and the `CardErrorBoundary`.

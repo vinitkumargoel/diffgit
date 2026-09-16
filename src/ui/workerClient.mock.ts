@@ -41,6 +41,43 @@ const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult }> = {
   worktree: { info: worktreeInfo as RepoInfo, diff: worktreeDiff as DiffResult },
   // synthetic 5,000-file repo (Plan §6.7) for virtualisation checks; handle name "large"
   large: syntheticLarge({ info: basicInfo as RepoInfo, diff: basicDiff as DiffResult }),
+  // T5.5 demo recordings: empty diff (Plan D7) and warning banners; handle names "empty" / "warned"
+  empty: {
+    info: basicInfo as RepoInfo,
+    diff: {
+      ...(basicDiff as DiffResult),
+      files: [],
+      totals: { files: 0, additions: 0, deletions: 0 },
+    },
+  },
+  warned: {
+    info: {
+      ...(basicInfo as RepoInfo),
+      warnings: [
+        { code: "AUTOCRLF", message: "core.autocrlf is true" },
+        { code: "WORKTREE_NOT_APPLICABLE", message: "source is not checked out" },
+      ],
+    },
+    diff: {
+      ...(basicDiff as DiffResult),
+      warnings: [
+        { code: "UNRELATED_HISTORIES", message: "no merge base" },
+        {
+          code: "SPLIT_INDEX",
+          message: "index has a link extension",
+          detail: "Run git update-index --no-split-index to restore uncommitted changes.",
+        },
+      ],
+    },
+  },
+};
+
+/** Handle names that make `open()` fail with a public error (ErrorScreen demos). */
+const FAILING_HANDLES: Record<string, UiError> = {
+  notarepo: { code: "NOT_A_REPO", message: "No .git directory in notarepo" },
+  gone: { code: "HANDLE_GONE", message: "NotFoundError: the directory was moved" },
+  denied: { code: "PERMISSION", message: "NotAllowedError: read permission not granted" },
+  broken: { code: "IO_ERROR", message: "EIO: i/o error, open '.git/index'" },
 };
 
 function err(code: UiError["code"], message: string): UiError {
@@ -66,6 +103,11 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         typeof (handle as { name?: unknown }).name === "string"
           ? (handle as { name: string }).name
           : "basic";
+      const failure = FAILING_HANDLES[name];
+      if (failure) {
+        await wait(client.latency);
+        throw failure;
+      }
       const rec = RECORDED[name] ?? RECORDED.basic;
       if (!rec) throw err("INTERNAL", "no recording");
       sink = s;
