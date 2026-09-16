@@ -8,6 +8,11 @@ _(none yet)_
 
 ---
 
+## T2.3 — Ignore rules
+
+- `src/engine/git/ignoreRules.ts`: `IgnoreRules.load(fs, { builtinExcludes, config })`, `enterDir`, `ensureAncestors`, `isDirIgnored` (memoised, ancestors first → the walker prunes before descending), `isFileIgnored`, async `isPathIgnored`, `invalidate`/`reload`. One `ignore()` instance per `.gitignore`, evaluated on paths relative to its directory; deepest file with a verdict wins; `.git/info/exclude` below all files; built-ins (`.DS_Store`, `._*`, `Thumbs.db`, `desktop.ini`) lowest and toggleable; a path under an ignored directory is never re-included. `core.ignorecase` respected (the `ignore` package defaults to case-insensitive, so it is passed explicitly). `core.excludesFile` → one `GLOBAL_EXCLUDES_UNAVAILABLE` warning.
+- Tests: parity with `check-ignore.json` (13 probes incl. negation `!keep.log`, `info/exclude`, dir probes) with built-ins off; spy proves `node_modules` is never opened; unit tests for anchored vs unanchored re-rooting, `**`, dir-only patterns, escaped `#`, negation precedence, exclude/builtin ordering, ignorecase, warning, reload.
+
 ## T2.1 — IndexReader
 
 - `src/engine/git/indexReader.ts`: `parseIndex(bytes, indexMtimeMs)` (pure) and `readIndex(fs)`. Formats 2/3/4 (v4 prefix compression via git's offset varint), extended flags (skip-worktree, intent-to-add), stage bits → `conflicts` grouped per path with `byPath` holding stage-0 only, sparse-dir entries (trailing `/` stripped, `isSparseDir`, sets `hasSparseIndex`), extension signatures recorded (`link` → `hasSplitIndex`, `sdir` → `hasSparseIndex`), trailer SHA-1 verified → `checksumOk`, `indexMtimeMs` captured, `tooLarge` above 200k entries. Unknown version / bad signature / truncated → `INDEX_UNSUPPORTED`.
