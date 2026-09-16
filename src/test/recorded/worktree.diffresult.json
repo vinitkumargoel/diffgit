@@ -1,0 +1,222 @@
+{
+  "source": {
+    "kind": "branches",
+    "source": "feature",
+    "target": "main",
+    "sourceRef": "refs/heads/feature",
+    "targetRef": "refs/heads/main",
+    "includeWorktree": true
+  },
+  "mergeBase": "61e71d47515995714f77b928ed162bdf93b542ff",
+  "files": [
+    {
+      "id": "both.txt",
+      "oldPath": "both.txt",
+      "newPath": "both.txt",
+      "status": "modified",
+      "layers": ["staged", "unstaged"],
+      "oldOid": "40c0edb6ac33371096e82b4a61fffb55b867959d",
+      "newOid": "70ce832a9a7f24b1d8a7f23b2c7c5c36fa46c154",
+      "oldMode": 33188,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 35,
+      "newSize": 61,
+      "stats": {
+        "additions": 2,
+        "deletions": 0
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "deleted-staged.txt",
+      "oldPath": "deleted-staged.txt",
+      "newPath": null,
+      "status": "deleted",
+      "layers": ["staged"],
+      "oldOid": "3f25bea476d66b84c8975ff4b07c1fd3ad207270",
+      "newOid": null,
+      "oldMode": 33188,
+      "newMode": null,
+      "binary": false,
+      "image": false,
+      "oldSize": 17,
+      "newSize": 0,
+      "stats": {
+        "additions": 0,
+        "deletions": 1
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "deleted-unstaged.txt",
+      "oldPath": "deleted-unstaged.txt",
+      "newPath": null,
+      "status": "deleted",
+      "layers": ["unstaged"],
+      "oldOid": "1a887b2eecbdd7ca6761dfb92fea67cd9aeeaa73",
+      "newOid": null,
+      "oldMode": 33188,
+      "newMode": null,
+      "binary": false,
+      "image": false,
+      "oldSize": 32,
+      "newSize": 0,
+      "stats": {
+        "additions": 0,
+        "deletions": 1
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "feature-only.txt",
+      "oldPath": null,
+      "newPath": "feature-only.txt",
+      "status": "added",
+      "layers": ["committed"],
+      "oldOid": null,
+      "newOid": "ef89ff0f59ab5bfc7986a3551505af72c3d09013",
+      "oldMode": null,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 0,
+      "newSize": 21,
+      "stats": {
+        "additions": 1,
+        "deletions": 0
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "newdir/untracked2.txt",
+      "oldPath": null,
+      "newPath": "newdir/untracked2.txt",
+      "status": "added",
+      "layers": ["untracked"],
+      "oldOid": null,
+      "newOid": "cc0b0254bcb83d5ff3834539cd773d7d369245bb",
+      "oldMode": null,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 0,
+      "newSize": 19,
+      "stats": {
+        "additions": 1,
+        "deletions": 0
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "script.sh",
+      "oldPath": "script.sh",
+      "newPath": "script.sh",
+      "status": "modified",
+      "layers": ["staged"],
+      "oldOid": "4163036efa65bd4a469e752267498f01ea36a55c",
+      "newOid": "4163036efa65bd4a469e752267498f01ea36a55c",
+      "oldMode": 33188,
+      "newMode": 33261,
+      "binary": false,
+      "image": false,
+      "oldSize": 18,
+      "newSize": 18,
+      "stats": {
+        "additions": 0,
+        "deletions": 0
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "staged-mod.txt",
+      "oldPath": "staged-mod.txt",
+      "newPath": "staged-mod.txt",
+      "status": "modified",
+      "layers": ["staged"],
+      "oldOid": "9bde0691c85c673525bd3edaab508dbacdcc5a2f",
+      "newOid": "f6f1d7d176e202e8363ef72792df75faf58e74d0",
+      "oldMode": 33188,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 45,
+      "newSize": 58,
+      "stats": {
+        "additions": 1,
+        "deletions": 0
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "staged-new.txt",
+      "oldPath": null,
+      "newPath": "staged-new.txt",
+      "status": "added",
+      "layers": ["staged"],
+      "oldOid": null,
+      "newOid": "547c3aba751d997a44bf7ff11653e708949f494a",
+      "oldMode": null,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 0,
+      "newSize": 15,
+      "stats": {
+        "additions": 1,
+        "deletions": 0
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "unstaged-mod.txt",
+      "oldPath": "unstaged-mod.txt",
+      "newPath": "unstaged-mod.txt",
+      "status": "modified",
+      "layers": ["unstaged"],
+      "oldOid": "972cb64ca8e692a05bd59c3507374151e59547ad",
+      "newOid": "c6ffbb5033be933ee9177fe08f9fae7fb38e55df",
+      "oldMode": 33188,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 55,
+      "newSize": 63,
+      "stats": {
+        "additions": 1,
+        "deletions": 1
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "untracked.txt",
+      "oldPath": null,
+      "newPath": "untracked.txt",
+      "status": "added",
+      "layers": ["untracked"],
+      "oldOid": null,
+      "newOid": "ed27ed391b00f023cd1c193698046b5d1d37198e",
+      "oldMode": null,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 0,
+      "newSize": 12,
+      "stats": {
+        "additions": 1,
+        "deletions": 0
+      },
+      "tooLarge": false
+    }
+  ],
+  "totals": {
+    "files": 10,
+    "additions": 8,
+    "deletions": 3
+  },
+  "computedAt": 1704067200000,
+  "durationMs": 0,
+  "generation": 1,
+  "warnings": []
+}

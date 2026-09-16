@@ -1,0 +1,62 @@
+/**
+ * The object exposed over comlink (T3.5). One session at a time; every rejection is a plain
+ * `PublicError` so it survives structured cloning with its `code`.
+ */
+import type { EngineApi, ProgressSink } from "./api";
+import { EngineError } from "./errors";
+import type { DirHandleLike } from "./fs/dirHandleLike";
+import { resolveHandle } from "./fs/resolveHandle";
+import { RepoSession, type SessionOptions, toPublicError } from "./session";
+
+export interface WorkerApiOptions {
+  /** Turns whatever the UI posted into a DirHandleLike (default: `resolveHandle`). */
+  resolve?: (handle: unknown) => Promise<DirHandleLike>;
+  session?: SessionOptions;
+}
+
+export function createEngineApi(
+  opts: WorkerApiOptions = {},
+): EngineApi & { current(): RepoSession | null } {
+  let session: RepoSession | null = null;
+  const resolve = opts.resolve ?? resolveHandle;
+
+  async function guard<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+      return await fn();
+    } catch (e) {
+      throw toPublicError(e);
+    }
+  }
+  function need(): RepoSession {
+    if (!session || session.isClosed) throw new EngineError("INTERNAL", "No repository is open.");
+    return session;
+  }
+
+  return {
+    current: () => session,
+    open: (handle, sink: ProgressSink) =>
+      guard(async () => {
+        await session?.close();
+        session = null;
+        const root = await resolve(handle);
+        session = await RepoSession.open(root, sink, opts.session);
+        return session.info();
+      }),
+    info: () => guard(() => need().info()),
+    reloadRefs: () => guard(() => need().reloadRefs()),
+    computeDiff: (src) => guard(() => need().computeDiff(src)),
+    fileStats: (generation, ids) => guard(() => need().fileStats(generation, ids)),
+    fileDiff: (generation, id, o) => guard(() => need().fileDiff(generation, id, o)),
+    cancelFileDiff: (id) => guard(() => need().cancelFileDiff(id)),
+    fileBytes: (generation, id, side) => guard(() => need().fileBytes(generation, id, side)),
+    prioritise: (ids) => guard(() => need().prioritise(ids)),
+    probe: (tier) => guard(() => need().probe(tier)),
+    invalidate: (scope, paths) => guard(() => need().invalidate(scope, paths)),
+    forceRehash: () => guard(() => need().forceRehash()),
+    close: () =>
+      guard(async () => {
+        await session?.close();
+        session = null;
+      }),
+  };
+}

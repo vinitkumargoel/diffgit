@@ -226,7 +226,7 @@ describe("detectRenames synthetic cases", () => {
     });
   };
   const body = (seed: string) =>
-    Array.from({ length: 20 }, (_, i) => `${seed} line ${i + 1}`).join("\n") + "\n";
+    `${Array.from({ length: 20 }, (_, i) => `${seed} line ${i + 1}`).join("\n")}\n`;
 
   test("renameLimit² rule: 40×40 with limit 30 → RENAME_LIMIT warning, exact pass still runs", async () => {
     const files: FileDiff[] = [];

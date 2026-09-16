@@ -84,7 +84,7 @@ Keep this board updated (edit this file; one line per task):
 | T3.2 | done | agent / 2026-09-16 | |
 | T3.3 | done | agent / 2026-09-16 | |
 | T3.4 | done | agent / 2026-09-16 | |
-| T3.5 | in-progress | agent / 2026-09-16 | |
+| T3.5 | done | agent / 2026-09-16 | |
 | T4.1 | todo | | |
 | T4.2 | todo | | |
 | T4.3 | todo | | |

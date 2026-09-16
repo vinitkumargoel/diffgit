@@ -1,0 +1,43 @@
+{
+  "id": "recorded-worktree",
+  "name": "worktree",
+  "headBranch": "feature",
+  "headOid": "f0401ae4034817e1e35f86965382ec1f587f5e26",
+  "detached": false,
+  "unborn": false,
+  "headDisplay": "feature",
+  "refs": [
+    {
+      "name": "feature",
+      "fullName": "refs/heads/feature",
+      "kind": "local",
+      "oid": "f0401ae4034817e1e35f86965382ec1f587f5e26",
+      "isDefault": false,
+      "isCheckedOut": true
+    },
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "43a63616a038d53e369e744d41ae9c27be6b7830",
+      "isDefault": true,
+      "isCheckedOut": false
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "43a63616a038d53e369e744d41ae9c27be6b7830",
+    "isDefault": true,
+    "isCheckedOut": false
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": []
+}

@@ -14,10 +14,13 @@
     "format": "biome format --write .",
     "typecheck": "tsc -b",
     "fixtures": "bash scripts/make-fixtures.sh && bash scripts/fixture-expectations.sh",
+    "record": "bun run scripts/record-fixtures.ts && biome format --write src/test/recorded",
     "deploy": "bun run build && bunx wrangler pages deploy dist --project-name diffgoel",
     "check:prod": "bash scripts/check-prod.sh"
   },
   "dependencies": {
+    "buffer": "6.0.3",
+    "comlink": "4.4.2",
     "diff": "9.0.0",
     "ignore": "7.0.9",
     "isomorphic-git": "1.42.2",

@@ -1,3 +1,6 @@
-// Web Worker entry for the git engine. T3.5 exposes RepoSession here via comlink.
-// Kept intentionally empty in T0.1 so the worker chunk configuration can be verified.
-export {};
+// Web Worker entry for the git engine (T3.5): comlink exposes one EngineApi per worker.
+import "./bufferPolyfill";
+import * as Comlink from "comlink";
+import { createEngineApi } from "./workerApi";
+
+Comlink.expose(createEngineApi());

@@ -8,6 +8,16 @@ _(none yet)_
 
 ---
 
+## T3.5 — RepoSession orchestrator + Web Worker entry
+
+- `src/engine/session.ts`: `RepoSession.open(root, sink)` runs config → layout (fatal → public code) → refs → index capabilities, then owns ObjectDb / ignore / attributes / scanner / DiffEngine. `computeDiff` aborts the in-flight compute (superseded call → `CANCELLED`), runs rename detection (`diff.renames`, `diff.renameLimit`), stamps `generation`; `fileStats` / `fileDiff` / `fileBytes(generation, …)` reject `STALE`. Background stats: LIFO queue over 4 workers, `prioritise(ids)` moves visible rows to the front, batches (32 files / 100 ms) go to `sink.onStats`; FileDiff rows are refined in place (stats, binary, sizes, generated). `probe(git|index|untracked)` returns a per-tier signature (untracked tier walks the raw handles so polling sees new files without invalidation) and reports its duration via `Progress`.
+- Error translation `toPublicError` (EACCES → PERMISSION, ENOENT → IO_ERROR or HANDLE_GONE when the root handle is unreachable, DOMException NotAllowed/NotFound, internal-tier → INTERNAL); every failure is re-checked against root reachability so a vanished folder never surfaces as REF_NOT_FOUND. ENOENT mid-compute → drop caches, `invalidate("all")`, retry once, `STALE_PACK_RETRIED`.
+- `src/engine/workerApi.ts` (`createEngineApi`, plain-object rejections), `src/engine/worker.ts` (`import "./bufferPolyfill"` first — isomorphic-git needs a global `Buffer` — then `Comlink.expose`). Standalone Vite build of the worker entry: 341 kB / 110 kB gzip, no E2E marker, comlink + buffer included. Deps added (exact): `comlink 4.4.2`, `buffer 6.0.3`.
+- `bun run record` (`scripts/record-fixtures.ts`) writes `src/test/recorded/{basic,worktree}.{repoinfo,diffresult}.json` with stats and fixed timestamps for the UI mock. Decision: `DiffResult.totals` additions/deletions are 0 at return time and accumulate from `onStats` batches (the recorded JSON carries the final totals).
+- Tests (12): open/compute/stats/fileDiff/fileBytes/STALE on `worktree`, image/binary payloads on `binary`, renamed content, overlapping computes, layout fatals (`OBJECT_FORMAT_SHA256`, `NOT_A_REPO`), memory-repo mutations (invalidate → change seen, pack swap, forced ENOENT retry, root gone → HANDLE_GONE), probe tiers + `perf-5k` timings (git 2 ms / index 20 ms / untracked 85 ms logged; strict under `PERF_STRICT`), and comlink over a real `MessageChannel` (errors arrive as plain `{code}` objects).
+
+---
+
 ## T3.4 — Binary/attributes, content loading, text diff & classification
 
 - `src/engine/git/attributes.ts`: `.gitattributes` per directory + `.git/info/attributes` (git precedence), macros (`binary`, `[attr]`), quoted patterns, own gitignore-glob → RegExp (`**`, classes incl. POSIX, no negation, directory patterns never match contents). `isBinary` = `-diff`/`-text`; `isGenerated` = `linguist-generated` or `-diff`.
