@@ -98,8 +98,8 @@ Keep this board updated (edit this file; one line per task):
 | T5.6 | done | ui-agent / 2026-09-16 | Design §3, §8, §9, §11; theme cycle, useShortcuts + HelpDialog, skip link, live region, contrast + axe tests, colour guard |
 | T6.0 | blocked: owner must run spike page in Chrome (native folder pick) | agent / 2026-09-16 | spikes/s3-observer built; steps in docs/engine-notes.md; T6.2 ships with provisional rules |
 | T6.1 | done | agent / 2026-09-17 | |
-| T6.2 | in-progress | agent / 2026-09-17 | provisional classifier (S3 pending) |
-| T6.3 | todo | | |
+| T6.2 | done | agent / 2026-09-17 | provisional classifier (S3 pending); manual real-repo check pending owner |
+| T6.3 | in-progress | agent / 2026-09-17 | |
 | T6.4 | todo | | |
 | T7.1 | todo | | 3 smoke specs only |
 | T7.2 | todo | | |

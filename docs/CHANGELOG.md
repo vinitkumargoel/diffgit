@@ -15,6 +15,15 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T6.2 — FileSystemObserver wiring
+
+- `src/ui/refresh/observer.ts`: `startObserver(handle, onRecords, onError)` feature-detects `FileSystemObserver`, returns `null` when absent (the scheduler then polls), observes recursively and reports `(git, worktreePaths, config)`; `errored` or a root `disappeared` record → `onError` (`HANDLE_GONE` / `INTERNAL`) after disconnecting; `observe()` rejecting with NotAllowed/Security → `PERMISSION`. No toasts here — lifecycle and the ladder belong to T6.1.
+- Classifier `classifyPath` / `classifyPaths` (provisional rules, to be tuned by Spike S3): `.git/HEAD`, `index`, `packed-refs`, `ORIG_HEAD`, `MERGE_HEAD`, `FETCH_HEAD`, `logs/HEAD`, `refs/**`, `logs/refs/**`, `worktrees/**`, `modules/**` → git; `.git/config`, `.git/info/exclude`, `**/.gitignore`, `**/.gitattributes` → config (T6.1 invalidates everything); `*.lock` under `.git`, `.git/objects/**` and anything else under `.git/` → ignored; outside `.git`: editor scratch files (`~`, `.swp/.swx/.swo`, `.tmp/.temp`, Vim `4913`, Emacs `.#`/`#…#`, `.crswap`, LibreOffice `.~lock.`) ignored, `moved` records contribute both paths, results de-duplicated and sorted. A 200-record `git gc` burst classifies to nothing, so it never triggers a recompute; debounce stays the scheduler's 300 ms / 2 s max-wait.
+- `src/main.tsx` passes `observerStarter` and `ensurePermission` into `createScheduler`, so a Chromium build runs in Live mode and degrades on its own. Tests (17 + table): classifier table, git-add / gc / atomic-save / checkout bursts, fatal records, fake observer lifecycle, permission mapping, and the E2E shim stub (`emitObserverRecords` → one merged callback).
+- AC "manual check on a real repo (editor save, `git commit`, `git gc`)" is pending the same owner-run Chrome session as T6.0; the E2E worktree spec (T7.1) covers the shim path.
+
+---
+
 ## T6.1 — Refresh scheduler
 
 - `src/ui/refresh/scheduler.ts`: `createScheduler({ client, startObserver?, startPoller?, requestPermission? })` registers itself with the store (`setRefreshHooks`) and is the single "something may have changed" entry point. Bursts coalesce with a trailing 300 ms debounce and a 2 s max-wait; user-initiated reasons (`manual`, `force`, `branch-change`) fire at once when idle so a branch pick is never delayed. Reasons merge into engine calls: any `*:git` → `invalidate("refs")` + `reloadRefs()`; `*:worktree` → per-path `invalidate("worktree", paths)`; `force` → `forceRehash()` + `invalidate("all")`; edits to `.git/config`, `.git/info/exclude`, any `.gitignore` / `.gitattributes` → `invalidate("all")` + `reloadRefs()`. After a ref reload the source follows the checked-out branch (D5) when HEAD moved and a deleted source/target falls back to the defaults.
