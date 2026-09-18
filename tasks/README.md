@@ -125,3 +125,40 @@ Before either agent track starts: T0.1 (with `errors.ts`, tsconfig references, p
 
 ### E2E policy (keep implementation fast)
 Playwright is limited to the **three smoke specs in T7.1**. Every other behaviour is tested in `bun test` (engine, parity with git on fixtures) or vitest (UI logic on recorded `DiffResult` JSON). No screenshot baselines, no Playwright perf spec, no per-feature browser tests. If a task's original text mentions a Playwright test outside T7.1, that mention is void.
+
+## v2 tasks (2026-09-19) — see `phase-10-engine/` and `phase-11-ui/`
+
+| ID | Task | Size | Depends on |
+|----|------|------|------------|
+| T10.0 | v2 fixtures | M | T0.3 |
+| T10.1 | Range sources, revision resolver, tags, stashes | L | T10.0 |
+| T10.2 | Reflog reader, operation detector | M | T10.1 |
+| T10.3 | Conflict payload | M | T10.2 |
+| T10.4 | Why hidden: rule attribution, hidden listing | M | T10.3 |
+| T10.5 | Commit walker, commit-graph reader, lanes, ahead/behind, branch overview | L | T10.4 |
+| T10.6 | Path history with rename follow, blame | L | T10.5 |
+| T10.7 | Secret scanner | M | T10.6 |
+| T10.8 | Search: commits, worktree, pickaxe | M | T10.7 |
+| T10.9 | Insights aggregation | M | T10.8 |
+| T10.10 | Patch text, repository summary | M | T10.9 |
+| T10.11 | Bisect step, rebase preflight | M | T10.10 |
+| T10.12 | Submodules, worktrees, LFS, jj, patch parsing | M | T10.11 |
+| T11.1 | Shell: store, prefs, derived cache, ModeSwitch, palette, help | M | T10.1 |
+| T11.2 | Compare anything in the pickers | M | T11.1, T10.1 |
+| T11.3 | Operation banner, reflog panel, conflict card | M | T11.2, T10.3 |
+| T11.4 | Why hidden UI | S | T11.3, T10.4 |
+| T11.5 | History mode | L | T11.4, T10.5 |
+| T11.6 | Blame and file history in the card | L | T11.5, T10.6 |
+| T11.7 | Branches mode and tags | M | T11.6, T10.5 |
+| T11.8 | Search scopes in the palette | M | T11.7, T10.8 |
+| T11.9 | Secret scan surfaces | M | T11.8, T10.7 |
+| T11.10 | Export menu, review snapshot | M | T11.9, T10.10 |
+| T11.11 | Multi-repo dashboard | M | T11.10, T10.10 |
+| T11.12 | Insights mode | M | T11.11, T10.9 |
+| T11.13 | Bisect strip, rebase preflight panel | M | T11.12, T10.11 |
+| T11.14 | Install, file handler, patch-only mode | M | T11.13, T10.12 |
+| T11.15 | Firefox/Safari read-once mode | M | T11.14 |
+| T11.16 | Small wins, docs, final pass | M | T11.15, T10.12 |
+
+Contracts: `docs/v2-contracts.md`. Product rules: `Design.md` §14. Rationale and mockups:
+`docs/mockups/feature-atlas.html`.

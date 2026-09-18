@@ -10,7 +10,7 @@ A static web app at https://diffgit.com. In Chrome you pick a local git repo fol
 
 1. `Plan.md` §0 (decisions — do not re-open) and §14 (review amendments).
 2. `tasks/README.md` — conventions, error registry, E2E policy, dependency table.
-3. **UI tasks only (T4.4, T5.x):** `Design.md` — the approved visual spec (direction A "Classic"). Tokens, type, layout and every component's rendered look live there; do not restyle.
+3. **UI tasks only (T4.4, T5.x, T11.x):** `Design.md` (§14 for v2) — the approved visual spec (direction A "Classic"). Tokens, type, layout and every component's rendered look live there; do not restyle.
 4. The task file you are about to run, then the Plan and Design sections it cites.
 
 Nothing else is required to start a task.
@@ -39,6 +39,8 @@ Step 2 (two agents in parallel):
    UI track:      T4.1 → T4.2 → T4.3 → T4.4 → T5.0 → T5.1 → T5.2 → T5.3 → T5.4 → T5.5 → T5.6
 Step 3 (after T3.5 and T5.6):     T6.0 → T6.1 → T6.2 → T6.3 → T6.4
 Step 4 (sequential):              T7.1 → T7.2 → T7.3 → T7.4 → T7.5 → T8.1 → T8.2 → T8.3 → T9.1
+Step 5 (v2, two tracks):          engine T10.0 → T10.1 → … → T10.12 on main; UI T11.1 → … → T11.16 on branch v2-ui,
+                                  each UI task starting once its engine dependency is on main (tasks/README.md v2 table)
 ```
 
 Inside a track, tasks whose "Depends on" are all merged may run in parallel (e.g. T2.2 with T2.1, T5.1 with T5.2). The UI track runs on the mock worker client (`VITE_MOCK_ENGINE=1`) until T3.5 lands, then switches to the real one.
@@ -110,6 +112,35 @@ Keep this board updated (edit this file; one line per task):
 | T8.2 | blocked | agent / 2026-09-17 | deployed 76c5ce0 on pages.dev; owner: CNAMEs, §13 smoke on 3 repos, tag v1.0.0 |
 | T8.3 | done | agent / 2026-09-17 | V1–V10 + B1–B10 in docs/backlog.md |
 | T9.1 | done | agent / 2026-09-19 | sidebar groups; mockup docs/mockups/review-sidebar-groups.html |
+| T10.0 | todo | | |
+| T10.1 | todo | | |
+| T10.2 | todo | | |
+| T10.3 | todo | | |
+| T10.4 | todo | | |
+| T10.5 | todo | | |
+| T10.6 | todo | | |
+| T10.7 | todo | | |
+| T10.8 | todo | | |
+| T10.9 | todo | | |
+| T10.10 | todo | | |
+| T10.11 | todo | | |
+| T10.12 | todo | | |
+| T11.1 | todo | | |
+| T11.2 | todo | | |
+| T11.3 | todo | | |
+| T11.4 | todo | | |
+| T11.5 | todo | | |
+| T11.6 | todo | | |
+| T11.7 | todo | | |
+| T11.8 | todo | | |
+| T11.9 | todo | | |
+| T11.10 | todo | | |
+| T11.11 | todo | | |
+| T11.12 | todo | | |
+| T11.13 | todo | | |
+| T11.14 | todo | | |
+| T11.15 | todo | | |
+| T11.16 | todo | | |
 
 Statuses: `todo` → `in-progress` → `review` → `done` (or `blocked: <reason>`).
 

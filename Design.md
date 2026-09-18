@@ -331,3 +331,138 @@ related. It shares §3's tokens and §12's brand, and breaks §2.2 (density) on 
 - **Close.** A five-question FAQ as `<details>` rows on `--line`, then a single call to action.
 - **History.** The hero's right column is the only part of the page that changes with state: the facts table on a first visit, the Continue card or the Recent list once a repository has been opened (§7.8 H0–H6). The nav gains a `Recent` popover when history exists. The list reuses the facts table's rhythm (hairlines, 14 px labels, 13 px mono values) so it reads as part of the page, not as app chrome.
 
+
+## 14. v2 information architecture (approved 2026-09-19, owner: "all features, no clutter")
+
+The v2 features (see `docs/v2-contracts.md` and `tasks/phase-10-engine`, `tasks/phase-11-ui`) are added
+under three rules, in this order of preference:
+
+1. **Contextual first.** A surface appears only when the repository is in the state it explains: the
+   operation banner during a rebase, the three-way body on a conflicted file, the secret banner when a
+   finding exists, the "Hidden" group only when switched on. When nothing is happening, the repo screen
+   looks exactly like v1.
+2. **Inside a surface the user already opens.** New sources live in the existing pickers; blame and
+   file history are a mode of the file card; search scopes live in the command palette; export is one
+   menu in the StatsRow. No new top-level chrome for any of these.
+3. **One mode switch for the pages that need a page.** History, Branches and Insights replace the body;
+   they are reached from one segmented control and from the palette. Files stays the default and the
+   only mode with the sidebar file tree.
+
+### 14.1 The chrome that changes
+
+- **TopBar row 1** gains one control after the repo name: **ModeSwitch**, a segmented control
+  `Files | History | Branches | Insights` (same style as `Unified | Split`, §7.2 item 7; 12 px labels,
+  28 px tall). Keyboard `1`–`4`. The pickers, swap, worktree toggle, refresh and theme stay where they
+  are in every mode; in History mode the pickers still define the branch that is walked (compare) and
+  the merge base (base).
+- **StatsRow** gains one 28 × 28 px icon button after the whitespace button: **ExportMenu**
+  (`lucide:download`, tooltip "Export", opens the menu in §14.6). In History mode the counts describe
+  the selected commit or range; in Branches and Insights the row is replaced by the page's own
+  header (same height, same border).
+- **BranchPicker popover** gains groups after "Local" and "Remote: …": `Tags`, `Stashes`, and
+  `Special` (`Working tree`, `Staged only`), and accepts free text (`a1b2c3d`, `HEAD~3`, `v2.3.0^`,
+  `stash@{1}`) as a final "Use `<text>`" row that resolves on Enter. A footer row holds the
+  `three-dot … | two-dot ..` toggle (default three-dot; two-dot disables the merge-base step).
+- **FileHeader** gains a mini segmented control before the Viewed tick: `Diff | Blame | History`,
+  11 px, rendered only when the file has a committed side (`oldOid` or `newOid` reachable from a
+  commit; untracked-only files do not get it).
+- **Sidebar row 1** gains a 20 px icon toggle after `Tree | Flat`: `lucide:eye-off` "Show hidden files"
+  (`aria-pressed`), which adds the **Hidden** group (§14.4) at the bottom of the tree.
+- **Command palette** (`⌘K` / `Ctrl+K`, `lucide:command` icon button at the far right of row 1 before
+  the theme toggle): every action in the app plus the search scopes (§14.5). This is the escape hatch
+  that keeps the bars small: anything not visible is one keystroke away.
+- **HelpDialog** lists the new keys and the palette.
+
+Nothing else is added to the bars. Bisect, rebase preflight, patch export of a commit, "compare with",
+"open submodule" are row actions in a `…` menu or palette commands, never buttons in the chrome.
+
+### 14.2 Files mode (default)
+
+v1 plus: extended pickers; conflict cards (§14.3); operation and secret banners in the WarningBanners
+stack (§7.3 levels: operation = info or warning, secret = error, both with an action link); the
+Hidden group; `Diff | Blame | History` on cards; ExportMenu. The diff pane, sidebar and shortcuts are
+unchanged otherwise.
+
+### 14.3 Contextual surfaces
+
+- **Operation banner**: `▶ Rebase in progress · step 3 of 7 · replaying a09d3c1 onto main` with action
+  "Show steps" (popover listing the todo with done/current/remaining) — warning level while conflicts
+  exist, info level otherwise. Merge, cherry-pick, revert and bisect variants use the same banner with
+  their own wording. A second info banner explains a detached HEAD during an operation.
+- **Conflict card**: for a file in the `conflict` layer the card body is the three-way view
+  (Base · Ours · Theirs, each a `DiffBody` column of the base→side hunks, 3-column grid, stacked below
+  900 px) above the working-tree file with marker lines highlighted `--purple-bg`/`--done`. A Notice
+  under it: "diffgit shows conflicts; resolving happens in your editor" with a copyable next command.
+  When the working tree no longer contains markers the notice reads "resolved in the working tree, not
+  yet staged".
+- **Secret banner**: `! 1 possible secret in uncommitted changes` (danger banner) with "Show" scrolling
+  to the file; the row in the sidebar carries a `secret` chip (`--chip-conflict` palette); the line in
+  the diff has a 3 px `--danger` left rule and a popover (rule, entropy, where, allowlist help, Reveal
+  and Mask buttons). Findings are masked by default everywhere including copy.
+- **Why hidden**: rows in the Hidden group are muted; clicking one opens a popover naming the reason
+  (rule file + line + pattern, or the index flag, or the size gate) with the copyable
+  `git check-ignore -v <path>` / `git update-index --no-skip-worktree <path>` command.
+
+### 14.4 Sidebar groups (extends §7.4 / T9.1)
+
+Order: Conflicts, Staged, Unstaged, Untracked, Committed on `<compare>`, then **Hidden** (only when
+the toggle is on). Hidden rows: ignored directories as one row with a count (never their contents),
+ignored files, skip-worktree and assume-unchanged files, files over 10 MB. Each row wears a small
+`ref`-style tag: `ignored`, `skip-worktree`, `assume-unchanged`, `> 10 MB`, `sparse`.
+
+### 14.5 History mode
+
+- Sidebar becomes the **commit list**: row 1 `Commits | Stack | Reflog` segmented control and the
+  count (`50 of 1,284`); row 2 a search input "Search message, author or SHA" and two toggles
+  (`first-parent`, `all branches`). Rows 30 px: a 44 px SVG lane column, short SHA (mono, `--accent`),
+  subject, ref badges (`HEAD`, branch, remote, tag — §3.3 badge palettes; stash badge uses the
+  `T` typechange palette), then author and age right-aligned; `+n −m` when known.
+- Diff pane: a **CommitCard** on top (subject, body, author, committer, date, parents, tree, signed
+  flag, note, refs) with actions `Show diff` (default), `Compare with base…`, `Copy SHA` and a `…`
+  menu (`Export as .patch`, `Copy cherry-pick command`, `Bisect: mark good`, `Bisect: mark bad`,
+  `Blame here`); below it the same FileCards as Files mode for the selected commit (range source
+  `parent…commit`, root commit against the empty tree).
+- Shift-click a second row → range `older…newer` (StatsRow shows both SHAs).
+- **Stack** sub-tab: the commits of compare since the merge base, newest on top, each a collapsed
+  card with subject, SHA, file count and `+n −m`, expanding to its per-commit diff; an "Uncommitted"
+  entry on top when the worktree is included.
+- **Reflog** sub-tab: `HEAD@{n}` rows (action, message, age) with orphaned commits marked
+  `unreachable` (badge, `--done` palette); clicking opens the commit as in Commits.
+- **Bisect** is a strip above the commit list once started (from the palette or the CommitCard menu):
+  `Bisect · good 6345f55 … bad 414e4ed · 14 between · ≈ 4 steps · test a1b2c3d` with `Good` `Bad`
+  `Skip` `Stop` buttons and a copyable checkout command; the candidate is selected in the list.
+
+### 14.6 Branches, Insights, Export, Home
+
+- **Branches mode**: page with `Active | Stale > 90 d | Tags` filter, a search box, and a table
+  (branch with badges, vs upstream, vs base, last commit, author, age). Ahead/behind cells are a 60 px
+  two-colour bar (`--success` ahead, `--danger` behind) plus numbers; `merged` and `pull`/`push` hints
+  are `ref`-style tags. Row `…` menu: `Set as compare`, `Set as base`, `Compare with base`,
+  `Preflight rebase onto base`, `Copy name`. Tags table: name, annotated/lightweight, message, tagger,
+  age, `Compare with previous tag`.
+- **Rebase preflight** opens as a panel in the diff pane area (Branches mode): table of commits to
+  replay with `Touches`, `Overlaps with <onto>`, `Prediction` (clean / possible / likely chips), the
+  `git rebase -i <onto>` command and a `Copy todo` button. Report only; no reorder controls.
+- **Insights mode**: header with `90 d | 1 y | All`; sections Hotspots (commits × size, horizontal
+  bars, manifests greyed and excluded from ranking), Activity (52-week heatmap using the `--heat*`
+  ramp), Contributors (opt-in disclosure, commit counts only, `.mailmap` honoured). Cached per tip.
+- **ExportMenu** (`Export ▾`): `Copy as unified diff`, `Save as .patch`, `Save review snapshot
+  (.html)`, `Copy file list as Markdown`, `Copy stats line`; sizes shown; blocked with a list when the
+  secret scan has findings (override link "export anyway"). Saves go through `showSaveFilePicker()`
+  when available, otherwise a download; never into the repository.
+- **Home**: RecentRow becomes a **RepoCard** grid: name, branch, ahead/behind vs upstream, layer
+  counts as `LayerChip`s, operation tag, last commit age, `Open` / `Re-authorise`. Summaries come
+  from a background `summarise()` per repository with granted permission, cached by index mtime.
+- **BrowserGate** (Firefox/Safari): "Open a repository once" (`webkitdirectory`) → Snapshot mode:
+  a `--attention` tag `Snapshot mode · read at 14:02 · Re-open to refresh` in row 2, no Live dot,
+  no recents.
+- **Install**: `lucide:download-cloud` "Install" button in row 1 only while `beforeinstallprompt`
+  is pending; `.patch`/`.diff` files opened through the OS or dropped on the page render as a
+  patch-only diff (no repository) with an info banner.
+
+### 14.7 Keyboard additions
+
+`1`–`4` modes · `⌘K`/`Ctrl+K` palette · `b` blame on the active file · `h` file history · `g` / `x`
+bisect good / bad while a bisect runs · `e` export menu · `Shift+H` hidden files toggle.
+All existing keys keep their meaning. Every new surface is reachable by keyboard and passes the axe
+checks from T5.6.
