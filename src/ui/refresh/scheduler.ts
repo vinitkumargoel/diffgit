@@ -49,11 +49,19 @@ export interface SchedulerDeps {
   store?: typeof useStore;
   startObserver?: ObserverStarter;
   startPoller?: PollerStarter;
-  /** Re-request read permission on the handle (the "Re-grant access" toast action). */
+  /** Re-request read permission on the handle (the "Grant access" toast action). */
   requestPermission?: (handle: unknown) => Promise<boolean>;
   debounceMs?: number;
   maxWaitMs?: number;
   debug?: (msg: string, ...rest: unknown[]) => void;
+}
+
+/** E5.4 "Pick branch": opens the compare BranchPicker in the top bar (aria-label "compare branch: …"). */
+function focusComparePicker(): void {
+  const trigger = document.querySelector<HTMLButtonElement>('button[aria-label^="compare branch"]');
+  if (!trigger) return; // the top bar is not mounted (error screen); nothing to focus
+  trigger.focus();
+  trigger.click();
 }
 
 /** Files whose edits change ignore rules, attributes, refs or remotes: everything is invalidated. */
@@ -203,6 +211,14 @@ export function createScheduler(deps: SchedulerDeps): Scheduler {
     if (src.includeWorktree && !isWorktreeSource(src, info))
       src = { ...src, includeWorktree: false };
     store.setState({ repo: info, diffSource: src });
+    // E5.4: the selected branch was deleted; the fallback is silent otherwise.
+    const gone = sourceGone ? cur.diffSource.source : targetGone ? cur.diffSource.target : null;
+    if (gone !== null)
+      store.getState().addToast({
+        level: "info",
+        message: `${gone} was deleted. Now comparing ${src.target} … ${src.source}.`,
+        action: { label: "Pick branch", onClick: focusComparePicker },
+      });
   }
 
   function handleError(err: UiError): void {
@@ -251,11 +267,12 @@ export function createScheduler(deps: SchedulerDeps): Scheduler {
       permissionToastShown = true;
       const s = store.getState();
       const h = handle;
+      const name = s.repo?.name ?? (h as { name?: string } | null)?.name ?? "the folder";
       s.addToast({
         level: "warning",
-        message: "Read access to the folder was lost; automatic refresh is off.",
+        message: `Read access to ${name} was revoked. Live refresh paused.`,
         action: {
-          label: "Re-grant access",
+          label: "Grant access",
           onClick: () => {
             void (async () => {
               const ok = deps.requestPermission ? await deps.requestPermission(h) : false;

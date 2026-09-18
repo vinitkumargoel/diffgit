@@ -236,7 +236,8 @@ describe("scheduler", () => {
     expect(s.mode).toBe("manual");
     const toasts = useStore.getState().toasts;
     expect(toasts).toHaveLength(1);
-    expect(toasts[0]?.action?.label).toBe("Re-grant access");
+    expect(toasts[0]?.message).toContain("was revoked. Live refresh paused.");
+    expect(toasts[0]?.action?.label).toBe("Grant access");
 
     toasts[0]?.action?.onClick();
     await tick(0);

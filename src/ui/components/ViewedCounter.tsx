@@ -2,9 +2,9 @@
 export function ViewedCounter({ viewed, total }: { viewed: number; total: number }) {
   const pct = total === 0 ? 0 : Math.round((viewed / total) * 100);
   return (
-    <div className="flex items-center gap-2 text-xs text-muted tabular-nums">
-      <span>
-        {viewed} / {total} viewed
+    <div className="flex items-center gap-2 text-[12.5px] text-muted tabular-nums">
+      <span data-testid="viewed-count">
+        <b className="font-semibold text-ink">{viewed}</b> / {total} viewed
       </span>
       <div
         role="progressbar"

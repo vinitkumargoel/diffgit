@@ -1,15 +1,12 @@
 import { CircleHelp } from "lucide-react";
-import { useShallow } from "zustand/react/shallow";
-import { selectCanIncludeWorktree, selectTotals, selectViewedCount, useStore } from "../store";
+import { selectCanIncludeWorktree, useStore } from "../store";
 import { BranchPicker } from "./BranchPicker";
-import { FileFilter } from "./FileFilter";
 import { IncludeWorktreeToggle } from "./IncludeWorktreeToggle";
 import { Logo } from "./Logo";
 import { RefreshControl } from "./RefreshControl";
+import { StatsRow } from "./StatsRow";
 import { SwapButton } from "./SwapButton";
 import { ThemeToggle } from "./ThemeToggle";
-import { ViewControls } from "./ViewControls";
-import { ViewedCounter } from "./ViewedCounter";
 
 function Divider() {
   return <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-line" />;
@@ -21,17 +18,11 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
   const diffSource = useStore((s) => s.diffSource);
   const canIncludeWorktree = useStore(selectCanIncludeWorktree);
   const refresh = useStore((s) => s.refresh);
-  const prefs = useStore((s) => s.prefs);
-  const filter = useStore((s) => s.filter);
-  const totals = useStore(useShallow(selectTotals));
-  const viewedCount = useStore(selectViewedCount);
   const setSource = useStore((s) => s.setSource);
   const setTarget = useStore((s) => s.setTarget);
   const swapBranches = useStore((s) => s.swapBranches);
   const setIncludeWorktree = useStore((s) => s.setIncludeWorktree);
   const requestRefresh = useStore((s) => s.requestRefresh);
-  const setFilter = useStore((s) => s.setFilter);
-  const setPref = useStore((s) => s.setPref);
 
   if (!repo || !diffSource) return null;
 
@@ -94,28 +85,7 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
         </button>
         <ThemeToggle />
       </div>
-      <div className="flex min-h-10 flex-wrap items-center gap-2 bg-surface px-3 py-1 text-xs">
-        <span className="font-semibold tabular-nums">
-          {totals.files} {totals.files === 1 ? "file" : "files"} changed
-        </span>
-        <span aria-hidden className="text-muted">
-          ·
-        </span>
-        <span className="font-mono font-semibold tabular-nums">
-          <span className="text-success">+{totals.additions}</span>{" "}
-          <span className="text-danger">−{totals.deletions}</span>
-        </span>
-        <Divider />
-        <ViewedCounter viewed={viewedCount} total={totals.files} />
-        <span className="flex-1" />
-        <FileFilter value={filter} onChange={setFilter} />
-        <ViewControls
-          viewMode={prefs.viewMode}
-          ignoreWhitespace={prefs.ignoreWhitespace}
-          onViewMode={(m) => setPref("viewMode", m)}
-          onIgnoreWhitespace={(on) => setPref("ignoreWhitespace", on)}
-        />
-      </div>
+      <StatsRow />
     </header>
   );
 }

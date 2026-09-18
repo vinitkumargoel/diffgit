@@ -3,6 +3,8 @@
 <nav><div class="frame"><div class="pad">
   <a class="brand" href="#"><svg><use href="#logo"/></svg><b>diff<i>git</i></b></a>
   <div class="links"><a href="#demo">Demo</a><a href="#how">How it works</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a><a href="#">Docs</a><a href="#">GitHub</a></div>
+  <!-- H5: the nav "Recent" button + popover is portalled in here by HomeScreen; empty with no history. -->
+  <span id="home-nav-recent"></span>
   <button class="btn btn-ink">Open repository</button>
 </div></div></nav>
 
@@ -15,13 +17,20 @@
         <p class="lede">Open the repository on your disk and read <b>base…compare</b> the way a reviewer will, with staged, unstaged and untracked work layered on top. Nothing is uploaded. Nothing is written.</p>
         <div class="cta"><button class="btn btn-ink btn-lg">Open a repository</button><a class="btn btn-lg" href="#demo">Try the demo below</a><small>Press <kbd>o</kbd></small></div>
       </div>
-      <div class="facts">
-        <div><span>Runs in</span><span>your browser tab</span></div>
-        <div><span>Uploads</span><span class="g">0 bytes, by CSP</span></div>
-        <div><span>Writes to disk</span><span class="g">none, read-only</span></div>
-        <div><span>Matches</span><span>git diff -M</span></div>
-        <div><span>Browsers</span><span>Chromium, desktop</span></div>
-        <div><span>Licence</span><span>MIT</span></div>
+      <!-- H0–H1: the right column is the facts table until a repository has been opened; then
+           HomeScreen hides #home-facts and portals Recent / Continue into #home-side. -->
+      <div class="aside">
+        <div class="facts" id="home-facts">
+          <div><span>Runs in</span><span>your browser tab</span></div>
+          <div><span>Uploads</span><span class="g">0 bytes, by CSP</span></div>
+          <div><span>Writes to disk</span><span class="g">none, read-only</span></div>
+          <div id="home-fact-matches"><span>Matches</span><span>git diff -M</span></div>
+          <!-- H6: replaces the row above when IndexedDB is blocked or full. -->
+          <div id="home-fact-storage" hidden></div>
+          <div><span>Browsers</span><span>Chromium, desktop</span></div>
+          <div><span>Licence</span><span>MIT</span></div>
+        </div>
+        <div id="home-side" hidden></div>
       </div>
     </div>
   </header>

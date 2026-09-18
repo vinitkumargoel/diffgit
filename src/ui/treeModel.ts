@@ -90,6 +90,68 @@ export function flattenTree(
   return rows;
 }
 
+/** `status:M` / `status:modified` and `layer:staged` tokens (S1: the breakdowns are click targets). */
+const STATUS_TOKENS: Record<string, FileDiff["status"][]> = {
+  m: ["modified"],
+  modified: ["modified"],
+  a: ["added"],
+  added: ["added"],
+  d: ["deleted"],
+  deleted: ["deleted"],
+  r: ["renamed", "copied"],
+  renamed: ["renamed", "copied"],
+  c: ["copied"],
+  copied: ["copied"],
+  t: ["typechange"],
+  typechange: ["typechange"],
+};
+const LAYER_TOKENS = new Set(["staged", "unstaged", "untracked", "conflict", "committed"]);
+
+export interface ParsedFilter {
+  /** Free text / glob part, may be empty. */
+  path: string;
+  statuses: FileDiff["status"][] | null;
+  layers: string[] | null;
+  generated: boolean | null;
+}
+
+/** Splits `status:M layer:staged src/` into its parts; unknown tokens stay in `path`. */
+export function parseFilter(filter: string): ParsedFilter {
+  const out: ParsedFilter = { path: "", statuses: null, layers: null, generated: null };
+  const words: string[] = [];
+  for (const w of filter.trim().split(/\s+/)) {
+    if (w === "") continue;
+    const m = /^(status|layer|is):(.+)$/i.exec(w);
+    if (!m) {
+      words.push(w);
+      continue;
+    }
+    const key = (m[1] as string).toLowerCase();
+    const val = (m[2] as string).toLowerCase();
+    if (key === "status" && STATUS_TOKENS[val]) {
+      out.statuses = [...(out.statuses ?? []), ...(STATUS_TOKENS[val] as FileDiff["status"][])];
+    } else if (key === "layer" && LAYER_TOKENS.has(val)) {
+      out.layers = [...(out.layers ?? []), val];
+    } else if (key === "is" && val === "generated") {
+      out.generated = true;
+    } else words.push(w);
+  }
+  out.path = words.join(" ");
+  return out;
+}
+
+/** Full file filter: path substring/glob plus `status:` / `layer:` / `is:generated` tokens. */
+export function makeFileFilter(filter: string): (f: FileDiff) => boolean {
+  const p = parseFilter(filter);
+  const path = makePathFilter(p.path);
+  return (f) => {
+    if (p.statuses && !p.statuses.includes(f.status)) return false;
+    if (p.layers && !p.layers.some((l) => (f.layers as string[]).includes(l))) return false;
+    if (p.generated !== null && !!f.generated !== p.generated) return false;
+    return path(filePathOf(f));
+  };
+}
+
 /** Substring match (case-insensitive) or glob when the filter contains `*` / `?`. */
 export function makePathFilter(filter: string): (path: string) => boolean {
   const f = filter.trim();

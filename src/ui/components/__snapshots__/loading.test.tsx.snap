@@ -1,0 +1,1423 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`LoadingScreen shell > snapshots L1 and L4 in both themes > loading L1 (dark) 1`] = `
+<main
+  aria-label="Opening repository"
+  class="flex min-h-full items-center justify-center bg-bg px-4 py-12 text-[15px] leading-6 text-ink"
+>
+  <div
+    class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
+  >
+    <style>
+      
+.dg-sweep{position:absolute;top:0;left:-35%;width:35%;height:100%;animation:dg-sweep 1.4s ease-in-out infinite}
+@keyframes dg-sweep{to{left:100%}}
+@media (prefers-reduced-motion:reduce){.dg-sweep{animation:none;left:0;width:100%}}
+
+    </style>
+    <div
+      class="flex w-full flex-col gap-[22px] text-left"
+    >
+      <div
+        class="flex items-center gap-3"
+      >
+        <svg
+          aria-hidden="true"
+          class="rounded-[8px]"
+          focusable="false"
+          height="32"
+          viewBox="0 0 32 32"
+          width="32"
+        >
+          <rect
+            fill="var(--brand-chip)"
+            height="32"
+            rx="7"
+            width="32"
+          />
+          <path
+            d="M10 10.5v11"
+            fill="none"
+            stroke="var(--brand-line)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <path
+            d="M22 12.6c0 6-12 3.4-12 9"
+            fill="none"
+            stroke="var(--brand-branch)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <circle
+            cx="10"
+            cy="8"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="10"
+            cy="24"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="22"
+            cy="10"
+            fill="var(--brand-branch)"
+            r="2.6"
+          />
+        </svg>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[22px] leading-[1.1] font-semibold tracking-[-0.02em]"
+          >
+            acme-web
+          </h1>
+          <div
+            class="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[12.5px] text-ink/80"
+          >
+            <span
+              class="text-accent"
+            >
+              main
+            </span>
+            <span
+              class="text-muted/70"
+            >
+              …
+            </span>
+            <span
+              class="text-success"
+            >
+              feat/coupons
+            </span>
+            <span
+              class="text-muted/70"
+            >
+              · uncommitted included
+            </span>
+          </div>
+        </div>
+        <div
+          class="ml-auto text-right font-mono text-[12px] leading-[1.4] text-muted/70"
+        >
+          <b
+            class="block font-medium text-muted"
+          >
+            4.2 s
+          </b>
+          usually ~6 s
+        </div>
+      </div>
+      <ol
+        aria-live="polite"
+        class="m-0 w-full list-none border-t border-line-subtle p-0"
+      >
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] "
+        >
+          <svg
+            aria-label="done"
+            class="lucide lucide-circle-check lucide-check-circle-2 text-success"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m16 9-5.5 5.5L8 12"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Reading refs
+            </b>
+            <span
+              class="font-mono text-[11.5px] text-muted"
+            >
+              412 refs
+            </span>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted/70"
+          >
+            0.3 s
+          </span>
+        </li>
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] "
+        >
+          <svg
+            aria-label="done"
+            class="lucide lucide-circle-check lucide-check-circle-2 text-success"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m16 9-5.5 5.5L8 12"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Parsing index
+            </b>
+            <span
+              class="font-mono text-[11.5px] text-muted"
+            >
+              8,120 entries
+            </span>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted/70"
+          >
+            0.4 s
+          </span>
+        </li>
+        <li
+          aria-current="step"
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] "
+        >
+          <svg
+            aria-label="in progress"
+            class="lucide lucide-loader-circle lucide-loader-2 spin text-accent"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M21 12a9 9 0 1 1-6.219-8.56"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Scanning working tree
+            </b>
+            <span
+              class="font-mono text-[11.5px] text-ink/80"
+            >
+              scanning
+            </span>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted"
+          >
+            1,240 / 5,000
+          </span>
+          <span
+            class="col-start-2 col-end-4 mt-1"
+          >
+            <div
+              aria-hidden="true"
+              class="relative h-[6px] w-full overflow-hidden rounded-[3px] bg-progress-track"
+            >
+              <span
+                class="block h-full rounded-[3px] bg-accent"
+                style="width: 25%;"
+              />
+            </div>
+          </span>
+        </li>
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] text-muted/70"
+        >
+          <svg
+            aria-label="pending"
+            class="lucide lucide-circle text-muted/70"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Computing diff
+            </b>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted"
+          />
+        </li>
+      </ol>
+      <div
+        class="flex items-center gap-2.5"
+      >
+        <button
+          class="btn btn-sm"
+          type="button"
+        >
+          Cancel
+        </button>
+        <span
+          class="ml-auto text-[12.5px] text-muted/70"
+        >
+          <kbd
+            class="kbd"
+          >
+            esc
+          </kbd>
+           cancels · nothing has been written
+        </span>
+      </div>
+    </div>
+  </div>
+</main>
+`;
+
+exports[`LoadingScreen shell > snapshots L1 and L4 in both themes > loading L1 (light) 1`] = `
+<main
+  aria-label="Opening repository"
+  class="flex min-h-full items-center justify-center bg-bg px-4 py-12 text-[15px] leading-6 text-ink"
+>
+  <div
+    class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
+  >
+    <style>
+      
+.dg-sweep{position:absolute;top:0;left:-35%;width:35%;height:100%;animation:dg-sweep 1.4s ease-in-out infinite}
+@keyframes dg-sweep{to{left:100%}}
+@media (prefers-reduced-motion:reduce){.dg-sweep{animation:none;left:0;width:100%}}
+
+    </style>
+    <div
+      class="flex w-full flex-col gap-[22px] text-left"
+    >
+      <div
+        class="flex items-center gap-3"
+      >
+        <svg
+          aria-hidden="true"
+          class="rounded-[8px]"
+          focusable="false"
+          height="32"
+          viewBox="0 0 32 32"
+          width="32"
+        >
+          <rect
+            fill="var(--brand-chip)"
+            height="32"
+            rx="7"
+            width="32"
+          />
+          <path
+            d="M10 10.5v11"
+            fill="none"
+            stroke="var(--brand-line)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <path
+            d="M22 12.6c0 6-12 3.4-12 9"
+            fill="none"
+            stroke="var(--brand-branch)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <circle
+            cx="10"
+            cy="8"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="10"
+            cy="24"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="22"
+            cy="10"
+            fill="var(--brand-branch)"
+            r="2.6"
+          />
+        </svg>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[22px] leading-[1.1] font-semibold tracking-[-0.02em]"
+          >
+            acme-web
+          </h1>
+          <div
+            class="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[12.5px] text-ink/80"
+          >
+            <span
+              class="text-accent"
+            >
+              main
+            </span>
+            <span
+              class="text-muted/70"
+            >
+              …
+            </span>
+            <span
+              class="text-success"
+            >
+              feat/coupons
+            </span>
+            <span
+              class="text-muted/70"
+            >
+              · uncommitted included
+            </span>
+          </div>
+        </div>
+        <div
+          class="ml-auto text-right font-mono text-[12px] leading-[1.4] text-muted/70"
+        >
+          <b
+            class="block font-medium text-muted"
+          >
+            4.2 s
+          </b>
+          usually ~6 s
+        </div>
+      </div>
+      <ol
+        aria-live="polite"
+        class="m-0 w-full list-none border-t border-line-subtle p-0"
+      >
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] "
+        >
+          <svg
+            aria-label="done"
+            class="lucide lucide-circle-check lucide-check-circle-2 text-success"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m16 9-5.5 5.5L8 12"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Reading refs
+            </b>
+            <span
+              class="font-mono text-[11.5px] text-muted"
+            >
+              412 refs
+            </span>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted/70"
+          >
+            0.3 s
+          </span>
+        </li>
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] "
+        >
+          <svg
+            aria-label="done"
+            class="lucide lucide-circle-check lucide-check-circle-2 text-success"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m16 9-5.5 5.5L8 12"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Parsing index
+            </b>
+            <span
+              class="font-mono text-[11.5px] text-muted"
+            >
+              8,120 entries
+            </span>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted/70"
+          >
+            0.4 s
+          </span>
+        </li>
+        <li
+          aria-current="step"
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] "
+        >
+          <svg
+            aria-label="in progress"
+            class="lucide lucide-loader-circle lucide-loader-2 spin text-accent"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M21 12a9 9 0 1 1-6.219-8.56"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Scanning working tree
+            </b>
+            <span
+              class="font-mono text-[11.5px] text-ink/80"
+            >
+              scanning
+            </span>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted"
+          >
+            1,240 / 5,000
+          </span>
+          <span
+            class="col-start-2 col-end-4 mt-1"
+          >
+            <div
+              aria-hidden="true"
+              class="relative h-[6px] w-full overflow-hidden rounded-[3px] bg-progress-track"
+            >
+              <span
+                class="block h-full rounded-[3px] bg-accent"
+                style="width: 25%;"
+              />
+            </div>
+          </span>
+        </li>
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] text-muted/70"
+        >
+          <svg
+            aria-label="pending"
+            class="lucide lucide-circle text-muted/70"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Computing diff
+            </b>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted"
+          />
+        </li>
+      </ol>
+      <div
+        class="flex items-center gap-2.5"
+      >
+        <button
+          class="btn btn-sm"
+          type="button"
+        >
+          Cancel
+        </button>
+        <span
+          class="ml-auto text-[12.5px] text-muted/70"
+        >
+          <kbd
+            class="kbd"
+          >
+            esc
+          </kbd>
+           cancels · nothing has been written
+        </span>
+      </div>
+    </div>
+  </div>
+</main>
+`;
+
+exports[`LoadingScreen shell > snapshots L1 and L4 in both themes > loading L4 (dark) 1`] = `
+<main
+  aria-label="Opening repository"
+  class="flex min-h-full items-center justify-center bg-bg px-4 py-12 text-[15px] leading-6 text-ink"
+>
+  <div
+    class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
+  >
+    <style>
+      
+.dg-sweep{position:absolute;top:0;left:-35%;width:35%;height:100%;animation:dg-sweep 1.4s ease-in-out infinite}
+@keyframes dg-sweep{to{left:100%}}
+@media (prefers-reduced-motion:reduce){.dg-sweep{animation:none;left:0;width:100%}}
+
+    </style>
+    <div
+      class="flex w-full flex-col gap-[22px] text-left"
+    >
+      <div
+        class="flex items-center gap-3"
+      >
+        <svg
+          aria-hidden="true"
+          class="rounded-[8px]"
+          focusable="false"
+          height="32"
+          viewBox="0 0 32 32"
+          width="32"
+        >
+          <rect
+            fill="var(--brand-chip)"
+            height="32"
+            rx="7"
+            width="32"
+          />
+          <path
+            d="M10 10.5v11"
+            fill="none"
+            stroke="var(--brand-line)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <path
+            d="M22 12.6c0 6-12 3.4-12 9"
+            fill="none"
+            stroke="var(--brand-branch)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <circle
+            cx="10"
+            cy="8"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="10"
+            cy="24"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="22"
+            cy="10"
+            fill="var(--brand-branch)"
+            r="2.6"
+          />
+        </svg>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[22px] leading-[1.1] font-semibold tracking-[-0.02em]"
+          >
+            acme-web
+          </h1>
+          <div
+            class="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[12.5px] text-ink/80"
+          >
+            <span
+              class="text-accent"
+            >
+              main
+            </span>
+            <span
+              class="text-muted/70"
+            >
+              …
+            </span>
+            <span
+              class="text-success"
+            >
+              feat/coupons
+            </span>
+            <span
+              class="text-muted/70"
+            >
+              · uncommitted included
+            </span>
+          </div>
+        </div>
+        <div
+          class="ml-auto text-right font-mono text-[12px] leading-[1.4] text-muted/70"
+        >
+          <b
+            class="block font-medium text-muted"
+          >
+            1.9 s
+          </b>
+          stopped
+        </div>
+      </div>
+      <ol
+        aria-live="polite"
+        class="m-0 w-full list-none border-t border-line-subtle p-0"
+      >
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] "
+        >
+          <svg
+            aria-label="done"
+            class="lucide lucide-circle-check lucide-check-circle-2 text-success"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m16 9-5.5 5.5L8 12"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Reading refs
+            </b>
+            <span
+              class="font-mono text-[11.5px] text-muted"
+            >
+              412 refs
+            </span>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted/70"
+          >
+            0.3 s
+          </span>
+        </li>
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] "
+        >
+          <svg
+            aria-label="failed"
+            class="lucide lucide-circle-x lucide-x-circle text-danger"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m15 9-6 6"
+            />
+            <path
+              d="m9 9 6 6"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Parsing index
+            </b>
+            <span
+              class="font-mono text-[11.5px] text-muted"
+            >
+              <span
+                class="text-danger"
+              >
+                Unsupported index format
+                 · 
+                INDEX_UNSUPPORTED
+              </span>
+            </span>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted"
+          >
+            0.1 s
+          </span>
+          <span
+            class="col-start-2 col-end-4 mt-1 block"
+          >
+            <span
+              class="flex items-start gap-2.5 rounded-[8px] border border-danger/50 bg-banner-error-bg px-3 py-2.5 text-[13px] leading-[19px]"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-circle-x lucide-x-circle mt-0.5 shrink-0 text-danger"
+                fill="none"
+                height="14"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="14"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                />
+                <path
+                  d="m15 9-6 6"
+                />
+                <path
+                  d="m9 9 6 6"
+                />
+              </svg>
+              <span
+                class="block"
+              >
+                <span
+                  class="block font-semibold"
+                >
+                  The 
+                  <code
+                    class="font-mono text-[0.92em] text-ink"
+                  >
+                    .git/index
+                  </code>
+                   file uses a format version diffgit cannot parse.
+                </span>
+                <span
+                  class="mt-1 block text-muted"
+                >
+                  Run 
+                  <code
+                    class="font-mono text-[0.92em] text-ink"
+                  >
+                    git update-index --index-version 4
+                  </code>
+                   in this checkout, then retry. Nothing else about the repository changes. Found: a version other than 2–4, or an unknown mandatory extension
+                </span>
+                <span
+                  class="mt-2 flex flex-wrap gap-2"
+                >
+                  <button
+                    class="btn btn-sm btn-ink"
+                    type="button"
+                  >
+                    Retry
+                  </button>
+                  <button
+                    class="btn btn-sm"
+                    type="button"
+                  >
+                    Choose another folder
+                  </button>
+                  <button
+                    class="btn btn-sm btn-ghost"
+                    type="button"
+                  >
+                    Copy details
+                  </button>
+                </span>
+              </span>
+            </span>
+          </span>
+        </li>
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] text-muted/70"
+        >
+          <svg
+            aria-label="pending"
+            class="lucide lucide-circle text-muted/70"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Scanning working tree
+            </b>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted"
+          />
+        </li>
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] text-muted/70"
+        >
+          <svg
+            aria-label="pending"
+            class="lucide lucide-circle text-muted/70"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Computing diff
+            </b>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted"
+          />
+        </li>
+      </ol>
+      <div
+        class="flex items-center gap-2.5"
+      >
+        <button
+          class="btn btn-sm"
+          type="button"
+        >
+          Back to start
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+`;
+
+exports[`LoadingScreen shell > snapshots L1 and L4 in both themes > loading L4 (light) 1`] = `
+<main
+  aria-label="Opening repository"
+  class="flex min-h-full items-center justify-center bg-bg px-4 py-12 text-[15px] leading-6 text-ink"
+>
+  <div
+    class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
+  >
+    <style>
+      
+.dg-sweep{position:absolute;top:0;left:-35%;width:35%;height:100%;animation:dg-sweep 1.4s ease-in-out infinite}
+@keyframes dg-sweep{to{left:100%}}
+@media (prefers-reduced-motion:reduce){.dg-sweep{animation:none;left:0;width:100%}}
+
+    </style>
+    <div
+      class="flex w-full flex-col gap-[22px] text-left"
+    >
+      <div
+        class="flex items-center gap-3"
+      >
+        <svg
+          aria-hidden="true"
+          class="rounded-[8px]"
+          focusable="false"
+          height="32"
+          viewBox="0 0 32 32"
+          width="32"
+        >
+          <rect
+            fill="var(--brand-chip)"
+            height="32"
+            rx="7"
+            width="32"
+          />
+          <path
+            d="M10 10.5v11"
+            fill="none"
+            stroke="var(--brand-line)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <path
+            d="M22 12.6c0 6-12 3.4-12 9"
+            fill="none"
+            stroke="var(--brand-branch)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <circle
+            cx="10"
+            cy="8"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="10"
+            cy="24"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="22"
+            cy="10"
+            fill="var(--brand-branch)"
+            r="2.6"
+          />
+        </svg>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[22px] leading-[1.1] font-semibold tracking-[-0.02em]"
+          >
+            acme-web
+          </h1>
+          <div
+            class="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[12.5px] text-ink/80"
+          >
+            <span
+              class="text-accent"
+            >
+              main
+            </span>
+            <span
+              class="text-muted/70"
+            >
+              …
+            </span>
+            <span
+              class="text-success"
+            >
+              feat/coupons
+            </span>
+            <span
+              class="text-muted/70"
+            >
+              · uncommitted included
+            </span>
+          </div>
+        </div>
+        <div
+          class="ml-auto text-right font-mono text-[12px] leading-[1.4] text-muted/70"
+        >
+          <b
+            class="block font-medium text-muted"
+          >
+            1.9 s
+          </b>
+          stopped
+        </div>
+      </div>
+      <ol
+        aria-live="polite"
+        class="m-0 w-full list-none border-t border-line-subtle p-0"
+      >
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] "
+        >
+          <svg
+            aria-label="done"
+            class="lucide lucide-circle-check lucide-check-circle-2 text-success"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m16 9-5.5 5.5L8 12"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Reading refs
+            </b>
+            <span
+              class="font-mono text-[11.5px] text-muted"
+            >
+              412 refs
+            </span>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted/70"
+          >
+            0.3 s
+          </span>
+        </li>
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] "
+        >
+          <svg
+            aria-label="failed"
+            class="lucide lucide-circle-x lucide-x-circle text-danger"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m15 9-6 6"
+            />
+            <path
+              d="m9 9 6 6"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Parsing index
+            </b>
+            <span
+              class="font-mono text-[11.5px] text-muted"
+            >
+              <span
+                class="text-danger"
+              >
+                Unsupported index format
+                 · 
+                INDEX_UNSUPPORTED
+              </span>
+            </span>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted"
+          >
+            0.1 s
+          </span>
+          <span
+            class="col-start-2 col-end-4 mt-1 block"
+          >
+            <span
+              class="flex items-start gap-2.5 rounded-[8px] border border-danger/50 bg-banner-error-bg px-3 py-2.5 text-[13px] leading-[19px]"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-circle-x lucide-x-circle mt-0.5 shrink-0 text-danger"
+                fill="none"
+                height="14"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="14"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                />
+                <path
+                  d="m15 9-6 6"
+                />
+                <path
+                  d="m9 9 6 6"
+                />
+              </svg>
+              <span
+                class="block"
+              >
+                <span
+                  class="block font-semibold"
+                >
+                  The 
+                  <code
+                    class="font-mono text-[0.92em] text-ink"
+                  >
+                    .git/index
+                  </code>
+                   file uses a format version diffgit cannot parse.
+                </span>
+                <span
+                  class="mt-1 block text-muted"
+                >
+                  Run 
+                  <code
+                    class="font-mono text-[0.92em] text-ink"
+                  >
+                    git update-index --index-version 4
+                  </code>
+                   in this checkout, then retry. Nothing else about the repository changes. Found: a version other than 2–4, or an unknown mandatory extension
+                </span>
+                <span
+                  class="mt-2 flex flex-wrap gap-2"
+                >
+                  <button
+                    class="btn btn-sm btn-ink"
+                    type="button"
+                  >
+                    Retry
+                  </button>
+                  <button
+                    class="btn btn-sm"
+                    type="button"
+                  >
+                    Choose another folder
+                  </button>
+                  <button
+                    class="btn btn-sm btn-ghost"
+                    type="button"
+                  >
+                    Copy details
+                  </button>
+                </span>
+              </span>
+            </span>
+          </span>
+        </li>
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] text-muted/70"
+        >
+          <svg
+            aria-label="pending"
+            class="lucide lucide-circle text-muted/70"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Scanning working tree
+            </b>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted"
+          />
+        </li>
+        <li
+          class="grid min-h-[44px] grid-cols-[20px_1fr_auto] items-center gap-3 border-b border-line-subtle py-2 text-[14px] text-muted/70"
+        >
+          <svg
+            aria-label="pending"
+            class="lucide lucide-circle text-muted/70"
+            fill="none"
+            height="16"
+            role="img"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+          </svg>
+          <span
+            class="flex min-w-0 flex-col leading-[1.3]"
+          >
+            <b
+              class="font-medium"
+            >
+              Computing diff
+            </b>
+          </span>
+          <span
+            class="min-w-[90px] text-right font-mono text-[12.5px] tabular-nums text-muted"
+          />
+        </li>
+      </ol>
+      <div
+        class="flex items-center gap-2.5"
+      >
+        <button
+          class="btn btn-sm"
+          type="button"
+        >
+          Back to start
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+`;

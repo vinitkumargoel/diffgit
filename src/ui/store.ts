@@ -27,9 +27,9 @@ import type {
   RepoWarning,
 } from "../engine/types";
 import { getWorkerClient } from "./engineClient";
-import { toUiError, type UiError } from "./errors";
+import { LOADING_INLINE_CODES, toUiError, type UiError } from "./errors";
 import { Lru } from "./lru";
-import { buildTree, filePathOf, makePathFilter, type TreeNode } from "./treeModel";
+import { buildTree, makeFileFilter, type TreeNode } from "./treeModel";
 import { viewedKey } from "./viewedKey";
 import type { ClientMetrics, WorkerClient } from "./workerClient";
 
@@ -76,7 +76,7 @@ export const LOADING_LABELS: Record<LoadingStep, string> = {
   worktree: "Scanning working tree",
   diff: "Computing diff",
 };
-function stepForPhase(phase: ProgressPhase): LoadingStep | null {
+export function stepForPhase(phase: ProgressPhase): LoadingStep | null {
   switch (phase) {
     case "layout":
     case "config":
@@ -94,12 +94,69 @@ function stepForPhase(phase: ProgressPhase): LoadingStep | null {
   }
 }
 
+/** What a finished step reports (L1: "412 refs · 0.3 s"). */
+export interface StepResult {
+  durationMs: number;
+  /** Items processed when the engine reported a total (index entries, worktree files). */
+  count?: number;
+}
+
 export interface LoadingState {
   step: LoadingStep | null;
   done?: number;
   total?: number;
   completed: LoadingStep[];
+  /** `Date.now()` when this open started; drives the elapsed counter and the slow callout (L3). */
+  startedAt: number | null;
+  /** Results of completed steps. */
+  phases: Partial<Record<LoadingStep, StepResult>>;
+  /** Engine sub-phases already finished inside the current step ("layout ok · config ok"). */
+  subPhases: ProgressPhase[];
+  /** 1-based open attempt; > 1 after the engine restarted mid-open (L5). */
+  attempt: number;
+  /** Set when the open failed with a phase-attachable code (L4); the screen stays "loading". */
+  failed: UiError | null;
+  failedStep: LoadingStep | null;
+  /** `lastOpenMs` of the stored repo, when known ("usually ~6 s"). */
+  expectedMs: number | null;
 }
+
+export const MAX_OPEN_ATTEMPTS = 3;
+/** Engine restarts within this window before the store gives up (E4.3). */
+export const RESTART_WINDOW_MS = 60_000;
+export const MAX_RESTARTS = 3;
+
+export function initialLoading(patch: Partial<LoadingState> = {}): LoadingState {
+  return {
+    step: null,
+    completed: [],
+    startedAt: null,
+    phases: {},
+    subPhases: [],
+    attempt: 1,
+    failed: null,
+    failedStep: null,
+    expectedMs: null,
+    ...patch,
+  };
+}
+
+/** Why a Recent row could not be opened (H4); shown on the row after the store returns Home. */
+export interface RecentNotice {
+  repoId: string;
+  code: "HANDLE_GONE" | "NOT_A_REPO" | "PERMISSION";
+}
+
+/** Why the browser gate is up although `showDirectoryPicker` exists (B6: refused on first click). */
+export type GateCause =
+  | "firefox"
+  | "safari"
+  | "mobile"
+  | "insecure"
+  | "iframe"
+  | "old"
+  | "policy"
+  | "unknown";
 
 export type FileDiffEntry =
   | { status: "loading"; controller: AbortController }
@@ -122,6 +179,8 @@ export interface RefreshState {
   restarted: boolean;
   /** Engine phase in flight during a recompute (T6.4 progress in the refresh control). */
   phase?: ProgressPhase | null;
+  /** Engine restarts seen in the last `RESTART_WINDOW_MS` (E4.3 gives up at `MAX_RESTARTS`). */
+  restarts?: number;
 }
 
 /** Storage adapters injected by T4.3 (`persistence/index.ts`); defaults are no-ops. */
@@ -137,7 +196,7 @@ export interface StorePersistence {
   saveViewed(key: string, viewed: boolean): Promise<void>;
   touchRepo(
     id: string,
-    patch: { lastSource?: string; lastTarget?: string; lastOpenedAt?: number },
+    patch: { lastSource?: string; lastTarget?: string; lastOpenedAt?: number; lastOpenMs?: number },
   ): Promise<void>;
   loadPrefs(): Prefs;
   savePrefs(prefs: Prefs): void;
@@ -161,6 +220,10 @@ export interface OpenOptions {
   /** Remembered branches (display names or full refs); applied when they still exist. */
   lastSource?: string;
   lastTarget?: string;
+  /** Wall time of the previous open of this repo (L1 "usually ~6 s"). */
+  expectedMs?: number;
+  /** Open without the working tree layers (L3 "Skip uncommitted changes"). */
+  skipWorktree?: boolean;
 }
 
 export interface StoreState {
@@ -173,6 +236,8 @@ export interface StoreState {
   diffSource: DiffSource | null;
   diff: DiffResult | null;
   stats: Record<string, FileStats>;
+  /** `Date.now()` of the last stats batch for the current diff; null once complete or before any (S8). */
+  statsLastAt: number | null;
   warnings: RepoWarning[];
   dismissedWarnings: ReadonlySet<WarningCode>;
   prefs: Prefs;
@@ -187,6 +252,12 @@ export interface StoreState {
   announcement: string; // aria-live text
   /** Bumped with every announcement so the live region re-renders even for identical text. */
   announcementSeq: number;
+  /** Inline outcome for a Recent row after an open from history failed (H4). */
+  recentNotice: RecentNotice | null;
+  /** Set when IndexedDB is blocked or full: Home says so in the facts table instead of toasting (H6). */
+  storageUnavailable: boolean;
+  /** Set when the picker itself is refused (policy / SecurityError): the gate takes over (B6). */
+  gateCause: GateCause | null;
 
   // actions
   openRepo(handle: unknown, opts?: OpenOptions): Promise<void>;
@@ -217,6 +288,9 @@ export interface StoreState {
   dismissToast(id: number): void;
   setRefreshMode(mode: RefreshMode): void;
   fileBytes(id: string, side: "old" | "new"): Promise<Uint8Array | null>;
+  setRecentNotice(notice: RecentNotice | null): void;
+  setStorageUnavailable(on: boolean): void;
+  setGateCause(cause: GateCause | null): void;
 }
 
 let toastSeq = 0;
@@ -245,6 +319,8 @@ let restartUnsub: (() => void) | null = null;
  * `loadViewed`). Keyed by generation; merged into `stats` when the result lands.
  */
 const pendingStats = new Map<number, Record<string, FileStats>>();
+/** Timestamps of engine restarts (E4.3 give-up window). */
+const restartTimes: number[] = [];
 function client(): WorkerClient {
   const c = clientOverride ?? getWorkerClient();
   if (!restartUnsub) {
@@ -254,9 +330,35 @@ function client(): WorkerClient {
         useStore.setState({ screen: "error", error });
         return;
       }
+      const now = Date.now();
+      restartTimes.push(now);
+      while (restartTimes.length > 0 && now - (restartTimes[0] as number) > RESTART_WINDOW_MS)
+        restartTimes.shift();
+      const restarts = restartTimes.length;
+      if (s.screen === "loading") {
+        // openRepo's attempt loop owns the retry and the counter (L5)
+        useStore.setState({ refresh: { ...s.refresh, restarts } });
+        return;
+      }
+      if (restarts >= MAX_RESTARTS) {
+        // E4.3: the engine keeps stopping; stop retrying and say so
+        restartTimes.length = 0;
+        useStore.setState({
+          screen: "error",
+          error: {
+            code: "WORKER_CRASHED",
+            message: `The diff engine stopped ${restarts} times in a minute while this repository was open.`,
+          },
+          refresh: { ...s.refresh, busy: false, restarts },
+        });
+        return;
+      }
       if (info) useStore.setState({ repo: info });
-      useStore.setState({ refresh: { ...s.refresh, restarted: true } });
-      s.addToast({ level: "warning", message: "Engine restarted, refreshing" });
+      useStore.setState({ refresh: { ...s.refresh, restarted: true, restarts } });
+      s.addToast({
+        level: "warning",
+        message: "Engine restarted, refreshing the diff. Your viewed marks are kept.",
+      });
       void s.recompute("restart");
     });
   }
@@ -316,16 +418,42 @@ export const useStore = create<StoreState>()((set, get) => {
           if (earlier === step) break;
           completed.add(earlier);
         }
-        if (p.durationMs !== undefined) completed.add(step);
+        const phases = { ...s.loading.phases };
+        // finished sub-phases are kept for the whole open so done rows keep "layout ok · config ok"
+        const subPhases = [...s.loading.subPhases];
+        if (p.durationMs !== undefined) {
+          // a sub-phase (layout / config) finishing inside "refs"; the step itself finishes on its own phase
+          if (p.phase === step) {
+            completed.add(step);
+            const prev = phases[step];
+            const count = p.total ?? p.done ?? prev?.count;
+            phases[step] = {
+              durationMs: (prev?.durationMs ?? 0) + p.durationMs,
+              ...(count !== undefined ? { count } : {}),
+            };
+          } else {
+            if (!subPhases.includes(p.phase)) subPhases.push(p.phase);
+            const prev = phases[step];
+            phases[step] = { ...(prev ?? {}), durationMs: (prev?.durationMs ?? 0) + p.durationMs };
+          }
+        }
         return {
-          loading: { step, done: p.done, total: p.total, completed: [...completed] },
+          loading: {
+            ...s.loading,
+            step,
+            done: p.done,
+            total: p.total,
+            completed: [...completed],
+            phases,
+            subPhases,
+          },
         };
       });
     },
     onStats(batch: StatsBatch) {
       const s = get();
       if (s.diff && batch.generation === s.diff.generation) {
-        set({ stats: { ...s.stats, ...batch.stats } });
+        set({ stats: { ...s.stats, ...batch.stats }, statsLastAt: Date.now() });
         return;
       }
       if (s.diff && batch.generation < s.diff.generation) return; // stale generation
@@ -346,11 +474,12 @@ export const useStore = create<StoreState>()((set, get) => {
     repo: null,
     repoId: null,
     handle: null,
-    loading: { step: null, completed: [] },
+    loading: initialLoading(),
     error: null,
     diffSource: null,
     diff: null,
     stats: {},
+    statsLastAt: null,
     warnings: [],
     dismissedWarnings: new Set(),
     prefs: persistence.loadPrefs(),
@@ -364,6 +493,9 @@ export const useStore = create<StoreState>()((set, get) => {
     toasts: [],
     announcement: "",
     announcementSeq: 0,
+    recentNotice: null,
+    storageUnavailable: false,
+    gateCause: null,
 
     async openRepo(handle, opts = {}) {
       await get().closeRepo();
@@ -374,40 +506,102 @@ export const useStore = create<StoreState>()((set, get) => {
           ? (handle as { name: string }).name
           : "repository";
       refreshHooks?.stop();
+      const startedAt = Date.now();
       set({
         screen: "loading",
         handle,
         repoId: opts.id ?? name,
-        loading: { step: "refs", completed: [] },
+        loading: initialLoading({
+          step: "refs",
+          startedAt,
+          expectedMs: opts.expectedMs ?? null,
+        }),
         error: null,
         warnings: [],
         dismissedWarnings: new Set(),
         diff: null,
         stats: {},
+        statsLastAt: null,
         viewed: new Set(),
         filter: "",
         activeFileId: null,
         collapsed: new Set(),
         fileDiffs: new Lru(200),
+        recentNotice: null,
       });
-      try {
-        const info = await client().open(handle, sink);
-        let src = defaultDiffSource(info);
-        if (opts.lastTarget) {
-          const t = findRef(info, opts.lastTarget);
-          if (t) src = withRef(src, "target", t);
+      for (let attempt = 1; attempt <= MAX_OPEN_ATTEMPTS; attempt++) {
+        if (attempt > 1) {
+          set((s) => ({
+            loading: initialLoading({
+              step: "refs",
+              startedAt: s.loading.startedAt,
+              expectedMs: s.loading.expectedMs,
+              attempt,
+            }),
+          }));
         }
-        if (opts.lastSource) {
-          const sref = findRef(info, opts.lastSource);
-          if (sref) src = withRef(src, "source", sref);
+        try {
+          const info = await client().open(handle, sink);
+          let src = defaultDiffSource(info);
+          let missingBranch: string | null = null;
+          if (opts.lastTarget) {
+            const t = findRef(info, opts.lastTarget);
+            if (t) src = withRef(src, "target", t);
+            else missingBranch = opts.lastTarget;
+          }
+          if (opts.lastSource) {
+            const sref = findRef(info, opts.lastSource);
+            if (sref) src = withRef(src, "source", sref);
+            else missingBranch = opts.lastSource;
+          }
+          if (opts.skipWorktree) src = { ...src, includeWorktree: false };
+          src = guardWorktree(src, info);
+          set((s) => ({
+            repo: info,
+            diffSource: src,
+            warnings: [...info.warnings],
+            loading: {
+              ...s.loading,
+              phases: {
+                ...s.loading.phases,
+                refs: { ...(s.loading.phases.refs ?? { durationMs: 0 }), count: info.refs.length },
+              },
+            },
+          }));
+          await get().recompute("initial");
+          if (get().screen === "loading") set({ screen: "repo" });
+          if (get().screen === "repo") {
+            refreshHooks?.start(handle);
+            void persistence.touchRepo(get().repoId ?? "", {
+              lastOpenMs: Date.now() - startedAt,
+              lastSource: src.sourceRef,
+              lastTarget: src.targetRef,
+            });
+            if (missingBranch) {
+              const short = missingBranch.replace(/^refs\/(heads|remotes)\//, "");
+              get().addToast({
+                level: "info",
+                message: `Branch ${short} no longer exists here; comparing ${src.target} … ${src.source}.`,
+              });
+            }
+          }
+          return;
+        } catch (e) {
+          const err = toUiError(e);
+          if (err.code === "WORKER_CRASHED" && attempt < MAX_OPEN_ATTEMPTS) continue; // L5
+          if (err.code === "CANCELLED" && get().screen !== "loading") return; // closed meanwhile
+          const cur = get();
+          if (cur.screen === "loading" && cur.loading.step && LOADING_INLINE_CODES.has(err.code)) {
+            // L4: the failure stays on the phase it happened in
+            set((s) => ({
+              loading: { ...s.loading, failed: err, failedStep: s.loading.step },
+              error: err,
+            }));
+            return;
+          }
+          set({ screen: "error", error: err });
+          return;
         }
-        src = guardWorktree(src, info);
-        set({ repo: info, diffSource: src, warnings: [...info.warnings] });
-        await get().recompute("initial");
-        if (get().screen === "loading") set({ screen: "repo" });
-        if (get().screen === "repo") refreshHooks?.start(handle);
-      } catch (e) {
-        set({ screen: "error", error: toUiError(e) });
       }
     },
 
@@ -435,6 +629,8 @@ export const useStore = create<StoreState>()((set, get) => {
         activeFileId: null,
         fileDiffs: new Lru(200),
         refresh: { mode: "manual", lastAt: null, busy: false, lastError: null, restarted: false },
+        loading: initialLoading(),
+        statsLastAt: null,
       });
     },
 
@@ -536,9 +732,11 @@ export const useStore = create<StoreState>()((set, get) => {
         const repoWarnings = current.repo?.warnings ?? [];
         const merged: RepoWarning[] = [...repoWarnings];
         for (const w of result.warnings) if (!merged.some((x) => x.code === w.code)) merged.push(w);
+        const complete = result.files.every((f) => stats[f.id] !== undefined);
         set((s) => ({
           diff: result,
           stats,
+          statsLastAt: complete ? null : Date.now(),
           viewed,
           activeFileId,
           collapsed,
@@ -718,6 +916,18 @@ export const useStore = create<StoreState>()((set, get) => {
       set((s) => ({ refresh: { ...s.refresh, mode } }));
     },
 
+    setRecentNotice(notice) {
+      set({ recentNotice: notice });
+    },
+
+    setStorageUnavailable(on) {
+      set({ storageUnavailable: on });
+    },
+
+    setGateCause(cause) {
+      set({ gateCause: cause });
+    },
+
     async fileBytes(id, side) {
       const s = get();
       if (!s.diff) return null;
@@ -733,8 +943,8 @@ export function selectVisibleFiles(s: Pick<StoreState, "diff" | "filter">): File
   const files = s.diff?.files ?? [];
   if (visibleCache && visibleCache.files === files && visibleCache.filter === s.filter)
     return visibleCache.result;
-  const match = makePathFilter(s.filter);
-  const result = s.filter.trim() === "" ? files : files.filter((f) => match(filePathOf(f)));
+  const match = makeFileFilter(s.filter);
+  const result = s.filter.trim() === "" ? files : files.filter(match);
   visibleCache = { files, filter: s.filter, result };
   return result;
 }
@@ -755,6 +965,91 @@ export function selectTotals(s: Pick<StoreState, "diff" | "stats">): {
     }
   }
   return { files: files.length, additions, deletions };
+}
+
+/** Stats-row breakdowns (S1): per-status and per-layer counts over the given files. */
+export interface Breakdown {
+  status: { M: number; A: number; D: number; R: number; T: number };
+  layers: { staged: number; unstaged: number; untracked: number; conflict: number };
+}
+export function breakdownOf(files: readonly FileDiff[]): Breakdown {
+  const b: Breakdown = {
+    status: { M: 0, A: 0, D: 0, R: 0, T: 0 },
+    layers: { staged: 0, unstaged: 0, untracked: 0, conflict: 0 },
+  };
+  for (const f of files) {
+    switch (f.status) {
+      case "modified":
+        b.status.M++;
+        break;
+      case "added":
+        b.status.A++;
+        break;
+      case "deleted":
+        b.status.D++;
+        break;
+      case "renamed":
+      case "copied":
+        b.status.R++;
+        break;
+      case "typechange":
+        b.status.T++;
+        break;
+    }
+    for (const l of f.layers) if (l !== "committed") b.layers[l]++;
+  }
+  return b;
+}
+
+/**
+ * How far the streamed stats are (S2/S3/S8): `counted` files have stats, `pending` are still
+ * streaming, `notCounted` splits the files that will never get a `+n −m`.
+ */
+export interface StatsProgress {
+  total: number;
+  counted: number;
+  pending: number;
+  notCounted: { tooLarge: number; binary: number; failed: number };
+  complete: boolean;
+}
+export function statsProgressOf(
+  files: readonly FileDiff[],
+  stats: Record<string, FileStats>,
+  failed: ReadonlySet<string>,
+): StatsProgress {
+  const p: StatsProgress = {
+    total: files.length,
+    counted: 0,
+    pending: 0,
+    notCounted: { tooLarge: 0, binary: 0, failed: 0 },
+    complete: true,
+  };
+  for (const f of files) {
+    if (failed.has(f.id)) p.notCounted.failed++;
+    else if (f.binary) p.notCounted.binary++;
+    else if (f.tooLarge) p.notCounted.tooLarge++;
+    else {
+      const st = stats[f.id] ?? f.stats;
+      if (st) p.counted++;
+      else {
+        p.pending++;
+        p.complete = false;
+      }
+    }
+  }
+  return p;
+}
+
+/** Files whose per-file diff request failed (the red "retry" mark in S3). */
+export function selectFailedFiles(
+  s: Pick<StoreState, "diff" | "fileDiffs" | "prefs">,
+): Set<string> {
+  const out = new Set<string>();
+  for (const f of s.diff?.files ?? []) {
+    if (s.fileDiffs.peek(cacheKey(f.id, s.prefs.ignoreWhitespace))?.status === "error")
+      out.add(f.id);
+  }
+  return out;
 }
 
 export function isViewed(

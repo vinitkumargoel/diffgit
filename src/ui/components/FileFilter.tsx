@@ -5,6 +5,8 @@ import { useShortcuts } from "../hooks/useShortcuts";
 export interface FileFilterProps {
   value: string;
   onChange: (text: string) => void;
+  /** S7: with no files there is nothing to filter — the control dims to 50 % and stops taking input. */
+  disabled?: boolean;
 }
 
 /**
@@ -12,16 +14,23 @@ export interface FileFilterProps {
  * `/` focuses it from anywhere outside a field; Esc clears and blurs. The sidebar header
  * shows "n of m files" while a filter is active (T5.2).
  */
-export function FileFilter({ value, onChange }: FileFilterProps) {
+export function FileFilter({ value, onChange, disabled = false }: FileFilterProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  useShortcuts({
-    "/": () => {
-      inputRef.current?.focus();
-      inputRef.current?.select();
+  useShortcuts(
+    {
+      "/": () => {
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      },
     },
-  });
+    !disabled,
+  );
   return (
-    <div className="relative flex h-7 w-60 items-center rounded-[6px] border border-line bg-bg focus-within:outline-2 focus-within:outline-accent focus-within:outline-offset-1">
+    <div
+      className={`relative flex h-7 w-60 items-center rounded-[6px] border border-line bg-bg focus-within:outline-2 focus-within:outline-accent focus-within:outline-offset-1 ${
+        value !== "" ? "ring-1 ring-accent ring-inset" : ""
+      } ${disabled ? "opacity-50" : ""}`}
+    >
       <Search size={13} aria-hidden className="ml-2 shrink-0 text-muted" />
       <input
         ref={inputRef}
@@ -30,6 +39,7 @@ export function FileFilter({ value, onChange }: FileFilterProps) {
         placeholder="Filter files…"
         aria-label="Filter files"
         aria-keyshortcuts="/"
+        disabled={disabled}
         className="h-full min-w-0 flex-1 bg-transparent px-2 text-[13px] outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:hidden"
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
@@ -39,7 +49,7 @@ export function FileFilter({ value, onChange }: FileFilterProps) {
           }
         }}
       />
-      {value ? (
+      {value && !disabled ? (
         <button
           type="button"
           className="mr-1 flex size-5 items-center justify-center rounded-[4px] text-muted hover:bg-surface-raised hover:text-ink"

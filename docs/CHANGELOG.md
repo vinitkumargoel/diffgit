@@ -15,6 +15,19 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## States review — Home history, loading, stats, errors, browser gate (2026-09-18)
+
+- Owner approved `docs/mockups/review-history-loading-stats-errors-gate.html` (41 states) in full; Design §7.2, §7.3, §7.7, §7.8 and §13 restated from it, state ids cited.
+- **Home (H0–H6)**: the landing stays verbatim; the hero's right column becomes the Continue card (one repo) or the Recent list (2–6; filter + scroll from 7) via portals into mount points in `src/marketing/precision.html`; access dots from `queryPermission`; every open outcome stays on the row (`store.recentNotice`); Forget/Clear all with a 5 s Undo; nav `Recent` popover (`r`); storage-unavailable is a facts row on Home (`store.storageUnavailable`), a toast only in the app. `openRepo` now records the pair and `lastOpenMs` on success; a freshly picked folder refused by the layout checks is removed from Recent.
+- **Loading (L1–L6)**: `LoadingState` carries `startedAt`, per-step results, sub-phases, `attempt`, `failed`/`failedStep`, `expectedMs`; the screen shows elapsed vs. the previous open, per-phase facts and warnings, determinate/indeterminate bars, the slow callout (`Skip uncommitted changes` = reopen with `skipWorktree`), inline failure for IO_ERROR / INDEX_UNSUPPORTED / REF_NOT_FOUND / PERMISSION (`LOADING_INLINE_CODES`), and up to 3 automatic attempts on WORKER_CRASHED.
+- **Stats (S1–S8)**: new `StatsRow` with status/layer breakdowns that toggle `status:` / `layer:` filter tokens (`treeModel.parseFilter` / `makeFileFilter`), streaming/partial/refreshing/filtered/stalled markers, `FilterEmptyState`, EmptyState copy; sidebar rows mark `> 1 MB` / `—` / `retry`.
+- **Errors (E1–E7)**: `describeError` gained tone, icon and fix rows; ErrorScreen anatomy (tile, `CODE · repo`, fix box, ink/secondary/ghost actions, Details report via `errorReport`); `useErrorActions` shared with the loading failure; engine give-up after 3 restarts in 60 s; in-card notices restyled; toasts restyled and re-worded; banners show the code and an action link (`warnings.ts` `action`). PERMISSION title → "Permission needed", INDEX_UNSUPPORTED action → retry (`docs/errors.md` updated).
+- **Browser gate (B1–B6)**: `src/ui/browserGate.ts` detects mobile / Firefox / Safari / iframe / insecure context / old Chromium; the policy case comes from the picker's `SecurityError` (`store.gateCause`); full-page layout with browser links, copy/share, the demo card, and "See the demo" revealing the landing.
+- Deviations from the mockup, all recorded here: the Continue card omits the "Uncommitted" row (nothing stored says it); L3 offers "Skip uncommitted changes" (the engine has no untracked-only switch); the current loading row's caption is the engine phase, not a path; "n not counted" scrolls to the first such file (no `is:large` token); the Error screen's "Pick a branch" opens with defaults (the picker lives in the top bar); the gate's detected line always has three segments.
+- `.btn-ink` and `.btn-ghost` added to `src/index.css`. Checks: `bun run check` green (228 engine + 258 UI tests, guards), Playwright e2e green, screenshots of the built app compared against the mockup.
+
+---
+
 ## T8.3 — v2 backlog
 
 - `docs/backlog.md`: ten sized v2 candidates (V1–V10), each naming the abstraction that enables it (`DiffSource` kinds, `ObjectDb` commit walk, `Scheduler.request(paths)` + `RepoSession.invalidate`, `detectRenames` spanhash, `GitAttributes`, `MemoryFs`/`DirHandleLike`, plain-JSON `DiffResult`), plus the ten items deferred from v1 by the T7.3–T8.1 reviews (B1–B10).

@@ -1,0 +1,1291 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`S1 ready > snapshots both themes > S1 ready (dark) 1`] = `
+<div
+  class="flex min-h-10 flex-wrap items-center gap-3 bg-surface px-3 py-1 text-[12.5px] leading-5 text-muted"
+>
+  <span
+    class="shrink-0 tabular-nums "
+    title="1 modified, 1 added, 1 deleted, 1 renamed · 1 staged, 1 unstaged, 1 untracked"
+  >
+    <b
+      class="font-semibold text-ink"
+    >
+      4
+    </b>
+     
+    files changed
+  </span>
+  <span
+    class="font-mono font-semibold tabular-nums "
+  >
+    <span
+      class="text-success"
+    >
+      +
+      5
+    </span>
+     
+    <span
+      class="text-danger"
+    >
+      −
+      7
+    </span>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <span
+    class="hidden shrink-0 items-center gap-1.5 min-[1100px]:inline-flex "
+    title="1 modified, 1 added, 1 deleted, 1 renamed"
+  >
+    <button
+      aria-label="Filter: modified (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-m-bg text-status-m-fg "
+      title="Filter: status:M"
+      type="button"
+    >
+      M
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: added (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-a-bg text-status-a-fg "
+      title="Filter: status:A"
+      type="button"
+    >
+      A
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: deleted (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-d-bg text-status-d-fg "
+      title="Filter: status:D"
+      type="button"
+    >
+      D
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: renamed (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-r-bg text-status-r-fg "
+      title="Filter: status:R"
+      type="button"
+    >
+      R
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <span
+    class="hidden shrink-0 items-center gap-1.5 min-[1100px]:inline-flex "
+    title="1 staged, 1 unstaged, 1 untracked"
+  >
+    <button
+      aria-label="Filter: staged (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:staged"
+      type="button"
+    >
+      <span
+        aria-label="Staged change"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-staged-bg text-chip-staged-fg border-chip-staged-fg/40"
+        role="img"
+        title="Staged change"
+      >
+        staged
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: unstaged (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:unstaged"
+      type="button"
+    >
+      <span
+        aria-label="Unstaged change"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-unstaged-bg text-chip-unstaged-fg border-chip-unstaged-fg/40"
+        role="img"
+        title="Unstaged change"
+      >
+        unstaged
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: untracked (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:untracked"
+      type="button"
+    >
+      <span
+        aria-label="Untracked file"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-untracked-bg text-chip-untracked-fg border-chip-untracked-fg/40"
+        role="img"
+        title="Untracked file"
+      >
+        untracked
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <div
+    class="shrink-0 "
+  >
+    <div
+      class="flex items-center gap-2 text-[12.5px] text-muted tabular-nums"
+    >
+      <span
+        data-testid="viewed-count"
+      >
+        <b
+          class="font-semibold text-ink"
+        >
+          0
+        </b>
+         / 
+        4
+         viewed
+      </span>
+      <div
+        aria-label="Files viewed"
+        aria-valuemax="4"
+        aria-valuemin="0"
+        aria-valuenow="0"
+        class="h-1.5 w-20 overflow-hidden rounded-[3px] bg-progress-track"
+        role="progressbar"
+      >
+        <div
+          class="h-full bg-success"
+          style="width: 0%;"
+        />
+      </div>
+    </div>
+  </div>
+  <span
+    class="flex-1"
+  />
+  <div
+    class="relative flex h-7 w-60 items-center rounded-[6px] border border-line bg-bg focus-within:outline-2 focus-within:outline-accent focus-within:outline-offset-1  "
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-search ml-2 shrink-0 text-muted"
+      fill="none"
+      height="13"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="13"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="m21 21-4.34-4.34"
+      />
+      <circle
+        cx="11"
+        cy="11"
+        r="8"
+      />
+    </svg>
+    <input
+      aria-keyshortcuts="/"
+      aria-label="Filter files"
+      class="h-full min-w-0 flex-1 bg-transparent px-2 text-[13px] outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:hidden"
+      placeholder="Filter files…"
+      type="search"
+      value=""
+    />
+    <kbd
+      aria-hidden="true"
+      class="kbd mr-2"
+    >
+      /
+    </kbd>
+  </div>
+  <div
+    class="flex items-center gap-2"
+  >
+    <fieldset
+      class="inline-flex rounded-[6px] border border-line bg-surface-raised p-0"
+    >
+      <legend
+        class="sr-only"
+      >
+        Diff view
+      </legend>
+      <button
+        aria-pressed="true"
+        class="rounded-[6px] px-2.5 py-1 text-xs leading-[18px] font-medium pressed"
+        type="button"
+      >
+        Unified
+      </button>
+      <button
+        aria-pressed="false"
+        class="rounded-[6px] px-2.5 py-1 text-xs leading-[18px] font-medium text-muted hover:text-ink"
+        type="button"
+      >
+        Split
+      </button>
+    </fieldset>
+    <button
+      aria-label="Ignore whitespace"
+      aria-pressed="false"
+      class="btn btn-icon "
+      title="Ignore whitespace"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-space"
+        fill="none"
+        height="14"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="14"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M22 17v1c0 .5-.5 1-1 1H3c-.5 0-1-.5-1-1v-1"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
+`;
+
+exports[`S1 ready > snapshots both themes > S1 ready (light) 1`] = `
+<div
+  class="flex min-h-10 flex-wrap items-center gap-3 bg-surface px-3 py-1 text-[12.5px] leading-5 text-muted"
+>
+  <span
+    class="shrink-0 tabular-nums "
+    title="1 modified, 1 added, 1 deleted, 1 renamed · 1 staged, 1 unstaged, 1 untracked"
+  >
+    <b
+      class="font-semibold text-ink"
+    >
+      4
+    </b>
+     
+    files changed
+  </span>
+  <span
+    class="font-mono font-semibold tabular-nums "
+  >
+    <span
+      class="text-success"
+    >
+      +
+      5
+    </span>
+     
+    <span
+      class="text-danger"
+    >
+      −
+      7
+    </span>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <span
+    class="hidden shrink-0 items-center gap-1.5 min-[1100px]:inline-flex "
+    title="1 modified, 1 added, 1 deleted, 1 renamed"
+  >
+    <button
+      aria-label="Filter: modified (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-m-bg text-status-m-fg "
+      title="Filter: status:M"
+      type="button"
+    >
+      M
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: added (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-a-bg text-status-a-fg "
+      title="Filter: status:A"
+      type="button"
+    >
+      A
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: deleted (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-d-bg text-status-d-fg "
+      title="Filter: status:D"
+      type="button"
+    >
+      D
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: renamed (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-r-bg text-status-r-fg "
+      title="Filter: status:R"
+      type="button"
+    >
+      R
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <span
+    class="hidden shrink-0 items-center gap-1.5 min-[1100px]:inline-flex "
+    title="1 staged, 1 unstaged, 1 untracked"
+  >
+    <button
+      aria-label="Filter: staged (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:staged"
+      type="button"
+    >
+      <span
+        aria-label="Staged change"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-staged-bg text-chip-staged-fg border-chip-staged-fg/40"
+        role="img"
+        title="Staged change"
+      >
+        staged
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: unstaged (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:unstaged"
+      type="button"
+    >
+      <span
+        aria-label="Unstaged change"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-unstaged-bg text-chip-unstaged-fg border-chip-unstaged-fg/40"
+        role="img"
+        title="Unstaged change"
+      >
+        unstaged
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: untracked (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:untracked"
+      type="button"
+    >
+      <span
+        aria-label="Untracked file"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-untracked-bg text-chip-untracked-fg border-chip-untracked-fg/40"
+        role="img"
+        title="Untracked file"
+      >
+        untracked
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <div
+    class="shrink-0 "
+  >
+    <div
+      class="flex items-center gap-2 text-[12.5px] text-muted tabular-nums"
+    >
+      <span
+        data-testid="viewed-count"
+      >
+        <b
+          class="font-semibold text-ink"
+        >
+          0
+        </b>
+         / 
+        4
+         viewed
+      </span>
+      <div
+        aria-label="Files viewed"
+        aria-valuemax="4"
+        aria-valuemin="0"
+        aria-valuenow="0"
+        class="h-1.5 w-20 overflow-hidden rounded-[3px] bg-progress-track"
+        role="progressbar"
+      >
+        <div
+          class="h-full bg-success"
+          style="width: 0%;"
+        />
+      </div>
+    </div>
+  </div>
+  <span
+    class="flex-1"
+  />
+  <div
+    class="relative flex h-7 w-60 items-center rounded-[6px] border border-line bg-bg focus-within:outline-2 focus-within:outline-accent focus-within:outline-offset-1  "
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-search ml-2 shrink-0 text-muted"
+      fill="none"
+      height="13"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="13"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="m21 21-4.34-4.34"
+      />
+      <circle
+        cx="11"
+        cy="11"
+        r="8"
+      />
+    </svg>
+    <input
+      aria-keyshortcuts="/"
+      aria-label="Filter files"
+      class="h-full min-w-0 flex-1 bg-transparent px-2 text-[13px] outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:hidden"
+      placeholder="Filter files…"
+      type="search"
+      value=""
+    />
+    <kbd
+      aria-hidden="true"
+      class="kbd mr-2"
+    >
+      /
+    </kbd>
+  </div>
+  <div
+    class="flex items-center gap-2"
+  >
+    <fieldset
+      class="inline-flex rounded-[6px] border border-line bg-surface-raised p-0"
+    >
+      <legend
+        class="sr-only"
+      >
+        Diff view
+      </legend>
+      <button
+        aria-pressed="true"
+        class="rounded-[6px] px-2.5 py-1 text-xs leading-[18px] font-medium pressed"
+        type="button"
+      >
+        Unified
+      </button>
+      <button
+        aria-pressed="false"
+        class="rounded-[6px] px-2.5 py-1 text-xs leading-[18px] font-medium text-muted hover:text-ink"
+        type="button"
+      >
+        Split
+      </button>
+    </fieldset>
+    <button
+      aria-label="Ignore whitespace"
+      aria-pressed="false"
+      class="btn btn-icon "
+      title="Ignore whitespace"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-space"
+        fill="none"
+        height="14"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="14"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M22 17v1c0 .5-.5 1-1 1H3c-.5 0-1-.5-1-1v-1"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
+`;
+
+exports[`S3 partial > snapshots both themes > S3 partial (dark) 1`] = `
+<div
+  class="flex min-h-10 flex-wrap items-center gap-3 bg-surface px-3 py-1 text-[12.5px] leading-5 text-muted"
+>
+  <span
+    class="shrink-0 tabular-nums "
+    title="4 modified, 1 added, 1 deleted, 1 renamed · 1 staged, 1 unstaged, 1 untracked"
+  >
+    <b
+      class="font-semibold text-ink"
+    >
+      7
+    </b>
+     
+    files changed
+  </span>
+  <span
+    class="font-mono font-semibold tabular-nums "
+  >
+    <span
+      class="text-success"
+    >
+      +
+      3,005
+    </span>
+     
+    <span
+      class="text-danger"
+    >
+      −
+      3,007
+    </span>
+  </span>
+  <span
+    class="inline-flex shrink-0 items-center gap-1.5 text-attention"
+    title="1 file over 1 MB, 2 binary"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-triangle-alert lucide-alert-triangle"
+      fill="none"
+      height="13"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="13"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+      />
+      <path
+        d="M12 9v4"
+      />
+      <path
+        d="M12 17h.01"
+      />
+    </svg>
+    <button
+      class="text-accent hover:underline"
+      type="button"
+    >
+      3
+       not counted
+    </button>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <span
+    class="hidden shrink-0 items-center gap-1.5 min-[1100px]:inline-flex "
+    title="4 modified, 1 added, 1 deleted, 1 renamed"
+  >
+    <button
+      aria-label="Filter: modified (4)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-m-bg text-status-m-fg "
+      title="Filter: status:M"
+      type="button"
+    >
+      M
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      4
+    </span>
+    <button
+      aria-label="Filter: added (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-a-bg text-status-a-fg "
+      title="Filter: status:A"
+      type="button"
+    >
+      A
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: deleted (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-d-bg text-status-d-fg "
+      title="Filter: status:D"
+      type="button"
+    >
+      D
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: renamed (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-r-bg text-status-r-fg "
+      title="Filter: status:R"
+      type="button"
+    >
+      R
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <span
+    class="hidden shrink-0 items-center gap-1.5 min-[1100px]:inline-flex "
+    title="1 staged, 1 unstaged, 1 untracked"
+  >
+    <button
+      aria-label="Filter: staged (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:staged"
+      type="button"
+    >
+      <span
+        aria-label="Staged change"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-staged-bg text-chip-staged-fg border-chip-staged-fg/40"
+        role="img"
+        title="Staged change"
+      >
+        staged
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: unstaged (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:unstaged"
+      type="button"
+    >
+      <span
+        aria-label="Unstaged change"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-unstaged-bg text-chip-unstaged-fg border-chip-unstaged-fg/40"
+        role="img"
+        title="Unstaged change"
+      >
+        unstaged
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: untracked (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:untracked"
+      type="button"
+    >
+      <span
+        aria-label="Untracked file"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-untracked-bg text-chip-untracked-fg border-chip-untracked-fg/40"
+        role="img"
+        title="Untracked file"
+      >
+        untracked
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <div
+    class="shrink-0 "
+  >
+    <div
+      class="flex items-center gap-2 text-[12.5px] text-muted tabular-nums"
+    >
+      <span
+        data-testid="viewed-count"
+      >
+        <b
+          class="font-semibold text-ink"
+        >
+          0
+        </b>
+         / 
+        7
+         viewed
+      </span>
+      <div
+        aria-label="Files viewed"
+        aria-valuemax="7"
+        aria-valuemin="0"
+        aria-valuenow="0"
+        class="h-1.5 w-20 overflow-hidden rounded-[3px] bg-progress-track"
+        role="progressbar"
+      >
+        <div
+          class="h-full bg-success"
+          style="width: 0%;"
+        />
+      </div>
+    </div>
+  </div>
+  <span
+    class="flex-1"
+  />
+  <div
+    class="relative flex h-7 w-60 items-center rounded-[6px] border border-line bg-bg focus-within:outline-2 focus-within:outline-accent focus-within:outline-offset-1  "
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-search ml-2 shrink-0 text-muted"
+      fill="none"
+      height="13"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="13"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="m21 21-4.34-4.34"
+      />
+      <circle
+        cx="11"
+        cy="11"
+        r="8"
+      />
+    </svg>
+    <input
+      aria-keyshortcuts="/"
+      aria-label="Filter files"
+      class="h-full min-w-0 flex-1 bg-transparent px-2 text-[13px] outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:hidden"
+      placeholder="Filter files…"
+      type="search"
+      value=""
+    />
+    <kbd
+      aria-hidden="true"
+      class="kbd mr-2"
+    >
+      /
+    </kbd>
+  </div>
+  <div
+    class="flex items-center gap-2"
+  >
+    <fieldset
+      class="inline-flex rounded-[6px] border border-line bg-surface-raised p-0"
+    >
+      <legend
+        class="sr-only"
+      >
+        Diff view
+      </legend>
+      <button
+        aria-pressed="true"
+        class="rounded-[6px] px-2.5 py-1 text-xs leading-[18px] font-medium pressed"
+        type="button"
+      >
+        Unified
+      </button>
+      <button
+        aria-pressed="false"
+        class="rounded-[6px] px-2.5 py-1 text-xs leading-[18px] font-medium text-muted hover:text-ink"
+        type="button"
+      >
+        Split
+      </button>
+    </fieldset>
+    <button
+      aria-label="Ignore whitespace"
+      aria-pressed="false"
+      class="btn btn-icon "
+      title="Ignore whitespace"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-space"
+        fill="none"
+        height="14"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="14"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M22 17v1c0 .5-.5 1-1 1H3c-.5 0-1-.5-1-1v-1"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
+`;
+
+exports[`S3 partial > snapshots both themes > S3 partial (light) 1`] = `
+<div
+  class="flex min-h-10 flex-wrap items-center gap-3 bg-surface px-3 py-1 text-[12.5px] leading-5 text-muted"
+>
+  <span
+    class="shrink-0 tabular-nums "
+    title="4 modified, 1 added, 1 deleted, 1 renamed · 1 staged, 1 unstaged, 1 untracked"
+  >
+    <b
+      class="font-semibold text-ink"
+    >
+      7
+    </b>
+     
+    files changed
+  </span>
+  <span
+    class="font-mono font-semibold tabular-nums "
+  >
+    <span
+      class="text-success"
+    >
+      +
+      3,005
+    </span>
+     
+    <span
+      class="text-danger"
+    >
+      −
+      3,007
+    </span>
+  </span>
+  <span
+    class="inline-flex shrink-0 items-center gap-1.5 text-attention"
+    title="1 file over 1 MB, 2 binary"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-triangle-alert lucide-alert-triangle"
+      fill="none"
+      height="13"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="13"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+      />
+      <path
+        d="M12 9v4"
+      />
+      <path
+        d="M12 17h.01"
+      />
+    </svg>
+    <button
+      class="text-accent hover:underline"
+      type="button"
+    >
+      3
+       not counted
+    </button>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <span
+    class="hidden shrink-0 items-center gap-1.5 min-[1100px]:inline-flex "
+    title="4 modified, 1 added, 1 deleted, 1 renamed"
+  >
+    <button
+      aria-label="Filter: modified (4)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-m-bg text-status-m-fg "
+      title="Filter: status:M"
+      type="button"
+    >
+      M
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      4
+    </span>
+    <button
+      aria-label="Filter: added (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-a-bg text-status-a-fg "
+      title="Filter: status:A"
+      type="button"
+    >
+      A
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: deleted (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-d-bg text-status-d-fg "
+      title="Filter: status:D"
+      type="button"
+    >
+      D
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: renamed (1)"
+      aria-pressed="false"
+      class="inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold bg-status-r-bg text-status-r-fg "
+      title="Filter: status:R"
+      type="button"
+    >
+      R
+    </button>
+    <span
+      class="font-mono text-[12px] tabular-nums text-ink/80"
+    >
+      1
+    </span>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <span
+    class="hidden shrink-0 items-center gap-1.5 min-[1100px]:inline-flex "
+    title="1 staged, 1 unstaged, 1 untracked"
+  >
+    <button
+      aria-label="Filter: staged (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:staged"
+      type="button"
+    >
+      <span
+        aria-label="Staged change"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-staged-bg text-chip-staged-fg border-chip-staged-fg/40"
+        role="img"
+        title="Staged change"
+      >
+        staged
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: unstaged (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:unstaged"
+      type="button"
+    >
+      <span
+        aria-label="Unstaged change"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-unstaged-bg text-chip-unstaged-fg border-chip-unstaged-fg/40"
+        role="img"
+        title="Unstaged change"
+      >
+        unstaged
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+    <button
+      aria-label="Filter: untracked (1)"
+      aria-pressed="false"
+      class="rounded-full"
+      title="Filter: layer:untracked"
+      type="button"
+    >
+      <span
+        aria-label="Untracked file"
+        class="inline-flex h-4 shrink-0 items-center rounded-full border px-1.5 text-[11px] leading-4 font-medium bg-chip-untracked-bg text-chip-untracked-fg border-chip-untracked-fg/40"
+        role="img"
+        title="Untracked file"
+      >
+        untracked
+      </span>
+    </button>
+    <span
+      class="-ml-px font-mono text-[11.5px] tabular-nums"
+    >
+      1
+    </span>
+  </span>
+  <span
+    aria-hidden="true"
+    class="h-[18px] w-px shrink-0 bg-line"
+  />
+  <div
+    class="shrink-0 "
+  >
+    <div
+      class="flex items-center gap-2 text-[12.5px] text-muted tabular-nums"
+    >
+      <span
+        data-testid="viewed-count"
+      >
+        <b
+          class="font-semibold text-ink"
+        >
+          0
+        </b>
+         / 
+        7
+         viewed
+      </span>
+      <div
+        aria-label="Files viewed"
+        aria-valuemax="7"
+        aria-valuemin="0"
+        aria-valuenow="0"
+        class="h-1.5 w-20 overflow-hidden rounded-[3px] bg-progress-track"
+        role="progressbar"
+      >
+        <div
+          class="h-full bg-success"
+          style="width: 0%;"
+        />
+      </div>
+    </div>
+  </div>
+  <span
+    class="flex-1"
+  />
+  <div
+    class="relative flex h-7 w-60 items-center rounded-[6px] border border-line bg-bg focus-within:outline-2 focus-within:outline-accent focus-within:outline-offset-1  "
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-search ml-2 shrink-0 text-muted"
+      fill="none"
+      height="13"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="13"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="m21 21-4.34-4.34"
+      />
+      <circle
+        cx="11"
+        cy="11"
+        r="8"
+      />
+    </svg>
+    <input
+      aria-keyshortcuts="/"
+      aria-label="Filter files"
+      class="h-full min-w-0 flex-1 bg-transparent px-2 text-[13px] outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:hidden"
+      placeholder="Filter files…"
+      type="search"
+      value=""
+    />
+    <kbd
+      aria-hidden="true"
+      class="kbd mr-2"
+    >
+      /
+    </kbd>
+  </div>
+  <div
+    class="flex items-center gap-2"
+  >
+    <fieldset
+      class="inline-flex rounded-[6px] border border-line bg-surface-raised p-0"
+    >
+      <legend
+        class="sr-only"
+      >
+        Diff view
+      </legend>
+      <button
+        aria-pressed="true"
+        class="rounded-[6px] px-2.5 py-1 text-xs leading-[18px] font-medium pressed"
+        type="button"
+      >
+        Unified
+      </button>
+      <button
+        aria-pressed="false"
+        class="rounded-[6px] px-2.5 py-1 text-xs leading-[18px] font-medium text-muted hover:text-ink"
+        type="button"
+      >
+        Split
+      </button>
+    </fieldset>
+    <button
+      aria-label="Ignore whitespace"
+      aria-pressed="false"
+      class="btn btn-icon "
+      title="Ignore whitespace"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-space"
+        fill="none"
+        height="14"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="14"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M22 17v1c0 .5-.5 1-1 1H3c-.5 0-1-.5-1-1v-1"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
+`;

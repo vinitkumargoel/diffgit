@@ -7,11 +7,19 @@ import { isWarningCode, type WarningCode } from "../engine/errors";
 
 export type BannerLevel = "info" | "warning" | "error";
 
+/** The one-word action link a banner may offer (review E7); resolved by `WarningBanners`. */
+export interface WarningAction {
+  label: string;
+  kind: "refresh" | "ignore-whitespace" | "compare-head" | "show-large" | "why";
+}
+
 export interface WarningCopy {
   level: BannerLevel;
   /** Bold subject shown before the message. */
   subject: string;
   message: string;
+  /** Optional accent link at the end of the row; omitted when there is nothing useful to do. */
+  action?: WarningAction;
 }
 
 export const WARNING_COPY: Record<WarningCode, WarningCopy> = {
@@ -34,6 +42,7 @@ export const WARNING_COPY: Record<WarningCode, WarningCopy> = {
     level: "warning",
     subject: "Line endings",
     message: "core.autocrlf is set; line-ending-only changes may appear.",
+    action: { label: "Ignore whitespace", kind: "ignore-whitespace" },
   },
   PACK_LARGE: {
     level: "warning",
@@ -44,6 +53,7 @@ export const WARNING_COPY: Record<WarningCode, WarningCopy> = {
     level: "warning",
     subject: "Index checksum mismatch",
     message: "Index was being written; showing last good read.",
+    action: { label: "Refresh", kind: "refresh" },
   },
   SPLIT_INDEX: {
     level: "error",
@@ -63,7 +73,7 @@ export const WARNING_COPY: Record<WarningCode, WarningCopy> = {
   UNTRACKED_CAPPED: {
     level: "warning",
     subject: "Untracked files capped",
-    message: "Only the first untracked files are listed; the rest are omitted.",
+    message: "Only the first 5,000 untracked files are listed; the rest are omitted.",
   },
   RENAME_LIMIT: {
     level: "warning",
@@ -73,7 +83,8 @@ export const WARNING_COPY: Record<WarningCode, WarningCopy> = {
   FILE_TOO_LARGE: {
     level: "warning",
     subject: "Large file skipped",
-    message: "A file over the size limit was not compared.",
+    message: "Files over the size limit were not compared.",
+    action: { label: "Show them", kind: "show-large" },
   },
   EMBEDDED_REPO: {
     level: "warning",
@@ -93,7 +104,9 @@ export const WARNING_COPY: Record<WarningCode, WarningCopy> = {
   WORKTREE_NOT_APPLICABLE: {
     level: "info",
     subject: "Uncommitted changes hidden",
-    message: "Uncommitted changes are only shown when the source is the checked-out branch.",
+    message:
+      "Uncommitted changes are only shown when the compare branch is the checked-out one (HEAD).",
+    action: { label: "Compare HEAD", kind: "compare-head" },
   },
   GLOBAL_EXCLUDES_UNAVAILABLE: {
     level: "warning",
@@ -114,7 +127,8 @@ export const WARNING_COPY: Record<WarningCode, WarningCopy> = {
   REFRESH_DEGRADED: {
     level: "warning",
     subject: "Live refresh unavailable",
-    message: "Change detection fell back to polling or manual refresh.",
+    message: "Change detection fell back to polling every 2 s.",
+    action: { label: "Why?", kind: "why" },
   },
   PATH_TYPE_CHANGED: {
     level: "warning",

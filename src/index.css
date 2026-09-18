@@ -364,6 +364,26 @@
     background: var(--success);
     filter: brightness(0.95);
   }
+  /* Ink primary (Design §7.8, states review): --ink fill, --bg text; the primary action on Home/Loading/Error */
+  .btn-ink {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg);
+  }
+  .btn-ink:hover:not(:disabled) {
+    background: var(--ink);
+    opacity: 0.9;
+  }
+  /* Ghost (Design §7.8): borderless, --muted text, the least-likely action pushed right */
+  .btn-ghost {
+    border-color: transparent;
+    background: transparent;
+    color: var(--muted);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--surface-raised);
+    color: var(--ink);
+  }
   .btn-icon {
     width: 28px;
     height: 28px;

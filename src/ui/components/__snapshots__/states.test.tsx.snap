@@ -49,12 +49,33 @@ exports[`EmptyState > snapshots both themes, with and without the worktree line 
       </code>
        is compared with itself
     </h1>
-    <button
-      class="btn"
-      type="button"
+    <p
+      class="text-muted"
     >
-      Change base
-    </button>
+      Commits on 
+      <code
+        class="rounded-[3px] bg-surface-raised px-1.5 py-0.5 font-mono text-[13px]"
+      >
+        main
+      </code>
+       after the merge base are not shown by design.
+    </p>
+    <div
+      class="flex items-center gap-2"
+    >
+      <button
+        class="btn"
+        type="button"
+      >
+        Change base
+      </button>
+      <button
+        class="btn btn-ghost"
+        type="button"
+      >
+        Swap ⇄
+      </button>
+    </div>
   </div>
 </section>
 `;
@@ -108,12 +129,33 @@ exports[`EmptyState > snapshots both themes, with and without the worktree line 
       </code>
        is compared with itself
     </h1>
-    <button
-      class="btn"
-      type="button"
+    <p
+      class="text-muted"
     >
-      Change base
-    </button>
+      Commits on 
+      <code
+        class="rounded-[3px] bg-surface-raised px-1.5 py-0.5 font-mono text-[13px]"
+      >
+        main
+      </code>
+       after the merge base are not shown by design.
+    </p>
+    <div
+      class="flex items-center gap-2"
+    >
+      <button
+        class="btn"
+        type="button"
+      >
+        Change base
+      </button>
+      <button
+        class="btn btn-ghost"
+        type="button"
+      >
+        Swap ⇄
+      </button>
+    </div>
   </div>
 </section>
 `;
@@ -177,12 +219,33 @@ exports[`EmptyState > snapshots both themes, with and without the worktree line 
     >
       Working tree is clean.
     </p>
-    <button
-      class="btn"
-      type="button"
+    <p
+      class="text-muted"
     >
-      Change base
-    </button>
+      Commits on 
+      <code
+        class="rounded-[3px] bg-surface-raised px-1.5 py-0.5 font-mono text-[13px]"
+      >
+        main
+      </code>
+       after the merge base are not shown by design.
+    </p>
+    <div
+      class="flex items-center gap-2"
+    >
+      <button
+        class="btn"
+        type="button"
+      >
+        Change base
+      </button>
+      <button
+        class="btn btn-ghost"
+        type="button"
+      >
+        Swap ⇄
+      </button>
+    </div>
   </div>
 </section>
 `;
@@ -246,128 +309,35 @@ exports[`EmptyState > snapshots both themes, with and without the worktree line 
     >
       Working tree is clean.
     </p>
-    <button
-      class="btn"
-      type="button"
+    <p
+      class="text-muted"
     >
-      Change base
-    </button>
+      Commits on 
+      <code
+        class="rounded-[3px] bg-surface-raised px-1.5 py-0.5 font-mono text-[13px]"
+      >
+        main
+      </code>
+       after the merge base are not shown by design.
+    </p>
+    <div
+      class="flex items-center gap-2"
+    >
+      <button
+        class="btn"
+        type="button"
+      >
+        Change base
+      </button>
+      <button
+        class="btn btn-ghost"
+        type="button"
+      >
+        Swap ⇄
+      </button>
+    </div>
   </div>
 </section>
-`;
-
-exports[`ErrorScreen > snapshots the main variants in both themes and never shows a raw code > error CANCELLED (dark) 1`] = `
-<main
-  aria-label="Error"
-  class="flex min-h-full items-center justify-center bg-bg px-4 py-12 text-[15px] leading-6 text-ink"
->
-  <div
-    class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
-  >
-    <svg
-      aria-hidden="true"
-      class="lucide lucide-circle-x lucide-x-circle text-danger"
-      fill="none"
-      height="32"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      width="32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-      />
-      <path
-        d="m15 9-6 6"
-      />
-      <path
-        d="m9 9 6 6"
-      />
-    </svg>
-    <h1
-      class="text-2xl font-semibold leading-8"
-    >
-      Cancelled
-    </h1>
-    <p
-      class="text-muted"
-    >
-      The operation was superseded by a newer request.
-    </p>
-    <div
-      class="flex flex-wrap items-center justify-center gap-2"
-    >
-      <button
-        class="btn btn-primary"
-        type="button"
-      >
-        Back to start
-      </button>
-    </div>
-  </div>
-</main>
-`;
-
-exports[`ErrorScreen > snapshots the main variants in both themes and never shows a raw code > error CANCELLED (light) 1`] = `
-<main
-  aria-label="Error"
-  class="flex min-h-full items-center justify-center bg-bg px-4 py-12 text-[15px] leading-6 text-ink"
->
-  <div
-    class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
-  >
-    <svg
-      aria-hidden="true"
-      class="lucide lucide-circle-x lucide-x-circle text-danger"
-      fill="none"
-      height="32"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      width="32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-      />
-      <path
-        d="m15 9-6 6"
-      />
-      <path
-        d="m9 9 6 6"
-      />
-    </svg>
-    <h1
-      class="text-2xl font-semibold leading-8"
-    >
-      Cancelled
-    </h1>
-    <p
-      class="text-muted"
-    >
-      The operation was superseded by a newer request.
-    </p>
-    <div
-      class="flex flex-wrap items-center justify-center gap-2"
-    >
-      <button
-        class="btn btn-primary"
-        type="button"
-      >
-        Back to start
-      </button>
-    </div>
-  </div>
-</main>
 `;
 
 exports[`ErrorScreen > snapshots the main variants in both themes and never shows a raw code > error HANDLE_GONE (dark) 1`] = `
@@ -378,56 +348,132 @@ exports[`ErrorScreen > snapshots the main variants in both themes and never show
   <div
     class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
   >
-    <svg
-      aria-hidden="true"
-      class="lucide lucide-circle-x lucide-x-circle text-danger"
-      fill="none"
-      height="32"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      width="32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-      />
-      <path
-        d="m15 9-6 6"
-      />
-      <path
-        d="m9 9 6 6"
-      />
-    </svg>
-    <h1
-      class="text-2xl font-semibold leading-8"
-    >
-      Folder not found
-    </h1>
-    <p
-      class="text-muted"
-    >
-      The repository folder was moved or deleted. Choose it again.
-    </p>
     <div
-      class="flex flex-wrap items-center justify-center gap-2"
+      class="flex w-full flex-col gap-[18px] text-left"
     >
-      <button
-        class="btn btn-primary"
-        type="button"
+      <div
+        class="flex items-start gap-[14px]"
       >
-        Choose another folder
-      </button>
-      <button
-        class="btn"
-        type="button"
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-banner-warning-bg text-attention border-attention/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-folder"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Folder not found
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            HANDLE_GONE
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
       >
-        Forget this repo
-      </button>
+        The repository folder was moved, renamed, deleted, or is on a drive that is no longer mounted.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Choose it again from its new location. Viewed marks and the last branch pair are kept if it is the same repository.
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Choose it again
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Back to start
+        </button>
+        <span
+          class="ml-auto flex items-center gap-2"
+        >
+          <button
+            class="btn btn-ghost px-3.5 py-2 text-[13.5px]"
+            type="button"
+          >
+            Forget this repo
+          </button>
+        </span>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
     </div>
   </div>
 </main>
@@ -441,56 +487,462 @@ exports[`ErrorScreen > snapshots the main variants in both themes and never show
   <div
     class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
   >
-    <svg
-      aria-hidden="true"
-      class="lucide lucide-circle-x lucide-x-circle text-danger"
-      fill="none"
-      height="32"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      width="32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-      />
-      <path
-        d="m15 9-6 6"
-      />
-      <path
-        d="m9 9 6 6"
-      />
-    </svg>
-    <h1
-      class="text-2xl font-semibold leading-8"
-    >
-      Folder not found
-    </h1>
-    <p
-      class="text-muted"
-    >
-      The repository folder was moved or deleted. Choose it again.
-    </p>
     <div
-      class="flex flex-wrap items-center justify-center gap-2"
+      class="flex w-full flex-col gap-[18px] text-left"
     >
-      <button
-        class="btn btn-primary"
-        type="button"
+      <div
+        class="flex items-start gap-[14px]"
       >
-        Choose another folder
-      </button>
-      <button
-        class="btn"
-        type="button"
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-banner-warning-bg text-attention border-attention/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-folder"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Folder not found
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            HANDLE_GONE
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
       >
-        Forget this repo
-      </button>
+        The repository folder was moved, renamed, deleted, or is on a drive that is no longer mounted.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Choose it again from its new location. Viewed marks and the last branch pair are kept if it is the same repository.
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Choose it again
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Back to start
+        </button>
+        <span
+          class="ml-auto flex items-center gap-2"
+        >
+          <button
+            class="btn btn-ghost px-3.5 py-2 text-[13.5px]"
+            type="button"
+          >
+            Forget this repo
+          </button>
+        </span>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
+    </div>
+  </div>
+</main>
+`;
+
+exports[`ErrorScreen > snapshots the main variants in both themes and never shows a raw code > error INTERNAL (dark) 1`] = `
+<main
+  aria-label="Error"
+  class="flex min-h-full items-center justify-center bg-bg px-4 py-12 text-[15px] leading-6 text-ink"
+>
+  <div
+    class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
+  >
+    <div
+      class="flex w-full flex-col gap-[18px] text-left"
+    >
+      <div
+        class="flex items-start gap-[14px]"
+      >
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-accent-subtle text-accent border-accent/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-zap"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Something went wrong
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            INTERNAL
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
+      >
+        An internal error occurred. This is a bug in diffgit, not in your repository.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Retry. If it happens again, copy the details and open an issue — the report contains no file contents.
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Retry
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-copy"
+            fill="none"
+            height="13"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="13"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              ry="2"
+              width="14"
+              x="8"
+              y="8"
+            />
+            <path
+              d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
+            />
+          </svg>
+          Copy report
+        </button>
+        <span
+          class="ml-auto flex items-center gap-2"
+        >
+          <button
+            class="btn btn-ghost px-3.5 py-2 text-[13.5px]"
+            type="button"
+          >
+            Back to start
+          </button>
+        </span>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+        open=""
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
+    </div>
+  </div>
+</main>
+`;
+
+exports[`ErrorScreen > snapshots the main variants in both themes and never shows a raw code > error INTERNAL (light) 1`] = `
+<main
+  aria-label="Error"
+  class="flex min-h-full items-center justify-center bg-bg px-4 py-12 text-[15px] leading-6 text-ink"
+>
+  <div
+    class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
+  >
+    <div
+      class="flex w-full flex-col gap-[18px] text-left"
+    >
+      <div
+        class="flex items-start gap-[14px]"
+      >
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-accent-subtle text-accent border-accent/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-zap"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Something went wrong
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            INTERNAL
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
+      >
+        An internal error occurred. This is a bug in diffgit, not in your repository.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Retry. If it happens again, copy the details and open an issue — the report contains no file contents.
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Retry
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-copy"
+            fill="none"
+            height="13"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="13"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              ry="2"
+              width="14"
+              x="8"
+              y="8"
+            />
+            <path
+              d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
+            />
+          </svg>
+          Copy report
+        </button>
+        <span
+          class="ml-auto flex items-center gap-2"
+        >
+          <button
+            class="btn btn-ghost px-3.5 py-2 text-[13.5px]"
+            type="button"
+          >
+            Back to start
+          </button>
+        </span>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+        open=""
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
     </div>
   </div>
 </main>
@@ -504,56 +956,137 @@ exports[`ErrorScreen > snapshots the main variants in both themes and never show
   <div
     class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
   >
-    <svg
-      aria-hidden="true"
-      class="lucide lucide-circle-x lucide-x-circle text-danger"
-      fill="none"
-      height="32"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      width="32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-      />
-      <path
-        d="m15 9-6 6"
-      />
-      <path
-        d="m9 9 6 6"
-      />
-    </svg>
-    <h1
-      class="text-2xl font-semibold leading-8"
-    >
-      Read error
-    </h1>
-    <p
-      class="text-muted"
-    >
-      A file could not be read. Check that the folder is still accessible and retry.
-    </p>
     <div
-      class="flex flex-wrap items-center justify-center gap-2"
+      class="flex w-full flex-col gap-[18px] text-left"
     >
-      <button
-        class="btn btn-primary"
-        type="button"
+      <div
+        class="flex items-start gap-[14px]"
       >
-        Retry
-      </button>
-      <button
-        class="btn"
-        type="button"
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-accent-subtle text-accent border-accent/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-hard-drive"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M10 16h.01"
+            />
+            <path
+              d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+            />
+            <path
+              d="M21.946 12.013H2.054"
+            />
+            <path
+              d="M6 16h.01"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Read error
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            IO_ERROR
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
       >
-        Choose another folder
-      </button>
+        A file could not be read.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Check the folder is still accessible (network drive, cloud sync, antivirus) and retry. If it keeps failing, 
+          <code
+            class="rounded-[4px] border border-line bg-surface px-[5px] font-mono text-[12.5px] text-ink"
+          >
+            git fsck
+          </code>
+           will say whether the file is damaged.
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Retry
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Choose another folder
+        </button>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
     </div>
   </div>
 </main>
@@ -567,56 +1100,137 @@ exports[`ErrorScreen > snapshots the main variants in both themes and never show
   <div
     class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
   >
-    <svg
-      aria-hidden="true"
-      class="lucide lucide-circle-x lucide-x-circle text-danger"
-      fill="none"
-      height="32"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      width="32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-      />
-      <path
-        d="m15 9-6 6"
-      />
-      <path
-        d="m9 9 6 6"
-      />
-    </svg>
-    <h1
-      class="text-2xl font-semibold leading-8"
-    >
-      Read error
-    </h1>
-    <p
-      class="text-muted"
-    >
-      A file could not be read. Check that the folder is still accessible and retry.
-    </p>
     <div
-      class="flex flex-wrap items-center justify-center gap-2"
+      class="flex w-full flex-col gap-[18px] text-left"
     >
-      <button
-        class="btn btn-primary"
-        type="button"
+      <div
+        class="flex items-start gap-[14px]"
       >
-        Retry
-      </button>
-      <button
-        class="btn"
-        type="button"
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-accent-subtle text-accent border-accent/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-hard-drive"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M10 16h.01"
+            />
+            <path
+              d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+            />
+            <path
+              d="M21.946 12.013H2.054"
+            />
+            <path
+              d="M6 16h.01"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Read error
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            IO_ERROR
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
       >
-        Choose another folder
-      </button>
+        A file could not be read.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Check the folder is still accessible (network drive, cloud sync, antivirus) and retry. If it keeps failing, 
+          <code
+            class="rounded-[4px] border border-line bg-surface px-[5px] font-mono text-[12.5px] text-ink"
+          >
+            git fsck
+          </code>
+           will say whether the file is damaged.
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Retry
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Choose another folder
+        </button>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
     </div>
   </div>
 </main>
@@ -630,50 +1244,174 @@ exports[`ErrorScreen > snapshots the main variants in both themes and never show
   <div
     class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
   >
-    <svg
-      aria-hidden="true"
-      class="lucide lucide-circle-x lucide-x-circle text-danger"
-      fill="none"
-      height="32"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      width="32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-      />
-      <path
-        d="m15 9-6 6"
-      />
-      <path
-        d="m9 9 6 6"
-      />
-    </svg>
-    <h1
-      class="text-2xl font-semibold leading-8"
-    >
-      Not a git repository
-    </h1>
-    <p
-      class="text-muted"
-    >
-      The folder you picked has no .git directory. Choose the folder that contains .git.
-    </p>
     <div
-      class="flex flex-wrap items-center justify-center gap-2"
+      class="flex w-full flex-col gap-[18px] text-left"
     >
-      <button
-        class="btn btn-primary"
-        type="button"
+      <div
+        class="flex items-start gap-[14px]"
       >
-        Choose another folder
-      </button>
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-banner-error-bg text-danger border-danger/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-folder-git-2"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 19a5 5 0 0 1-5-5v8"
+            />
+            <path
+              d="M9 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v5"
+            />
+            <circle
+              cx="13"
+              cy="12"
+              r="2"
+            />
+            <circle
+              cx="20"
+              cy="19"
+              r="2"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Not a git repository
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            NOT_A_REPO
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
+      >
+        The folder you picked has no 
+        <code
+          class="font-mono text-[0.92em] text-ink"
+        >
+          .git
+        </code>
+         directory.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Choose the folder that contains 
+          <code
+            class="rounded-[4px] border border-line bg-surface px-[5px] font-mono text-[12.5px] text-ink"
+          >
+            .git
+          </code>
+           — usually the one you 
+          <code
+            class="rounded-[4px] border border-line bg-surface px-[5px] font-mono text-[12.5px] text-ink"
+          >
+            cd
+          </code>
+           into before running 
+          <code
+            class="rounded-[4px] border border-line bg-surface px-[5px] font-mono text-[12.5px] text-ink"
+          >
+            git status
+          </code>
+          .
+        </dd>
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          Looked in
+        </dt>
+        <dd
+          class="m-0"
+        >
+          <code
+            class="rounded-[4px] border border-line bg-surface px-[5px] font-mono text-[12.5px] text-ink"
+          >
+            basic/.git
+          </code>
+           — not found; parent folders are not searched.
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Choose another folder
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Back to start
+        </button>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
     </div>
   </div>
 </main>
@@ -687,50 +1425,174 @@ exports[`ErrorScreen > snapshots the main variants in both themes and never show
   <div
     class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
   >
-    <svg
-      aria-hidden="true"
-      class="lucide lucide-circle-x lucide-x-circle text-danger"
-      fill="none"
-      height="32"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      width="32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-      />
-      <path
-        d="m15 9-6 6"
-      />
-      <path
-        d="m9 9 6 6"
-      />
-    </svg>
-    <h1
-      class="text-2xl font-semibold leading-8"
-    >
-      Not a git repository
-    </h1>
-    <p
-      class="text-muted"
-    >
-      The folder you picked has no .git directory. Choose the folder that contains .git.
-    </p>
     <div
-      class="flex flex-wrap items-center justify-center gap-2"
+      class="flex w-full flex-col gap-[18px] text-left"
     >
-      <button
-        class="btn btn-primary"
-        type="button"
+      <div
+        class="flex items-start gap-[14px]"
       >
-        Choose another folder
-      </button>
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-banner-error-bg text-danger border-danger/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-folder-git-2"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 19a5 5 0 0 1-5-5v8"
+            />
+            <path
+              d="M9 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v5"
+            />
+            <circle
+              cx="13"
+              cy="12"
+              r="2"
+            />
+            <circle
+              cx="20"
+              cy="19"
+              r="2"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Not a git repository
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            NOT_A_REPO
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
+      >
+        The folder you picked has no 
+        <code
+          class="font-mono text-[0.92em] text-ink"
+        >
+          .git
+        </code>
+         directory.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Choose the folder that contains 
+          <code
+            class="rounded-[4px] border border-line bg-surface px-[5px] font-mono text-[12.5px] text-ink"
+          >
+            .git
+          </code>
+           — usually the one you 
+          <code
+            class="rounded-[4px] border border-line bg-surface px-[5px] font-mono text-[12.5px] text-ink"
+          >
+            cd
+          </code>
+           into before running 
+          <code
+            class="rounded-[4px] border border-line bg-surface px-[5px] font-mono text-[12.5px] text-ink"
+          >
+            git status
+          </code>
+          .
+        </dd>
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          Looked in
+        </dt>
+        <dd
+          class="m-0"
+        >
+          <code
+            class="rounded-[4px] border border-line bg-surface px-[5px] font-mono text-[12.5px] text-ink"
+          >
+            basic/.git
+          </code>
+           — not found; parent folders are not searched.
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Choose another folder
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Back to start
+        </button>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
     </div>
   </div>
 </main>
@@ -744,56 +1606,140 @@ exports[`ErrorScreen > snapshots the main variants in both themes and never show
   <div
     class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
   >
-    <svg
-      aria-hidden="true"
-      class="lucide lucide-circle-x lucide-x-circle text-danger"
-      fill="none"
-      height="32"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      width="32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-      />
-      <path
-        d="m15 9-6 6"
-      />
-      <path
-        d="m9 9 6 6"
-      />
-    </svg>
-    <h1
-      class="text-2xl font-semibold leading-8"
-    >
-      Permission denied
-    </h1>
-    <p
-      class="text-muted"
-    >
-      The browser did not grant read access to this folder. Grant access and try again.
-    </p>
     <div
-      class="flex flex-wrap items-center justify-center gap-2"
+      class="flex w-full flex-col gap-[18px] text-left"
     >
-      <button
-        class="btn btn-primary"
-        type="button"
+      <div
+        class="flex items-start gap-[14px]"
       >
-        Grant access
-      </button>
-      <button
-        class="btn"
-        type="button"
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-banner-warning-bg text-attention border-attention/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-lock"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="11"
+              rx="2"
+              ry="2"
+              width="18"
+              x="3"
+              y="11"
+            />
+            <path
+              d="M7 11V7a5 5 0 0 1 10 0v4"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Permission needed
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            PERMISSION
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
       >
-        Choose another folder
-      </button>
+        The browser did not grant read access to this folder. Nothing was read.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Click Grant access and choose View files in the browser prompt. Access is read-only and lasts for this tab.
+        </dd>
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          If no prompt
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Site settings → File editing → allow, or reopen the folder from the picker.
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Grant access
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Choose another folder
+        </button>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
     </div>
   </div>
 </main>
@@ -807,56 +1753,524 @@ exports[`ErrorScreen > snapshots the main variants in both themes and never show
   <div
     class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
   >
-    <svg
-      aria-hidden="true"
-      class="lucide lucide-circle-x lucide-x-circle text-danger"
-      fill="none"
-      height="32"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      width="32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-      />
-      <path
-        d="m15 9-6 6"
-      />
-      <path
-        d="m9 9 6 6"
-      />
-    </svg>
-    <h1
-      class="text-2xl font-semibold leading-8"
-    >
-      Permission denied
-    </h1>
-    <p
-      class="text-muted"
-    >
-      The browser did not grant read access to this folder. Grant access and try again.
-    </p>
     <div
-      class="flex flex-wrap items-center justify-center gap-2"
+      class="flex w-full flex-col gap-[18px] text-left"
     >
-      <button
-        class="btn btn-primary"
-        type="button"
+      <div
+        class="flex items-start gap-[14px]"
       >
-        Grant access
-      </button>
-      <button
-        class="btn"
-        type="button"
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-banner-warning-bg text-attention border-attention/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-lock"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="11"
+              rx="2"
+              ry="2"
+              width="18"
+              x="3"
+              y="11"
+            />
+            <path
+              d="M7 11V7a5 5 0 0 1 10 0v4"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Permission needed
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            PERMISSION
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
       >
-        Choose another folder
-      </button>
+        The browser did not grant read access to this folder. Nothing was read.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Click Grant access and choose View files in the browser prompt. Access is read-only and lasts for this tab.
+        </dd>
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          If no prompt
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Site settings → File editing → allow, or reopen the folder from the picker.
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Grant access
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Choose another folder
+        </button>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
+    </div>
+  </div>
+</main>
+`;
+
+exports[`ErrorScreen > snapshots the main variants in both themes and never shows a raw code > error WORKER_CRASHED gave up (dark) 1`] = `
+<main
+  aria-label="Error"
+  class="flex min-h-full items-center justify-center bg-bg px-4 py-12 text-[15px] leading-6 text-ink"
+>
+  <div
+    class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
+  >
+    <div
+      class="flex w-full flex-col gap-[18px] text-left"
+    >
+      <div
+        class="flex items-start gap-[14px]"
+      >
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-accent-subtle text-accent border-accent/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-cpu"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 20v2"
+            />
+            <path
+              d="M12 2v2"
+            />
+            <path
+              d="M17 20v2"
+            />
+            <path
+              d="M17 2v2"
+            />
+            <path
+              d="M2 12h2"
+            />
+            <path
+              d="M2 17h2"
+            />
+            <path
+              d="M2 7h2"
+            />
+            <path
+              d="M20 12h2"
+            />
+            <path
+              d="M20 17h2"
+            />
+            <path
+              d="M20 7h2"
+            />
+            <path
+              d="M7 20v2"
+            />
+            <path
+              d="M7 2v2"
+            />
+            <rect
+              height="16"
+              rx="2"
+              width="16"
+              x="4"
+              y="4"
+            />
+            <rect
+              height="8"
+              rx="1"
+              width="8"
+              x="8"
+              y="8"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Engine keeps stopping
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            WORKER_CRASHED
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+            <span
+              class="text-muted"
+            >
+               · 
+              3 restarts
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
+      >
+        The diff engine stopped unexpectedly. That usually means the tab ran out of memory.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Close other tabs and retry, or open without uncommitted changes (the working tree scan is the biggest allocation).
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Retry
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Retry without uncommitted
+        </button>
+        <span
+          class="ml-auto flex items-center gap-2"
+        >
+          <button
+            class="btn btn-ghost px-3.5 py-2 text-[13.5px]"
+            type="button"
+          >
+            Choose another
+          </button>
+        </span>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
+    </div>
+  </div>
+</main>
+`;
+
+exports[`ErrorScreen > snapshots the main variants in both themes and never shows a raw code > error WORKER_CRASHED gave up (light) 1`] = `
+<main
+  aria-label="Error"
+  class="flex min-h-full items-center justify-center bg-bg px-4 py-12 text-[15px] leading-6 text-ink"
+>
+  <div
+    class="flex w-full max-w-[560px] flex-col items-center gap-6 text-center"
+  >
+    <div
+      class="flex w-full flex-col gap-[18px] text-left"
+    >
+      <div
+        class="flex items-start gap-[14px]"
+      >
+        <span
+          class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] border bg-accent-subtle text-accent border-accent/45"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-cpu"
+            fill="none"
+            height="20"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 20v2"
+            />
+            <path
+              d="M12 2v2"
+            />
+            <path
+              d="M17 20v2"
+            />
+            <path
+              d="M17 2v2"
+            />
+            <path
+              d="M2 12h2"
+            />
+            <path
+              d="M2 17h2"
+            />
+            <path
+              d="M2 7h2"
+            />
+            <path
+              d="M20 12h2"
+            />
+            <path
+              d="M20 17h2"
+            />
+            <path
+              d="M20 7h2"
+            />
+            <path
+              d="M7 20v2"
+            />
+            <path
+              d="M7 2v2"
+            />
+            <rect
+              height="16"
+              rx="2"
+              width="16"
+              x="4"
+              y="4"
+            />
+            <rect
+              height="8"
+              rx="1"
+              width="8"
+              x="8"
+              y="8"
+            />
+          </svg>
+        </span>
+        <div
+          class="min-w-0"
+        >
+          <h1
+            class="text-[21px] leading-[1.15] font-semibold tracking-[-0.02em]"
+          >
+            Engine keeps stopping
+          </h1>
+          <div
+            class="mt-1 font-mono text-[11.5px] break-all text-muted/70"
+            data-testid="error-code"
+          >
+            WORKER_CRASHED
+            <span
+              class="text-muted"
+            >
+               · 
+              basic
+            </span>
+            <span
+              class="text-muted"
+            >
+               · 
+              3 restarts
+            </span>
+          </div>
+        </div>
+      </div>
+      <p
+        class="text-[14.5px] leading-[22px] text-ink/80"
+      >
+        The diff engine stopped unexpectedly. That usually means the tab ran out of memory.
+      </p>
+      <dl
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-[8px] border border-line bg-surface-sunken px-[14px] py-3 text-[13.5px] leading-[20px]"
+      >
+        <dt
+          class="pt-[3px] font-mono text-[11px] font-medium tracking-[0.04em] text-muted/70 uppercase"
+        >
+          What to do
+        </dt>
+        <dd
+          class="m-0"
+        >
+          Close other tabs and retry, or open without uncommitted changes (the working tree scan is the biggest allocation).
+        </dd>
+      </dl>
+      <div
+        class="flex flex-wrap items-center gap-2"
+      >
+        <button
+          class="btn btn-ink px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Retry
+        </button>
+        <button
+          class="btn px-3.5 py-2 text-[13.5px]"
+          type="button"
+        >
+          Retry without uncommitted
+        </button>
+        <span
+          class="ml-auto flex items-center gap-2"
+        >
+          <button
+            class="btn btn-ghost px-3.5 py-2 text-[13.5px]"
+            type="button"
+          >
+            Choose another
+          </button>
+        </span>
+      </div>
+      <details
+        class="border-t border-line pt-2.5 text-[12.5px] text-muted"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-right"
+            fill="none"
+            height="12"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="12"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m9 18 6-6-6-6"
+            />
+          </svg>
+          Details
+        </summary>
+        <pre
+          class="mt-2 max-h-48 overflow-auto rounded-[6px] border border-line bg-surface-raised px-3 py-2.5 font-mono text-[11.5px] leading-[1.5] break-all whitespace-pre-wrap text-ink/80"
+          data-testid="error-report"
+        >
+          &lt;error report&gt;
+        </pre>
+      </details>
     </div>
   </div>
 </main>
@@ -871,49 +2285,45 @@ exports[`Toasts > snapshots the three levels in both themes > toasts (dark) 1`] 
     class="flex w-[360px] max-w-[calc(100vw-32px)] items-start gap-2 rounded-[6px] border border-line bg-surface px-4 py-3 text-[13px] leading-5 text-ink shadow-popover"
     role="alert"
   >
-    <span
-      class="mt-0.5"
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-circle-x lucide-x-circle mt-[2px] shrink-0 text-danger"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <svg
-        aria-hidden="true"
-        class="lucide lucide-circle-x lucide-x-circle shrink-0 text-danger"
-        fill="none"
-        height="14"
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-        width="14"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="10"
-        />
-        <path
-          d="m15 9-6 6"
-        />
-        <path
-          d="m9 9 6 6"
-        />
-      </svg>
-    </span>
-    <p
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+      />
+      <path
+        d="m15 9-6 6"
+      />
+      <path
+        d="m9 9 6 6"
+      />
+    </svg>
+    <span
       class="min-w-0 flex-1 break-words"
     >
       Refresh failed: EIO
-    </p>
+    </span>
     <button
-      class="shrink-0 font-medium text-accent underline-offset-2 hover:underline"
+      class="ml-auto shrink-0 font-medium whitespace-nowrap text-accent underline-offset-2 hover:underline"
       type="button"
     >
       Retry
     </button>
     <button
       aria-label="Dismiss notification"
-      class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+      class="mt-[1px] shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
       type="button"
     >
       <svg
@@ -942,41 +2352,37 @@ exports[`Toasts > snapshots the three levels in both themes > toasts (dark) 1`] 
     class="flex w-[360px] max-w-[calc(100vw-32px)] items-start gap-2 rounded-[6px] border border-line bg-surface px-4 py-3 text-[13px] leading-5 text-ink shadow-popover"
     role="status"
   >
-    <span
-      class="mt-0.5"
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-triangle-alert lucide-alert-triangle mt-[2px] shrink-0 text-attention"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <svg
-        aria-hidden="true"
-        class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
-        fill="none"
-        height="14"
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-        width="14"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
-        />
-        <path
-          d="M12 9v4"
-        />
-        <path
-          d="M12 17h.01"
-        />
-      </svg>
-    </span>
-    <p
+      <path
+        d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+      />
+      <path
+        d="M12 9v4"
+      />
+      <path
+        d="M12 17h.01"
+      />
+    </svg>
+    <span
       class="min-w-0 flex-1 break-words"
     >
       Careful
-    </p>
+    </span>
     <button
       aria-label="Dismiss notification"
-      class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+      class="mt-[1px] shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
       type="button"
     >
       <svg
@@ -1005,43 +2411,39 @@ exports[`Toasts > snapshots the three levels in both themes > toasts (dark) 1`] 
     class="flex w-[360px] max-w-[calc(100vw-32px)] items-start gap-2 rounded-[6px] border border-line bg-surface px-4 py-3 text-[13px] leading-5 text-ink shadow-popover"
     role="status"
   >
-    <span
-      class="mt-0.5"
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-info mt-[2px] shrink-0 text-accent"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <svg
-        aria-hidden="true"
-        class="lucide lucide-info shrink-0 text-accent"
-        fill="none"
-        height="14"
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-        width="14"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="10"
-        />
-        <path
-          d="M12 16v-4"
-        />
-        <path
-          d="M12 8h.01"
-        />
-      </svg>
-    </span>
-    <p
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+      />
+      <path
+        d="M12 16v-4"
+      />
+      <path
+        d="M12 8h.01"
+      />
+    </svg>
+    <span
       class="min-w-0 flex-1 break-words"
     >
       FYI
-    </p>
+    </span>
     <button
       aria-label="Dismiss notification"
-      class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+      class="mt-[1px] shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
       type="button"
     >
       <svg
@@ -1078,49 +2480,45 @@ exports[`Toasts > snapshots the three levels in both themes > toasts (light) 1`]
     class="flex w-[360px] max-w-[calc(100vw-32px)] items-start gap-2 rounded-[6px] border border-line bg-surface px-4 py-3 text-[13px] leading-5 text-ink shadow-popover"
     role="alert"
   >
-    <span
-      class="mt-0.5"
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-circle-x lucide-x-circle mt-[2px] shrink-0 text-danger"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <svg
-        aria-hidden="true"
-        class="lucide lucide-circle-x lucide-x-circle shrink-0 text-danger"
-        fill="none"
-        height="14"
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-        width="14"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="10"
-        />
-        <path
-          d="m15 9-6 6"
-        />
-        <path
-          d="m9 9 6 6"
-        />
-      </svg>
-    </span>
-    <p
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+      />
+      <path
+        d="m15 9-6 6"
+      />
+      <path
+        d="m9 9 6 6"
+      />
+    </svg>
+    <span
       class="min-w-0 flex-1 break-words"
     >
       Refresh failed: EIO
-    </p>
+    </span>
     <button
-      class="shrink-0 font-medium text-accent underline-offset-2 hover:underline"
+      class="ml-auto shrink-0 font-medium whitespace-nowrap text-accent underline-offset-2 hover:underline"
       type="button"
     >
       Retry
     </button>
     <button
       aria-label="Dismiss notification"
-      class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+      class="mt-[1px] shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
       type="button"
     >
       <svg
@@ -1149,41 +2547,37 @@ exports[`Toasts > snapshots the three levels in both themes > toasts (light) 1`]
     class="flex w-[360px] max-w-[calc(100vw-32px)] items-start gap-2 rounded-[6px] border border-line bg-surface px-4 py-3 text-[13px] leading-5 text-ink shadow-popover"
     role="status"
   >
-    <span
-      class="mt-0.5"
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-triangle-alert lucide-alert-triangle mt-[2px] shrink-0 text-attention"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <svg
-        aria-hidden="true"
-        class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
-        fill="none"
-        height="14"
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-        width="14"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
-        />
-        <path
-          d="M12 9v4"
-        />
-        <path
-          d="M12 17h.01"
-        />
-      </svg>
-    </span>
-    <p
+      <path
+        d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+      />
+      <path
+        d="M12 9v4"
+      />
+      <path
+        d="M12 17h.01"
+      />
+    </svg>
+    <span
       class="min-w-0 flex-1 break-words"
     >
       Careful
-    </p>
+    </span>
     <button
       aria-label="Dismiss notification"
-      class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+      class="mt-[1px] shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
       type="button"
     >
       <svg
@@ -1212,43 +2606,39 @@ exports[`Toasts > snapshots the three levels in both themes > toasts (light) 1`]
     class="flex w-[360px] max-w-[calc(100vw-32px)] items-start gap-2 rounded-[6px] border border-line bg-surface px-4 py-3 text-[13px] leading-5 text-ink shadow-popover"
     role="status"
   >
-    <span
-      class="mt-0.5"
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-info mt-[2px] shrink-0 text-accent"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <svg
-        aria-hidden="true"
-        class="lucide lucide-info shrink-0 text-accent"
-        fill="none"
-        height="14"
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-        width="14"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="10"
-        />
-        <path
-          d="M12 16v-4"
-        />
-        <path
-          d="M12 8h.01"
-        />
-      </svg>
-    </span>
-    <p
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+      />
+      <path
+        d="M12 16v-4"
+      />
+      <path
+        d="M12 8h.01"
+      />
+    </svg>
+    <span
       class="min-w-0 flex-1 break-words"
     >
       FYI
-    </p>
+    </span>
     <button
       aria-label="Dismiss notification"
-      class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+      class="mt-[1px] shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
       type="button"
     >
       <svg
@@ -1315,10 +2705,21 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     core.autocrlf is set; line-ending-only changes may appear.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      AUTOCRLF
+    </span>
   </p>
   <button
+    class="shrink-0 font-medium whitespace-nowrap text-accent underline-offset-2 hover:underline"
+    type="button"
+  >
+    Ignore whitespace
+  </button>
+  <button
     aria-label="Dismiss: Line endings"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -1384,10 +2785,21 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     core.autocrlf is set; line-ending-only changes may appear.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      AUTOCRLF
+    </span>
   </p>
   <button
+    class="shrink-0 font-medium whitespace-nowrap text-accent underline-offset-2 hover:underline"
+    type="button"
+  >
+    Ignore whitespace
+  </button>
+  <button
     aria-label="Dismiss: Line endings"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -1453,10 +2865,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     An include in .git/config points outside this folder and was ignored.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      CONFIG_INCLUDE_SKIPPED
+    </span>
   </p>
   <button
     aria-label="Dismiss: Config include skipped"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -1522,10 +2939,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     An include in .git/config points outside this folder and was ignored.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      CONFIG_INCLUDE_SKIPPED
+    </span>
   </p>
   <button
     aria-label="Dismiss: Config include skipped"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -1591,10 +3013,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     A nested repository that is not a submodule was skipped.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      EMBEDDED_REPO
+    </span>
   </p>
   <button
     aria-label="Dismiss: Embedded repository"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -1660,10 +3087,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     A nested repository that is not a submodule was skipped.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      EMBEDDED_REPO
+    </span>
   </p>
   <button
     aria-label="Dismiss: Embedded repository"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -1728,11 +3160,16 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
       Large file skipped
     </strong>
      
-    A file over the size limit was not compared.
+    Files over the size limit were not compared.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      FILE_TOO_LARGE
+    </span>
   </p>
   <button
     aria-label="Dismiss: Large file skipped"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -1797,11 +3234,16 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
       Large file skipped
     </strong>
      
-    A file over the size limit was not compared.
+    Files over the size limit were not compared.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      FILE_TOO_LARGE
+    </span>
   </p>
   <button
     aria-label="Dismiss: Large file skipped"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -1867,10 +3309,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     core.excludesFile lives outside this folder; some ignored files may appear as untracked.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      GLOBAL_EXCLUDES_UNAVAILABLE
+    </span>
   </p>
   <button
     aria-label="Dismiss: Global ignores unavailable"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -1936,10 +3383,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     core.excludesFile lives outside this folder; some ignored files may appear as untracked.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      GLOBAL_EXCLUDES_UNAVAILABLE
+    </span>
   </p>
   <button
     aria-label="Dismiss: Global ignores unavailable"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2005,10 +3457,21 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Index was being written; showing last good read.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      INDEX_CHECKSUM
+    </span>
   </p>
   <button
+    class="shrink-0 font-medium whitespace-nowrap text-accent underline-offset-2 hover:underline"
+    type="button"
+  >
+    Refresh
+  </button>
+  <button
     aria-label="Dismiss: Index checksum mismatch"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2074,10 +3537,21 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Index was being written; showing last good read.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      INDEX_CHECKSUM
+    </span>
   </p>
   <button
+    class="shrink-0 font-medium whitespace-nowrap text-accent underline-offset-2 hover:underline"
+    type="button"
+  >
+    Refresh
+  </button>
+  <button
     aria-label="Dismiss: Index checksum mismatch"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2145,10 +3619,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     The index is bigger than the browser can read; uncommitted changes hidden.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      INDEX_TOO_LARGE
+    </span>
   </p>
   <button
     aria-label="Dismiss: Index too large"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2216,10 +3695,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     The index is bigger than the browser can read; uncommitted changes hidden.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      INDEX_TOO_LARGE
+    </span>
   </p>
   <button
     aria-label="Dismiss: Index too large"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2285,10 +3769,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     LFS pointer files are compared, not the large files they stand for.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      LFS_PRESENT
+    </span>
   </p>
   <button
     aria-label="Dismiss: Git LFS"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2354,10 +3843,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     LFS pointer files are compared, not the large files they stand for.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      LFS_PRESENT
+    </span>
   </p>
   <button
     aria-label="Dismiss: Git LFS"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2423,10 +3917,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     This repository uses a multi-pack index; object reads may be slower.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      MULTI_PACK_INDEX
+    </span>
   </p>
   <button
     aria-label="Dismiss: Multi-pack index"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2492,10 +3991,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     This repository uses a multi-pack index; object reads may be slower.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      MULTI_PACK_INDEX
+    </span>
   </p>
   <button
     aria-label="Dismiss: Multi-pack index"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2561,10 +4065,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     The branches have more than one merge base; the first is used, as git does.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      MULTIPLE_MERGE_BASES
+    </span>
   </p>
   <button
     aria-label="Dismiss: Multiple merge bases"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2630,10 +4139,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     The branches have more than one merge base; the first is used, as git does.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      MULTIPLE_MERGE_BASES
+    </span>
   </p>
   <button
     aria-label="Dismiss: Multiple merge bases"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2699,10 +4213,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Pack files are large; the first read of each object may take a moment.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      PACK_LARGE
+    </span>
   </p>
   <button
     aria-label="Dismiss: Large pack files"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2768,10 +4287,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Pack files are large; the first read of each object may take a moment.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      PACK_LARGE
+    </span>
   </p>
   <button
     aria-label="Dismiss: Large pack files"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2837,10 +4361,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     A path switched between file and directory; its diff may be incomplete.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      PATH_TYPE_CHANGED
+    </span>
   </p>
   <button
     aria-label="Dismiss: Path type changed"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2906,10 +4435,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     A path switched between file and directory; its diff may be incomplete.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      PATH_TYPE_CHANGED
+    </span>
   </p>
   <button
     aria-label="Dismiss: Path type changed"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -2974,11 +4508,16 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
       Live refresh unavailable
     </strong>
      
-    Change detection fell back to polling or manual refresh.
+    Change detection fell back to polling every 2 s.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      REFRESH_DEGRADED
+    </span>
   </p>
   <button
     aria-label="Dismiss: Live refresh unavailable"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3043,11 +4582,16 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
       Live refresh unavailable
     </strong>
      
-    Change detection fell back to polling or manual refresh.
+    Change detection fell back to polling every 2 s.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      REFRESH_DEGRADED
+    </span>
   </p>
   <button
     aria-label="Dismiss: Live refresh unavailable"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3113,10 +4657,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Too many changed files to pair every rename; some show as added + deleted.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      RENAME_LIMIT
+    </span>
   </p>
   <button
     aria-label="Dismiss: Rename detection limited"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3182,10 +4731,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Too many changed files to pair every rename; some show as added + deleted.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      RENAME_LIMIT
+    </span>
   </p>
   <button
     aria-label="Dismiss: Rename detection limited"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3251,10 +4805,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     History is truncated, so the merge base may differ from what git would pick.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SHALLOW
+    </span>
   </p>
   <button
     aria-label="Dismiss: Shallow clone"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3320,10 +4879,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     History is truncated, so the merge base may differ from what git would pick.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SHALLOW
+    </span>
   </p>
   <button
     aria-label="Dismiss: Shallow clone"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3389,10 +4953,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Untracked file detection is partial.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SPARSE_INDEX
+    </span>
   </p>
   <button
     aria-label="Dismiss: Sparse checkout"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3458,10 +5027,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Untracked file detection is partial.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SPARSE_INDEX
+    </span>
   </p>
   <button
     aria-label="Dismiss: Sparse checkout"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3529,10 +5103,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Split index is not supported; uncommitted changes hidden.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SPLIT_INDEX
+    </span>
   </p>
   <button
     aria-label="Dismiss: Split index"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3600,10 +5179,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Split index is not supported; uncommitted changes hidden.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SPLIT_INDEX
+    </span>
   </p>
   <button
     aria-label="Dismiss: Split index"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3669,10 +5253,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     A pack file changed mid-read; the read was retried.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      STALE_PACK_RETRIED
+    </span>
   </p>
   <button
     aria-label="Dismiss: Repository changed while reading"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3738,10 +5327,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     A pack file changed mid-read; the read was retried.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      STALE_PACK_RETRIED
+    </span>
   </p>
   <button
     aria-label="Dismiss: Repository changed while reading"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3807,10 +5401,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Branches share no history; showing a direct comparison.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      UNRELATED_HISTORIES
+    </span>
   </p>
   <button
     aria-label="Dismiss: Unrelated histories"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3876,10 +5475,15 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
     </strong>
      
     Branches share no history; showing a direct comparison.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      UNRELATED_HISTORIES
+    </span>
   </p>
   <button
     aria-label="Dismiss: Unrelated histories"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -3944,11 +5548,16 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
       Untracked files capped
     </strong>
      
-    Only the first untracked files are listed; the rest are omitted.
+    Only the first 5,000 untracked files are listed; the rest are omitted.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      UNTRACKED_CAPPED
+    </span>
   </p>
   <button
     aria-label="Dismiss: Untracked files capped"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -4013,11 +5622,16 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
       Untracked files capped
     </strong>
      
-    Only the first untracked files are listed; the rest are omitted.
+    Only the first 5,000 untracked files are listed; the rest are omitted.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      UNTRACKED_CAPPED
+    </span>
   </p>
   <button
     aria-label="Dismiss: Untracked files capped"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -4084,11 +5698,22 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
       Uncommitted changes hidden
     </strong>
      
-    Uncommitted changes are only shown when the source is the checked-out branch.
+    Uncommitted changes are only shown when the compare branch is the checked-out one (HEAD).
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      WORKTREE_NOT_APPLICABLE
+    </span>
   </p>
   <button
+    class="shrink-0 font-medium whitespace-nowrap text-accent underline-offset-2 hover:underline"
+    type="button"
+  >
+    Compare HEAD
+  </button>
+  <button
     aria-label="Dismiss: Uncommitted changes hidden"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg
@@ -4155,11 +5780,22 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
       Uncommitted changes hidden
     </strong>
      
-    Uncommitted changes are only shown when the source is the checked-out branch.
+    Uncommitted changes are only shown when the compare branch is the checked-out one (HEAD).
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      WORKTREE_NOT_APPLICABLE
+    </span>
   </p>
   <button
+    class="shrink-0 font-medium whitespace-nowrap text-accent underline-offset-2 hover:underline"
+    type="button"
+  >
+    Compare HEAD
+  </button>
+  <button
     aria-label="Dismiss: Uncommitted changes hidden"
-    class="rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
     <svg

@@ -28,9 +28,6 @@ function useDebugHash(): boolean {
 /** Route-less app: switches on the store's screen (Plan §6.1). */
 export function App() {
   const screen = useStore((s) => s.screen);
-  const repoName = useStore(
-    (s) => s.repo?.name ?? (s.handle as { name?: string } | null)?.name ?? "Repository",
-  );
   const theme = useStore((s) => s.prefs.theme);
   useEffect(() => applyTheme(theme), [theme]);
   const debug = useDebugHash();
@@ -38,9 +35,9 @@ export function App() {
   return (
     <BrowserGate>
       {screen === "home" && <HomeScreen />}
-      {screen === "loading" && <LoadingScreen repoName={repoName} />}
+      {screen === "loading" && <LoadingScreen />}
       {screen === "repo" && (
-        <Suspense fallback={<LoadingScreen repoName={repoName} />}>
+        <Suspense fallback={<LoadingScreen />}>
           <RepoScreen />
         </Suspense>
       )}

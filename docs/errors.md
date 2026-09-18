@@ -30,8 +30,8 @@ The registry is `src/engine/errors.ts`. Three tiers:
 | `ALTERNATES` | `layoutChecks.checkLayout` (`.git/objects/info/alternates` present) | Objects live outside this folder | choose-folder |
 | `PARTIAL_CLONE` | `layoutChecks.checkLayout` (`*.promisor` pack or `remote.*.promisor`) | Partial clone | choose-folder |
 | `PACK_TOO_LARGE` | `layoutChecks.checkLayout` (packs on disk > 1 GB) | Repository too large | choose-folder |
-| `INDEX_UNSUPPORTED` | `indexReader.parseIndex` (version other than 2–4, bad signature, unknown mandatory extension) | Unsupported index format | choose-folder |
-| `PERMISSION` | `layoutChecks` probes on `EACCES`; `toPublicError` for `EACCES` / `NotAllowedError` / `SecurityError`; `observer.ts` when `FileSystemObserver.observe` is refused; the store when `ensurePermission` is denied | Permission denied | reopen-permission |
+| `INDEX_UNSUPPORTED` | `indexReader.parseIndex` (version other than 2–4, bad signature, unknown mandatory extension) | Unsupported index format | retry |
+| `PERMISSION` | `layoutChecks` probes on `EACCES`; `toPublicError` for `EACCES` / `NotAllowedError` / `SecurityError`; `observer.ts` when `FileSystemObserver.observe` is refused; the store when `ensurePermission` is denied | Permission needed | reopen-permission |
 | `HANDLE_GONE` | `RepoSession.withRootCheck` (any compute failure while `.git` is unreachable); `observer.ts` on a `disappeared`/`errored` record for the root | Folder not found | choose-folder |
 | `IO_ERROR` | `toPublicError` for `EIO`, `EISDIR`, `ENOTDIR`, `EINVAL`, `ENOENT` (root still present), `NotReadableError`, `TypeMismatchError`, `InvalidStateError` | Read error | retry |
 | `REF_NOT_FOUND` | `ObjectDb.resolveRef` (`NotFoundError` from isomorphic-git); `DiffEngine.compute` when the source or target ref vanished | Branch not found | retry |

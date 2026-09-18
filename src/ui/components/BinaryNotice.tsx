@@ -1,3 +1,4 @@
+import { File } from "lucide-react";
 import { useState } from "react";
 import type { FileDiffPayload } from "../../engine/api";
 import type { FileDiff } from "../../engine/types";
@@ -9,62 +10,109 @@ import { Notice } from "./Notice";
 /** "View as text" is offered below this size (Design §7.7). */
 const VIEW_AS_TEXT_LIMIT = 1024 * 1024;
 
+export type RawSide = "old" | "new";
+
 export function sizesLabel(oldSize: number, newSize: number, status: FileDiff["status"]): string {
   if (status === "added") return formatBytes(newSize);
   if (status === "deleted") return formatBytes(oldSize);
   return `${formatBytes(oldSize)} → ${formatBytes(newSize)}`;
 }
 
-/** "Binary file not shown" + sizes + `View as text` escape hatch for small files. */
-export function BinaryNotice({ file, payload }: { file: FileDiff; payload: FileDiffPayload }) {
+/** The side a "View raw" / "View as text" escape hatch reads: the surviving one. */
+export function rawSideFor(status: FileDiff["status"]): RawSide {
+  return status === "deleted" ? "old" : "new";
+}
+
+export interface RawText {
+  text: string | null;
+  error: string | null;
+  busy: boolean;
+  load: () => Promise<void>;
+  hide: () => void;
+}
+
+/**
+ * Decodes one side of a file through the store's `fileBytes` (E6 "View raw" / "View as text").
+ * Shared by `BinaryNotice` and the in-card load/render failure notices.
+ */
+export function useRawText(id: string, side: RawSide): RawText {
   const fileBytes = useStore((s) => s.fileBytes);
-  const { oldSize, newSize } = payload.classification;
-  const canView = Math.max(oldSize, newSize) < VIEW_AS_TEXT_LIMIT;
   const [text, setText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const side = file.status === "deleted" ? "old" : "new";
-
-  const view = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const bytes = await fileBytes(file.id, side);
-      setText(bytes ? new TextDecoder("utf-8", { fatal: false }).decode(bytes) : "");
-    } catch (e) {
-      // T7.3: never show an empty pane for a failed read; STALE/CANCELLED mean a newer diff is
-      // on its way, so the notice simply stays as it was.
-      const err = toUiError(e);
-      if (err.code !== "STALE" && err.code !== "CANCELLED") {
-        const d = describeError(err.code);
-        setError(`${d.title}: ${d.message}`);
+  return {
+    text,
+    error,
+    busy,
+    hide: () => setText(null),
+    load: async () => {
+      setBusy(true);
+      setError(null);
+      try {
+        const bytes = await fileBytes(id, side);
+        setText(bytes ? new TextDecoder("utf-8", { fatal: false }).decode(bytes) : "");
+      } catch (e) {
+        // T7.3: never show an empty pane for a failed read; STALE/CANCELLED mean a newer diff is
+        // on its way, so the notice simply stays as it was.
+        const err = toUiError(e);
+        if (err.code !== "STALE" && err.code !== "CANCELLED") {
+          const d = describeError(err.code);
+          setError(`${d.title}: ${d.message}`);
+        }
+      } finally {
+        setBusy(false);
       }
-    } finally {
-      setBusy(false);
-    }
+    },
   };
+}
 
-  if (text !== null) {
-    return (
-      <div className="flex flex-col gap-2 p-3">
-        <div className="flex items-center gap-2 text-xs text-muted">
-          {side === "old" ? "Old" : "New"} content decoded as UTF-8
-          <button type="button" className="btn btn-sm ml-auto" onClick={() => setText(null)}>
-            Hide
-          </button>
-        </div>
-        <pre className="max-h-[480px] overflow-auto rounded-[6px] border border-line bg-bg p-3 font-mono text-xs leading-5 whitespace-pre-wrap break-all text-ink">
-          {text === "" ? "(empty)" : text}
-        </pre>
+/** The decoded raw text panel with its "Hide" button. */
+export function RawTextView({
+  side,
+  text,
+  onHide,
+}: {
+  side: RawSide;
+  text: string;
+  onHide: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 p-3">
+      <div className="flex items-center gap-2 text-xs text-muted">
+        {side === "old" ? "Old" : "New"} content decoded as UTF-8
+        <button type="button" className="btn btn-sm ml-auto" onClick={onHide}>
+          Hide
+        </button>
       </div>
-    );
+      <pre className="max-h-[480px] overflow-auto rounded-[6px] border border-line bg-bg p-3 font-mono text-xs leading-5 whitespace-pre-wrap break-all text-ink">
+        {text === "" ? "(empty)" : text}
+      </pre>
+    </div>
+  );
+}
+
+/** "Binary file not shown" + sizes + `View as text` escape hatch for small files (mockup E6). */
+export function BinaryNotice({ file, payload }: { file: FileDiff; payload: FileDiffPayload }) {
+  const { oldSize, newSize } = payload.classification;
+  const canView = Math.max(oldSize, newSize) < VIEW_AS_TEXT_LIMIT;
+  const side = rawSideFor(file.status);
+  const raw = useRawText(file.id, side);
+
+  if (raw.text !== null) {
+    return <RawTextView side={side} text={raw.text} onHide={raw.hide} />;
   }
   return (
     <Notice
-      detail={error ?? sizesLabel(oldSize, newSize, file.status)}
+      icon={<File size={22} aria-hidden />}
+      detail={raw.error ?? sizesLabel(oldSize, newSize, file.status)}
       action={
         canView ? (
-          <button type="button" className="btn btn-sm" disabled={busy} onClick={() => void view()}>
+          <button
+            type="button"
+            className="btn btn-sm"
+            disabled={raw.busy}
+            onClick={() => void raw.load()}
+          >
             View as text
           </button>
         ) : undefined

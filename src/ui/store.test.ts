@@ -224,6 +224,67 @@ describe("store", () => {
     expect(useStore.getState().screen).toBe("home");
   });
 
+  it("phase-attachable open errors stay on the loading screen (L4)", async () => {
+    mock.open = async () => {
+      throw { code: "INDEX_UNSUPPORTED", message: "index v5" };
+    };
+    await openBasic();
+    const s = useStore.getState();
+    expect(s.screen).toBe("loading");
+    expect(s.loading.failed?.code).toBe("INDEX_UNSUPPORTED");
+    expect(s.loading.failedStep).toBe("refs");
+    expect(s.error?.code).toBe("INDEX_UNSUPPORTED");
+    await s.closeRepo();
+    expect(useStore.getState().screen).toBe("home");
+    expect(useStore.getState().loading.failed).toBeNull();
+  });
+
+  it("a crash during open retries up to three times, bumping the attempt (L5)", async () => {
+    const original = mock.open.bind(mock);
+    let calls = 0;
+    mock.open = async (h, sink) => {
+      calls++;
+      if (calls < 3) throw { code: "WORKER_CRASHED", message: "boom" };
+      return original(h, sink);
+    };
+    await openBasic();
+    expect(calls).toBe(3);
+    expect(useStore.getState().screen).toBe("repo");
+    expect(useStore.getState().loading.attempt).toBe(3);
+
+    calls = 0;
+    mock.open = async () => {
+      calls++;
+      throw { code: "WORKER_CRASHED", message: "boom" };
+    };
+    await openBasic();
+    expect(calls).toBe(3);
+    expect(useStore.getState().screen).toBe("error");
+    expect(useStore.getState().error?.code).toBe("WORKER_CRASHED");
+  });
+
+  it("a successful open records the pair and the wall time; a missing remembered branch toasts", async () => {
+    const touched: unknown[] = [];
+    configurePersistence({
+      touchRepo: async (id, patch) => {
+        touched.push({ id, patch });
+      },
+    });
+    try {
+      await openBasic({ id: "r1", lastSource: "refs/heads/nope" });
+      const s = useStore.getState();
+      expect(s.screen).toBe("repo");
+      const last = touched.at(-1) as { id: string; patch: Record<string, unknown> };
+      expect(last.id).toBe("r1");
+      expect(last.patch.lastSource).toBe(s.diffSource?.sourceRef);
+      expect(last.patch.lastTarget).toBe(s.diffSource?.targetRef);
+      expect(typeof last.patch.lastOpenMs).toBe("number");
+      expect(s.toasts.some((t) => t.message.includes("nope no longer exists"))).toBe(true);
+    } finally {
+      configurePersistence({});
+    }
+  });
+
   it("restart from the client triggers a recompute and a toast", async () => {
     await openBasic();
     const gen = useStore.getState().diff?.generation;

@@ -79,8 +79,10 @@ describe("TopBar row 1", () => {
     expect(baseTrigger().textContent).toContain("default");
     expect(compareTrigger().textContent).toContain("feature");
     expect(compareTrigger().textContent).toContain("HEAD");
-    expect(screen.getByText(/12 files changed/)).toBeTruthy();
-    expect(screen.getByText("0 / 12 viewed")).toBeTruthy();
+    // Row 2 (StatsRow): the count is `<b>12</b> files changed`, so the number is its own node.
+    const count = screen.getByText(/files changed/);
+    expect(count.textContent).toBe("12 files changed");
+    expect(screen.getByTestId("viewed-count").textContent).toBe("0 / 12 viewed");
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("0");
   });
 

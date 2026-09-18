@@ -1,14 +1,16 @@
-import { CircleX } from "lucide-react";
+import { CircleX, Zap } from "lucide-react";
 import { Component, type CSSProperties, type ReactNode, useEffect, useState } from "react";
 import type { FileDiffPayload } from "../../engine/api";
 import type { FileDiff } from "../../engine/types";
 import { hasCollapsedContext } from "../diff/toHunkData";
+import { describeError, errorReport, type UiError } from "../errors";
 import { isViewed, selectFileDiff, useStore } from "../store";
 import { filePathOf } from "../treeModel";
-import { BinaryNotice } from "./BinaryNotice";
+import { BinaryNotice, RawTextView, rawSideFor, useRawText } from "./BinaryNotice";
 import { DiffBody } from "./DiffBody";
 import { FileHeader } from "./FileHeader";
 import { ImageDiff } from "./ImageDiff";
+import { renderInline } from "./InlineText";
 import { LargeFileGate } from "./LargeFileGate";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { Notice } from "./Notice";
@@ -31,11 +33,19 @@ interface BoundaryProps {
 interface BoundaryState {
   error: Error | null;
   showRaw: boolean;
+  copied: "idle" | "done" | "failed";
 }
 
-/** Per-card error boundary (T5.3 amendment): a renderer crash never unmounts the pane. */
-class CardErrorBoundary extends Component<BoundaryProps, BoundaryState> {
-  state: BoundaryState = { error: null, showRaw: false };
+/** How long the "Copy report" button keeps its Copied / Copy failed label. */
+const COPIED_MS = 1500;
+
+/**
+ * Per-card error boundary (T5.3 amendment): a renderer crash never unmounts the pane. Exported
+ * so `notices.test.tsx` can drive the E6 "Couldn't render this diff" notice directly.
+ */
+export class CardErrorBoundary extends Component<BoundaryProps, BoundaryState> {
+  state: BoundaryState = { error: null, showRaw: false, copied: "idle" };
+  private copyTimer: ReturnType<typeof setTimeout> | null = null;
 
   static getDerivedStateFromError(error: Error): Partial<BoundaryState> {
     return { error };
@@ -43,23 +53,48 @@ class CardErrorBoundary extends Component<BoundaryProps, BoundaryState> {
 
   componentDidUpdate(prev: BoundaryProps): void {
     if (prev.resetKey !== this.props.resetKey && this.state.error) {
-      this.setState({ error: null, showRaw: false });
+      this.setState({ error: null, showRaw: false, copied: "idle" });
     }
   }
 
+  componentWillUnmount(): void {
+    if (this.copyTimer !== null) clearTimeout(this.copyTimer);
+  }
+
+  private copyReport = async (): Promise<void> => {
+    const text = errorReport({ code: "INTERNAL", message: String(this.state.error) });
+    try {
+      if (!navigator.clipboard) throw new Error("clipboard unavailable");
+      await navigator.clipboard.writeText(text);
+      this.setState({ copied: "done" });
+    } catch {
+      // The report is still readable in the code line below; only the label reports the failure.
+      this.setState({ copied: "failed" });
+    }
+    if (this.copyTimer !== null) clearTimeout(this.copyTimer);
+    this.copyTimer = setTimeout(() => this.setState({ copied: "idle" }), COPIED_MS);
+  };
+
   render(): ReactNode {
     if (!this.state.error) return this.props.children;
+    const copyLabel =
+      this.state.copied === "done"
+        ? "Copied"
+        : this.state.copied === "failed"
+          ? "Copy failed"
+          : "Copy report";
     return (
       <>
         <Notice
           tone="danger"
-          icon={<CircleX size={16} aria-hidden />}
+          icon={<Zap size={22} aria-hidden />}
+          detail="The renderer threw. This is a diffgit bug; the raw diff is intact."
           action={
             <>
               <button
                 type="button"
                 className="btn btn-sm"
-                onClick={() => this.setState({ error: null, showRaw: false })}
+                onClick={() => this.setState({ error: null, showRaw: false, copied: "idle" })}
               >
                 Retry
               </button>
@@ -70,6 +105,13 @@ class CardErrorBoundary extends Component<BoundaryProps, BoundaryState> {
                 onClick={() => this.setState((s) => ({ showRaw: !s.showRaw }))}
               >
                 View raw
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                onClick={() => void this.copyReport()}
+              >
+                {copyLabel}
               </button>
             </>
           }
@@ -84,6 +126,48 @@ class CardErrorBoundary extends Component<BoundaryProps, BoundaryState> {
       </>
     );
   }
+}
+
+/**
+ * E6 (1): the per-file load failure. The sentence is `describeError`'s, the code line carries the
+ * public code and the engine message, and "View raw" decodes the bytes the diff could not.
+ */
+function LoadErrorNotice({ file, error }: { file: FileDiff; error: UiError }) {
+  const loadFileDiff = useStore((s) => s.loadFileDiff);
+  const side = rawSideFor(file.status);
+  const raw = useRawText(file.id, side);
+  if (raw.text !== null) {
+    return <RawTextView side={side} text={raw.text} onHide={raw.hide} />;
+  }
+  return (
+    <Notice
+      tone="danger"
+      icon={<CircleX size={22} aria-hidden />}
+      detail={
+        raw.error ?? (
+          <>{renderInline(describeError(error.code).message, "mono")} Other files are unaffected.</>
+        )
+      }
+      code={`${error.code} · ${error.message}`}
+      action={
+        <>
+          <button type="button" className="btn btn-sm" onClick={() => void loadFileDiff(file.id)}>
+            Retry
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm"
+            disabled={raw.busy}
+            onClick={() => void raw.load()}
+          >
+            View raw
+          </button>
+        </>
+      }
+    >
+      Couldn't load this diff
+    </Notice>
+  );
 }
 
 function changedLines(stats: FileDiff["stats"]): string {
@@ -208,20 +292,7 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
     } else if (!entry || entry.status === "loading") {
       body = <LoadingSkeleton />;
     } else if (entry.status === "error") {
-      body = (
-        <Notice
-          tone="danger"
-          icon={<CircleX size={16} aria-hidden />}
-          detail={entry.error.message}
-          action={
-            <button type="button" className="btn btn-sm" onClick={() => void loadFileDiff(id)}>
-              Retry
-            </button>
-          }
-        >
-          Couldn't load this diff
-        </Notice>
-      );
+      body = <LoadErrorNotice file={file} error={entry.error} />;
     } else {
       body = renderReady(entry.data);
     }

@@ -4,9 +4,10 @@ import type { DiffResult, FileDiff, RepoInfo } from "../../engine/types";
 import basicDiff from "../../test/recorded/showcase.diffresult.json";
 import basic from "../../test/recorded/showcase.repoinfo.json";
 import worktreeDiff from "../../test/recorded/showcase-worktree.diffresult.json";
+import { Lru } from "../lru";
 import { syntheticLarge } from "../mock/syntheticLarge";
 import { onScrollRequest } from "../scrollBus";
-import { DEFAULT_PREFS, type StoreState, useStore } from "../store";
+import { DEFAULT_PREFS, type FileDiffEntry, type StoreState, useStore } from "../store";
 import { Sidebar } from "./Sidebar";
 
 if (!Element.prototype.scrollIntoView) Element.prototype.scrollIntoView = () => {};
@@ -260,5 +261,49 @@ describe("Sidebar / FileTree", () => {
     expect(screen.getByRole("button", { name: "Tree" }).getAttribute("aria-pressed")).toBe("true");
     fireEvent.click(screen.getByRole("button", { name: "Flat" }));
     expect(a.setPref).toHaveBeenCalledWith("sidebarLayout", "flat");
+  });
+});
+
+describe("RowStats marks (S3)", () => {
+  it("shows a different mark for gated, binary and failed files", () => {
+    const files = [
+      file("dist/bundle.js", { tooLarge: true, stats: null }),
+      file("public/logo.png", { binary: true, stats: null }),
+      file("src/api/orders.ts"),
+      file("src/pending.ts", { stats: null }),
+    ];
+    const lru = new Lru<string, FileDiffEntry>(200);
+    lru.set("src/api/orders.ts|x", {
+      status: "error",
+      error: { code: "IO_ERROR", message: "boom" },
+    });
+    const loadFileDiff = vi.fn(async () => {});
+    seed({
+      diff: { ...diff, files, totals: { files: 4, additions: 0, deletions: 0 } },
+      fileDiffs: lru,
+      loadFileDiff,
+    });
+    render(<Sidebar />);
+
+    const gated = screen.getByTitle("dist/bundle.js");
+    expect(gated.textContent).toContain("> 1 MB");
+    expect(gated.querySelector('[title="Over 1 MB — Load diff in the card"]')).toBeTruthy();
+
+    expect(
+      screen.getByTitle("public/logo.png").querySelector('[aria-label="Binary file"]'),
+    ).toBeTruthy();
+
+    const retry = screen
+      .getByTitle("src/api/orders.ts")
+      .querySelector<HTMLButtonElement>('[aria-label="Stats failed: retry"]');
+    expect(retry?.textContent).toBe("retry");
+    fireEvent.click(retry as HTMLButtonElement);
+    expect(loadFileDiff).toHaveBeenCalledWith("src/api/orders.ts");
+    // clicking retry must not also activate the row
+    expect(useStore.getState().setActiveFile).not.toHaveBeenCalled();
+
+    expect(
+      screen.getByTitle("src/pending.ts").querySelector('[aria-label="Loading stats"]'),
+    ).toBeTruthy();
   });
 });

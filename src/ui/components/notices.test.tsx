@@ -3,12 +3,13 @@ import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DiffResult, FileDiff } from "../../engine/types";
 import basicDiff from "../../test/recorded/showcase.diffresult.json";
+import { describeError } from "../errors";
 import { describeMode, formatBytes, formatLines } from "../format";
 import { Lru } from "../lru";
 import { mockPayload } from "../mock/mockContents";
 import { DEFAULT_PREFS, type FileDiffEntry, useStore } from "../store";
 import { BinaryNotice, sizesLabel } from "./BinaryNotice";
-import { FileCard } from "./FileCard";
+import { CardErrorBoundary, FileCard } from "./FileCard";
 import { ImageDiff, mimeFor } from "./ImageDiff";
 import { LargeFileGate } from "./LargeFileGate";
 import { Notice } from "./Notice";
@@ -164,7 +165,12 @@ describe("LargeFileGate", () => {
       />,
     );
     expect(screen.getByText("Diff too large to display")).toBeTruthy();
-    expect(screen.getByText("11.4 MB → 11.9 MB")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Old 11.4 MB · new 11.9 MB. Files over 10 MB per side are not compared in the browser.",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText("TOO_LARGE")).toBeTruthy();
     expect(screen.queryByRole("button")).toBeNull();
   });
 });
@@ -285,5 +291,108 @@ describe("FileCard wiring", () => {
     render(<FileCard file={link} index={0} />);
     expect(screen.getByRole("note").textContent).toBe("Symlink to regular file");
     expect(await screen.findByRole("table")).toBeTruthy();
+  });
+});
+
+describe("E6 in-card failure notices", () => {
+  function seedCard(f: FileDiff, entry: FileDiffEntry, bytes?: BytesFn) {
+    const lru = new Lru<string, FileDiffEntry>(200);
+    lru.set(`${f.id}|x`, entry);
+    const loadFileDiff = vi.fn(async () => {});
+    useStore.setState({
+      screen: "repo",
+      diff,
+      stats: {},
+      viewed: new Set(),
+      collapsed: new Set(),
+      prefs: DEFAULT_PREFS,
+      fileDiffs: lru,
+      loadFileDiff,
+      cancelFileDiff: vi.fn(),
+      setCollapsed: vi.fn(),
+      toggleViewed: vi.fn(),
+      setPref: vi.fn(),
+      fileBytes: vi.fn<BytesFn>(bytes ?? (async () => new Uint8Array(0))),
+    });
+    return loadFileDiff;
+  }
+
+  it("load error: describeError sentence, code line, Retry and View raw", async () => {
+    const f = byId("docs/guide.md");
+    const bytes = vi.fn<BytesFn>(async () => new TextEncoder().encode("raw file text"));
+    const loadFileDiff = seedCard(
+      f,
+      { status: "error", error: { code: "IO_ERROR", message: "NotReadableError" } },
+      bytes,
+    );
+    render(<FileCard file={f} index={0} />);
+    expect(screen.getByText("Couldn't load this diff")).toBeTruthy();
+    expect(
+      screen.getByText(`${describeError("IO_ERROR").message} Other files are unaffected.`),
+    ).toBeTruthy();
+    expect(screen.getByText("IO_ERROR · NotReadableError")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(loadFileDiff).toHaveBeenCalledWith("docs/guide.md");
+
+    fireEvent.click(screen.getByRole("button", { name: "View raw" }));
+    expect(bytes).toHaveBeenCalledWith("docs/guide.md", "new");
+    await waitFor(() => expect(screen.getByText("raw file text")).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Hide" }));
+    expect(screen.getByText("Couldn't load this diff")).toBeTruthy();
+  });
+
+  it("deleted files read their old side for View raw", async () => {
+    const f: FileDiff = { ...byId("docs/guide.md"), status: "deleted" };
+    const bytes = vi.fn<BytesFn>(async () => new Uint8Array(0));
+    seedCard(f, { status: "error", error: { code: "IO_ERROR", message: "x" } }, bytes);
+    render(<FileCard file={f} index={0} />);
+    fireEvent.click(screen.getByRole("button", { name: "View raw" }));
+    await waitFor(() => expect(bytes).toHaveBeenCalledWith("docs/guide.md", "old"));
+  });
+
+  it("render crash: the zap notice, Retry, View raw and a copyable report", async () => {
+    const quiet = vi.spyOn(console, "error").mockImplementation(() => {});
+    const writeText = vi.fn(async (_text: string) => {});
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+    const Boom = () => {
+      throw new Error("render exploded");
+    };
+    render(
+      <CardErrorBoundary raw="RAW DIFF TEXT" resetKey={1}>
+        <Boom />
+      </CardErrorBoundary>,
+    );
+    expect(screen.getByText("Couldn't render this diff")).toBeTruthy();
+    expect(
+      screen.getByText("The renderer threw. This is a diffgit bug; the raw diff is intact."),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "View raw" }));
+    expect(screen.getByText("RAW DIFF TEXT")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy report" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Copied" })).toBeTruthy());
+    expect(writeText.mock.calls[0]?.[0]).toContain("code: INTERNAL");
+    expect(writeText.mock.calls[0]?.[0]).toContain("render exploded");
+    quiet.mockRestore();
+  });
+
+  it("render crash: a failed copy says so on the button", async () => {
+    const quiet = vi.spyOn(console, "error").mockImplementation(() => {});
+    Object.defineProperty(navigator, "clipboard", { value: undefined, configurable: true });
+    const Boom = () => {
+      throw new Error("nope");
+    };
+    render(
+      <CardErrorBoundary raw={null} resetKey={1}>
+        <Boom />
+      </CardErrorBoundary>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Copy report" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Copy failed" })).toBeTruthy());
+    quiet.mockRestore();
   });
 });

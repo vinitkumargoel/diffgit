@@ -1,0 +1,1257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>diffgit — Home history, loading, stats, errors, browser gate · review</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Cpath d='M10 10.5v11' fill='none' stroke='%23e6edf3' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M22 12.6c0 6-12 3.4-12 9' fill='none' stroke='%233fb950' stroke-width='2.4' stroke-linecap='round'/%3E%3Ccircle cx='10' cy='8' r='2.6' fill='%23e6edf3'/%3E%3Ccircle cx='10' cy='24' r='2.6' fill='%23e6edf3'/%3E%3Ccircle cx='22' cy='10' r='2.6' fill='%233fb950'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#ffffff; --bg2:#fafbfc; --surface:#ffffff; --raised:#f6f8fa; --line:#e6e8eb; --line2:#d0d7de;
+  --ink:#0b0c0e; --ink2:#3a3f46; --muted:#6b7280; --dim:#9aa1aa;
+  --green:#1a7f37; --green-bg:#dafbe1; --blue:#0969da; --blue-bg:#ddf4ff; --red:#cf222e; --red-bg:#ffebe9; --yellow:#9a6700; --yellow-bg:#fff8c5; --purple:#6639ba; --purple-bg:#fbefff;
+  --add:#e6ffec; --add-n:#ccffd8; --del:#ffebe9; --del-n:#ffd7d5; --hunk:#ddf4ff;
+  --track:#e7ecf0; --shadow:0 16px 40px -16px rgba(11,12,14,.24),0 1px 2px rgba(11,12,14,.06);
+  --font:"Inter",system-ui,sans-serif; --display:"Inter Tight","Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0d1117; --bg2:#0b0f14; --surface:#0d1117; --raised:#161b22; --line:#21262d; --line2:#30363d;
+  --ink:#f0f3f6; --ink2:#c9d1d9; --muted:#8b949e; --dim:#57606a;
+  --green:#3fb950; --green-bg:#12261e; --blue:#58a6ff; --blue-bg:#121d2f; --red:#f85149; --red-bg:#25171c; --yellow:#d29922; --yellow-bg:#2d2a16; --purple:#a371f7; --purple-bg:#271e3a;
+  --add:#12261e; --add-n:#1b4d2b; --del:#25171c; --del-n:#5d2426; --hunk:#121d2f;
+  --track:#21262d; --shadow:0 16px 40px -16px #010409,0 1px 2px rgba(1,4,9,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0d1117; --bg2:#0b0f14; --surface:#0d1117; --raised:#161b22; --line:#21262d; --line2:#30363d;
+  --ink:#f0f3f6; --ink2:#c9d1d9; --muted:#8b949e; --dim:#57606a;
+  --green:#3fb950; --green-bg:#12261e; --blue:#58a6ff; --blue-bg:#121d2f; --red:#f85149; --red-bg:#25171c; --yellow:#d29922; --yellow-bg:#2d2a16; --purple:#a371f7; --purple-bg:#271e3a;
+  --add:#12261e; --add-n:#1b4d2b; --del:#25171c; --del-n:#5d2426; --hunk:#121d2f;
+  --track:#21262d; --shadow:0 16px 40px -16px #010409,0 1px 2px rgba(1,4,9,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+a{color:inherit;text-decoration:none}
+.mono{font-family:var(--mono)}
+kbd{font-family:var(--mono);font-size:11px;padding:0 5px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;background:var(--raised);color:var(--ink2)}
+svg{display:inline-block;vertical-align:middle}
+.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ===== review chrome ===== */
+.wrap{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}}
+.side{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);padding:20px 18px;background:var(--bg2);font-size:13px}
+.side .brand{display:flex;align-items:center;gap:9px;font:600 15px var(--display);letter-spacing:-.01em;margin-bottom:6px}
+.side .brand svg{width:24px;height:24px;border-radius:6px}
+.side .brand i{font-style:normal;color:var(--green)}
+.side .sub{color:var(--muted);font-size:12px;margin-bottom:18px}
+.side h4{font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin:16px 0 6px}
+.side a{display:flex;justify-content:space-between;gap:8px;padding:5px 8px;margin:0 -8px;border-radius:6px;color:var(--ink2)}
+.side a:hover{background:var(--raised);color:var(--ink)}
+.side a code{font:500 11px var(--mono);color:var(--dim)}
+.side .tog{margin-top:22px;display:flex;gap:6px}
+.side .tog button{flex:1;font:500 12px var(--font);padding:5px 0;border:1px solid var(--line2);border-radius:6px;background:var(--surface);color:var(--ink2);cursor:pointer}
+.side .tog button.on{color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.main{padding:0 0 120px;min-width:0}
+.sec{padding:56px 48px;border-bottom:1px solid var(--line)}
+@media (max-width:760px){.sec{padding:40px 20px}}
+.sec>.num{font:500 13px var(--mono);color:var(--green);display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.sec>.num::after{content:"";height:1px;width:40px;background:var(--line2)}
+.sec>h2{font-family:var(--display);font-size:clamp(28px,3.4vw,40px);letter-spacing:-.04em;line-height:1.05;margin:0 0 12px;font-weight:500}
+.sec>.lede{color:var(--muted);max-width:720px;margin:0 0 8px;font-size:16px}
+.sec>.lede b{color:var(--ink);font-weight:500}
+.rules{max-width:720px;margin:14px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rules li{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.rules li span:first-child{font:500 12px var(--mono);color:var(--muted);padding-top:2px}
+.rules li b{font-weight:500}
+.spec{display:flex;flex-direction:column;gap:36px;margin-top:36px}
+.var{scroll-margin-top:24px}
+.var .tag{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px;color:var(--muted)}
+.var .tag code{font:600 11px var(--mono);color:var(--ink);background:var(--raised);border:1px solid var(--line2);padding:1px 7px;border-radius:999px}
+.var .tag b{color:var(--ink);font-weight:500}
+.var .tag .why{color:var(--dim)}
+.var .tag .when{margin-left:auto;font:12px var(--mono);color:var(--dim)}
+.stage{border:1px solid var(--line2);border-radius:14px;background:var(--surface);overflow:hidden;box-shadow:0 30px 80px -50px rgba(0,0,0,.35)}
+.stage.app{background:var(--bg)}
+.note{margin:10px 2px 0;font-size:13px;color:var(--muted);max-width:760px}
+.note b{color:var(--ink);font-weight:500}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:1100px){.grid2{grid-template-columns:1fr}}
+
+/* ===== shared product primitives (Precision) ===== */
+.btn{display:inline-flex;align-items:center;gap:8px;font:500 14px var(--font);padding:9px 14px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);cursor:pointer;white-space:nowrap;transition:.15s}
+.btn:hover{background:var(--raised)}
+.btn-ink{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn-lg{font-size:15px;padding:13px 20px;border-radius:10px}
+.btn-sm{font-size:12.5px;padding:5px 10px;border-radius:6px}
+.btn-xs{font-size:11.5px;padding:2px 8px;border-radius:5px;gap:5px}
+.btn-ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn-ghost:hover{background:var(--raised);color:var(--ink)}
+.btn-danger{color:var(--red)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.badge{font:600 10px var(--font);padding:0 5px;border-radius:999px;border:1px solid;line-height:15px}
+.badge.default{color:var(--blue);border-color:color-mix(in srgb,var(--blue) 50%,transparent);background:var(--blue-bg)}
+.badge.head{color:var(--green);border-color:color-mix(in srgb,var(--green) 50%,transparent);background:var(--green-bg)}
+.chip{font:600 9.5px/15px var(--font);padding:0 5px;border-radius:999px;border:1px solid;flex:none}
+.chip.staged{background:var(--green-bg);color:var(--green);border-color:color-mix(in srgb,var(--green) 45%,transparent)}
+.chip.unstaged{background:var(--yellow-bg);color:var(--yellow);border-color:color-mix(in srgb,var(--yellow) 45%,transparent)}
+.chip.untracked{background:var(--purple-bg);color:var(--purple);border-color:color-mix(in srgb,var(--purple) 45%,transparent)}
+.chip.conflict{background:var(--red-bg);color:var(--red);border-color:color-mix(in srgb,var(--red) 45%,transparent)}
+.st{width:16px;height:16px;border-radius:4px;font:700 10px/16px var(--mono);text-align:center;flex:none;display:inline-block}
+.st.M{background:var(--yellow-bg);color:var(--yellow)}.st.A{background:var(--green-bg);color:var(--green)}.st.D{background:var(--red-bg);color:var(--red)}.st.R{background:var(--blue-bg);color:var(--blue)}.st.T{background:var(--purple-bg);color:var(--purple)}
+.plus{color:var(--green);font-family:var(--mono)}.minus{color:var(--red);font-family:var(--mono)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none}
+.dot.g{background:var(--green)}.dot.y{background:var(--yellow)}.dot.r{background:var(--red)}.dot.m{background:var(--dim)}.dot.b{background:var(--blue)}
+.spin{animation:spin 1s linear infinite;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.pair{font:12.5px var(--mono);color:var(--ink2);display:inline-flex;align-items:center;gap:6px}
+.pair .arr{color:var(--dim)}
+.pair .b{color:var(--blue)}.pair .c{color:var(--green)}
+.skl{display:inline-block;height:10px;border-radius:3px;background:var(--raised);vertical-align:middle}
+.pbar{height:6px;border-radius:3px;background:var(--track);overflow:hidden;position:relative}
+.pbar>i{display:block;height:100%;background:var(--green);border-radius:3px}
+.pbar>i.b{background:var(--blue)}
+.pbar>i.ind{width:35%;position:absolute;left:-35%;animation:ind 1.4s ease-in-out infinite}
+@keyframes ind{to{left:100%}}
+.toast{display:flex;align-items:flex-start;gap:8px;width:360px;max-width:100%;padding:12px 16px;border:1px solid var(--line2);border-radius:6px;background:var(--surface);box-shadow:var(--shadow);font-size:13px;line-height:20px}
+.toast .ic{margin-top:2px;width:14px;height:14px}
+.toast .ac{margin-left:auto;color:var(--blue);font-weight:500;white-space:nowrap}
+.toast .x{color:var(--muted)}
+.toast .ic.r{color:var(--red)}.toast .ic.y{color:var(--yellow)}.toast .ic.b{color:var(--blue)}
+
+/* ===== landing pieces (from precision.css, trimmed) ===== */
+.nav{display:flex;align-items:center;gap:32px;height:64px;padding:0 40px;border-bottom:1px solid var(--line);background:var(--surface)}
+.nav .brand{display:flex;align-items:center;gap:10px;font:600 16px var(--display);letter-spacing:-.01em}
+.nav .brand svg{width:28px;height:28px;border-radius:8px}
+.nav .brand i{font-style:normal;color:var(--green)}
+.nav .links{display:flex;gap:24px;margin-left:auto;font-size:14px;color:var(--muted)}
+.hero{padding:64px 40px 48px;display:grid;grid-template-columns:1fr 360px;gap:48px;align-items:end}
+@media (max-width:1000px){.hero{grid-template-columns:1fr}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font:500 13px var(--mono);color:var(--muted)}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.hero h1{font-family:var(--display);font-size:clamp(36px,4.6vw,60px);line-height:.98;letter-spacing:-.045em;font-weight:500;margin:18px 0 20px;max-width:14ch}
+.hero h1 em{font-style:normal;color:var(--green)}
+.lede2{font-size:17px;color:var(--muted);max-width:560px;margin:0 0 28px;line-height:1.5}
+.lede2 b{color:var(--ink);font-weight:500}
+.cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.cta small{color:var(--dim);font-size:13px;margin-left:6px}
+.facts{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.facts div{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.facts div span:first-child{color:var(--muted)}
+.facts div span:last-child{font-family:var(--mono);font-size:13px}
+.facts .g{color:var(--green)}
+
+/* ===== Recent panel ===== */
+.recent{border-top:1px solid var(--line)}
+.recent .hd{display:flex;align-items:center;gap:10px;padding:10px 0 8px;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.recent .hd .n{color:var(--dim);font-weight:500}
+.recent .hd .r{margin-left:auto;display:flex;gap:10px;font:500 12px var(--font);text-transform:none;letter-spacing:0}
+.recent .hd .r a{color:var(--muted)}.recent .hd .r a:hover{color:var(--ink)}
+.rrow{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:10px;min-height:44px;padding:6px 8px;margin:0 -8px;border-radius:8px;cursor:pointer;position:relative}
+.rrow:hover,.rrow.hover{background:var(--raised)}
+.rrow.focus{box-shadow:inset 0 0 0 2px var(--blue)}
+.rrow .ic{color:var(--muted)}
+.rrow .nm{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.rrow .nm b{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .nm .m{font:11.5px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;gap:8px;align-items:center}
+.rrow .nm .m .b{color:var(--blue)}.rrow .nm .m .c{color:var(--green)}
+.rrow .rt{display:flex;align-items:center;gap:8px;font:11.5px var(--mono);color:var(--dim);white-space:nowrap}
+.rrow .x{opacity:0;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:5px;color:var(--muted)}
+.rrow:hover .x,.rrow.hover .x{opacity:1}.rrow .x:hover{background:var(--line);color:var(--ink)}
+.rrow.dis{opacity:.55;cursor:default}
+.rsep{border-top:1px solid var(--line)}
+.rmsg{display:flex;align-items:center;gap:8px;padding:6px 8px 8px 38px;font-size:12.5px;color:var(--muted)}
+.rmsg.bad{color:var(--red)}
+.rmsg .btn-xs{margin-left:4px}
+.rmsg .ic{width:13px;height:13px}
+.recent .ft{display:flex;justify-content:space-between;align-items:center;padding:10px 0 0;font-size:12px;color:var(--dim)}
+.recent .ft a{color:var(--muted)}.recent .ft a:hover{color:var(--ink)}
+.rsearch{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:6px;padding:4px 8px;margin:6px 0 8px;background:var(--surface);color:var(--dim);font-size:12.5px}
+.rsearch .ic{width:13px;height:13px}
+.rsearch input{border:0;outline:0;background:transparent;font:12.5px var(--font);color:var(--ink);flex:1}
+.contin{border:1px solid var(--line2);border-radius:12px;background:var(--surface);padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.contin .t{display:flex;align-items:center;gap:8px;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.contin .t .rt{margin-left:auto;font-weight:500;text-transform:none;letter-spacing:0}
+.contin .nmrow{display:flex;align-items:center;gap:10px}
+.contin .nmrow b{font:600 18px var(--display);letter-spacing:-.01em}
+.contin .nmrow svg{width:22px;height:22px;border-radius:6px}
+.contin .meta{display:grid;grid-template-columns:auto auto;gap:6px 18px;font-size:13px;color:var(--muted)}
+.contin .meta .v{color:var(--ink2);font-family:var(--mono);font-size:12.5px;display:flex;align-items:center;gap:6px}
+.contin .acts{display:flex;gap:8px;align-items:center;margin-top:2px}
+.contin .acts .btn-ghost{margin-left:auto}
+.nav .rec{display:inline-flex;align-items:center;gap:6px;font:500 13px var(--font);padding:6px 10px;border:1px solid var(--line2);border-radius:8px;color:var(--ink2);position:relative}
+.nav .rec .ic{width:14px;height:14px}
+.navpop{position:absolute;right:0;top:calc(100% + 8px);width:360px;background:var(--surface);border:1px solid var(--line2);border-radius:10px;box-shadow:var(--shadow);padding:8px;z-index:5;text-align:left;font-size:13px}
+.navpop .rrow{min-height:38px;margin:0}
+.navpop .hd{padding:6px 8px 4px;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.navpop .ft{border-top:1px solid var(--line);margin-top:6px;padding:8px 8px 2px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+/* ===== loading ===== */
+.load{max-width:560px;margin:0 auto;padding:56px 24px 48px;display:flex;flex-direction:column;gap:22px}
+.load .who{display:flex;align-items:center;gap:12px}
+.load .who svg{width:32px;height:32px;border-radius:8px}
+.load .who h3{margin:0;font:600 22px var(--display);letter-spacing:-.02em;line-height:1.1}
+.load .who .pair{margin-top:2px}
+.load .who .el{margin-left:auto;font:12px var(--mono);color:var(--dim);text-align:right;line-height:1.4}
+.load .who .el b{display:block;color:var(--muted);font-weight:500}
+.phases{border-top:1px solid var(--line);margin:0;padding:0;list-style:none}
+.phases li{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:12px;min-height:44px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.phases li .ic{width:16px;height:16px}
+.phases li.done .ic{color:var(--green)}
+.phases li.cur .ic{color:var(--blue)}
+.phases li.pend{color:var(--dim)}
+.phases li.fail .ic{color:var(--red)}
+.phases li .lb{display:flex;flex-direction:column;line-height:1.3;min-width:0}
+.phases li .lb b{font-weight:500}
+.phases li .lb span{font:11.5px var(--mono);color:var(--muted)}
+.phases li.cur .lb span{color:var(--ink2)}
+.phases li .ct{font:12.5px var(--mono);color:var(--muted);text-align:right;min-width:90px}
+.phases li.done .ct{color:var(--dim)}
+.phases li .sub{grid-column:2/4;margin-top:4px}
+.phases li .sub .pbar{width:100%}
+.phases li .sub small{display:block;margin-top:5px;font:11.5px var(--mono);color:var(--muted)}
+.load .foot{display:flex;align-items:center;gap:10px}
+.load .foot .hint{font-size:12.5px;color:var(--dim);margin-left:auto}
+.callout{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid;border-radius:8px;font-size:13px;line-height:19px}
+.callout .ic{width:14px;height:14px;margin-top:2px}
+.callout.y{background:var(--yellow-bg);border-color:color-mix(in srgb,var(--yellow) 55%,transparent)}.callout.y .ic{color:var(--yellow)}
+.callout.b{background:var(--blue-bg);border-color:color-mix(in srgb,var(--blue) 45%,transparent)}.callout.b .ic{color:var(--blue)}
+.callout.r{background:var(--red-bg);border-color:color-mix(in srgb,var(--red) 50%,transparent)}.callout.r .ic{color:var(--red)}
+.callout b{font-weight:600}
+.callout .acts{display:flex;gap:8px;margin-top:8px}
+.callout p{margin:0}
+.callout .muted{color:var(--muted)}
+
+/* ===== app top bar + stats ===== */
+.top{display:flex;align-items:center;gap:10px;height:44px;padding:0 12px;background:var(--raised);border-bottom:1px solid var(--line)}
+.top .repo{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.top .repo svg{width:20px;height:20px;border-radius:5px}
+.sel{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:6px;padding:3px 8px;background:var(--surface);font-family:var(--mono);font-size:12px}
+.sel .lbl{font-family:var(--font);color:var(--muted);font-size:11.5px}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:12.5px}
+.top label{display:inline-flex;align-items:center;gap:6px}
+.top input[type=checkbox]{accent-color:var(--blue);width:14px;height:14px;margin:0}
+.live{display:inline-flex;align-items:center;gap:6px;color:var(--green);font-weight:500}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green)}
+.live.poll{color:var(--yellow)}.live.poll::before{background:var(--yellow)}
+.live.man{color:var(--muted)}.live.man::before{background:var(--dim)}
+.stats{display:flex;align-items:center;gap:12px;min-height:40px;padding:0 12px;border-bottom:1px solid var(--line);color:var(--muted);font-size:12.5px;background:var(--surface);flex-wrap:wrap}
+.stats b{color:var(--ink);font-weight:600}
+.stats .sep{width:1px;height:18px;background:var(--line2)}
+.stats .grp{display:inline-flex;align-items:center;gap:6px}
+.stats .grp .st{width:15px;height:15px;line-height:15px;font-size:9.5px}
+.stats .grp .n{font-family:var(--mono);color:var(--ink2);font-size:12px}
+.stats .chips{display:inline-flex;gap:5px;align-items:center}
+.stats .chips .n{font-family:var(--mono);color:var(--muted);font-size:11.5px;margin-left:-1px}
+.stats .viewed{display:inline-flex;align-items:center;gap:8px}
+.stats .viewed .pbar{width:80px}
+.stats .filter{margin-left:auto;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:6px;padding:2px 8px;background:var(--surface);font-size:12.5px}
+.stats .filter .ic{width:13px;height:13px}
+.stats .filter .v{color:var(--ink);min-width:110px}
+.stats .filter .ph{color:var(--dim);min-width:110px}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden}
+.seg span{padding:3px 10px;font:500 11.5px var(--font);background:var(--surface);color:var(--ink2)}
+.seg span.on{background:var(--raised);color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.stats .dim{opacity:.55}
+.stats .link{color:var(--blue);cursor:pointer}
+.stats .link:hover{text-decoration:underline}
+.stats .warn{color:var(--yellow);display:inline-flex;align-items:center;gap:5px}
+.stats .warn .ic{width:13px;height:13px}
+.stats .busy{display:inline-flex;align-items:center;gap:6px;color:var(--blue)}
+.stats .busy .ic{width:13px;height:13px}
+.banner{display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid;font-size:12.5px;line-height:18px}
+.banner .ic{width:14px;height:14px}
+.banner b{font-weight:600}
+.banner .x{margin-left:auto;color:var(--muted)}
+.banner .x .ic{width:14px;height:14px}
+.banner.w{background:var(--yellow-bg);border-color:color-mix(in srgb,var(--yellow) 60%,transparent)}.banner.w .ic:first-child{color:var(--yellow)}
+.banner.i{background:var(--blue-bg);border-color:color-mix(in srgb,var(--blue) 50%,transparent)}.banner.i .ic:first-child{color:var(--blue)}
+.banner.e{background:var(--red-bg);border-color:color-mix(in srgb,var(--red) 50%,transparent)}.banner.e .ic:first-child{color:var(--red)}
+.banner .det{color:var(--muted)}
+.banner .lk{color:var(--blue);margin-left:6px}
+.bodyrow{display:grid;grid-template-columns:280px 1fr;min-height:150px}
+.tree{border-right:1px solid var(--line);background:var(--bg2);padding:6px 0}
+.tree .h{display:flex;align-items:center;gap:6px;padding:6px 12px 8px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.tree .h .seg{margin-left:auto}.tree .h .seg span{padding:1px 7px;font-size:10.5px}
+.frow{display:flex;align-items:center;gap:7px;height:26px;padding:0 12px;font-family:var(--mono);font-size:12px;color:var(--ink2);white-space:nowrap}
+.frow .p{overflow:hidden;text-overflow:ellipsis}.frow .p i{font-style:normal;color:var(--dim)}
+.frow .n{margin-left:auto;font-size:11px;color:var(--muted)}
+.frow .n b{color:var(--green);font-weight:500}.frow .n i{color:var(--red);font-style:normal}
+.frow .n .skl{width:32px}
+.frow .n .dash{color:var(--dim)}
+.frow .n .bad{color:var(--red);display:inline-flex;align-items:center;gap:3px}.frow .n .bad .ic{width:11px;height:11px}
+.tick{width:14px;height:14px;border:1px solid var(--line2);border-radius:3px;flex:none;background:var(--surface);position:relative}
+.tick.on{background:var(--green);border-color:var(--green)}
+.tick.on::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.pane{padding:14px;background:var(--bg)}
+.card{border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:var(--surface)}
+.card .fh{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;background:var(--raised);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px}
+.card .fh .n{font-size:11px;color:var(--muted)}.card .fh .n b{color:var(--green);font-weight:500}.card .fh .n i{color:var(--red);font-style:normal}
+.card .fh .rt{margin-left:auto;display:flex;gap:6px;align-items:center;font-family:var(--font);font-size:11.5px;color:var(--muted)}
+.notice{padding:28px;text-align:center;color:var(--muted);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.notice .ic{width:22px;height:22px}
+.notice .ic.r{color:var(--red)}
+.notice b{color:var(--ink);font-weight:500}
+.notice .acts{display:flex;gap:8px}
+.notice .code{font:11px var(--mono);color:var(--dim)}
+.empty{padding:48px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--muted);font-size:14px}
+.empty .ic{width:28px;height:28px;color:var(--dim)}
+.empty h3{margin:0;font:600 18px var(--display);letter-spacing:-.01em;color:var(--ink)}
+.empty code{font:12.5px var(--mono);background:var(--raised);padding:1px 6px;border-radius:4px;color:var(--ink2)}
+
+/* ===== error screens ===== */
+.err{max-width:560px;margin:0 auto;padding:48px 24px 44px;display:flex;flex-direction:column;gap:18px}
+.err .hd{display:flex;align-items:flex-start;gap:14px}
+.err .hd .ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none;border:1px solid}
+.err .hd .ico .ic{width:20px;height:20px}
+.err .hd .ico.r{background:var(--red-bg);color:var(--red);border-color:color-mix(in srgb,var(--red) 45%,transparent)}
+.err .hd .ico.y{background:var(--yellow-bg);color:var(--yellow);border-color:color-mix(in srgb,var(--yellow) 45%,transparent)}
+.err .hd .ico.b{background:var(--blue-bg);color:var(--blue);border-color:color-mix(in srgb,var(--blue) 45%,transparent)}
+.err .hd .ico.m{background:var(--raised);color:var(--muted);border-color:var(--line2)}
+.err .hd h3{margin:0;font:600 21px var(--display);letter-spacing:-.02em;line-height:1.15}
+.err .hd .code{margin-top:4px;font:11.5px var(--mono);color:var(--dim);display:flex;align-items:center;gap:8px}
+.err .hd .code .rp{color:var(--muted)}
+.err p{margin:0;color:var(--ink2);font-size:14.5px}
+.err .fix{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);font-size:13.5px}
+.err .fix .k{font:500 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--dim);padding-top:3px}
+.err .fix code{font:12.5px var(--mono);color:var(--ink);background:var(--surface);border:1px solid var(--line2);padding:0 5px;border-radius:4px}
+.err .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.err .acts .btn-ghost{margin-left:auto}
+.err details{border-top:1px solid var(--line);padding-top:10px;font-size:12.5px;color:var(--muted)}
+.err details summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;font-weight:500}
+.err details summary::-webkit-details-marker{display:none}
+.err details pre{margin:8px 0 0;padding:10px 12px;border:1px solid var(--line2);border-radius:6px;background:var(--raised);font:11.5px/1.5 var(--mono);white-space:pre-wrap;word-break:break-all;color:var(--ink2)}
+.err .why{font-size:13px;color:var(--muted)}
+.err .why b{color:var(--ink2);font-weight:500}
+.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:20px}
+.egrid .stage{box-shadow:none}
+.egrid .err{padding:26px 22px 22px;gap:14px}
+.egrid .err .hd h3{font-size:18px}
+.egrid .err p{font-size:13.5px}
+.egrid .err .fix{font-size:12.5px;padding:10px 12px}
+.egrid .err .acts .btn{font-size:13px;padding:7px 12px}
+.ecap{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12.5px;color:var(--muted)}
+.ecap code{font:600 11px var(--mono);color:var(--ink);background:var(--raised);border:1px solid var(--line2);padding:1px 7px;border-radius:999px}
+.ecap .when{margin-left:auto;font:11.5px var(--mono);color:var(--dim)}
+.wgrid{display:grid;grid-template-columns:1fr;gap:0;border:1px solid var(--line2);border-radius:12px;overflow:hidden}
+.wgrid .banner:last-child{border-bottom:0}
+.wgrid .lvl{padding:6px 16px;background:var(--bg2);border-bottom:1px solid var(--line);font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.banner .cd{font:10.5px var(--mono);color:var(--dim);margin-left:4px}
+
+/* ===== browser gate ===== */
+.gate{display:grid;grid-template-columns:1fr 340px;gap:40px;padding:56px 48px;align-items:start}
+@media (max-width:1000px){.gate{grid-template-columns:1fr}}
+.gate .brand{display:flex;align-items:center;gap:9px;font:600 15px var(--display);margin-bottom:26px}
+.gate .brand svg{width:26px;height:26px;border-radius:7px}
+.gate .brand i{font-style:normal;color:var(--green)}
+.gate h3{font-family:var(--display);font-size:clamp(28px,3.6vw,40px);letter-spacing:-.04em;line-height:1.02;font-weight:500;margin:0 0 14px;max-width:16ch}
+.gate h3 em{font-style:normal;color:var(--red)}
+.gate .det{display:inline-flex;align-items:center;gap:8px;font:500 12.5px var(--mono);color:var(--muted);padding:5px 10px;border:1px solid var(--line2);border-radius:999px;margin-bottom:16px}
+.gate .det .dot{width:7px;height:7px}
+.gate p{color:var(--muted);font-size:15.5px;margin:0 0 12px;max-width:52ch}
+.gate p b{color:var(--ink);font-weight:500}
+.gate .b4{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:22px 0 18px}
+.gate .b4 a{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line2);border-radius:10px;background:var(--surface);font-size:14px;font-weight:500}
+.gate .b4 a:hover{background:var(--raised)}
+.gate .b4 a .ic{width:18px;height:18px;color:var(--muted)}
+.gate .b4 a small{margin-left:auto;font:11.5px var(--mono);color:var(--dim);font-weight:400}
+.gate .cta{margin-top:4px}
+.gate .cta .btn{gap:8px}
+.gate .cta .btn .ic{width:15px;height:15px}
+.gate .priv{border-top:1px solid var(--line);margin-top:26px;padding-top:14px;font-size:13px;color:var(--dim);display:flex;gap:14px;flex-wrap:wrap}
+.gate .priv span{display:inline-flex;align-items:center;gap:6px}
+.gate .priv .ic{width:13px;height:13px}
+.gate .side2{display:flex;flex-direction:column;gap:14px}
+.gate .qr{border:1px solid var(--line2);border-radius:12px;padding:16px;background:var(--surface)}
+.gate .qr .t{font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.gate .qr .url{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:6px;padding:6px 10px;font:12.5px var(--mono);background:var(--bg2)}
+.gate .qr .url span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gate .qr .url .ic{width:14px;height:14px;color:var(--muted)}
+.gate .qr p{font-size:13px;margin:8px 0 0}
+.gate .demo{border:1px solid var(--line2);border-radius:12px;overflow:hidden;background:var(--surface)}
+.gate .demo .cap{padding:8px 12px;border-bottom:1px solid var(--line);font:12px var(--mono);color:var(--muted);display:flex;justify-content:space-between}
+.gate .demo .cap b{color:var(--green);font-weight:500}
+.gate .demo .frow{height:24px;font-size:11.5px}
+.gate .demo .l{display:grid;grid-template-columns:36px 1fr;font:11.5px/20px var(--mono)}
+.gate .demo .l span{padding:0 8px;white-space:pre}
+.gate .demo .l .g{color:var(--dim);text-align:right;font-size:10.5px;background:var(--bg2)}
+.gate .demo .l.add{background:var(--add)}.gate .demo .l.add .g{background:var(--add-n);color:var(--green)}
+.gate .demo .l.del{background:var(--del)}.gate .demo .l.del .g{background:var(--del-n);color:var(--red)}
+.gate .demo .l.hunk{background:var(--hunk);color:var(--muted)}
+.gate .demo .go{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-top:1px solid var(--line);font-size:13px}
+.gate .demo .go a{color:var(--blue);font-weight:500}
+.gate .steps{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.gate .steps li{display:grid;grid-template-columns:22px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.gate .steps li i{font:600 11px/22px var(--mono);width:22px;height:22px;border-radius:50%;text-align:center;color:var(--ink);background:var(--raised);border:1px solid var(--line2);font-style:normal}
+.gate .steps li code{font:12.5px var(--mono);color:var(--ink2)}
+.gate .steps li span{display:block;font-size:12.5px;color:var(--muted)}
+.gbar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--raised);font:12px var(--mono);color:var(--muted)}
+.gbar .ua{margin-left:auto;color:var(--dim)}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+<symbol id="logo" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#0d1117"/><path d="M10 10.5v11" fill="none" stroke="#e6edf3" stroke-width="2.4" stroke-linecap="round"/><path d="M22 12.6c0 6-12 3.4-12 9" fill="none" stroke="#3fb950" stroke-width="2.4" stroke-linecap="round"/><circle cx="10" cy="8" r="2.6" fill="#e6edf3"/><circle cx="10" cy="24" r="2.6" fill="#e6edf3"/><circle cx="22" cy="10" r="2.6" fill="#3fb950"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+<symbol id="i-foldergit" viewBox="0 0 24 24"><circle cx="12" cy="13" r="2"/><path d="M14 13h3a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h5"/><path d="M7 13h3"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+<symbol id="i-loader" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol>
+<symbol id="i-xcircle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+<symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+<symbol id="i-monitorx" viewBox="0 0 24 24"><path d="m14.5 12.5-5-5M9.5 12.5l5-5"/><path d="M22 15V5a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2Z"/><path d="M8 21h8M12 17v4"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></symbol>
+<symbol id="i-branch" viewBox="0 0 24 24"><path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
+<symbol id="i-compare" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-hdd" viewBox="0 0 24 24"><path d="M22 12H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><path d="M6 16h.01M10 16h.01"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+<symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+<symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></symbol>
+<symbol id="i-cpu" viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></symbol>
+<symbol id="i-scale" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1ZM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1ZM7 21h10M12 3v18M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></symbol>
+</svg>
+<div class="wrap">
+<aside class="side">
+  <div class="brand"><svg><use href="#logo"/></svg>diff<i>git</i></div>
+  <div class="sub">Design review · 2026-09-18<br>5 screens, 41 states</div>
+  <h4>Sections</h4>
+  <a href="#s1">1 Home · history <code>H</code></a>
+  <a href="#s2">2 Loading <code>L</code></a>
+  <a href="#s3">3 Stats <code>S</code></a>
+  <a href="#s4">4 Errors · all codes <code>E</code></a>
+  <a href="#s5">5 Browser gate <code>B</code></a>
+  <h4>How to approve</h4>
+  <div style="color:var(--muted);font-size:12.5px;line-height:1.5">Every state has an id like <code class="mono" style="color:var(--ink)">H3</code>. Reply with the ids you approve and what to change on the rest.</div>
+  <div class="tog"><button data-t="light">Light</button><button data-t="system" class="on">System</button><button data-t="dark">Dark</button></div>
+</aside>
+<div class="main">
+<!-- ================= 1 HOME ================= -->
+<section class="sec" id="s1">
+  <div class="num">01 — Home</div>
+  <h2>History lives where the facts table is.</h2>
+  <p class="lede">The landing page stays verbatim. The right column of the hero is the one thing that changes: on a first visit it is the six-row facts table you approved; once a repository has been opened it becomes <b>Recent</b>, using the same hairline rows, the same 14 px type and the same 360 px width. History is also reachable from the nav on every scroll position, and <kbd>o</kbd> still opens the picker.</p>
+  <ul class="rules">
+    <li><span>source</span><div><b>IndexedDB <code class="mono">diffgit-repos</code></b> — id, name, handle, lastOpenedAt, lastSource, lastTarget. Max 20. Nothing new is stored.</div></li>
+    <li><span>row</span><div>name (500) · <span class="pair"><span class="b">base</span><span class="arr">…</span><span class="c">compare</span></span> in mono · opened <i>3 h ago</i> · <span class="dot g"></span> access state · × on hover.</div></li>
+    <li><span>single</span><div>One repo gets a <b>Continue</b> card instead of a one-row list: it is the most common case and deserves the bigger target.</div></li>
+    <li><span>many</span><div>Up to 6 rows visible. From 7 up a filter input appears and the list scrolls inside the column. "Clear all" in the footer.</div></li>
+    <li><span>click</span><div>Opening from history calls <code class="mono">requestPermission({mode:"read"})</code> inside the click; the row shows its own inline state (H4) rather than a toast.</div></li>
+  </ul>
+
+  <div class="spec">
+  <div class="var" id="H0">
+    <div class="tag"><code>H0</code><b>First visit</b><span class="why">no history → facts table, unchanged</span><span class="when">repos.length === 0</span></div>
+    <div class="stage">
+      <div class="nav"><span class="brand"><svg><use href="#logo"/></svg>diff<i>git</i></span><span class="links"><a>Demo</a><a>How it works</a><a>Privacy</a><a>FAQ</a><a>Docs</a><a>GitHub</a></span><span class="btn btn-ink btn-sm">Open repository</span></div>
+      <div class="hero">
+        <div>
+          <span class="eyebrow"><i></i>local · read-only · no network</span>
+          <h1>The pull request view for code you <em>haven't pushed.</em></h1>
+          <p class="lede2">Open the repository on your disk and read <b>base…compare</b> the way a reviewer will, with staged, unstaged and untracked work layered on top. Nothing is uploaded. Nothing is written.</p>
+          <div class="cta"><span class="btn btn-ink btn-lg">Open a repository</span><span class="btn btn-lg">Try the demo below</span><small>Press <kbd>o</kbd></small></div>
+        </div>
+        <div class="facts">
+          <div><span>Runs in</span><span>your browser tab</span></div>
+          <div><span>Uploads</span><span class="g">0 bytes, by CSP</span></div>
+          <div><span>Writes to disk</span><span class="g">none, read-only</span></div>
+          <div><span>Matches</span><span>git diff -M</span></div>
+          <div><span>Browsers</span><span>Chromium, desktop</span></div>
+          <div><span>Licence</span><span>MIT</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="var" id="H1">
+    <div class="tag"><code>H1</code><b>One repository</b><span class="why">Continue card replaces the facts table</span><span class="when">repos.length === 1</span></div>
+    <div class="stage">
+      <div class="nav"><span class="brand"><svg><use href="#logo"/></svg>diff<i>git</i></span><span class="links"><a>Demo</a><a>How it works</a><a>Privacy</a><a>FAQ</a><a>Docs</a><a>GitHub</a></span><span class="rec"><svg class="ic"><use href="#i-clock"/></svg>Recent<svg class="ic" style="width:12px;height:12px;color:var(--dim)"><use href="#i-chev"/></svg></span><span class="btn btn-ink btn-sm">Open repository</span></div>
+      <div class="hero">
+        <div>
+          <span class="eyebrow"><i></i>local · read-only · no network</span>
+          <h1>The pull request view for code you <em>haven't pushed.</em></h1>
+          <p class="lede2">Open the repository on your disk and read <b>base…compare</b> the way a reviewer will, with staged, unstaged and untracked work layered on top. Nothing is uploaded. Nothing is written.</p>
+          <div class="cta"><span class="btn btn-ink btn-lg">Open a repository</span><span class="btn btn-lg">Try the demo below</span><small>Press <kbd>o</kbd></small></div>
+        </div>
+        <div class="contin">
+          <div class="t"><svg class="ic" style="width:13px;height:13px"><use href="#i-clock"/></svg>Continue<span class="rt">opened 3 h ago</span></div>
+          <div class="nmrow"><svg><use href="#logo"/></svg><b>acme-web</b><span class="dot g" title="Access granted"></span></div>
+          <div class="meta">
+            <span>Last compared</span><span class="v pair"><span class="b">main</span><span class="arr">…</span><span class="c">feat/coupons</span></span>
+            <span>Uncommitted</span><span class="v">included</span>
+            <span>Access</span><span class="v"><span class="dot g"></span>granted for this session</span>
+          </div>
+          <div class="acts"><span class="btn btn-ink btn-sm">Open acme-web</span><span class="btn btn-sm">Different folder</span><span class="btn btn-ghost btn-sm" title="Forget"><svg class="ic" style="width:14px;height:14px"><use href="#i-x"/></svg></span></div>
+        </div>
+      </div>
+    </div>
+    <p class="note"><b>Why a card and not one row:</b> with a single repo the user's intent is almost always "the same one again". The card also has room for the last pair and the access state, so a permission prompt is never a surprise.</p>
+  </div>
+
+  <div class="var" id="H2">
+    <div class="tag"><code>H2</code><b>Several repositories</b><span class="why">hairline list, same rhythm as the facts table</span><span class="when">2 ≤ repos.length ≤ 6</span></div>
+    <div class="stage">
+      <div class="hero" style="padding-top:48px">
+        <div>
+          <span class="eyebrow"><i></i>local · read-only · no network</span>
+          <h1>The pull request view for code you <em>haven't pushed.</em></h1>
+          <p class="lede2">Open the repository on your disk and read <b>base…compare</b> the way a reviewer will, with staged, unstaged and untracked work layered on top.</p>
+          <div class="cta"><span class="btn btn-ink btn-lg">Open a repository</span><span class="btn btn-lg">Try the demo below</span><small>Press <kbd>o</kbd></small></div>
+        </div>
+        <div class="recent">
+          <div class="hd">Recent <span class="n">· 5</span><span class="r"><a>Clear all</a></span></div>
+          <div class="rrow hover"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>acme-web</b><span class="m"><span class="b">main</span>…<span class="c">feat/coupons</span></span></span><span class="rt"><span class="dot g" title="Access granted"></span>3 h ago<span class="x"><svg class="ic" style="width:13px;height:13px"><use href="#i-x"/></svg></span></span></div>
+          <div class="rsep"></div>
+          <div class="rrow"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>diffgoel</b><span class="m"><span class="b">main</span>…<span class="c">HEAD</span></span></span><span class="rt"><span class="dot y" title="Will ask for access"></span>yesterday<span class="x"><svg class="ic" style="width:13px;height:13px"><use href="#i-x"/></svg></span></span></div>
+          <div class="rsep"></div>
+          <div class="rrow"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>news-scrapper</b><span class="m"><span class="b">develop</span>…<span class="c">fix/rss-dates</span></span></span><span class="rt"><span class="dot y" title="Will ask for access"></span>2 d ago<span class="x"><svg class="ic" style="width:13px;height:13px"><use href="#i-x"/></svg></span></span></div>
+          <div class="rsep"></div>
+          <div class="rrow"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>vinitk_artifacts</b><span class="m"><span class="b">main</span>…<span class="c">main</span></span></span><span class="rt"><span class="dot y" title="Will ask for access"></span>5 d ago<span class="x"><svg class="ic" style="width:13px;height:13px"><use href="#i-x"/></svg></span></span></div>
+          <div class="rsep"></div>
+          <div class="rrow"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>threatfrontier</b><span class="m" style="color:var(--dim)">never compared</span></span><span class="rt"><span class="dot y" title="Will ask for access"></span>2 w ago<span class="x"><svg class="ic" style="width:13px;height:13px"><use href="#i-x"/></svg></span></span></div>
+          <div class="rsep"></div>
+          <div class="ft"><span><span class="dot g"></span> access granted &nbsp; <span class="dot y"></span> will ask once &nbsp; <span class="dot r"></span> missing</span><span>Stored in this browser only</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="note"><b>Row anatomy:</b> the second line is the last base…compare pair in the same blue/green as the app's pickers, so a row reads like the top bar it will open. The dot is the browser's <code class="mono">queryPermission()</code> answer, checked on mount: green means opening will not prompt.</p>
+  </div>
+
+  <div class="var" id="H3">
+    <div class="tag"><code>H3</code><b>Many repositories</b><span class="why">filter + scroll, "Forget" is keyboard-reachable</span><span class="when">repos.length ≥ 7</span></div>
+    <div class="grid2">
+      <div class="stage" style="padding:32px 40px 24px">
+        <div class="recent" style="max-width:360px">
+          <div class="hd">Recent <span class="n">· 14</span><span class="r"><a>Clear all</a></span></div>
+          <div class="rsearch"><svg class="ic"><use href="#i-search"/></svg><input value="ne" aria-label="Filter recent"><kbd style="font-size:10px">esc</kbd></div>
+          <div class="rrow focus"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b><mark style="background:var(--yellow-bg);color:inherit">ne</mark>ws-scrapper</b><span class="m"><span class="b">develop</span>…<span class="c">fix/rss-dates</span></span></span><span class="rt"><span class="dot y"></span>2 d ago<span class="x" style="opacity:1"><svg class="ic" style="width:13px;height:13px"><use href="#i-x"/></svg></span></span></div>
+          <div class="rsep"></div>
+          <div class="rrow"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>notes-mcp-<mark style="background:var(--yellow-bg);color:inherit">ne</mark>w</b><span class="m"><span class="b">main</span>…<span class="c">HEAD</span></span></span><span class="rt"><span class="dot y"></span>3 w ago<span class="x"><svg class="ic" style="width:13px;height:13px"><use href="#i-x"/></svg></span></span></div>
+          <div class="rsep"></div>
+          <div class="ft"><span>2 of 14 match</span><span><kbd>↑</kbd> <kbd>↓</kbd> <kbd>⏎</kbd> open · <kbd>⌫</kbd> forget</span></div>
+        </div>
+      </div>
+      <div class="stage" style="padding:32px 40px 24px">
+        <div class="recent" style="max-width:360px">
+          <div class="hd">Recent <span class="n">· 14</span><span class="r"><a>Clear all</a></span></div>
+          <div class="rsearch"><svg class="ic"><use href="#i-search"/></svg><input value="zzz" aria-label="Filter recent"><kbd style="font-size:10px">esc</kbd></div>
+          <div style="padding:22px 0;text-align:center;color:var(--muted);font-size:13px">No recent repository matches <span class="mono" style="color:var(--ink)">zzz</span>.<br><span style="color:var(--dim);font-size:12.5px">Press <kbd>o</kbd> to open a new folder.</span></div>
+          <div class="rsep"></div>
+          <div class="ft"><span>0 of 14 match</span><span>Stored in this browser only</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="var" id="H4">
+    <div class="tag"><code>H4</code><b>Row states while opening</b><span class="why">every outcome of a click stays on the row</span><span class="when">onOpen()</span></div>
+    <div class="stage" style="padding:32px 40px 24px">
+      <div class="recent" style="max-width:520px">
+        <div class="hd">Recent <span class="n">· 6</span></div>
+        <div class="rrow dis"><svg class="ic spin" style="color:var(--blue)"><use href="#i-loader"/></svg><span class="nm"><b>acme-web</b><span class="m">Asking the browser for read access…</span></span><span class="rt">3 h ago</span></div>
+        <div class="rsep"></div>
+        <div class="rrow"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>diffgoel</b><span class="m"><span class="b">main</span>…<span class="c">HEAD</span></span></span><span class="rt"><span class="dot r"></span>yesterday</span></div>
+        <div class="rmsg bad"><svg class="ic"><use href="#i-lock"/></svg><span style="flex:1 1 auto">Read access was denied.</span><span class="btn btn-xs">Try again</span><span class="btn btn-xs btn-ghost">Forget</span></div>
+        <div class="rsep"></div>
+        <div class="rrow"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>news-scrapper</b><span class="m"><span class="b">develop</span>…<span class="c">fix/rss-dates</span></span></span><span class="rt"><span class="dot r"></span>2 d ago</span></div>
+        <div class="rmsg bad"><svg class="ic"><use href="#i-alert"/></svg><span style="flex:1 1 auto">Folder not found — moved, renamed or deleted.</span><span class="btn btn-xs">Choose it again</span><span class="btn btn-xs btn-ghost">Forget</span></div>
+        <div class="rsep"></div>
+        <div class="rrow"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>vinitk_artifacts</b><span class="m"><span class="b">main</span>…<span class="c">main</span></span></span><span class="rt"><span class="dot r"></span>5 d ago</span></div>
+        <div class="rmsg bad"><svg class="ic"><use href="#i-xcircle"/></svg><span style="flex:1 1 auto">Not a git repository any more (<span class="mono">.git</span> is gone).</span><span class="btn btn-xs">Choose another</span><span class="btn btn-xs btn-ghost">Forget</span></div>
+        <div class="rsep"></div>
+        <div class="rrow"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>threatfrontier</b><span class="m"><span class="b">main</span>…<span class="c">feat/tags</span></span></span><span class="rt"><span class="dot y"></span>2 w ago</span></div>
+        <div class="rmsg"><svg class="ic"><use href="#i-info"/></svg><span style="flex:1 1 auto">Branch <span class="mono">feat/tags</span> no longer exists; will open on <span class="mono">HEAD</span>.</span></div>
+        <div class="rsep"></div>
+        <div class="rrow" style="opacity:.5"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>old-project</b><span class="m">Forgotten</span></span><span class="rt"><span class="btn btn-xs">Undo</span></span></div>
+        <div class="rsep"></div>
+      </div>
+    </div>
+    <p class="note"><b>Order of checks when a row is clicked:</b> permission → handle still resolves (<span class="mono">HANDLE_GONE</span>) → layout still a repo (<span class="mono">NOT_A_REPO</span>) → stored refs still exist (soft: fall back to defaults with the info line). Only a passing row leaves the page; every failure keeps the list, so the user can pick another one without a round trip through the error screen. Forget offers a 5 s Undo instead of a confirm dialog.</p>
+  </div>
+
+  <div class="var" id="H5">
+    <div class="tag"><code>H5</code><b>History from the nav</b><span class="why">reachable from any scroll position, and from the app's top bar later</span><span class="when">any repos.length &gt; 0</span></div>
+    <div class="stage" style="overflow:visible">
+      <div class="nav" style="border-radius:14px 14px 0 0"><span class="brand"><svg><use href="#logo"/></svg>diff<i>git</i></span><span class="links"><a>Demo</a><a>How it works</a><a>Privacy</a><a>FAQ</a></span>
+        <span class="rec" style="box-shadow:inset 0 0 0 1px var(--blue);color:var(--blue)"><svg class="ic"><use href="#i-clock"/></svg>Recent<svg class="ic" style="width:12px;height:12px"><use href="#i-chev"/></svg>
+          <div class="navpop">
+            <div class="hd">Recent · 5</div>
+            <div class="rrow hover"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>acme-web</b><span class="m"><span class="b">main</span>…<span class="c">feat/coupons</span></span></span><span class="rt"><span class="dot g"></span>3 h</span></div>
+            <div class="rrow"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>diffgoel</b><span class="m"><span class="b">main</span>…<span class="c">HEAD</span></span></span><span class="rt"><span class="dot y"></span>1 d</span></div>
+            <div class="rrow"><svg class="ic"><use href="#i-foldergit"/></svg><span class="nm"><b>news-scrapper</b><span class="m"><span class="b">develop</span>…<span class="c">fix/rss-dates</span></span></span><span class="rt"><span class="dot y"></span>2 d</span></div>
+            <div class="ft"><span><kbd>r</kbd> opens this</span><a>Show all 5 ↑</a></div>
+          </div>
+        </span>
+        <span class="btn btn-ink btn-sm">Open repository</span></div>
+      <div style="height:180px;background:var(--bg);border-radius:0 0 14px 14px"></div>
+    </div>
+    <p class="note"><b>Hidden when empty.</b> The same popover is what the app's top bar will show behind the repo name later (switch repository without going home), so the row component is shared.</p>
+  </div>
+
+  <div class="var" id="H6">
+    <div class="tag"><code>H6</code><b>Storage unavailable</b><span class="why">private window, blocked or full IndexedDB</span><span class="when">STORAGE_UNAVAILABLE</span></div>
+    <div class="stage" style="padding:32px 40px 24px">
+      <div class="facts" style="max-width:360px">
+        <div><span>Runs in</span><span>your browser tab</span></div>
+        <div><span>Uploads</span><span class="g">0 bytes, by CSP</span></div>
+        <div><span>Writes to disk</span><span class="g">none, read-only</span></div>
+        <div><span>Recent repos</span><span style="color:var(--yellow);display:inline-flex;align-items:center;gap:6px"><svg class="ic" style="width:12px;height:12px"><use href="#i-alert"/></svg>not remembered here</span></div>
+        <div><span>Browsers</span><span>Chromium, desktop</span></div>
+        <div><span>Licence</span><span>MIT</span></div>
+      </div>
+      <p class="note" style="max-width:360px;margin-top:10px">Hover / focus on the row: "Storage is blocked or full in this browser (private window?). Repositories still open normally; they just won't be listed next time."</p>
+    </div>
+    <p class="note"><b>No toast.</b> Today this fires a toast once per session. On the landing page it is a fact, so it goes in the facts table, replacing the "Matches git diff -M" row, and the toast is kept only inside the app.</p>
+  </div>
+  </div>
+</section>
+<!-- ================= 2 LOADING ================= -->
+<section class="sec" id="s2">
+  <div class="num">02 — Loading</div>
+  <h2>Four phases, real counts, and an exit at every one.</h2>
+  <p class="lede">Same centred column as today, but the screen now says <b>which repository and which pair</b> it is opening, how long it has been at it, and what each phase found. The engine already reports <span class="mono">done / total</span> and a per-phase duration; the screen just stops hiding them. Anything that goes wrong is shown on the phase it happened in, with the completed phases still ticked, so the user learns how far the repo got before it failed.</p>
+  <ul class="rules">
+    <li><span>phases</span><div>Reading refs → Parsing index → Scanning working tree → Computing diff. Sub-steps (layout, config) fold into "Reading refs" as the mono caption.</div></li>
+    <li><span>counts</span><div>Done phases keep their result ("412 refs", "8,120 entries"); the current one shows <span class="mono">done / total</span> and a bar when total is known, an indeterminate bar when it is not.</div></li>
+    <li><span>time</span><div>Elapsed in the corner from 2 s; expected duration from the last open of the same repo (stored with the recent entry).</div></li>
+    <li><span>slow</span><div>At 8 s a yellow callout names the likely reason (large packs, many untracked files) from the warnings received so far.</div></li>
+    <li><span>failure</span><div>The phase gets a red ✕, the message + hint + actions appear under it. The full error screen (§4) is used only when there is no phase to attach to.</div></li>
+  </ul>
+
+  <div class="spec">
+  <div class="var" id="L1">
+    <div class="tag"><code>L1</code><b>Opening, phase 3 of 4</b><span class="why">total known → determinate bar</span><span class="when">screen === "loading"</span></div>
+    <div class="stage app"><div class="load">
+      <div class="who"><svg><use href="#logo"/></svg><div><h3>acme-web</h3><div class="pair"><span class="b">main</span><span class="arr">…</span><span class="c">feat/coupons</span><span style="color:var(--dim)">· uncommitted included</span></div></div><div class="el"><b>4.2 s</b>usually ~6 s</div></div>
+      <ol class="phases">
+        <li class="done"><svg class="ic"><use href="#i-check"/></svg><span class="lb"><b>Reading refs</b><span>layout ok · config ok · 412 refs</span></span><span class="ct">0.3 s</span></li>
+        <li class="done"><svg class="ic"><use href="#i-check"/></svg><span class="lb"><b>Parsing index</b><span>8,120 entries · v2</span></span><span class="ct">0.4 s</span></li>
+        <li class="cur"><svg class="ic spin"><use href="#i-loader"/></svg><span class="lb"><b>Scanning working tree</b><span>hashing changed files · src/checkout/</span></span><span class="ct">1,240 / 5,000</span><span class="sub"><div class="pbar"><i class="b" style="width:25%"></i></div></span></li>
+        <li class="pend"><svg class="ic"><use href="#i-circle"/></svg><span class="lb"><b>Computing diff</b></span><span class="ct"></span></li>
+      </ol>
+      <div class="foot"><span class="btn btn-sm">Cancel</span><span class="hint"><kbd>esc</kbd> cancels · nothing has been written</span></div>
+    </div></div>
+  </div>
+
+  <div class="var" id="L2">
+    <div class="tag"><code>L2</code><b>Total unknown</b><span class="why">indeterminate bar, no fake number</span><span class="when">loading.total === undefined</span></div>
+    <div class="stage app"><div class="load" style="padding-top:36px;padding-bottom:32px">
+      <div class="who"><svg><use href="#logo"/></svg><div><h3>diffgoel</h3><div class="pair"><span class="b">main</span><span class="arr">…</span><span class="c">HEAD</span></div></div><div class="el"><b>0.8 s</b>first open</div></div>
+      <ol class="phases">
+        <li class="cur"><svg class="ic spin"><use href="#i-loader"/></svg><span class="lb"><b>Reading refs</b><span>reading packed-refs</span></span><span class="ct">—</span><span class="sub"><div class="pbar"><i class="b ind"></i></div></span></li>
+        <li class="pend"><svg class="ic"><use href="#i-circle"/></svg><span class="lb"><b>Parsing index</b></span><span class="ct"></span></li>
+        <li class="pend"><svg class="ic"><use href="#i-circle"/></svg><span class="lb"><b>Scanning working tree</b></span><span class="ct"></span></li>
+        <li class="pend"><svg class="ic"><use href="#i-circle"/></svg><span class="lb"><b>Computing diff</b></span><span class="ct"></span></li>
+      </ol>
+      <div class="foot"><span class="btn btn-sm">Cancel</span><span class="hint">Elapsed appears after 2 s</span></div>
+    </div></div>
+  </div>
+
+  <div class="var" id="L3">
+    <div class="tag"><code>L3</code><b>Slow</b><span class="why">explain, then offer the trade-off</span><span class="when">elapsed &gt; 8 s</span></div>
+    <div class="stage app"><div class="load">
+      <div class="who"><svg><use href="#logo"/></svg><div><h3>monorepo</h3><div class="pair"><span class="b">main</span><span class="arr">…</span><span class="c">feat/billing</span></div></div><div class="el"><b>23 s</b>usually ~6 s</div></div>
+      <ol class="phases">
+        <li class="done"><svg class="ic"><use href="#i-check"/></svg><span class="lb"><b>Reading refs</b><span>1,932 refs · packs 640 MB</span></span><span class="ct">2.1 s</span></li>
+        <li class="done"><svg class="ic"><use href="#i-check"/></svg><span class="lb"><b>Parsing index</b><span>184,201 entries · sparse</span></span><span class="ct">3.8 s</span></li>
+        <li class="cur"><svg class="ic spin"><use href="#i-loader"/></svg><span class="lb"><b>Scanning working tree</b><span>untracked files · node_modules/.cache/</span></span><span class="ct">96,410 / ?</span><span class="sub"><div class="pbar"><i class="b ind"></i></div><small>5,000 untracked files listed — the rest will be capped</small></span></li>
+        <li class="pend"><svg class="ic"><use href="#i-circle"/></svg><span class="lb"><b>Computing diff</b></span><span class="ct"></span></li>
+      </ol>
+      <div class="callout y"><svg class="ic"><use href="#i-alert"/></svg><div><b>Taking longer than usual.</b> This checkout has 640 MB of packs and a large untracked area. Everything still runs locally.<div class="acts"><span class="btn btn-xs">Skip untracked files</span><span class="btn btn-xs btn-ghost">Keep waiting</span></div></div></div>
+      <div class="foot"><span class="btn btn-sm">Cancel</span><span class="hint">Nothing has been written</span></div>
+    </div></div>
+    <p class="note"><b>"Skip untracked files"</b> re-opens with <span class="mono">includeWorktree</span> off for the untracked layer only; the diff arrives, and the banner <span class="mono">UNTRACKED_CAPPED</span> reminds them. It is the only speed knob the engine actually has, so it is the only one offered.</p>
+  </div>
+
+  <div class="var" id="L4">
+    <div class="tag"><code>L4</code><b>A phase failed</b><span class="why">error stays on the phase; earlier phases keep their facts</span><span class="when">IO_ERROR · INDEX_UNSUPPORTED · REF_NOT_FOUND · PERMISSION during open</span></div>
+    <div class="stage app"><div class="load">
+      <div class="who"><svg><use href="#logo"/></svg><div><h3>acme-web</h3><div class="pair"><span class="b">main</span><span class="arr">…</span><span class="c">feat/coupons</span></div></div><div class="el"><b>1.9 s</b>stopped</div></div>
+      <ol class="phases">
+        <li class="done"><svg class="ic"><use href="#i-check"/></svg><span class="lb"><b>Reading refs</b><span>layout ok · config ok · 412 refs</span></span><span class="ct">0.3 s</span></li>
+        <li class="fail"><svg class="ic"><use href="#i-xcircle"/></svg><span class="lb"><b>Parsing index</b><span style="color:var(--red)">Unsupported index format · INDEX_UNSUPPORTED</span></span><span class="ct">0.1 s</span>
+          <span class="sub"><div class="callout r"><svg class="ic"><use href="#i-xcircle"/></svg><div><p><b>The .git/index file uses a format version diffgit cannot parse.</b></p><p class="muted">Found version 5 (only 2–4 are supported). Running <span class="mono">git update-index --index-version 4</span> in this checkout rewrites it; nothing else changes.</p><div class="acts"><span class="btn btn-xs btn-ink">Retry</span><span class="btn btn-xs">Choose another folder</span><span class="btn btn-xs btn-ghost">Copy details</span></div></div></div></span></li>
+        <li class="pend"><svg class="ic"><use href="#i-circle"/></svg><span class="lb"><b>Scanning working tree</b></span><span class="ct"></span></li>
+        <li class="pend"><svg class="ic"><use href="#i-circle"/></svg><span class="lb"><b>Computing diff</b></span><span class="ct"></span></li>
+      </ol>
+      <div class="foot"><span class="btn btn-sm">Back to start</span></div>
+    </div></div>
+  </div>
+
+  <div class="var" id="L5">
+    <div class="tag"><code>L5</code><b>Engine restarted mid-open</b><span class="why">automatic retry, attempt counter, give-up path</span><span class="when">WORKER_CRASHED</span></div>
+    <div class="stage app"><div class="load" style="padding-top:36px;padding-bottom:32px">
+      <div class="who"><svg><use href="#logo"/></svg><div><h3>acme-web</h3><div class="pair"><span class="b">main</span><span class="arr">…</span><span class="c">feat/coupons</span></div></div><div class="el"><b>6.4 s</b>attempt 2 of 3</div></div>
+      <div class="callout b"><svg class="ic spin"><use href="#i-loader"/></svg><div><b>The diff engine stopped and was restarted.</b> Re-opening from the start. If this happens again the repository is probably too large for the tab's memory. <span class="muted">Attempt 2 of 3.</span></div></div>
+      <ol class="phases">
+        <li class="cur"><svg class="ic spin"><use href="#i-loader"/></svg><span class="lb"><b>Reading refs</b></span><span class="ct">—</span><span class="sub"><div class="pbar"><i class="b ind"></i></div></span></li>
+        <li class="pend"><svg class="ic"><use href="#i-circle"/></svg><span class="lb"><b>Parsing index</b></span><span class="ct"></span></li>
+        <li class="pend"><svg class="ic"><use href="#i-circle"/></svg><span class="lb"><b>Scanning working tree</b></span><span class="ct"></span></li>
+        <li class="pend"><svg class="ic"><use href="#i-circle"/></svg><span class="lb"><b>Computing diff</b></span><span class="ct"></span></li>
+      </ol>
+      <div class="foot"><span class="btn btn-sm">Cancel</span></div>
+    </div></div>
+  </div>
+
+  <div class="var" id="L6">
+    <div class="tag"><code>L6</code><b>Warnings arriving during open</b><span class="why">shown as they come, carried into the app as banners</span><span class="when">RepoInfo.warnings</span></div>
+    <div class="stage app"><div class="load" style="padding-top:36px;padding-bottom:32px">
+      <div class="who"><svg><use href="#logo"/></svg><div><h3>legacy-svc</h3><div class="pair"><span class="b">master</span><span class="arr">…</span><span class="c">HEAD</span></div></div><div class="el"><b>3.1 s</b>usually ~4 s</div></div>
+      <ol class="phases">
+        <li class="done"><svg class="ic"><use href="#i-check"/></svg><span class="lb"><b>Reading refs</b><span>88 refs · <span style="color:var(--yellow)">shallow · LFS · autocrlf</span></span></span><span class="ct">0.6 s</span></li>
+        <li class="done"><svg class="ic"><use href="#i-check"/></svg><span class="lb"><b>Parsing index</b><span>2,204 entries · <span style="color:var(--yellow)">checksum mismatch, retried</span></span></span><span class="ct">0.9 s</span></li>
+        <li class="cur"><svg class="ic spin"><use href="#i-loader"/></svg><span class="lb"><b>Scanning working tree</b></span><span class="ct">1,910 / 2,204</span><span class="sub"><div class="pbar"><i class="b" style="width:86%"></i></div></span></li>
+        <li class="pend"><svg class="ic"><use href="#i-circle"/></svg><span class="lb"><b>Computing diff</b></span><span class="ct"></span></li>
+      </ol>
+      <div class="foot"><span class="btn btn-sm">Cancel</span><span class="hint">4 warnings so far · shown as banners once open</span></div>
+    </div></div>
+  </div>
+  </div>
+</section>
+
+<!-- ================= 3 STATS ================= -->
+<section class="sec" id="s3">
+  <div class="num">03 — Stats</div>
+  <h2>The second row tells the truth about the numbers.</h2>
+  <p class="lede">Row 2 of the top bar keeps its place and height. It gains a <b>status breakdown</b> (how many M / A / D / R / T), a <b>layer breakdown</b> (staged / unstaged / untracked), and an honest state for every moment the numbers are not final: streaming, partial, refreshing, filtered, failed. A number that is not yet true is never rendered as if it were.</p>
+  <ul class="rules">
+    <li><span>ready</span><div><b>11 files changed · +576 −131</b> · M 6 A 3 D 1 R 1 · staged 4 unstaged 6 untracked 1 · 3 / 11 viewed with bar.</div></li>
+    <li><span>streaming</span><div>+/− shows a skeleton and "stats 42 / 118"; the totals are printed only once every file has stats. Rows fill in visible-first, as today.</div></li>
+    <li><span>partial</span><div>Skipped files (too large, binary, stats read failed) are counted next to the totals with a link that scrolls to the banner or first such row.</div></li>
+    <li><span>refreshing</span><div>Numbers dim to 55 % and a small spinner says "updating"; they never jump to 0 between computes.</div></li>
+    <li><span>filtered</span><div>"8 of 118 match" replaces the file count; +/− are for the match, the total is in the tooltip.</div></li>
+  </ul>
+
+  <div class="spec">
+  <div class="var" id="S1">
+    <div class="tag"><code>S1</code><b>Ready</b><span class="why">complete stats, breakdowns visible</span><span class="when">every file has stats</span></div>
+    <div class="stage app">
+      <div class="top"><span class="repo"><svg><use href="#logo"/></svg>acme-web</span><span class="sel"><span class="lbl">base</span>main <span class="badge default">default</span></span><span style="color:var(--muted)">⇄</span><span class="sel"><span class="lbl">compare</span>feat/coupons <span class="badge head">HEAD</span></span><div class="right"><label><input type="checkbox" checked>Include uncommitted</label><span class="live">Live</span></div></div>
+      <div class="stats"><span><b>11</b> files changed</span><span class="plus">+576</span><span class="minus">−131</span><span class="sep"></span>
+        <span class="grp" title="6 modified, 3 added, 1 deleted, 1 renamed"><span class="st M">M</span><span class="n">6</span><span class="st A">A</span><span class="n">3</span><span class="st D">D</span><span class="n">1</span><span class="st R">R</span><span class="n">1</span></span><span class="sep"></span>
+        <span class="chips"><span class="chip staged">staged</span><span class="n">4</span><span class="chip unstaged">unstaged</span><span class="n">6</span><span class="chip untracked">untracked</span><span class="n">1</span></span><span class="sep"></span>
+        <span class="viewed"><b>3</b>/ 11 viewed<span class="pbar"><i style="width:27%"></i></span></span>
+        <span class="filter"><svg class="ic"><use href="#i-search"/></svg><span class="ph">Filter files</span><kbd>/</kbd></span><span class="seg"><span class="on">Unified</span><span>Split</span></span></div>
+    </div>
+    <p class="note"><b>Breakdowns are click targets.</b> Clicking <span class="st M" style="vertical-align:-3px">M</span> or a chip sets the file filter to <span class="mono">status:M</span> / <span class="mono">layer:unstaged</span>, which the existing filter box already accepts as text; clicking again clears it. Below 1100 px the two breakdowns collapse into the tooltip of the file count.</p>
+  </div>
+
+  <div class="var" id="S2">
+    <div class="tag"><code>S2</code><b>Stats streaming</b><span class="why">first paint of a large diff</span><span class="when">stats[f.id] missing for some files</span></div>
+    <div class="stage app">
+      <div class="stats"><span><b>118</b> files changed</span><span class="skl" style="width:36px"></span><span class="skl" style="width:36px"></span><span class="busy"><svg class="ic spin"><use href="#i-loader"/></svg>stats 42 / 118</span><span class="sep"></span>
+        <span class="grp"><span class="st M">M</span><span class="n">90</span><span class="st A">A</span><span class="n">21</span><span class="st D">D</span><span class="n">4</span><span class="st R">R</span><span class="n">3</span></span><span class="sep"></span>
+        <span class="viewed"><b>0</b>/ 118 viewed<span class="pbar"><i style="width:0"></i></span></span>
+        <span class="filter"><svg class="ic"><use href="#i-search"/></svg><span class="ph">Filter files</span><kbd>/</kbd></span><span class="seg"><span class="on">Unified</span><span>Split</span></span></div>
+      <div class="bodyrow">
+        <div class="tree"><div class="h">Files changed <span style="color:var(--dim)">118</span><span class="seg"><span class="on">Tree</span><span>Flat</span></span></div>
+          <div class="frow"><span class="st M">M</span><span class="p"><i>src/checkout/</i>cart.ts</span><span class="chip staged">staged</span><span class="n"><b>+41</b> <i>−9</i></span><span class="tick"></span></div>
+          <div class="frow"><span class="st A">A</span><span class="p"><i>src/checkout/</i>coupon.ts</span><span class="chip untracked">untracked</span><span class="n"><b>+96</b> <i>−0</i></span><span class="tick"></span></div>
+          <div class="frow"><span class="st M">M</span><span class="p"><i>src/api/</i>orders.ts</span><span class="chip unstaged">unstaged</span><span class="n"><span class="skl"></span></span><span class="tick"></span></div>
+          <div class="frow"><span class="st M">M</span><span class="p"><i>src/api/</i>client.ts</span><span class="n"><span class="skl"></span></span><span class="tick"></span></div>
+          <div class="frow"><span class="st R">R</span><span class="p"><i>src/lib/</i>money.ts</span><span class="n"><span class="skl"></span></span><span class="tick"></span></div>
+        </div>
+        <div class="pane" style="color:var(--dim);font-size:12.5px;display:flex;align-items:center;justify-content:center">Status counts and file count are exact from the tree diff; only +/− wait for content.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="var" id="S3">
+    <div class="tag"><code>S3</code><b>Partial stats</b><span class="why">some files could not be counted — say which and why</span><span class="when">FILE_TOO_LARGE · binary · stats read failed</span></div>
+    <div class="stage app">
+      <div class="stats"><span><b>118</b> files changed</span><span class="plus">+4,812</span><span class="minus">−1,204</span><span class="warn" title="2 files over 1 MB, 3 binary, 1 read error"><svg class="ic"><use href="#i-alert"/></svg><span class="link">6 not counted</span></span><span class="sep"></span>
+        <span class="grp"><span class="st M">M</span><span class="n">90</span><span class="st A">A</span><span class="n">21</span><span class="st D">D</span><span class="n">4</span><span class="st R">R</span><span class="n">3</span></span><span class="sep"></span>
+        <span class="viewed"><b>12</b>/ 118 viewed<span class="pbar"><i style="width:10%"></i></span></span>
+        <span class="filter"><svg class="ic"><use href="#i-search"/></svg><span class="ph">Filter files</span><kbd>/</kbd></span><span class="seg"><span class="on">Unified</span><span>Split</span></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Large file skipped</b> 2 files over the size limit were not compared. <span class="det">dist/bundle.js, data/fixtures.json</span></span><a class="lk">Show them</a><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="bodyrow">
+        <div class="tree"><div class="h">Files changed <span style="color:var(--dim)">118</span><span class="seg"><span class="on">Tree</span><span>Flat</span></span></div>
+          <div class="frow"><span class="st M">M</span><span class="p"><i>dist/</i>bundle.js</span><span class="n" title="Over 1 MB — Load diff in the card"><span class="dash">&gt; 1 MB</span></span><span class="tick"></span></div>
+          <div class="frow"><span class="st M">M</span><span class="p"><i>public/</i>logo.png</span><span class="n" title="Binary"><span class="dash">—</span></span><span class="tick"></span></div>
+          <div class="frow"><span class="st M">M</span><span class="p"><i>src/api/</i>orders.ts</span><span class="n" title="Read error — click to retry"><span class="bad"><svg class="ic"><use href="#i-xcircle"/></svg>retry</span></span><span class="tick"></span></div>
+          <div class="frow"><span class="st M">M</span><span class="p"><i>src/checkout/</i>cart.ts</span><span class="chip staged">staged</span><span class="n"><b>+41</b> <i>−9</i></span><span class="tick"></span></div>
+        </div>
+        <div class="pane"><div class="card"><div class="fh"><span class="st M">M</span>src/api/orders.ts<span class="rt"><span class="btn btn-xs">Viewed</span></span></div>
+          <div class="notice"><svg class="ic r"><use href="#i-xcircle"/></svg><b>Couldn't read this file</b><span>The working-tree copy could not be opened (IO_ERROR). The rest of the diff is unaffected.</span><span class="acts"><span class="btn btn-xs">Retry</span><span class="btn btn-xs">View raw</span></span><span class="code">NotReadableError: The requested file could not be read, typically due to permission problems</span></div></div></div>
+      </div>
+    </div>
+    <p class="note"><b>Three different reasons, three different marks in the row:</b> <span class="mono">&gt; 1 MB</span> (gated, loadable), <span class="mono">—</span> (binary, never counted), and a red <span class="mono">retry</span> (failed, actionable). Today all three render as "—".</p>
+  </div>
+
+  <div class="var" id="S4">
+    <div class="tag"><code>S4</code><b>Refreshing</b><span class="why">old numbers dim, never flash to zero</span><span class="when">refresh.busy</span></div>
+    <div class="stage app">
+      <div class="top"><span class="repo"><svg><use href="#logo"/></svg>acme-web</span><span class="sel"><span class="lbl">base</span>main <span class="badge default">default</span></span><span style="color:var(--muted)">⇄</span><span class="sel"><span class="lbl">compare</span>feat/coupons <span class="badge head">HEAD</span></span><div class="right"><label><input type="checkbox" checked>Include uncommitted</label><span class="btn btn-xs"><svg class="ic spin" style="width:12px;height:12px"><use href="#i-loader"/></svg>Refreshing</span><span class="live">Live</span></div></div>
+      <div class="stats"><span class="dim"><b>11</b> files changed</span><span class="plus dim">+576</span><span class="minus dim">−131</span><span class="busy"><svg class="ic spin"><use href="#i-loader"/></svg>updating · 1 file re-hashed</span><span class="sep"></span>
+        <span class="grp dim"><span class="st M">M</span><span class="n">6</span><span class="st A">A</span><span class="n">3</span><span class="st D">D</span><span class="n">1</span><span class="st R">R</span><span class="n">1</span></span><span class="sep"></span>
+        <span class="viewed dim"><b>3</b>/ 11 viewed<span class="pbar"><i style="width:27%"></i></span></span>
+        <span class="filter"><svg class="ic"><use href="#i-search"/></svg><span class="ph">Filter files</span><kbd>/</kbd></span><span class="seg"><span class="on">Unified</span><span>Split</span></span></div>
+    </div>
+  </div>
+
+  <div class="var" id="S5">
+    <div class="tag"><code>S5</code><b>Filtered</b><span class="why">count and totals follow the filter; whole-diff totals in the tooltip</span><span class="when">filter !== ""</span></div>
+    <div class="stage app">
+      <div class="stats"><span title="118 files · +4,812 −1,204 in total"><b>8</b> of 118 match</span><span class="plus">+312</span><span class="minus">−40</span><span class="sep"></span>
+        <span class="grp"><span class="st M">M</span><span class="n">6</span><span class="st A">A</span><span class="n">2</span></span><span class="sep"></span>
+        <span class="viewed"><b>2</b>/ 8 viewed<span class="pbar"><i style="width:25%"></i></span></span>
+        <span class="filter" style="box-shadow:inset 0 0 0 1px var(--blue)"><svg class="ic"><use href="#i-search"/></svg><span class="v">checkout/</span><svg class="ic" style="color:var(--muted)"><use href="#i-x"/></svg></span><span class="seg"><span class="on">Unified</span><span>Split</span></span></div>
+    </div>
+  </div>
+
+  <div class="var" id="S6">
+    <div class="tag"><code>S6</code><b>Filter matches nothing</b><span class="why">the tree empties; the pane says what to change</span><span class="when">visible.length === 0 &amp;&amp; filter</span></div>
+    <div class="stage app">
+      <div class="stats"><span><b>0</b> of 118 match</span><span class="sep"></span><span class="viewed"><b>12</b>/ 118 viewed<span class="pbar"><i style="width:10%"></i></span></span>
+        <span class="filter" style="box-shadow:inset 0 0 0 1px var(--blue)"><svg class="ic"><use href="#i-search"/></svg><span class="v">payments/</span><svg class="ic" style="color:var(--muted)"><use href="#i-x"/></svg></span><span class="seg"><span class="on">Unified</span><span>Split</span></span></div>
+      <div class="empty"><svg class="ic"><use href="#i-search"/></svg><h3>No files match <code>payments/</code></h3><span>118 files changed in this diff. Filters match on path, <code>status:M</code> and <code>layer:staged</code>.</span><span class="btn btn-sm">Clear filter <kbd>esc</kbd></span></div>
+    </div>
+  </div>
+
+  <div class="var" id="S7">
+    <div class="tag"><code>S7</code><b>No changes</b><span class="why">row 2 stays; the pane is the EmptyState</span><span class="when">diff.files.length === 0</span></div>
+    <div class="stage app">
+      <div class="stats"><span><b>0</b> files changed</span><span class="plus">+0</span><span class="minus">−0</span><span class="sep"></span><span style="color:var(--dim)">nothing to view</span>
+        <span class="filter" style="opacity:.5"><svg class="ic"><use href="#i-search"/></svg><span class="ph">Filter files</span><kbd>/</kbd></span><span class="seg" style="opacity:.5"><span class="on">Unified</span><span>Split</span></span></div>
+      <div class="empty"><svg class="ic"><use href="#i-compare"/></svg><h3>No changes between <code>feat/coupons</code> and <code>main</code></h3><span>Working tree is clean. Commits on <code>main</code> after the merge base are not shown by design.</span><span style="display:flex;gap:8px"><span class="btn btn-sm">Change base</span><span class="btn btn-sm btn-ghost">Swap ⇄</span></span></div>
+    </div>
+  </div>
+
+  <div class="var" id="S8">
+    <div class="tag"><code>S8</code><b>Stats stalled</b><span class="why">engine stopped streaming; totals frozen, offer a re-count</span><span class="when">no StatsBatch for 10 s while incomplete</span></div>
+    <div class="stage app">
+      <div class="stats"><span><b>118</b> files changed</span><span class="plus dim">+2,010</span><span class="minus dim">−388</span><span class="warn"><svg class="ic"><use href="#i-alert"/></svg>stats stopped at 70 / 118 · <span class="link">re-count</span></span><span class="sep"></span>
+        <span class="viewed"><b>0</b>/ 118 viewed<span class="pbar"><i style="width:0"></i></span></span>
+        <span class="filter"><svg class="ic"><use href="#i-search"/></svg><span class="ph">Filter files</span><kbd>/</kbd></span><span class="seg"><span class="on">Unified</span><span>Split</span></span></div>
+    </div>
+    <p class="note"><b>Re-count</b> is a forced refresh (<kbd>Shift</kbd>+<kbd>R</kbd>). The partial totals stay dimmed so a screenshot never carries a wrong number with full contrast.</p>
+  </div>
+  </div>
+</section>
+<!-- ================= 4 ERRORS ================= -->
+<section class="sec" id="s4">
+  <div class="num">04 — Errors</div>
+  <h2>Every public code, one shape.</h2>
+  <p class="lede">The error screen keeps the centred 560 px column and gains a fixed anatomy: a tinted icon tile, <b>title + code + repo name</b>, one sentence on what happened, a <b>"What to do"</b> box that quotes the exact command or folder when there is one, actions in a fixed order (primary · secondary · Forget on the right), and collapsible details with a copy button. All 19 public codes from <span class="mono">src/engine/errors.ts</span> are below, grouped by who can fix them. Toasts and file-level failures follow, then all 21 warning banners.</p>
+  <ul class="rules">
+    <li><span>tile</span><div><span class="dot r"></span> red: the repo is unusable here · <span class="dot y"></span> yellow: access or environment, fixable now · <span class="dot b"></span> blue: transient, retry · <span class="dot m"></span> grey: informational, no action.</div></li>
+    <li><span>primary</span><div>choose-folder → <b>Choose another folder</b> · retry → <b>Retry</b> · reopen-permission → <b>Grant access</b>. Always the ink button, always first.</div></li>
+    <li><span>forget</span><div>Only when the repo came from history; ghost button, right-aligned, 5 s Undo.</div></li>
+    <li><span>details</span><div>Raw engine message + code + build id, monospace, one-click copy for bug reports. Hidden until opened.</div></li>
+    <li><span>hint</span><div>The engine's <span class="mono">hint</span> lands in the "What to do" box, never as a second grey paragraph.</div></li>
+  </ul>
+
+  <div class="spec">
+  <div class="var" id="E1">
+    <div class="tag"><code>E1</code><b>Full-size reference</b><span class="why">the anatomy at real size; the grid below is the same at 90 %</span><span class="when">NOT_A_REPO</span></div>
+    <div class="stage app"><div class="err">
+      <div class="hd"><span class="ico r"><svg class="ic"><use href="#i-foldergit"/></svg></span><div><h3>Not a git repository</h3><div class="code">NOT_A_REPO <span class="rp">· Documents/acme-web-copy</span></div></div></div>
+      <p>The folder you picked has no <span class="mono">.git</span> directory.</p>
+      <div class="fix"><span class="k">What to do</span><span>Choose the folder that contains <code>.git</code> — usually the one you <code>cd</code> into before running <code>git status</code>.</span><span class="k">Looked in</span><span><code>acme-web-copy/.git</code> — not found; parent folders are not searched.</span></div>
+      <div class="acts"><span class="btn btn-ink">Choose another folder</span><span class="btn">Back to start</span></div>
+      <details><summary><svg class="ic" style="width:12px;height:12px"><use href="#i-chev"/></svg>Details</summary><pre>code: NOT_A_REPO
+message: This folder is not a git repository.
+build: 2f37c57 · Chrome 128 · 2026-09-18T10:14:02Z</pre></details>
+    </div></div>
+  </div>
+
+  <div class="var" id="E2">
+    <div class="tag"><code>E2</code><b>Unsupported repository layouts</b><span class="why">red tile · choose-folder · the box quotes the git fix when one exists</span><span class="when">layoutChecks · indexReader</span></div>
+    <div class="egrid">
+      <div><div class="ecap"><code>E2.1</code>WORKTREE_GITDIR<span class="when">.git is a file</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico r"><svg class="ic"><use href="#i-branch"/></svg></span><div><h3>Linked worktree</h3><div class="code">WORKTREE_GITDIR <span class="rp">· acme-web-hotfix</span></div></div></div>
+        <p>This folder is a linked git worktree: its <span class="mono">.git</span> is a file pointing to another repository.</p>
+        <div class="fix"><span class="k">What to do</span><span>Open the main repository folder instead. It is <code>../acme-web</code> according to the <code>gitdir:</code> line.</span></div>
+        <div class="acts"><span class="btn btn-ink">Choose another folder</span><span class="btn">Back to start</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E2.2</code>BARE_REPO<span class="when">core.bare = true</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico r"><svg class="ic"><use href="#i-db"/></svg></span><div><h3>Bare repository</h3><div class="code">BARE_REPO <span class="rp">· acme-web.git</span></div></div></div>
+        <p>This is a bare repository. It has objects and refs but no working tree, so there is nothing uncommitted to show.</p>
+        <div class="fix"><span class="k">What to do</span><span>Open a normal clone with a working tree, e.g. <code>git clone acme-web.git acme-web</code>.</span></div>
+        <div class="acts"><span class="btn btn-ink">Choose another folder</span><span class="btn">Back to start</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E2.3</code>REFTABLE<span class="when">extensions.refStorage</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico r"><svg class="ic"><use href="#i-db"/></svg></span><div><h3>Reftable refs are not supported</h3><div class="code">REFTABLE <span class="rp">· acme-web</span></div></div></div>
+        <p>This repository stores refs in the reftable format, which diffgit cannot read yet.</p>
+        <div class="fix"><span class="k">What to do</span><span>Open a repository that uses the files ref format, or re-clone: <code>git clone --ref-format=files …</code></span></div>
+        <div class="acts"><span class="btn btn-ink">Choose another folder</span><span class="btn">Back to start</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E2.4</code>OBJECT_FORMAT_SHA256<span class="when">extensions.objectFormat</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico r"><svg class="ic"><use href="#i-key"/></svg></span><div><h3>SHA-256 repository</h3><div class="code">OBJECT_FORMAT_SHA256 <span class="rp">· acme-web</span></div></div></div>
+        <p>Repositories using the SHA-256 object format are not supported.</p>
+        <div class="fix"><span class="k">What to do</span><span>Open a SHA-1 repository. Git cannot convert between formats in place; this needs a separate clone.</span></div>
+        <div class="acts"><span class="btn btn-ink">Choose another folder</span><span class="btn">Back to start</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E2.5</code>ALTERNATES<span class="when">objects/info/alternates</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico r"><svg class="ic"><use href="#i-link"/></svg></span><div><h3>Objects live outside this folder</h3><div class="code">ALTERNATES <span class="rp">· acme-web</span></div></div></div>
+        <p>This repository borrows objects from another path via <span class="mono">.git/objects/info/alternates</span>, so its history cannot be read from this folder alone.</p>
+        <div class="fix"><span class="k">What to do</span><span>Open a repository whose objects are self-contained, or run <code>git repack -a -d</code> then delete the alternates file.</span></div>
+        <div class="acts"><span class="btn btn-ink">Choose another folder</span><span class="btn">Back to start</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E2.6</code>PARTIAL_CLONE<span class="when">*.promisor</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico r"><svg class="ic"><use href="#i-db"/></svg></span><div><h3>Partial clone</h3><div class="code">PARTIAL_CLONE <span class="rp">· acme-web</span></div></div></div>
+        <p>This is a partial (promisor) clone. Some objects only exist on the remote and the browser cannot fetch them, so diffs would be incomplete.</p>
+        <div class="fix"><span class="k">What to do</span><span>Run <code>git fetch --refetch</code> in this checkout, or open a full clone.</span></div>
+        <div class="acts"><span class="btn btn-ink">Choose another folder</span><span class="btn">Retry after fetch</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E2.7</code>PACK_TOO_LARGE<span class="when">packs &gt; 1 GB</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico r"><svg class="ic"><use href="#i-hdd"/></svg></span><div><h3>Repository too large</h3><div class="code">PACK_TOO_LARGE <span class="rp">· monorepo</span></div></div></div>
+        <p>Pack files total <b>2.4 GB</b>; the limit for reading inside a browser tab is 1 GB.</p>
+        <div class="fix"><span class="k">What to do</span><span>Open a smaller repository, or a shallow clone: <code>git clone --depth 50 …</code> (history will be truncated; a banner will say so).</span></div>
+        <div class="acts"><span class="btn btn-ink">Choose another folder</span><span class="btn">Back to start</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E2.8</code>INDEX_UNSUPPORTED<span class="when">index version ∉ 2–4</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico r"><svg class="ic"><use href="#i-file"/></svg></span><div><h3>Unsupported index format</h3><div class="code">INDEX_UNSUPPORTED <span class="rp">· acme-web</span></div></div></div>
+        <p>The <span class="mono">.git/index</span> file uses a format version diffgit cannot parse.</p>
+        <div class="fix"><span class="k">What to do</span><span>Run <code>git update-index --index-version 4</code> in this checkout, then retry. Nothing else about the repository changes.</span><span class="k">Found</span><span>version 5, or an unknown mandatory extension</span></div>
+        <div class="acts"><span class="btn btn-ink">Retry</span><span class="btn">Choose another folder</span></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="var" id="E3">
+    <div class="tag"><code>E3</code><b>Access and environment</b><span class="why">yellow tile · fixable without leaving the page</span><span class="when">PERMISSION · HANDLE_GONE · STORAGE_UNAVAILABLE</span></div>
+    <div class="egrid">
+      <div><div class="ecap"><code>E3.1</code>PERMISSION<span class="when">prompt dismissed / blocked</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico y"><svg class="ic"><use href="#i-lock"/></svg></span><div><h3>Permission needed</h3><div class="code">PERMISSION <span class="rp">· acme-web</span></div></div></div>
+        <p>The browser did not grant read access to this folder. Nothing was read.</p>
+        <div class="fix"><span class="k">What to do</span><span>Click <b>Grant access</b> and choose <b>View files</b> in the browser prompt. Access is read-only and lasts for this tab.</span><span class="k">If no prompt</span><span>Site settings → File editing → allow, or reopen the folder from the picker.</span></div>
+        <div class="acts"><span class="btn btn-ink">Grant access</span><span class="btn">Choose another folder</span><span class="btn btn-ghost">Forget</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E3.2</code>PERMISSION, denied twice<span class="when">ensurePermission → "denied"</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico y"><svg class="ic"><use href="#i-lock"/></svg></span><div><h3>Permission needed</h3><div class="code">PERMISSION <span class="rp">· acme-web</span></div></div></div>
+        <div class="callout r"><svg class="ic"><use href="#i-xcircle"/></svg><div><b>Denied again.</b> The browser remembers a "Don't allow" for this folder. Re-picking it from the folder dialog resets that.</div></div>
+        <div class="fix"><span class="k">What to do</span><span>Choose the folder again through the picker; the browser asks fresh for a folder chosen this way.</span></div>
+        <div class="acts"><span class="btn btn-ink">Pick the folder again</span><span class="btn">Choose another folder</span><span class="btn btn-ghost">Forget</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E3.3</code>HANDLE_GONE<span class="when">root unreachable</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico y"><svg class="ic"><use href="#i-folder"/></svg></span><div><h3>Folder not found</h3><div class="code">HANDLE_GONE <span class="rp">· acme-web</span></div></div></div>
+        <p>The repository folder was moved, renamed, deleted, or is on a drive that is no longer mounted.</p>
+        <div class="fix"><span class="k">What to do</span><span>Choose it again from its new location. Viewed marks and the last branch pair are kept if it is the same repository.</span></div>
+        <div class="acts"><span class="btn btn-ink">Choose it again</span><span class="btn">Back to start</span><span class="btn btn-ghost">Forget this repo</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E3.4</code>HANDLE_GONE while open<span class="when">observer: root disappeared</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico y"><svg class="ic"><use href="#i-folder"/></svg></span><div><h3>Folder disappeared</h3><div class="code">HANDLE_GONE <span class="rp">· acme-web · was open 14 min</span></div></div></div>
+        <p>The folder went away while the diff was open. The last diff is still on screen behind this message and will not update.</p>
+        <div class="fix"><span class="k">What to do</span><span>If you renamed or moved it, choose it again. If a drive was unplugged, plug it back in and retry.</span></div>
+        <div class="acts"><span class="btn btn-ink">Retry</span><span class="btn">Choose it again</span><span class="btn btn-ghost">Forget this repo</span></div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="var" id="E4">
+    <div class="tag"><code>E4</code><b>Transient</b><span class="why">blue tile · retry is primary · an attempt counter after the first retry</span><span class="when">IO_ERROR · REF_NOT_FOUND · WORKER_CRASHED · STALE · INTERNAL</span></div>
+    <div class="egrid">
+      <div><div class="ecap"><code>E4.1</code>IO_ERROR<span class="when">EIO · NotReadableError …</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico b"><svg class="ic"><use href="#i-hdd"/></svg></span><div><h3>Read error</h3><div class="code">IO_ERROR <span class="rp">· acme-web</span></div></div></div>
+        <p>A file could not be read: <span class="mono">.git/objects/pack/pack-3f1a….pack</span>.</p>
+        <div class="fix"><span class="k">What to do</span><span>Check the folder is still accessible (network drive, cloud sync, antivirus) and retry. If it keeps failing, <code>git fsck</code> will say whether the file is damaged.</span></div>
+        <div class="acts"><span class="btn btn-ink">Retry</span><span class="btn">Choose another folder</span></div>
+        <details><summary><svg class="ic" style="width:12px;height:12px"><use href="#i-chev"/></svg>Details</summary><pre>NotReadableError: The requested file could not be read, typically due to permission problems that have occurred after a reference to a file was acquired.</pre></details>
+      </div></div></div>
+      <div><div class="ecap"><code>E4.2</code>REF_NOT_FOUND<span class="when">branch deleted under us</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico b"><svg class="ic"><use href="#i-branch"/></svg></span><div><h3>Branch not found</h3><div class="code">REF_NOT_FOUND <span class="rp">· acme-web</span></div></div></div>
+        <p><span class="mono">feat/coupons</span> no longer exists — it was deleted or renamed while it was selected.</p>
+        <div class="fix"><span class="k">What to do</span><span>Retry compares <code>main</code> … <code>HEAD</code> (the defaults). Or pick another branch.</span></div>
+        <div class="acts"><span class="btn btn-ink">Use defaults</span><span class="btn">Pick a branch</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E4.3</code>WORKER_CRASHED, gave up<span class="when">3 restarts in 60 s</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico b"><svg class="ic"><use href="#i-cpu"/></svg></span><div><h3>Engine keeps stopping</h3><div class="code">WORKER_CRASHED <span class="rp">· monorepo · 3 restarts</span></div></div></div>
+        <p>The diff engine stopped three times while opening this repository. That usually means the tab ran out of memory.</p>
+        <div class="fix"><span class="k">What to do</span><span>Close other tabs and retry, or open without uncommitted changes (the working tree scan is the biggest allocation).</span></div>
+        <div class="acts"><span class="btn btn-ink">Retry</span><span class="btn">Retry without uncommitted</span><span class="btn btn-ghost">Choose another</span></div>
+      </div></div></div>
+      <div><div class="ecap"><code>E4.4</code>INTERNAL<span class="when">bug · EROFS · no session</span></div><div class="stage app"><div class="err">
+        <div class="hd"><span class="ico b"><svg class="ic"><use href="#i-zap"/></svg></span><div><h3>Something went wrong</h3><div class="code">INTERNAL <span class="rp">· acme-web</span></div></div></div>
+        <p>An internal error occurred. This is a bug in diffgit, not in your repository.</p>
+        <div class="fix"><span class="k">What to do</span><span>Retry. If it happens again, copy the details and open an issue — the report contains no file contents.</span></div>
+        <div class="acts"><span class="btn btn-ink">Retry</span><span class="btn"><svg class="ic" style="width:13px;height:13px"><use href="#i-copy"/></svg>Copy report</span><span class="btn btn-ghost">Back to start</span></div>
+        <details open><summary><svg class="ic" style="width:12px;height:12px"><use href="#i-chev"/></svg>Details</summary><pre>TypeError: Cannot read properties of undefined (reading 'oid')
+  at DiffEngine.compute (diffEngine.ts:212)
+build 2f37c57 · Chrome 128 · sha1 · 11 files</pre></details>
+      </div></div></div>
+      <div><div class="ecap"><code>E4.5</code>STALE / CANCELLED<span class="when">superseded work</span></div><div class="stage app"><div class="err" style="padding:26px 22px">
+        <div class="hd"><span class="ico m"><svg class="ic"><use href="#i-refresh"/></svg></span><div><h3>Never a screen</h3><div class="code">STALE · CANCELLED</div></div></div>
+        <p class="why">Both mean "a newer request owns the screen". They are dropped silently by the store; if one ever reaches the error screen (a bug), it renders as INTERNAL with the code in Details. Documented here so the set is complete.</p>
+      </div></div></div>
+      <div><div class="ecap"><code>E4.6</code>TOO_LARGE<span class="when">fileBytes &gt; 10 MB</span></div><div class="stage app"><div class="err" style="padding:26px 22px">
+        <div class="hd"><span class="ico m"><svg class="ic"><use href="#i-scale"/></svg></span><div><h3>Never a screen either</h3><div class="code">TOO_LARGE · STORAGE_UNAVAILABLE</div></div></div>
+        <p class="why">TOO_LARGE is shown inside the file card ("Diff too large to display · 14.2 MB", no button). STORAGE_UNAVAILABLE is a facts-table row on the landing (H6) and a one-time toast in the app (E5.3).</p>
+      </div></div></div>
+    </div>
+  </div>
+
+  <div class="var" id="E5">
+    <div class="tag"><code>E5</code><b>Toasts</b><span class="why">bottom-right, 8 s, one action max</span><span class="when">non-blocking failures</span></div>
+    <div class="stage app" style="padding:24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px;background:var(--bg2)">
+      <div><div class="ecap"><code>E5.1</code>picker threw (not AbortError)</div><div class="toast"><svg class="ic r"><use href="#i-xcircle"/></svg><span>Couldn't open the folder. The browser refused the request (SecurityError).</span><span class="ac">Retry</span><svg class="ic x"><use href="#i-x"/></svg></div></div>
+      <div><div class="ecap"><code>E5.2</code>WORKER_CRASHED, auto-recovered</div><div class="toast"><svg class="ic b"><use href="#i-refresh"/></svg><span>Engine restarted, refreshing the diff. Your viewed marks are kept.</span><svg class="ic x"><use href="#i-x"/></svg></div></div>
+      <div><div class="ecap"><code>E5.3</code>STORAGE_UNAVAILABLE (once per session)</div><div class="toast"><svg class="ic y"><use href="#i-alert"/></svg><span>Storage is blocked or full. This repo won't be listed in Recent and viewed marks won't persist.</span><svg class="ic x"><use href="#i-x"/></svg></div></div>
+      <div><div class="ecap"><code>E5.4</code>REF_NOT_FOUND during refresh (fell back)</div><div class="toast"><svg class="ic y"><use href="#i-branch"/></svg><span><span class="mono">feat/coupons</span> was deleted. Now comparing <span class="mono">main … HEAD</span>.</span><span class="ac">Pick branch</span><svg class="ic x"><use href="#i-x"/></svg></div></div>
+      <div><div class="ecap"><code>E5.5</code>copy failed (clipboard blocked)</div><div class="toast"><svg class="ic r"><use href="#i-xcircle"/></svg><span>Copy failed — the clipboard is blocked in this context. Select the text instead.</span><svg class="ic x"><use href="#i-x"/></svg></div></div>
+      <div><div class="ecap"><code>E5.6</code>PERMISSION lost while open</div><div class="toast"><svg class="ic y"><use href="#i-lock"/></svg><span>Read access to <b>acme-web</b> was revoked. Live refresh paused.</span><span class="ac">Grant access</span><svg class="ic x"><use href="#i-x"/></svg></div></div>
+    </div>
+  </div>
+
+  <div class="var" id="E6">
+    <div class="tag"><code>E6</code><b>Inside a file card</b><span class="why">the diff pane never loses the other files</span><span class="when">FileDiffEntry.status === "error" · TOO_LARGE · render crash</span></div>
+    <div class="grid2">
+      <div class="stage app" style="padding:14px"><div class="card"><div class="fh"><span class="st M">M</span>src/api/orders.ts<span class="n"><b>+12</b> <i>−4</i></span><span class="rt"><span class="btn btn-xs">⇕ Expand all</span><span class="btn btn-xs">Viewed</span></span></div>
+        <div class="notice"><svg class="ic r"><use href="#i-xcircle"/></svg><b>Couldn't load this diff</b><span>Read error while opening the working-tree copy. Other files are unaffected.</span><span class="acts"><span class="btn btn-xs">Retry</span><span class="btn btn-xs">View raw</span></span><span class="code">IO_ERROR · NotReadableError</span></div></div></div>
+      <div class="stage app" style="padding:14px"><div class="card"><div class="fh"><span class="st M">M</span>data/fixtures.json<span class="n" style="color:var(--dim)">14.2 MB</span><span class="rt"><span class="btn btn-xs">Viewed</span></span></div>
+        <div class="notice"><svg class="ic" style="color:var(--dim)"><use href="#i-scale"/></svg><b>Diff too large to display</b><span>Old 13.9 MB · new 14.2 MB. Files over 10 MB per side are not compared in the browser.</span><span class="code">TOO_LARGE</span></div></div></div>
+      <div class="stage app" style="padding:14px"><div class="card"><div class="fh"><span class="st M">M</span>src/ui/Table.tsx<span class="n"><b>+230</b> <i>−198</i></span><span class="rt"><span class="btn btn-xs">Viewed</span></span></div>
+        <div class="notice"><svg class="ic r"><use href="#i-zap"/></svg><b>Couldn't render this diff</b><span>The renderer threw. This is a diffgit bug; the raw diff is intact.</span><span class="acts"><span class="btn btn-xs">Retry</span><span class="btn btn-xs">View raw</span><span class="btn btn-xs btn-ghost">Copy report</span></span></div></div></div>
+      <div class="stage app" style="padding:14px"><div class="card"><div class="fh"><span class="st M">M</span>public/logo.png<span class="n" style="color:var(--dim)">—</span><span class="rt"><span class="btn btn-xs">Viewed</span></span></div>
+        <div class="notice"><svg class="ic" style="color:var(--dim)"><use href="#i-file"/></svg><b>Binary file not shown</b><span>18.2 KB → 19.0 KB</span><span class="acts"><span class="btn btn-xs">View as text</span></span></div></div></div>
+    </div>
+  </div>
+
+  <div class="var" id="E7">
+    <div class="tag"><code>E7</code><b>All 21 warning banners</b><span class="why">unchanged shape; the code is now shown, dimmed, for the docs lookup</span><span class="when">RepoInfo.warnings · DiffResult.warnings</span></div>
+    <div class="wgrid">
+      <div class="lvl">error · red · role=alert</div>
+      <div class="banner e"><svg class="ic"><use href="#i-xcircle"/></svg><span><b>Split index</b> Split index is not supported; uncommitted changes hidden.<span class="cd">SPLIT_INDEX</span></span><a class="lk">Docs</a><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner e"><svg class="ic"><use href="#i-xcircle"/></svg><span><b>Index too large</b> The index is bigger than the browser can read; uncommitted changes hidden. <span class="det">312,400 entries · limit 200,000</span><span class="cd">INDEX_TOO_LARGE</span></span><a class="lk">Docs</a><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="lvl">warning · yellow · role=status</div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Multi-pack index</b> This repository uses a multi-pack index; object reads may be slower.<span class="cd">MULTI_PACK_INDEX</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Shallow clone</b> History is truncated, so the merge base may differ from what git would pick.<span class="cd">SHALLOW</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Git LFS</b> LFS pointer files are compared, not the large files they stand for.<span class="cd">LFS_PRESENT</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Line endings</b> core.autocrlf is set; line-ending-only changes may appear.<span class="cd">AUTOCRLF</span></span><a class="lk">Ignore whitespace</a><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Large pack files</b> Pack files are large; the first read of each object may take a moment. <span class="det">640 MB</span><span class="cd">PACK_LARGE</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Index checksum mismatch</b> Index was being written; showing last good read.<span class="cd">INDEX_CHECKSUM</span></span><a class="lk">Refresh</a><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Sparse checkout</b> Untracked file detection is partial.<span class="cd">SPARSE_INDEX</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Untracked files capped</b> Only the first 5,000 untracked files are listed; the rest are omitted.<span class="cd">UNTRACKED_CAPPED</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Rename detection limited</b> Too many changed files to pair every rename; some show as added + deleted.<span class="cd">RENAME_LIMIT</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Large file skipped</b> 2 files over the size limit were not compared. <span class="det">dist/bundle.js, data/fixtures.json</span><span class="cd">FILE_TOO_LARGE</span></span><a class="lk">Show them</a><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Embedded repository</b> A nested repository that is not a submodule was skipped. <span class="det">vendor/lib</span><span class="cd">EMBEDDED_REPO</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Unrelated histories</b> Branches share no history; showing a direct comparison.<span class="cd">UNRELATED_HISTORIES</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Multiple merge bases</b> The branches have more than one merge base; the first is used, as git does.<span class="cd">MULTIPLE_MERGE_BASES</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Global ignores unavailable</b> core.excludesFile lives outside this folder; some ignored files may appear as untracked.<span class="cd">GLOBAL_EXCLUDES_UNAVAILABLE</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Config include skipped</b> An include in .git/config points outside this folder and was ignored.<span class="cd">CONFIG_INCLUDE_SKIPPED</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Repository changed while reading</b> A pack file changed mid-read; the read was retried.<span class="cd">STALE_PACK_RETRIED</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Live refresh unavailable</b> Change detection fell back to polling every 2 s.<span class="cd">REFRESH_DEGRADED</span></span><a class="lk">Why?</a><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="banner w"><svg class="ic"><use href="#i-alert"/></svg><span><b>Path type changed</b> A path switched between file and directory; its diff may be incomplete. <span class="det">src/config</span><span class="cd">PATH_TYPE_CHANGED</span></span><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+      <div class="lvl">info · blue · role=status</div>
+      <div class="banner i"><svg class="ic"><use href="#i-info"/></svg><span><b>Uncommitted changes hidden</b> Uncommitted changes are only shown when the compare branch is the checked-out one (<span class="mono">HEAD</span>).<span class="cd">WORKTREE_NOT_APPLICABLE</span></span><a class="lk">Compare HEAD</a><span class="x"><svg class="ic"><use href="#i-x"/></svg></span></div>
+    </div>
+    <p class="note"><b>Two additions to the banner:</b> the code in dim mono at the end of the message (the FAQ promises "a code you can look up"), and an optional one-word action link where one exists (Refresh, Show them, Ignore whitespace, Compare HEAD). Everything else is the shipped component.</p>
+  </div>
+  </div>
+</section>
+<!-- ================= 5 BROWSER GATE ================= -->
+<section class="sec" id="s5">
+  <div class="num">05 — Browser gate</div>
+  <h2>"Can't open local folders" becomes a page with a way forward.</h2>
+  <p class="lede">Today the gate is three grey lines and a list of browser names. The redesign keeps the brand, says <b>which browser it detected</b> and <b>why that one can't</b>, offers the four browsers that can as real links, lets the user copy the address to a desktop, and, because the landing page's demo works in every browser, <b>keeps the demo reachable</b> so the visit is not wasted. Six causes produce six different pages; the layout is the same in all of them.</p>
+  <ul class="rules">
+    <li><span>detect</span><div><span class="mono">navigator.userAgentData?.brands</span> first, then UA sniffing for Firefox / Safari / iOS / Android; <span class="mono">window.isSecureContext</span>; <span class="mono">window.top !== window</span>; Chromium version from brands.</div></li>
+    <li><span>headline</span><div>Always "This browser can't open local folders." The red word is the one thing that differs: <em>browser</em>, <em>phone</em>, <em>address</em>, <em>frame</em>, <em>version</em>, <em>policy</em>.</div></li>
+    <li><span>right column</span><div>Copy-link card (for phones and wrong browsers) or a "what to do" step list (for fixable causes), and the demo card, always.</div></li>
+    <li><span>privacy</span><div>The read-only / no-upload / no-analytics line stays, as three icon facts, not a paragraph.</div></li>
+    <li><span>never</span><div>No "download Chrome" pressure, no user-agent string on screen, no auto-redirects.</div></li>
+  </ul>
+
+  <div class="spec">
+  <div class="var" id="B1">
+    <div class="tag"><code>B1</code><b>Firefox, desktop</b><span class="why">the common case: a capable machine, the wrong browser</span><span class="when">!showDirectoryPicker &amp;&amp; Firefox</span></div>
+    <div class="stage">
+      <div class="gbar"><span class="dot m"></span>detected: Firefox 130 · desktop · secure context<span class="ua">diffgit.com</span></div>
+      <div class="gate">
+        <div>
+          <div class="brand"><svg><use href="#logo"/></svg>diff<i>git</i></div>
+          <h3>This <em>browser</em> can't open local folders.</h3>
+          <span class="det"><svg class="ic" style="width:13px;height:13px"><use href="#i-monitorx"/></svg>Firefox · no File System Access API</span>
+          <p>diffgit reads the repository straight from your disk through <b>showDirectoryPicker()</b>. Firefox doesn't ship it, and there is no way to read a folder without it — so nothing here would work, and we'd rather say so now than fail later.</p>
+          <p>Open this page in one of these on the same machine:</p>
+          <div class="b4">
+            <a><svg class="ic"><use href="#i-monitor"/></svg>Google Chrome<small>86+</small></a>
+            <a><svg class="ic"><use href="#i-monitor"/></svg>Microsoft Edge<small>86+</small></a>
+            <a><svg class="ic"><use href="#i-monitor"/></svg>Brave<small>desktop</small></a>
+            <a><svg class="ic"><use href="#i-monitor"/></svg>Arc<small>desktop</small></a>
+          </div>
+          <div class="cta"><span class="btn btn-ink"><svg class="ic"><use href="#i-copy"/></svg>Copy link</span><span class="btn"><svg class="ic"><use href="#i-play"/></svg>See the demo anyway</span></div>
+          <div class="priv"><span><svg class="ic"><use href="#i-lock"/></svg>read-only</span><span><svg class="ic"><use href="#i-zap"/></svg>0 bytes uploaded, by CSP</span><span><svg class="ic"><use href="#i-xcircle"/></svg>no analytics</span></div>
+        </div>
+        <div class="side2">
+          <div class="qr"><div class="t">Open on a Chromium browser</div><div class="url"><svg class="ic"><use href="#i-link"/></svg><span>https://diffgit.com</span><svg class="ic"><use href="#i-copy"/></svg></div><p>Nothing to install, no account. The folder is picked on that machine.</p></div>
+          <div class="demo"><div class="cap"><span>demo · <b>works here</b></span><span>sample repo</span></div>
+            <div class="frow" style="background:var(--blue-bg)"><span class="st M">M</span><span class="p">cart.ts</span><span class="chip staged">staged</span><span class="n"><b>+41</b> <i>−9</i></span></div>
+            <div class="frow"><span class="st A">A</span><span class="p">coupon.ts</span><span class="chip untracked">untracked</span><span class="n"><b>+96</b></span></div>
+            <div class="l hunk"><span class="g"></span><span>@@ -12,6 +12,9 @@ export function total(cart)</span></div>
+            <div class="l"><span class="g">12</span><span>  const sub = sum(cart.items);</span></div>
+            <div class="l del"><span class="g">13</span><span>- return sub;</span></div>
+            <div class="l add"><span class="g">13</span><span>+ const off = coupon(cart.code, sub);</span></div>
+            <div class="l add"><span class="g">14</span><span>+ return sub - off;</span></div>
+            <div class="go"><span>The interactive demo runs in any browser.</span><a>Try it ↓</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="var" id="B2">
+    <div class="tag"><code>B2</code><b>Safari, desktop</b><span class="why">same page, different name and a note about the "File System" naming confusion</span><span class="when">Safari</span></div>
+    <div class="stage">
+      <div class="gbar"><span class="dot m"></span>detected: Safari 18 · macOS<span class="ua">diffgit.com</span></div>
+      <div class="gate" style="padding-bottom:36px">
+        <div>
+          <div class="brand"><svg><use href="#logo"/></svg>diff<i>git</i></div>
+          <h3>This <em>browser</em> can't open local folders.</h3>
+          <span class="det"><svg class="ic" style="width:13px;height:13px"><use href="#i-monitorx"/></svg>Safari · no showDirectoryPicker()</span>
+          <p>Safari has an "origin private file system" but it cannot open a folder <b>you</b> choose, which is the whole point here. Chrome, Edge, Brave or Arc on this Mac will work.</p>
+          <div class="b4" style="margin-top:14px">
+            <a><svg class="ic"><use href="#i-monitor"/></svg>Google Chrome<small>86+</small></a>
+            <a><svg class="ic"><use href="#i-monitor"/></svg>Microsoft Edge<small>86+</small></a>
+            <a><svg class="ic"><use href="#i-monitor"/></svg>Brave<small>desktop</small></a>
+            <a><svg class="ic"><use href="#i-monitor"/></svg>Arc<small>desktop</small></a>
+          </div>
+          <div class="cta"><span class="btn btn-ink"><svg class="ic"><use href="#i-copy"/></svg>Copy link</span><span class="btn"><svg class="ic"><use href="#i-play"/></svg>See the demo anyway</span></div>
+        </div>
+        <div class="side2"><div class="qr"><div class="t">Open on a Chromium browser</div><div class="url"><svg class="ic"><use href="#i-link"/></svg><span>https://diffgit.com</span><svg class="ic"><use href="#i-copy"/></svg></div><p>Nothing to install, no account.</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="var" id="B3">
+    <div class="tag"><code>B3</code><b>Phone or tablet</b><span class="why">even Chrome on iOS/Android lacks the API; the fix is a different device</span><span class="when">mobile UA, any browser</span></div>
+    <div class="stage">
+      <div class="gbar"><span class="dot m"></span>detected: Chrome 128 · iPhone<span class="ua">diffgit.com</span></div>
+      <div class="gate" style="padding-bottom:36px">
+        <div>
+          <div class="brand"><svg><use href="#logo"/></svg>diff<i>git</i></div>
+          <h3>This <em>phone</em> can't open local folders.</h3>
+          <span class="det"><svg class="ic" style="width:13px;height:13px"><use href="#i-phone"/></svg>Chrome on iOS · folder access is desktop-only</span>
+          <p>No mobile browser can hand a web page a folder, so there is nothing to fix on the phone. Send yourself the link and open it on the computer where the repository is.</p>
+          <div class="cta" style="margin-top:20px"><span class="btn btn-ink"><svg class="ic"><use href="#i-copy"/></svg>Copy link</span><span class="btn"><svg class="ic"><use href="#i-external"/></svg>Share…</span><span class="btn"><svg class="ic"><use href="#i-play"/></svg>See the demo</span></div>
+          <div class="priv"><span><svg class="ic"><use href="#i-lock"/></svg>read-only</span><span><svg class="ic"><use href="#i-zap"/></svg>0 bytes uploaded</span><span><svg class="ic"><use href="#i-xcircle"/></svg>no analytics</span></div>
+        </div>
+        <div class="side2"><div class="qr"><div class="t">On your computer</div><div class="url"><svg class="ic"><use href="#i-link"/></svg><span>https://diffgit.com</span><svg class="ic"><use href="#i-copy"/></svg></div><p>Chrome, Edge, Brave or Arc on Windows, macOS or Linux.</p></div></div>
+      </div>
+    </div>
+    <p class="note"><b>Share…</b> uses <span class="mono">navigator.share</span> when present (iOS and Android both have it), otherwise it is hidden. The demo card is dropped at phone width; the "See the demo" button scrolls instead.</p>
+  </div>
+
+  <div class="var" id="B4">
+    <div class="tag"><code>B4</code><b>Chromium, but not a secure context</b><span class="why">http:// or a LAN IP — the API exists in the browser but is hidden from this page</span><span class="when">Chromium &amp;&amp; !isSecureContext</span></div>
+    <div class="stage">
+      <div class="gbar"><span class="dot y"></span>detected: Chrome 128 · desktop · <span style="color:var(--yellow)">insecure context</span><span class="ua">http://192.168.0.234:4173</span></div>
+      <div class="gate" style="padding-bottom:36px">
+        <div>
+          <div class="brand"><svg><use href="#logo"/></svg>diff<i>git</i></div>
+          <h3>This <em>address</em> can't open local folders.</h3>
+          <span class="det"><svg class="ic" style="width:13px;height:13px"><use href="#i-alert"/></svg>Chrome · page is not https</span>
+          <p>Your browser supports folder access, but only on <b>https://</b> pages (and <b>localhost</b>). This page was loaded over plain http from <span class="mono">192.168.0.234</span>, so the browser hides the API.</p>
+          <div class="cta" style="margin-top:20px"><span class="btn btn-ink"><svg class="ic"><use href="#i-external"/></svg>Open diffgit.com</span><span class="btn"><svg class="ic"><use href="#i-play"/></svg>See the demo</span></div>
+        </div>
+        <div class="side2">
+          <div class="qr"><div class="t">If this is your own build</div>
+            <ol class="steps">
+              <li><i>1</i><div>Use <code>http://localhost:4173</code> instead of the LAN IP<span>localhost counts as secure</span></div></li>
+              <li><i>2</i><div>Or serve it over https<span><code>vite preview --https</code>, or Caddy with a local cert</span></div></li>
+              <li><i>3</i><div>Or allow the origin in Chrome<span><code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code></span></div></li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="var" id="B5">
+    <div class="tag"><code>B5</code><b>Embedded in an iframe</b><span class="why">the picker refuses to open inside a frame</span><span class="when">window.top !== window</span></div>
+    <div class="stage">
+      <div class="gbar"><span class="dot y"></span>detected: Edge 128 · desktop · <span style="color:var(--yellow)">inside a frame</span><span class="ua">embedded in notion.so</span></div>
+      <div class="gate" style="padding-bottom:36px">
+        <div>
+          <div class="brand"><svg><use href="#logo"/></svg>diff<i>git</i></div>
+          <h3>This <em>frame</em> can't open local folders.</h3>
+          <span class="det"><svg class="ic" style="width:13px;height:13px"><use href="#i-alert"/></svg>Edge · embedded page</span>
+          <p>diffgit is being shown inside another site. Browsers don't allow a folder picker from an embedded page, and diffgit's own headers forbid embedding anyway.</p>
+          <div class="cta" style="margin-top:20px"><span class="btn btn-ink"><svg class="ic"><use href="#i-external"/></svg>Open in its own tab</span><span class="btn"><svg class="ic"><use href="#i-play"/></svg>See the demo</span></div>
+        </div>
+        <div class="side2"><div class="qr"><div class="t">Direct link</div><div class="url"><svg class="ic"><use href="#i-link"/></svg><span>https://diffgit.com</span><svg class="ic"><use href="#i-copy"/></svg></div><p>Opens with <span class="mono">target=_top</span>; the demo still runs inside the frame.</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="var" id="B6">
+    <div class="tag"><code>B6</code><b>Chromium too old, or the API disabled by policy</b><span class="why">the browser is right, its version or its admin is not</span><span class="when">Chromium &lt; 86 · enterprise policy · flag off</span></div>
+    <div class="grid2">
+      <div class="stage">
+        <div class="gbar"><span class="dot y"></span>detected: Chrome 84 · desktop<span class="ua">diffgit.com</span></div>
+        <div class="gate" style="grid-template-columns:1fr;padding:40px 36px">
+          <div>
+            <div class="brand"><svg><use href="#logo"/></svg>diff<i>git</i></div>
+            <h3 style="font-size:30px">This <em>version</em> can't open local folders.</h3>
+            <span class="det"><svg class="ic" style="width:13px;height:13px"><use href="#i-alert"/></svg>Chrome 84 · needs 86 or newer</span>
+            <p>Folder access arrived in Chrome 86 (October 2020). Updating the browser is the only fix.</p>
+            <div class="cta" style="margin-top:16px"><span class="btn btn-ink"><svg class="ic"><use href="#i-external"/></svg>Update Chrome</span><span class="btn"><svg class="ic"><use href="#i-play"/></svg>See the demo</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="gbar"><span class="dot y"></span>detected: Edge 128 · desktop · <span style="color:var(--yellow)">API present but disabled</span><span class="ua">diffgit.com</span></div>
+        <div class="gate" style="grid-template-columns:1fr;padding:40px 36px">
+          <div>
+            <div class="brand"><svg><use href="#logo"/></svg>diff<i>git</i></div>
+            <h3 style="font-size:30px">A <em>policy</em> blocks opening local folders.</h3>
+            <span class="det"><svg class="ic" style="width:13px;height:13px"><use href="#i-lock"/></svg>Edge · FileSystemReadBlockedForUrls</span>
+            <p>Your browser has the API but an administrator policy (or <span class="mono">edge://settings/content/filesystem</span>) blocks reading folders for this site. The picker throws <span class="mono">SecurityError</span> immediately.</p>
+            <div class="cta" style="margin-top:16px"><span class="btn btn-ink">Try again</span><span class="btn"><svg class="ic"><use href="#i-copy"/></svg>Copy policy name for IT</span><span class="btn"><svg class="ic"><use href="#i-play"/></svg>See the demo</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note"><b>The policy case is detected on the first click, not on load:</b> <span class="mono">showDirectoryPicker</span> exists, so the home page renders normally, and the picker rejects with <span class="mono">SecurityError</span>. The home page then swaps to this gate instead of showing toast E5.1 twice.</p>
+  </div>
+  </div>
+</section>
+
+<section class="sec" style="border-bottom:0">
+  <div class="num">Coverage</div>
+  <h2 style="font-size:26px">What this review covers, and what it doesn't.</h2>
+  <ul class="rules">
+    <li><span>errors</span><div>All 19 public codes: 14 as screens (E1–E4), 2 in cards (E6), 2 never shown (E4.5), 1 as facts row + toast (H6, E5.3).</div></li>
+    <li><span>warnings</span><div>All 21 warning codes (E7), two levels of severity plus info.</div></li>
+    <li><span>history</span><div>0, 1, 2–6, 7+ repos; 6 inline row outcomes; nav popover; storage unavailable.</div></li>
+    <li><span>loading</span><div>determinate, indeterminate, slow, phase failed, engine restarted, warnings during open.</div></li>
+    <li><span>stats</span><div>ready, streaming, partial (3 reasons), refreshing, filtered, no match, no changes, stalled.</div></li>
+    <li><span>gate</span><div>Firefox, Safari, mobile, insecure context, iframe, old version, policy-blocked.</div></li>
+    <li><span>not here</span><div>The repo screen itself, the branch picker, the file card body and the help dialog are unchanged and not re-drawn.</div></li>
+    <li><span>fonts</span><div>This mockup loads Inter / Inter Tight / JetBrains Mono from Google Fonts for review only; the app keeps its system stacks and the marketing site self-hosts, per Design §13.</div></li>
+  </ul>
+</section>
+</div><!-- /main -->
+</div><!-- /wrap -->
+<script>
+(function(){
+  var root=document.documentElement,btns=document.querySelectorAll('.side .tog button');
+  function apply(t){if(t==='system')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);btns.forEach(function(b){b.classList.toggle('on',b.dataset.t===t)});try{localStorage.setItem('dg-review-theme',t)}catch(e){}}
+  btns.forEach(function(b){b.addEventListener('click',function(){apply(b.dataset.t)})});
+  var saved=null;try{saved=localStorage.getItem('dg-review-theme')}catch(e){}
+  if(saved==='light'||saved==='dark')apply(saved);
+})();
+</script>
+</body>
+</html>

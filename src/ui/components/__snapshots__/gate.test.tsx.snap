@@ -1,0 +1,2045 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`BrowserGate > B1 and B4 look the same in both themes > B1 firefox (dark) 1`] = `
+<main
+  aria-label="Unsupported browser"
+  class="min-h-full bg-surface text-[13px] text-ink"
+>
+  <div
+    class="flex items-center gap-2.5 border-b border-line-subtle bg-surface-raised px-4 py-2.5 font-mono text-[12px] text-muted"
+  >
+    <span
+      aria-hidden="true"
+      class="h-[7px] w-[7px] flex-none rounded-full bg-muted/70"
+    />
+    <span>
+      detected: Firefox 130 · desktop · 
+      <span>
+        secure context
+      </span>
+    </span>
+    <span
+      class="ml-auto text-muted/70"
+    >
+      diffgit.com
+    </span>
+  </div>
+  <div
+    class="grid items-start gap-10 px-12 py-14 min-[1000px]:grid-cols-[1fr_340px]"
+  >
+    <div>
+      <div
+        class="mb-[26px] flex items-center gap-[9px] text-[15px] font-semibold"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="26"
+          viewBox="0 0 32 32"
+          width="26"
+        >
+          <rect
+            fill="var(--brand-chip)"
+            height="32"
+            rx="7"
+            width="32"
+          />
+          <path
+            d="M10 10.5v11"
+            fill="none"
+            stroke="var(--brand-line)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <path
+            d="M22 12.6c0 6-12 3.4-12 9"
+            fill="none"
+            stroke="var(--brand-branch)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <circle
+            cx="10"
+            cy="8"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="10"
+            cy="24"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="22"
+            cy="10"
+            fill="var(--brand-branch)"
+            r="2.6"
+          />
+        </svg>
+        <span>
+          diff
+          <span
+            class="text-success"
+          >
+            git
+          </span>
+        </span>
+      </div>
+      <h1
+        class="m-0 mb-3.5 max-w-[16ch] text-[clamp(28px,3.6vw,40px)] font-medium leading-[1.02] tracking-[-0.04em]"
+      >
+        This 
+        <em
+          class="not-italic text-danger"
+        >
+          browser
+        </em>
+         can't open local folders.
+      </h1>
+      <span
+        class="mb-4 inline-flex items-center gap-2 rounded-full border border-line px-2.5 py-[5px] font-mono text-[12.5px] font-medium text-muted"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-monitor-x shrink-0"
+          fill="none"
+          height="13"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="13"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m14.5 12.5-5-5"
+          />
+          <path
+            d="m9.5 12.5 5-5"
+          />
+          <rect
+            height="14"
+            rx="2"
+            width="20"
+            x="2"
+            y="3"
+          />
+          <path
+            d="M12 17v4"
+          />
+          <path
+            d="M8 21h8"
+          />
+        </svg>
+        Firefox · no File System Access API
+      </span>
+      <p
+        class="m-0 mb-3 max-w-[52ch] text-[15.5px] leading-6 text-muted"
+      >
+        diffgit reads the repository straight from your disk through 
+        <b
+          class="font-medium text-ink"
+        >
+          showDirectoryPicker()
+        </b>
+        . Firefox doesn't ship it, and there is no way to read a folder without it — so nothing here would work, and we'd rather say so now than fail later.
+      </p>
+      <p
+        class="m-0 mb-3 max-w-[52ch] text-[15.5px] leading-6 text-muted"
+      >
+        Open this page in one of these on the same machine:
+      </p>
+      <div
+        class="mt-[22px] mb-[18px] grid grid-cols-2 gap-2.5"
+      >
+        <a
+          class="flex items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-[11px] text-[14px] font-medium hover:bg-surface-raised"
+          href="https://www.google.com/chrome/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-monitor shrink-0 text-muted"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              width="20"
+              x="2"
+              y="3"
+            />
+            <line
+              x1="8"
+              x2="16"
+              y1="21"
+              y2="21"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="17"
+              y2="21"
+            />
+          </svg>
+          Google Chrome
+          <small
+            class="ml-auto font-mono text-[11.5px] font-normal text-muted/70"
+          >
+            86+
+          </small>
+        </a>
+        <a
+          class="flex items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-[11px] text-[14px] font-medium hover:bg-surface-raised"
+          href="https://www.microsoft.com/edge"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-monitor shrink-0 text-muted"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              width="20"
+              x="2"
+              y="3"
+            />
+            <line
+              x1="8"
+              x2="16"
+              y1="21"
+              y2="21"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="17"
+              y2="21"
+            />
+          </svg>
+          Microsoft Edge
+          <small
+            class="ml-auto font-mono text-[11.5px] font-normal text-muted/70"
+          >
+            86+
+          </small>
+        </a>
+        <a
+          class="flex items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-[11px] text-[14px] font-medium hover:bg-surface-raised"
+          href="https://brave.com/download/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-monitor shrink-0 text-muted"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              width="20"
+              x="2"
+              y="3"
+            />
+            <line
+              x1="8"
+              x2="16"
+              y1="21"
+              y2="21"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="17"
+              y2="21"
+            />
+          </svg>
+          Brave
+          <small
+            class="ml-auto font-mono text-[11.5px] font-normal text-muted/70"
+          >
+            desktop
+          </small>
+        </a>
+        <a
+          class="flex items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-[11px] text-[14px] font-medium hover:bg-surface-raised"
+          href="https://arc.net/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-monitor shrink-0 text-muted"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              width="20"
+              x="2"
+              y="3"
+            />
+            <line
+              x1="8"
+              x2="16"
+              y1="21"
+              y2="21"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="17"
+              y2="21"
+            />
+          </svg>
+          Arc
+          <small
+            class="ml-auto font-mono text-[11.5px] font-normal text-muted/70"
+          >
+            desktop
+          </small>
+        </a>
+      </div>
+      <div
+        class="mt-1 flex flex-wrap items-center gap-3"
+      >
+        <button
+          class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-ink bg-ink px-3.5 py-[9px] text-[14px] font-medium leading-5 text-bg hover:opacity-90"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-copy shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              ry="2"
+              width="14"
+              x="8"
+              y="8"
+            />
+            <path
+              d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
+            />
+          </svg>
+          Copy link
+        </button>
+        <button
+          class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-3.5 py-[9px] text-[14px] font-medium leading-5 text-ink hover:bg-surface-raised"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-play shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+            />
+          </svg>
+          See the demo anyway
+        </button>
+      </div>
+      <div
+        class="mt-[26px] flex flex-wrap gap-3.5 border-t border-line-subtle pt-3.5 text-[13px] text-muted/70"
+      >
+        <span
+          class="inline-flex items-center gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-lock"
+            fill="none"
+            height="13"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="13"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="11"
+              rx="2"
+              ry="2"
+              width="18"
+              x="3"
+              y="11"
+            />
+            <path
+              d="M7 11V7a5 5 0 0 1 10 0v4"
+            />
+          </svg>
+          read-only
+        </span>
+        <span
+          class="inline-flex items-center gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-zap"
+            fill="none"
+            height="13"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="13"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"
+            />
+          </svg>
+          0 bytes uploaded, by CSP
+        </span>
+        <span
+          class="inline-flex items-center gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-x lucide-x-circle"
+            fill="none"
+            height="13"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="13"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m15 9-6 6"
+            />
+            <path
+              d="m9 9 6 6"
+            />
+          </svg>
+          no analytics
+        </span>
+      </div>
+    </div>
+    <div
+      class="flex flex-col gap-3.5"
+    >
+      <div
+        class="rounded-xl border border-line bg-surface p-4"
+      >
+        <div
+          class="mb-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-muted"
+        >
+          Open on a Chromium browser
+        </div>
+        <div
+          class="flex items-center gap-2 rounded-md border border-line bg-surface-sunken px-2.5 py-1.5 font-mono text-[12.5px]"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-link shrink-0 text-muted"
+            fill="none"
+            height="14"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="14"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+            />
+            <path
+              d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+            />
+          </svg>
+          <span
+            class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap"
+          >
+            https://diffgit.com
+          </span>
+          <button
+            aria-label="Copy https://diffgit.com"
+            class="shrink-0 cursor-pointer text-muted hover:text-ink"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-copy"
+              fill="none"
+              height="14"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="14"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                height="14"
+                rx="2"
+                ry="2"
+                width="14"
+                x="8"
+                y="8"
+              />
+              <path
+                d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
+              />
+            </svg>
+          </button>
+        </div>
+        <p
+          class="m-0 mt-2 text-[13px] text-muted"
+        >
+          Nothing to install, no account. The folder is picked on that machine.
+        </p>
+      </div>
+      <div
+        class="hidden overflow-hidden rounded-xl border border-line bg-surface sm:block"
+      >
+        <div
+          class="flex justify-between border-b border-line-subtle px-3 py-2 font-mono text-[12px] text-muted"
+        >
+          <span>
+            demo · 
+            <b
+              class="font-medium text-success"
+            >
+              works here
+            </b>
+          </span>
+          <span>
+            sample repo
+          </span>
+        </div>
+        <div
+          class="flex h-6 items-center gap-[7px] bg-accent-subtle px-3 font-mono text-[11.5px] text-ink/80"
+        >
+          <span
+            class="inline-block h-4 w-4 flex-none rounded-[4px] bg-status-m-bg text-center text-[10px] font-bold leading-4 text-status-m-fg"
+          >
+            M
+          </span>
+          <span
+            class="overflow-hidden text-ellipsis"
+          >
+            cart.ts
+          </span>
+          <span
+            class="flex-none rounded-full border border-chip-staged-fg/45 bg-chip-staged-bg px-[5px] text-[9.5px] font-semibold leading-[15px] text-chip-staged-fg"
+          >
+            staged
+          </span>
+          <span
+            class="ml-auto text-[11px] text-muted"
+          >
+            <b
+              class="font-medium text-success"
+            >
+              +41
+            </b>
+             
+            <i
+              class="not-italic text-danger"
+            >
+              −9
+            </i>
+          </span>
+        </div>
+        <div
+          class="flex h-6 items-center gap-[7px] px-3 font-mono text-[11.5px] text-ink/80"
+        >
+          <span
+            class="inline-block h-4 w-4 flex-none rounded-[4px] bg-status-a-bg text-center text-[10px] font-bold leading-4 text-status-a-fg"
+          >
+            A
+          </span>
+          <span
+            class="overflow-hidden text-ellipsis"
+          >
+            coupon.ts
+          </span>
+          <span
+            class="flex-none rounded-full border border-chip-untracked-fg/45 bg-chip-untracked-bg px-[5px] text-[9.5px] font-semibold leading-[15px] text-chip-untracked-fg"
+          >
+            untracked
+          </span>
+          <span
+            class="ml-auto text-[11px] text-muted"
+          >
+            <b
+              class="font-medium text-success"
+            >
+              +96
+            </b>
+          </span>
+        </div>
+        <div
+          class="grid grid-cols-[36px_1fr] font-mono text-[11.5px] leading-5 bg-diff-hunk-bg text-muted"
+        >
+          <span
+            class="whitespace-pre px-2 text-right text-[10.5px] bg-surface-sunken text-muted/70"
+          />
+          <span
+            class="whitespace-pre px-2"
+          >
+            @@ -12,6 +12,9 @@ export function total(cart)
+          </span>
+        </div>
+        <div
+          class="grid grid-cols-[36px_1fr] font-mono text-[11.5px] leading-5 "
+        >
+          <span
+            class="whitespace-pre px-2 text-right text-[10.5px] bg-surface-sunken text-muted/70"
+          >
+            12
+          </span>
+          <span
+            class="whitespace-pre px-2"
+          >
+              const sub = sum(cart.items);
+          </span>
+        </div>
+        <div
+          class="grid grid-cols-[36px_1fr] font-mono text-[11.5px] leading-5 bg-diff-del-bg"
+        >
+          <span
+            class="whitespace-pre px-2 text-right text-[10.5px] bg-diff-del-num text-danger"
+          >
+            13
+          </span>
+          <span
+            class="whitespace-pre px-2"
+          >
+            - return sub;
+          </span>
+        </div>
+        <div
+          class="grid grid-cols-[36px_1fr] font-mono text-[11.5px] leading-5 bg-diff-add-bg"
+        >
+          <span
+            class="whitespace-pre px-2 text-right text-[10.5px] bg-diff-add-num text-success"
+          >
+            13
+          </span>
+          <span
+            class="whitespace-pre px-2"
+          >
+            + const off = coupon(cart.code, sub);
+          </span>
+        </div>
+        <div
+          class="grid grid-cols-[36px_1fr] font-mono text-[11.5px] leading-5 bg-diff-add-bg"
+        >
+          <span
+            class="whitespace-pre px-2 text-right text-[10.5px] bg-diff-add-num text-success"
+          >
+            14
+          </span>
+          <span
+            class="whitespace-pre px-2"
+          >
+            + return sub - off;
+          </span>
+        </div>
+        <div
+          class="flex items-center justify-between border-t border-line-subtle px-3 py-2.5 text-[13px]"
+        >
+          <span>
+            The interactive demo runs in any browser.
+          </span>
+          <button
+            class="cursor-pointer font-medium text-accent hover:underline"
+            type="button"
+          >
+            Try it ↓
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+`;
+
+exports[`BrowserGate > B1 and B4 look the same in both themes > B1 firefox (light) 1`] = `
+<main
+  aria-label="Unsupported browser"
+  class="min-h-full bg-surface text-[13px] text-ink"
+>
+  <div
+    class="flex items-center gap-2.5 border-b border-line-subtle bg-surface-raised px-4 py-2.5 font-mono text-[12px] text-muted"
+  >
+    <span
+      aria-hidden="true"
+      class="h-[7px] w-[7px] flex-none rounded-full bg-muted/70"
+    />
+    <span>
+      detected: Firefox 130 · desktop · 
+      <span>
+        secure context
+      </span>
+    </span>
+    <span
+      class="ml-auto text-muted/70"
+    >
+      diffgit.com
+    </span>
+  </div>
+  <div
+    class="grid items-start gap-10 px-12 py-14 min-[1000px]:grid-cols-[1fr_340px]"
+  >
+    <div>
+      <div
+        class="mb-[26px] flex items-center gap-[9px] text-[15px] font-semibold"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="26"
+          viewBox="0 0 32 32"
+          width="26"
+        >
+          <rect
+            fill="var(--brand-chip)"
+            height="32"
+            rx="7"
+            width="32"
+          />
+          <path
+            d="M10 10.5v11"
+            fill="none"
+            stroke="var(--brand-line)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <path
+            d="M22 12.6c0 6-12 3.4-12 9"
+            fill="none"
+            stroke="var(--brand-branch)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <circle
+            cx="10"
+            cy="8"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="10"
+            cy="24"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="22"
+            cy="10"
+            fill="var(--brand-branch)"
+            r="2.6"
+          />
+        </svg>
+        <span>
+          diff
+          <span
+            class="text-success"
+          >
+            git
+          </span>
+        </span>
+      </div>
+      <h1
+        class="m-0 mb-3.5 max-w-[16ch] text-[clamp(28px,3.6vw,40px)] font-medium leading-[1.02] tracking-[-0.04em]"
+      >
+        This 
+        <em
+          class="not-italic text-danger"
+        >
+          browser
+        </em>
+         can't open local folders.
+      </h1>
+      <span
+        class="mb-4 inline-flex items-center gap-2 rounded-full border border-line px-2.5 py-[5px] font-mono text-[12.5px] font-medium text-muted"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-monitor-x shrink-0"
+          fill="none"
+          height="13"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="13"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m14.5 12.5-5-5"
+          />
+          <path
+            d="m9.5 12.5 5-5"
+          />
+          <rect
+            height="14"
+            rx="2"
+            width="20"
+            x="2"
+            y="3"
+          />
+          <path
+            d="M12 17v4"
+          />
+          <path
+            d="M8 21h8"
+          />
+        </svg>
+        Firefox · no File System Access API
+      </span>
+      <p
+        class="m-0 mb-3 max-w-[52ch] text-[15.5px] leading-6 text-muted"
+      >
+        diffgit reads the repository straight from your disk through 
+        <b
+          class="font-medium text-ink"
+        >
+          showDirectoryPicker()
+        </b>
+        . Firefox doesn't ship it, and there is no way to read a folder without it — so nothing here would work, and we'd rather say so now than fail later.
+      </p>
+      <p
+        class="m-0 mb-3 max-w-[52ch] text-[15.5px] leading-6 text-muted"
+      >
+        Open this page in one of these on the same machine:
+      </p>
+      <div
+        class="mt-[22px] mb-[18px] grid grid-cols-2 gap-2.5"
+      >
+        <a
+          class="flex items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-[11px] text-[14px] font-medium hover:bg-surface-raised"
+          href="https://www.google.com/chrome/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-monitor shrink-0 text-muted"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              width="20"
+              x="2"
+              y="3"
+            />
+            <line
+              x1="8"
+              x2="16"
+              y1="21"
+              y2="21"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="17"
+              y2="21"
+            />
+          </svg>
+          Google Chrome
+          <small
+            class="ml-auto font-mono text-[11.5px] font-normal text-muted/70"
+          >
+            86+
+          </small>
+        </a>
+        <a
+          class="flex items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-[11px] text-[14px] font-medium hover:bg-surface-raised"
+          href="https://www.microsoft.com/edge"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-monitor shrink-0 text-muted"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              width="20"
+              x="2"
+              y="3"
+            />
+            <line
+              x1="8"
+              x2="16"
+              y1="21"
+              y2="21"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="17"
+              y2="21"
+            />
+          </svg>
+          Microsoft Edge
+          <small
+            class="ml-auto font-mono text-[11.5px] font-normal text-muted/70"
+          >
+            86+
+          </small>
+        </a>
+        <a
+          class="flex items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-[11px] text-[14px] font-medium hover:bg-surface-raised"
+          href="https://brave.com/download/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-monitor shrink-0 text-muted"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              width="20"
+              x="2"
+              y="3"
+            />
+            <line
+              x1="8"
+              x2="16"
+              y1="21"
+              y2="21"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="17"
+              y2="21"
+            />
+          </svg>
+          Brave
+          <small
+            class="ml-auto font-mono text-[11.5px] font-normal text-muted/70"
+          >
+            desktop
+          </small>
+        </a>
+        <a
+          class="flex items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-[11px] text-[14px] font-medium hover:bg-surface-raised"
+          href="https://arc.net/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-monitor shrink-0 text-muted"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              width="20"
+              x="2"
+              y="3"
+            />
+            <line
+              x1="8"
+              x2="16"
+              y1="21"
+              y2="21"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="17"
+              y2="21"
+            />
+          </svg>
+          Arc
+          <small
+            class="ml-auto font-mono text-[11.5px] font-normal text-muted/70"
+          >
+            desktop
+          </small>
+        </a>
+      </div>
+      <div
+        class="mt-1 flex flex-wrap items-center gap-3"
+      >
+        <button
+          class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-ink bg-ink px-3.5 py-[9px] text-[14px] font-medium leading-5 text-bg hover:opacity-90"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-copy shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              ry="2"
+              width="14"
+              x="8"
+              y="8"
+            />
+            <path
+              d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
+            />
+          </svg>
+          Copy link
+        </button>
+        <button
+          class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-3.5 py-[9px] text-[14px] font-medium leading-5 text-ink hover:bg-surface-raised"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-play shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+            />
+          </svg>
+          See the demo anyway
+        </button>
+      </div>
+      <div
+        class="mt-[26px] flex flex-wrap gap-3.5 border-t border-line-subtle pt-3.5 text-[13px] text-muted/70"
+      >
+        <span
+          class="inline-flex items-center gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-lock"
+            fill="none"
+            height="13"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="13"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="11"
+              rx="2"
+              ry="2"
+              width="18"
+              x="3"
+              y="11"
+            />
+            <path
+              d="M7 11V7a5 5 0 0 1 10 0v4"
+            />
+          </svg>
+          read-only
+        </span>
+        <span
+          class="inline-flex items-center gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-zap"
+            fill="none"
+            height="13"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="13"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"
+            />
+          </svg>
+          0 bytes uploaded, by CSP
+        </span>
+        <span
+          class="inline-flex items-center gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-x lucide-x-circle"
+            fill="none"
+            height="13"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="13"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m15 9-6 6"
+            />
+            <path
+              d="m9 9 6 6"
+            />
+          </svg>
+          no analytics
+        </span>
+      </div>
+    </div>
+    <div
+      class="flex flex-col gap-3.5"
+    >
+      <div
+        class="rounded-xl border border-line bg-surface p-4"
+      >
+        <div
+          class="mb-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-muted"
+        >
+          Open on a Chromium browser
+        </div>
+        <div
+          class="flex items-center gap-2 rounded-md border border-line bg-surface-sunken px-2.5 py-1.5 font-mono text-[12.5px]"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-link shrink-0 text-muted"
+            fill="none"
+            height="14"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="14"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+            />
+            <path
+              d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+            />
+          </svg>
+          <span
+            class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap"
+          >
+            https://diffgit.com
+          </span>
+          <button
+            aria-label="Copy https://diffgit.com"
+            class="shrink-0 cursor-pointer text-muted hover:text-ink"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-copy"
+              fill="none"
+              height="14"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="14"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                height="14"
+                rx="2"
+                ry="2"
+                width="14"
+                x="8"
+                y="8"
+              />
+              <path
+                d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
+              />
+            </svg>
+          </button>
+        </div>
+        <p
+          class="m-0 mt-2 text-[13px] text-muted"
+        >
+          Nothing to install, no account. The folder is picked on that machine.
+        </p>
+      </div>
+      <div
+        class="hidden overflow-hidden rounded-xl border border-line bg-surface sm:block"
+      >
+        <div
+          class="flex justify-between border-b border-line-subtle px-3 py-2 font-mono text-[12px] text-muted"
+        >
+          <span>
+            demo · 
+            <b
+              class="font-medium text-success"
+            >
+              works here
+            </b>
+          </span>
+          <span>
+            sample repo
+          </span>
+        </div>
+        <div
+          class="flex h-6 items-center gap-[7px] bg-accent-subtle px-3 font-mono text-[11.5px] text-ink/80"
+        >
+          <span
+            class="inline-block h-4 w-4 flex-none rounded-[4px] bg-status-m-bg text-center text-[10px] font-bold leading-4 text-status-m-fg"
+          >
+            M
+          </span>
+          <span
+            class="overflow-hidden text-ellipsis"
+          >
+            cart.ts
+          </span>
+          <span
+            class="flex-none rounded-full border border-chip-staged-fg/45 bg-chip-staged-bg px-[5px] text-[9.5px] font-semibold leading-[15px] text-chip-staged-fg"
+          >
+            staged
+          </span>
+          <span
+            class="ml-auto text-[11px] text-muted"
+          >
+            <b
+              class="font-medium text-success"
+            >
+              +41
+            </b>
+             
+            <i
+              class="not-italic text-danger"
+            >
+              −9
+            </i>
+          </span>
+        </div>
+        <div
+          class="flex h-6 items-center gap-[7px] px-3 font-mono text-[11.5px] text-ink/80"
+        >
+          <span
+            class="inline-block h-4 w-4 flex-none rounded-[4px] bg-status-a-bg text-center text-[10px] font-bold leading-4 text-status-a-fg"
+          >
+            A
+          </span>
+          <span
+            class="overflow-hidden text-ellipsis"
+          >
+            coupon.ts
+          </span>
+          <span
+            class="flex-none rounded-full border border-chip-untracked-fg/45 bg-chip-untracked-bg px-[5px] text-[9.5px] font-semibold leading-[15px] text-chip-untracked-fg"
+          >
+            untracked
+          </span>
+          <span
+            class="ml-auto text-[11px] text-muted"
+          >
+            <b
+              class="font-medium text-success"
+            >
+              +96
+            </b>
+          </span>
+        </div>
+        <div
+          class="grid grid-cols-[36px_1fr] font-mono text-[11.5px] leading-5 bg-diff-hunk-bg text-muted"
+        >
+          <span
+            class="whitespace-pre px-2 text-right text-[10.5px] bg-surface-sunken text-muted/70"
+          />
+          <span
+            class="whitespace-pre px-2"
+          >
+            @@ -12,6 +12,9 @@ export function total(cart)
+          </span>
+        </div>
+        <div
+          class="grid grid-cols-[36px_1fr] font-mono text-[11.5px] leading-5 "
+        >
+          <span
+            class="whitespace-pre px-2 text-right text-[10.5px] bg-surface-sunken text-muted/70"
+          >
+            12
+          </span>
+          <span
+            class="whitespace-pre px-2"
+          >
+              const sub = sum(cart.items);
+          </span>
+        </div>
+        <div
+          class="grid grid-cols-[36px_1fr] font-mono text-[11.5px] leading-5 bg-diff-del-bg"
+        >
+          <span
+            class="whitespace-pre px-2 text-right text-[10.5px] bg-diff-del-num text-danger"
+          >
+            13
+          </span>
+          <span
+            class="whitespace-pre px-2"
+          >
+            - return sub;
+          </span>
+        </div>
+        <div
+          class="grid grid-cols-[36px_1fr] font-mono text-[11.5px] leading-5 bg-diff-add-bg"
+        >
+          <span
+            class="whitespace-pre px-2 text-right text-[10.5px] bg-diff-add-num text-success"
+          >
+            13
+          </span>
+          <span
+            class="whitespace-pre px-2"
+          >
+            + const off = coupon(cart.code, sub);
+          </span>
+        </div>
+        <div
+          class="grid grid-cols-[36px_1fr] font-mono text-[11.5px] leading-5 bg-diff-add-bg"
+        >
+          <span
+            class="whitespace-pre px-2 text-right text-[10.5px] bg-diff-add-num text-success"
+          >
+            14
+          </span>
+          <span
+            class="whitespace-pre px-2"
+          >
+            + return sub - off;
+          </span>
+        </div>
+        <div
+          class="flex items-center justify-between border-t border-line-subtle px-3 py-2.5 text-[13px]"
+        >
+          <span>
+            The interactive demo runs in any browser.
+          </span>
+          <button
+            class="cursor-pointer font-medium text-accent hover:underline"
+            type="button"
+          >
+            Try it ↓
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+`;
+
+exports[`BrowserGate > B1 and B4 look the same in both themes > B4 insecure (dark) 1`] = `
+<main
+  aria-label="Unsupported browser"
+  class="min-h-full bg-surface text-[13px] text-ink"
+>
+  <div
+    class="flex items-center gap-2.5 border-b border-line-subtle bg-surface-raised px-4 py-2.5 font-mono text-[12px] text-muted"
+  >
+    <span
+      aria-hidden="true"
+      class="h-[7px] w-[7px] flex-none rounded-full bg-attention"
+    />
+    <span>
+      detected: Chrome 128 · desktop · 
+      <span
+        class="text-attention"
+      >
+        insecure context
+      </span>
+    </span>
+    <span
+      class="ml-auto text-muted/70"
+    >
+      192.168.0.234:4173
+    </span>
+  </div>
+  <div
+    class="grid items-start gap-10 px-12 py-14 min-[1000px]:grid-cols-[1fr_340px]"
+  >
+    <div>
+      <div
+        class="mb-[26px] flex items-center gap-[9px] text-[15px] font-semibold"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="26"
+          viewBox="0 0 32 32"
+          width="26"
+        >
+          <rect
+            fill="var(--brand-chip)"
+            height="32"
+            rx="7"
+            width="32"
+          />
+          <path
+            d="M10 10.5v11"
+            fill="none"
+            stroke="var(--brand-line)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <path
+            d="M22 12.6c0 6-12 3.4-12 9"
+            fill="none"
+            stroke="var(--brand-branch)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <circle
+            cx="10"
+            cy="8"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="10"
+            cy="24"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="22"
+            cy="10"
+            fill="var(--brand-branch)"
+            r="2.6"
+          />
+        </svg>
+        <span>
+          diff
+          <span
+            class="text-success"
+          >
+            git
+          </span>
+        </span>
+      </div>
+      <h1
+        class="m-0 mb-3.5 max-w-[16ch] text-[clamp(28px,3.6vw,40px)] font-medium leading-[1.02] tracking-[-0.04em]"
+      >
+        This 
+        <em
+          class="not-italic text-danger"
+        >
+          address
+        </em>
+         can't open local folders.
+      </h1>
+      <span
+        class="mb-4 inline-flex items-center gap-2 rounded-full border border-line px-2.5 py-[5px] font-mono text-[12.5px] font-medium text-muted"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0"
+          fill="none"
+          height="13"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="13"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+          />
+          <path
+            d="M12 9v4"
+          />
+          <path
+            d="M12 17h.01"
+          />
+        </svg>
+        Chrome · page is not https
+      </span>
+      <p
+        class="m-0 mb-3 max-w-[52ch] text-[15.5px] leading-6 text-muted"
+      >
+        Your browser supports folder access, but only on 
+        <b
+          class="font-medium text-ink"
+        >
+          https://
+        </b>
+         pages (and 
+        <b
+          class="font-medium text-ink"
+        >
+          localhost
+        </b>
+        ). This page was loaded over plain http from 
+        <span
+          class="font-mono text-[13px] text-ink/80"
+        >
+          192.168.0.234
+        </span>
+        , so the browser hides the API.
+      </p>
+      <div
+        class="mt-1 flex flex-wrap items-center gap-3"
+      >
+        <a
+          class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-ink bg-ink px-3.5 py-[9px] text-[14px] font-medium leading-5 text-bg hover:opacity-90"
+          href="https://diffgit.com"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-external-link shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15 3h6v6"
+            />
+            <path
+              d="M10 14 21 3"
+            />
+            <path
+              d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+            />
+          </svg>
+          Open diffgit.com
+        </a>
+        <button
+          class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-3.5 py-[9px] text-[14px] font-medium leading-5 text-ink hover:bg-surface-raised"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-play shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+            />
+          </svg>
+          See the demo
+        </button>
+      </div>
+    </div>
+    <div
+      class="flex flex-col gap-3.5"
+    >
+      <div
+        class="rounded-xl border border-line bg-surface p-4"
+      >
+        <div
+          class="mb-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-muted"
+        >
+          If this is your own build
+        </div>
+        <ol
+          class="m-0 list-none border-t border-line-subtle p-0"
+        >
+          <li
+            class="grid grid-cols-[22px_1fr] gap-2.5 border-b border-line-subtle py-[9px] text-[14px]"
+          >
+            <span
+              class="h-[22px] w-[22px] rounded-full border border-line bg-surface-raised text-center font-mono text-[11px] font-semibold leading-[22px] text-ink"
+            >
+              1
+            </span>
+            <div>
+              Use 
+              <code
+                class="font-mono text-[12.5px] text-ink/80"
+              >
+                http://localhost:4173
+              </code>
+               instead of the LAN IP
+              <span
+                class="block text-[12.5px] text-muted"
+              >
+                localhost counts as secure
+              </span>
+            </div>
+          </li>
+          <li
+            class="grid grid-cols-[22px_1fr] gap-2.5 border-b border-line-subtle py-[9px] text-[14px]"
+          >
+            <span
+              class="h-[22px] w-[22px] rounded-full border border-line bg-surface-raised text-center font-mono text-[11px] font-semibold leading-[22px] text-ink"
+            >
+              2
+            </span>
+            <div>
+              Or serve it over https
+              <span
+                class="block text-[12.5px] text-muted"
+              >
+                <code
+                  class="font-mono text-[12.5px] text-ink/80"
+                >
+                  vite preview --https
+                </code>
+                , or Caddy with a local cert
+              </span>
+            </div>
+          </li>
+          <li
+            class="grid grid-cols-[22px_1fr] gap-2.5 border-b border-line-subtle py-[9px] text-[14px]"
+          >
+            <span
+              class="h-[22px] w-[22px] rounded-full border border-line bg-surface-raised text-center font-mono text-[11px] font-semibold leading-[22px] text-ink"
+            >
+              3
+            </span>
+            <div>
+              Or allow the origin in Chrome
+              <span
+                class="block text-[12.5px] text-muted"
+              >
+                <code
+                  class="font-mono text-[12.5px] text-ink/80"
+                >
+                  chrome://flags/#unsafely-treat-insecure-origin-as-secure
+                </code>
+              </span>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</main>
+`;
+
+exports[`BrowserGate > B1 and B4 look the same in both themes > B4 insecure (light) 1`] = `
+<main
+  aria-label="Unsupported browser"
+  class="min-h-full bg-surface text-[13px] text-ink"
+>
+  <div
+    class="flex items-center gap-2.5 border-b border-line-subtle bg-surface-raised px-4 py-2.5 font-mono text-[12px] text-muted"
+  >
+    <span
+      aria-hidden="true"
+      class="h-[7px] w-[7px] flex-none rounded-full bg-attention"
+    />
+    <span>
+      detected: Chrome 128 · desktop · 
+      <span
+        class="text-attention"
+      >
+        insecure context
+      </span>
+    </span>
+    <span
+      class="ml-auto text-muted/70"
+    >
+      192.168.0.234:4173
+    </span>
+  </div>
+  <div
+    class="grid items-start gap-10 px-12 py-14 min-[1000px]:grid-cols-[1fr_340px]"
+  >
+    <div>
+      <div
+        class="mb-[26px] flex items-center gap-[9px] text-[15px] font-semibold"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="26"
+          viewBox="0 0 32 32"
+          width="26"
+        >
+          <rect
+            fill="var(--brand-chip)"
+            height="32"
+            rx="7"
+            width="32"
+          />
+          <path
+            d="M10 10.5v11"
+            fill="none"
+            stroke="var(--brand-line)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <path
+            d="M22 12.6c0 6-12 3.4-12 9"
+            fill="none"
+            stroke="var(--brand-branch)"
+            stroke-linecap="round"
+            stroke-width="2.4"
+          />
+          <circle
+            cx="10"
+            cy="8"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="10"
+            cy="24"
+            fill="var(--brand-line)"
+            r="2.6"
+          />
+          <circle
+            cx="22"
+            cy="10"
+            fill="var(--brand-branch)"
+            r="2.6"
+          />
+        </svg>
+        <span>
+          diff
+          <span
+            class="text-success"
+          >
+            git
+          </span>
+        </span>
+      </div>
+      <h1
+        class="m-0 mb-3.5 max-w-[16ch] text-[clamp(28px,3.6vw,40px)] font-medium leading-[1.02] tracking-[-0.04em]"
+      >
+        This 
+        <em
+          class="not-italic text-danger"
+        >
+          address
+        </em>
+         can't open local folders.
+      </h1>
+      <span
+        class="mb-4 inline-flex items-center gap-2 rounded-full border border-line px-2.5 py-[5px] font-mono text-[12.5px] font-medium text-muted"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0"
+          fill="none"
+          height="13"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="13"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+          />
+          <path
+            d="M12 9v4"
+          />
+          <path
+            d="M12 17h.01"
+          />
+        </svg>
+        Chrome · page is not https
+      </span>
+      <p
+        class="m-0 mb-3 max-w-[52ch] text-[15.5px] leading-6 text-muted"
+      >
+        Your browser supports folder access, but only on 
+        <b
+          class="font-medium text-ink"
+        >
+          https://
+        </b>
+         pages (and 
+        <b
+          class="font-medium text-ink"
+        >
+          localhost
+        </b>
+        ). This page was loaded over plain http from 
+        <span
+          class="font-mono text-[13px] text-ink/80"
+        >
+          192.168.0.234
+        </span>
+        , so the browser hides the API.
+      </p>
+      <div
+        class="mt-1 flex flex-wrap items-center gap-3"
+      >
+        <a
+          class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-ink bg-ink px-3.5 py-[9px] text-[14px] font-medium leading-5 text-bg hover:opacity-90"
+          href="https://diffgit.com"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-external-link shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15 3h6v6"
+            />
+            <path
+              d="M10 14 21 3"
+            />
+            <path
+              d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+            />
+          </svg>
+          Open diffgit.com
+        </a>
+        <button
+          class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-3.5 py-[9px] text-[14px] font-medium leading-5 text-ink hover:bg-surface-raised"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-play shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+            />
+          </svg>
+          See the demo
+        </button>
+      </div>
+    </div>
+    <div
+      class="flex flex-col gap-3.5"
+    >
+      <div
+        class="rounded-xl border border-line bg-surface p-4"
+      >
+        <div
+          class="mb-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-muted"
+        >
+          If this is your own build
+        </div>
+        <ol
+          class="m-0 list-none border-t border-line-subtle p-0"
+        >
+          <li
+            class="grid grid-cols-[22px_1fr] gap-2.5 border-b border-line-subtle py-[9px] text-[14px]"
+          >
+            <span
+              class="h-[22px] w-[22px] rounded-full border border-line bg-surface-raised text-center font-mono text-[11px] font-semibold leading-[22px] text-ink"
+            >
+              1
+            </span>
+            <div>
+              Use 
+              <code
+                class="font-mono text-[12.5px] text-ink/80"
+              >
+                http://localhost:4173
+              </code>
+               instead of the LAN IP
+              <span
+                class="block text-[12.5px] text-muted"
+              >
+                localhost counts as secure
+              </span>
+            </div>
+          </li>
+          <li
+            class="grid grid-cols-[22px_1fr] gap-2.5 border-b border-line-subtle py-[9px] text-[14px]"
+          >
+            <span
+              class="h-[22px] w-[22px] rounded-full border border-line bg-surface-raised text-center font-mono text-[11px] font-semibold leading-[22px] text-ink"
+            >
+              2
+            </span>
+            <div>
+              Or serve it over https
+              <span
+                class="block text-[12.5px] text-muted"
+              >
+                <code
+                  class="font-mono text-[12.5px] text-ink/80"
+                >
+                  vite preview --https
+                </code>
+                , or Caddy with a local cert
+              </span>
+            </div>
+          </li>
+          <li
+            class="grid grid-cols-[22px_1fr] gap-2.5 border-b border-line-subtle py-[9px] text-[14px]"
+          >
+            <span
+              class="h-[22px] w-[22px] rounded-full border border-line bg-surface-raised text-center font-mono text-[11px] font-semibold leading-[22px] text-ink"
+            >
+              3
+            </span>
+            <div>
+              Or allow the origin in Chrome
+              <span
+                class="block text-[12.5px] text-muted"
+              >
+                <code
+                  class="font-mono text-[12.5px] text-ink/80"
+                >
+                  chrome://flags/#unsafely-treat-insecure-origin-as-secure
+                </code>
+              </span>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</main>
+`;

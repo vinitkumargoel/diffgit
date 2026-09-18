@@ -2,14 +2,38 @@
 
 exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > BinaryNotice (dark) 1`] = `
 <div
-  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
 >
-  <div>
-    Binary file not shown
-  </div>
-  <div
-    class="text-xs text-muted"
+  <span
+    class="text-muted"
   >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-file"
+      fill="none"
+      height="22"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="22"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"
+      />
+      <path
+        d="M14 2v5a1 1 0 0 0 1 1h5"
+      />
+    </svg>
+  </span>
+  <b
+    class="font-medium text-ink"
+  >
+    Binary file not shown
+  </b>
+  <div>
     2.0 KB → 4.0 KB
   </div>
   <div
@@ -27,14 +51,38 @@ exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Sub
 
 exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > BinaryNotice (light) 1`] = `
 <div
-  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
 >
-  <div>
-    Binary file not shown
-  </div>
-  <div
-    class="text-xs text-muted"
+  <span
+    class="text-muted"
   >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-file"
+      fill="none"
+      height="22"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="22"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"
+      />
+      <path
+        d="M14 2v5a1 1 0 0 0 1 1h5"
+      />
+    </svg>
+  </span>
+  <b
+    class="font-medium text-ink"
+  >
+    Binary file not shown
+  </b>
+  <div>
     2.0 KB → 4.0 KB
   </div>
   <div
@@ -52,43 +100,121 @@ exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Sub
 
 exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > LargeFileGate huge (dark) 1`] = `
 <div
-  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
 >
-  <div>
+  <span
+    class="text-muted"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-scale"
+      fill="none"
+      height="22"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="22"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M12 3v18"
+      />
+      <path
+        d="m19 8 3 8a5 5 0 0 1-6 0zV7"
+      />
+      <path
+        d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"
+      />
+      <path
+        d="m5 8 3 8a5 5 0 0 1-6 0zV7"
+      />
+      <path
+        d="M7 21h10"
+      />
+    </svg>
+  </span>
+  <b
+    class="font-medium text-ink"
+  >
     Diff too large to display
+  </b>
+  <div>
+    Old 11.4 MB · new 11.9 MB. Files over 10 MB per side are not compared in the browser.
   </div>
   <div
-    class="text-xs text-muted"
+    class="font-mono text-[11px] break-all text-muted/70"
   >
-    11.4 MB → 11.9 MB
+    TOO_LARGE
   </div>
 </div>
 `;
 
 exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > LargeFileGate huge (light) 1`] = `
 <div
-  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
 >
-  <div>
+  <span
+    class="text-muted"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-scale"
+      fill="none"
+      height="22"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="22"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M12 3v18"
+      />
+      <path
+        d="m19 8 3 8a5 5 0 0 1-6 0zV7"
+      />
+      <path
+        d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"
+      />
+      <path
+        d="m5 8 3 8a5 5 0 0 1-6 0zV7"
+      />
+      <path
+        d="M7 21h10"
+      />
+    </svg>
+  </span>
+  <b
+    class="font-medium text-ink"
+  >
     Diff too large to display
+  </b>
+  <div>
+    Old 11.4 MB · new 11.9 MB. Files over 10 MB per side are not compared in the browser.
   </div>
   <div
-    class="text-xs text-muted"
+    class="font-mono text-[11px] break-all text-muted/70"
   >
-    11.4 MB → 11.9 MB
+    TOO_LARGE
   </div>
 </div>
 `;
 
 exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > LargeFileGate tooLarge (dark) 1`] = `
 <div
-  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
 >
-  <div>
+  <b
+    class="font-medium text-ink"
+  >
     Large diff
      (3,412 lines changed)
     .
-  </div>
+  </b>
   <div
     class="flex items-center gap-2"
   >
@@ -104,13 +230,15 @@ exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Sub
 
 exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > LargeFileGate tooLarge (light) 1`] = `
 <div
-  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
 >
-  <div>
+  <b
+    class="font-medium text-ink"
+  >
     Large diff
      (3,412 lines changed)
     .
-  </div>
+  </b>
   <div
     class="flex items-center gap-2"
   >
@@ -126,14 +254,14 @@ exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Sub
 
 exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > Notice (dark) 1`] = `
 <div
-  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
 >
-  <div>
-    Message
-  </div>
-  <div
-    class="text-xs text-muted"
+  <b
+    class="font-medium text-ink"
   >
+    Message
+  </b>
+  <div>
     detail line
   </div>
   <div
@@ -150,14 +278,14 @@ exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Sub
 
 exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > Notice (light) 1`] = `
 <div
-  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
 >
-  <div>
-    Message
-  </div>
-  <div
-    class="text-xs text-muted"
+  <b
+    class="font-medium text-ink"
   >
+    Message
+  </b>
+  <div>
     detail line
   </div>
   <div
@@ -174,9 +302,11 @@ exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Sub
 
 exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > SubmoduleNotice (dark) 1`] = `
 <div
-  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
 >
-  <div>
+  <b
+    class="font-medium text-ink"
+  >
     <span
       class="font-mono"
     >
@@ -185,15 +315,17 @@ exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Sub
        → 
       a1b2c3d
     </span>
-  </div>
+  </b>
 </div>
 `;
 
 exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > SubmoduleNotice (light) 1`] = `
 <div
-  class="flex flex-col items-center justify-center gap-2 p-7 text-center text-[13px] leading-5 text-muted"
+  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
 >
-  <div>
+  <b
+    class="font-medium text-ink"
+  >
     <span
       class="font-mono"
     >
@@ -202,7 +334,7 @@ exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Sub
        → 
       a1b2c3d
     </span>
-  </div>
+  </b>
 </div>
 `;
 

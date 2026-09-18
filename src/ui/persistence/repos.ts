@@ -13,6 +13,8 @@ export interface StoredRepo {
   lastOpenedAt: number;
   lastSource?: string;
   lastTarget?: string;
+  /** Wall time of the last successful open (L1: "usually ~6 s"). */
+  lastOpenMs?: number;
 }
 
 export const MAX_RECENTS = 20;
@@ -90,7 +92,7 @@ export async function upsertRepo(handle: FileSystemDirectoryHandle): Promise<Sto
 
 export async function touchRepo(
   id: string,
-  patch: { lastOpenedAt?: number; lastSource?: string; lastTarget?: string },
+  patch: { lastOpenedAt?: number; lastSource?: string; lastTarget?: string; lastOpenMs?: number },
 ): Promise<void> {
   await guarded(async () => {
     const existing = await get<StoredRepo>(id, repoStore());
@@ -101,6 +103,24 @@ export async function touchRepo(
 
 export async function removeRepo(id: string): Promise<void> {
   await guarded(() => del(id, repoStore()), undefined);
+}
+
+export type PermissionAnswer = "granted" | "prompt" | "denied";
+
+/**
+ * Non-prompting permission check for the Recent list's access dot (H2): no user gesture needed.
+ * Markers are always granted (E2E); handles without the API read as "prompt".
+ */
+export async function queryPermission(handle: unknown): Promise<PermissionAnswer> {
+  if (isMemoryHandleMarker(handle)) return "granted";
+  const h = handle as { queryPermission?: (d: { mode: "read" }) => Promise<PermissionState> };
+  if (typeof h?.queryPermission !== "function") return "prompt";
+  try {
+    const p = await h.queryPermission({ mode: "read" });
+    return p === "granted" ? "granted" : p === "denied" ? "denied" : "prompt";
+  } catch {
+    return "prompt"; // a stale handle answers on open (HANDLE_GONE); the dot must not guess
+  }
 }
 
 /**

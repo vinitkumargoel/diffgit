@@ -9,12 +9,14 @@ import {
   useRef,
   useState,
 } from "react";
+import { useShallow } from "zustand/react/shallow";
 import type { FileDiff } from "../../engine/types";
 import { useShortcuts } from "../hooks/useShortcuts";
 import { requestScrollTo } from "../scrollBus";
 import {
   isViewed,
   type SidebarLayout,
+  selectFailedFiles,
   selectTreeModel,
   selectVisibleFiles,
   useStore,
@@ -53,6 +55,8 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
   const setActiveFile = useStore((s) => s.setActiveFile);
   const toggleViewed = useStore((s) => s.toggleViewed);
   const prioritise = useStore((s) => s.prioritise);
+  const failedFiles = useStore(useShallow(selectFailedFiles));
+  const loadFileDiff = useStore((s) => s.loadFileDiff);
 
   const [collapsedDirs, setCollapsedDirs] = useState<ReadonlySet<string>>(() => new Set());
   const rows = useMemo<Row[]>(() => {
@@ -260,6 +264,8 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
         active={f.id === activeFileId}
         viewed={diff ? isViewed({ diff, viewed: viewedSet, repoId }, f) : false}
         stats={statsMap[f.id] ?? f.stats}
+        failed={failedFiles.has(f.id)}
+        onRetry={() => void loadFileDiff(f.id)}
         onActivate={() => activate(f)}
         onToggleViewed={() => toggleViewed(f.id)}
         onFocus={onFocus}

@@ -1,3 +1,4 @@
+import { CircleX } from "lucide-react";
 import type { CSSProperties, FocusEventHandler, KeyboardEventHandler } from "react";
 import type { FileDiff } from "../../engine/types";
 import type { SidebarLayout } from "../store";
@@ -12,6 +13,9 @@ export interface FileRowProps {
   active: boolean;
   viewed: boolean;
   stats: FileDiff["stats"];
+  /** The file's diff request errored — the row shows the red `retry` mark (S3). */
+  failed?: boolean;
+  onRetry?: () => void;
   onActivate: () => void;
   onToggleViewed: () => void;
   /** Roving-tabindex plumbing from the tree. */
@@ -32,13 +36,55 @@ export function splitPath(path: string): { dir: string; base: string } {
     : { dir: path.slice(0, i + 1), base: path.slice(i + 1) };
 }
 
-/** `+n −m` (mono 11 px), `—` for binary, 32 × 10 px skeleton while stats are loading (Design §7.4). */
-export function RowStats({ file, stats }: { file: FileDiff; stats: FileDiff["stats"] }) {
+/**
+ * `+n −m` (mono 11 px), 32 × 10 px skeleton while stats are loading (Design §7.4) and the three
+ * "not counted" marks of mockup S3: `> 1 MB` (gated, loadable), `—` (binary, never counted) and a
+ * red `retry` (the per-file read failed — actionable).
+ */
+export function RowStats({
+  file,
+  stats,
+  failed,
+  onRetry,
+}: {
+  file: FileDiff;
+  stats: FileDiff["stats"];
+  /** The file's diff request errored (`selectFailedFiles`). */
+  failed?: boolean;
+  onRetry?: () => void;
+}) {
+  if (file.tooLarge && !file.binary) {
+    return (
+      <span
+        className="font-mono text-[11px] whitespace-nowrap text-muted"
+        title="Over 1 MB — Load diff in the card"
+      >
+        &gt; 1 MB
+      </span>
+    );
+  }
   if (file.binary) {
     return (
       <span role="img" className="font-mono text-[11px] text-muted" aria-label="Binary file">
         —
       </span>
+    );
+  }
+  if (failed) {
+    return (
+      <button
+        type="button"
+        className="inline-flex shrink-0 items-center gap-[3px] font-mono text-[11px] text-danger hover:underline"
+        aria-label="Stats failed: retry"
+        title="Read error — click to retry"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRetry?.();
+        }}
+      >
+        <CircleX size={11} aria-hidden />
+        retry
+      </button>
     );
   }
   if (!stats) {
@@ -66,6 +112,8 @@ export function FileRow({
   active,
   viewed,
   stats,
+  failed,
+  onRetry,
   onActivate,
   onToggleViewed,
   role,
@@ -103,7 +151,7 @@ export function FileRow({
       {chipsFor(file).map((c) => (
         <LayerChip key={c} kind={c} />
       ))}
-      <RowStats file={file} stats={stats} />
+      <RowStats file={file} stats={stats} failed={failed} onRetry={onRetry} />
       <input
         type="checkbox"
         className="size-3.5 shrink-0 accent-success"
