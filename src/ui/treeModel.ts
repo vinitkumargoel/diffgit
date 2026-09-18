@@ -75,19 +75,137 @@ export interface TreeRow {
   node: TreeNode;
   depth: number;
 }
+/**
+ * `prefix` namespaces the collapsed keys (T9.1): grouped sidebars key a directory
+ * `"<groupId>:<path>"`, so the same folder can be open in Staged and closed in Unstaged.
+ */
 export function flattenTree(
   nodes: TreeNode[],
   collapsed: ReadonlySet<string>,
   depth = 0,
+  prefix = "",
 ): TreeRow[] {
   const rows: TreeRow[] = [];
   for (const node of nodes) {
     rows.push({ node, depth });
-    if (node.kind === "dir" && !collapsed.has(node.path)) {
-      rows.push(...flattenTree(node.children, collapsed, depth + 1));
+    if (node.kind === "dir" && !collapsed.has(prefix + node.path)) {
+      rows.push(...flattenTree(node.children, collapsed, depth + 1, prefix));
     }
   }
   return rows;
+}
+
+/* ------------------------------------------------------------------ T9.1: sidebar groups */
+
+export type SidebarGroupId = "conflict" | "staged" | "unstaged" | "untracked" | "committed";
+
+/** D1: display order. */
+export const GROUP_ORDER: readonly SidebarGroupId[] = [
+  "conflict",
+  "staged",
+  "unstaged",
+  "untracked",
+  "committed",
+];
+
+/** D3: a file appears once, in the least-committed layer it touches. */
+const GROUP_PRECEDENCE: readonly SidebarGroupId[] = [
+  "conflict",
+  "unstaged",
+  "staged",
+  "untracked",
+  "committed",
+];
+
+export function groupOf(file: Pick<FileDiff, "layers">): SidebarGroupId {
+  for (const id of GROUP_PRECEDENCE) {
+    if (file.layers.includes(id)) return id;
+  }
+  return "committed";
+}
+
+export interface FileGroup {
+  id: SidebarGroupId;
+  files: FileDiff[];
+  tree: TreeNode[];
+}
+
+/** Non-empty groups in `GROUP_ORDER`; `files` keep the engine (path) order. */
+export function groupFiles(files: readonly FileDiff[]): FileGroup[] {
+  const buckets = new Map<SidebarGroupId, FileDiff[]>();
+  for (const file of files) {
+    const id = groupOf(file);
+    const bucket = buckets.get(id);
+    if (bucket) bucket.push(file);
+    else buckets.set(id, [file]);
+  }
+  const out: FileGroup[] = [];
+  for (const id of GROUP_ORDER) {
+    const group = buckets.get(id);
+    if (group && group.length > 0) out.push({ id, files: group, tree: buildTree(group) });
+  }
+  return out;
+}
+
+export interface LayerCodeInfo {
+  x: string;
+  y: string;
+  label: string;
+}
+
+/** The empty column of `git status --short`. */
+const EMPTY_COLUMN = "·";
+const STATUS_LETTER: Record<FileDiff["status"], string> = {
+  modified: "M",
+  added: "A",
+  deleted: "D",
+  renamed: "R",
+  copied: "C",
+  typechange: "T",
+};
+
+/** D4: git's `status --short` XY column, or null for a committed-only file. */
+export function layerCode(file: Pick<FileDiff, "layers" | "status">): LayerCodeInfo | null {
+  const layers = file.layers;
+  if (layers.includes("conflict")) return { x: "U", y: "U", label: "Merge conflict (UU)" };
+  if (layers.includes("untracked")) return { x: "?", y: "?", label: "Untracked file (??)" };
+  const staged = layers.includes("staged");
+  const unstaged = layers.includes("unstaged");
+  const letter = STATUS_LETTER[file.status];
+  if (staged && unstaged) {
+    if (file.status === "deleted") return { x: "M", y: "D", label: "Staged, then deleted (MD)" };
+    return { x: letter, y: "M", label: `Staged, then edited again (${letter}M)` };
+  }
+  if (staged)
+    return { x: letter, y: EMPTY_COLUMN, label: `Staged only (${letter}${EMPTY_COLUMN})` };
+  if (unstaged)
+    return { x: EMPTY_COLUMN, y: letter, label: `Unstaged only (${EMPTY_COLUMN}${letter})` };
+  return null;
+}
+
+/** D7: the summary a collapsed folder row shows. `complete` is false while a countable file
+ * inside it (not binary, not `tooLarge`) has no stats yet. */
+export function dirSummary(
+  node: TreeDir,
+  stats: (f: FileDiff) => FileDiff["stats"],
+): { files: number; additions: number; deletions: number; complete: boolean } {
+  const out = { files: 0, additions: 0, deletions: 0, complete: true };
+  const walk = (nodes: readonly TreeNode[]): void => {
+    for (const child of nodes) {
+      if (child.kind === "dir") {
+        walk(child.children);
+        continue;
+      }
+      out.files++;
+      const st = stats(child.file);
+      if (st) {
+        out.additions += st.additions;
+        out.deletions += st.deletions;
+      } else if (!child.file.binary && !child.file.tooLarge) out.complete = false;
+    }
+  };
+  walk(node.children);
+  return out;
 }
 
 /** `status:M` / `status:modified` and `layer:staged` tokens (S1: the breakdowns are click targets). */

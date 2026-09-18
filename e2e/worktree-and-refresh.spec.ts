@@ -10,20 +10,23 @@ test("working-tree layers, live refresh through the observer, viewed marks and f
   const sidebar = page.getByRole("complementary", { name: "Changed files" });
   await expect(sidebar).toContainText("Files changed (10)");
 
-  // layer chips
-  await expect(sidebar.getByLabel("Staged change").first()).toBeVisible();
-  await expect(sidebar.getByLabel("Unstaged change").first()).toBeVisible();
-  await expect(sidebar.getByLabel("Untracked file").first()).toBeVisible();
+  // group headers (T9.1): one per layer, in D1 order, plus the second header row
+  await expect(sidebar.getByRole("treeitem", { name: /^Staged, 4 files$/ })).toBeVisible();
+  await expect(sidebar.getByRole("treeitem", { name: /^Unstaged, 3 files$/ })).toBeVisible();
+  await expect(sidebar.getByRole("treeitem", { name: /^Untracked, 2 files$/ })).toBeVisible();
+  await expect(sidebar.getByRole("treeitem", { name: /^Committed on / })).toBeVisible();
+  await expect(sidebar).toContainText("9 uncommitted");
 
-  // "include uncommitted" off → committed layer only, chips gone; on → back
+  // "include uncommitted" off → committed layer only, the groups and the second row go away
   const toggle = page.getByRole("checkbox", { name: /Include uncommitted/ });
   await toggle.uncheck();
   // committed layer only: feature-only.txt plus reverted.txt (its worktree revert no longer counts)
   await expect(sidebar).toContainText("Files changed (2)", { timeout: 15_000 });
-  await expect(sidebar.getByLabel("Unstaged change")).toHaveCount(0);
+  await expect(sidebar.getByRole("treeitem", { name: /^Unstaged, / })).toHaveCount(0);
+  await expect(sidebar.getByRole("button", { name: "Layer" })).toHaveCount(0);
   await toggle.check();
   await expect(sidebar).toContainText("Files changed (10)", { timeout: 15_000 });
-  await expect(sidebar.getByLabel("Unstaged change").first()).toBeVisible();
+  await expect(sidebar.getByRole("treeitem", { name: /^Unstaged, 3 files$/ })).toBeVisible();
 
   // live refresh: mutate a tracked file through the channel, emit an observer record → +/- change
   const row = fileRow(page, "unstaged-mod.txt");
@@ -55,6 +58,8 @@ test("working-tree layers, live refresh through the observer, viewed marks and f
   });
   await expect(sidebar).toContainText("Files changed (11)", { timeout: 5000 });
   await expect(fileRow(page, "brand-new.txt")).toBeVisible();
+  // the new file lands in Untracked, which grows from 2 to 3
+  await expect(sidebar.getByRole("treeitem", { name: /^Untracked, 3 files$/ })).toBeVisible();
 
   // viewed: collapses the card and moves the counter
   const counter = page.getByRole("progressbar", { name: "Files viewed" });

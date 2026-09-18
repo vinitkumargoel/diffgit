@@ -2,8 +2,8 @@ import { CircleX } from "lucide-react";
 import type { CSSProperties, FocusEventHandler, KeyboardEventHandler } from "react";
 import type { FileDiff } from "../../engine/types";
 import type { SidebarLayout } from "../store";
-import { filePathOf } from "../treeModel";
-import { chipsFor, LayerChip } from "./LayerChip";
+import { filePathOf, type LayerCodeInfo } from "../treeModel";
+import { LayerCode } from "./LayerCode";
 import { StatusIcon } from "./StatusIcon";
 
 export interface FileRowProps {
@@ -13,6 +13,8 @@ export interface FileRowProps {
   active: boolean;
   viewed: boolean;
   stats: FileDiff["stats"];
+  /** D4: git's XY code, when this row should carry one (`layerCode`); null renders nothing. */
+  code?: LayerCodeInfo | null;
   /** The file's diff request errored — the row shows the red `retry` mark (S3). */
   failed?: boolean;
   onRetry?: () => void;
@@ -112,6 +114,7 @@ export function FileRow({
   active,
   viewed,
   stats,
+  code,
   failed,
   onRetry,
   onActivate,
@@ -144,13 +147,15 @@ export function FileRow({
   const content = (
     <>
       <StatusIcon status={file.status} title={renameTitle} />
-      <span className="min-w-0 flex-1 truncate text-[12.5px] leading-5 font-medium">
+      <span
+        className={`min-w-0 flex-1 truncate text-[12.5px] leading-5 font-medium${
+          file.status === "deleted" ? " text-muted line-through" : ""
+        }`}
+      >
         {layout === "flat" && dir && <span className="font-normal text-muted">{dir}</span>}
         {base}
       </span>
-      {chipsFor(file).map((c) => (
-        <LayerChip key={c} kind={c} />
-      ))}
+      {code ? <LayerCode code={code} /> : null}
       <RowStats file={file} stats={stats} failed={failed} onRetry={onRetry} />
       <input
         type="checkbox"

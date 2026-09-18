@@ -3,14 +3,14 @@
 **A GitHub-style branch diff for the repository on your disk, including the work you have not
 committed yet, running entirely in your browser.** Open a local git repository, pick a base and a
 compare branch, and read the three-dot diff (`base...compare`) the way a pull request shows it:
-file tree with status letters and layer chips (staged / unstaged / untracked), unified or split
-hunks with syntax colours and word-level marks, rename detection, "viewed" ticks that survive a
-reload, and live refresh as you edit. Nothing is uploaded and nothing is written: the page reads the
-folder through the File System Access API and the Content-Security-Policy forbids every network
-request after the page has loaded.
+file tree that groups your files by layer (staged / unstaged / untracked, then what is already
+committed on the branch), unified or split hunks with syntax colours and word-level marks, rename
+detection, "viewed" ticks that survive a reload, and live refresh as you edit. Nothing is uploaded
+and nothing is written: the page reads the folder through the File System Access API and the
+Content-Security-Policy forbids every network request after the page has loaded.
 
 <p align="center">
-  <img src="docs/screenshots/light.png" alt="diffgit showing the worktree fixture in light mode: file tree with staged, unstaged and untracked chips, unified hunks with additions and deletions, a mode-change card" width="49%">
+  <img src="docs/screenshots/light.png" alt="diffgit showing the worktree fixture in light mode: file tree grouped into Staged, Unstaged and Untracked, unified hunks with additions and deletions, a mode-change card" width="49%">
   <img src="docs/screenshots/dark.png" alt="The same diff in dark mode" width="49%">
 </p>
 
@@ -26,8 +26,9 @@ Live at **https://diffgit.com**.
    the ⇄ button swaps them. The diff is `merge-base(base, compare)` → `compare`, exactly like a pull
    request.
 3. **Read and work** — *Include uncommitted changes* (on by default when *compare* is the checked-out
-   branch) layers the index and the working tree on top of the commits, with chips telling you which
-   layer each change comes from. Tick *Viewed* as you go, `j`/`k` to move between files, `s` to
+   branch) layers the index and the working tree on top of the commits, and the sidebar groups the
+   files by that layer, with git's own two-letter code on the rows the group alone does not explain
+   (`MM` for staged, then edited again). Tick *Viewed* as you go, `j`/`k` to move between files, `s` to
    switch split/unified, `/` to filter, `?` for every shortcut. The diff refreshes itself when files
    change (Live), falls back to polling if the browser cannot watch the folder, and `Shift+R`
    forces a full re-read.

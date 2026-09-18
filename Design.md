@@ -79,6 +79,8 @@ Each is a `bg` / `fg` pair (light → dark). Border of a chip = its `fg` at 40 %
 | badge `default` | on base picker | `#ddf4ff` / `#0969da`, border `#54aeff` | `#121d2f` / `#58a6ff` |
 | badge `remote` | on remote-tracking entries | `#f6f8fa` / `#67707b` | `#1c2129` / `#8b949e` |
 
+**Layer code** (§7.4, T9.1): git's `status --short` XY columns as two monospace characters, 10 px / 600, 0.08 em tracking, in a 1 px `--line` box on `--surface` (3 px radius). The x column is `--chip-staged-fg`, the y column `--chip-unstaged-fg`; `?` is `--chip-untracked-fg`, `U` is `--chip-conflict-fg` and the empty column `·` is `--muted`. The glyphs are `aria-hidden`; the box carries the spelled-out label.
+
 ### 3.4 Banners
 
 | Level | Background | Border | Icon/text |
@@ -170,13 +172,19 @@ While a refresh is running (S4) the count, totals, breakdowns and viewed counter
 
 Full width, 8 px 16 px padding, 12.5 px text, icon (`lucide:triangle-alert` / `info` / `circle-x`, 14 px) then bold subject then message, then the engine `detail` in `--muted`, then the **code** in 10.5 px mono at 70 % `--muted` (the FAQ promises "a code you can look up"), then an optional one-word `--accent` action link (`Refresh`, `Ignore whitespace`, `Compare HEAD`, `Show them`, `Why?`), dismiss `×` on the right (`--muted`). One row per warning code, stacked, each independently dismissible. Colours in §3.4.
 
-### 7.4 Sidebar (T5.2)
+### 7.4 Sidebar (T5.2, T9.1)
 
-- Header 36 px: "Files changed" 600 12 px + `(11)` `--muted`; right: `Tree | Flat` mini segmented control (2 px 7 px padding, 11 px).
-- Tree: 6 px vertical padding; indent 14 px per level starting at 12 px. Folder rows 24 px: `▾`/`▸` 9 px, `lucide:folder` 14 px `--muted`, name 12 px `--muted`; compacted chains render as one row `src/engine/git`.
-- **FileRow** 26 px, 7 px gap: status square 16 × 16 px (§3.3, letter 10 px / 700 monospace) → basename 12.5 px / 500 (tree) or `dir/` `--muted` + basename 500 (flat) with `text-overflow: ellipsis` → layer chips (11 px, 0 6px padding, 999 px radius) → `+n −m` monospace 11 px, `—` for binary, 32 px skeleton bar while stats load → viewed checkbox 14 px (tick `--success`).
+- Header row 1, 36 px, unchanged: "Files changed" 600 12 px + `(11)` `--muted`; right: `Tree | Flat` mini segmented control (2 px 7 px padding, 11 px).
+- Header row 2, 30 px, bottom border `--line`, rendered only when the diff has a file in a layer other than `committed`: left, a `Layer | Path` mini segmented control styled exactly like `Tree | Flat` (`aria-pressed`, `fieldset` + sr-only legend "Group files") writing the `sidebarGroup` pref, default `Layer`; right-aligned, `n uncommitted` 11 px `--muted`, counted over the whole diff.
+- **Groups** (Layer mode). Fixed order `Conflicts`, `Staged`, `Unstaged`, `Untracked`, `Committed on <compare>`; empty groups are not rendered. A file appears once, in the least-committed layer it touches (precedence conflict → unstaged → staged → untracked → committed), so a staged-then-edited file sits under `Unstaged` and nothing is listed twice. The tree, or in flat mode the file list, is built per group.
+- **Group header** 28 px, sticky at the top of the scrolling body (not once the pane virtualises above 300 rows, where rows are positioned with transforms), `--surface-sunken` with a bottom border `--line`, 10 px left padding, 6 px gap, not selectable: chevron `▾`/`▸` 9 px `--muted` → 7 px round dot in the layer's chip `fg` token (`--chip-conflict-fg`, `--chip-staged-fg`, `--chip-unstaged-fg`, `--chip-untracked-fg`; committed `--muted`) → label 12 px / 600 → count pill (monospace 10 px / 600, 5 px side padding, 999 px radius, 1 px `--line` on `--surface-raised`) reading `k`, or `k of n` against the unfiltered diff while a filter is active → spacer → `+n −m` monospace 11 px (`--success` / `--danger`) summed over the group's visible files, omitted entirely while no file in the group has stats → viewed `k/n` monospace 11 px `--muted`, which becomes `✓ k/n` in `--success` with the whole header at 55 % opacity once k = n.
+- Hover or focus inside a header reveals two 20 px icon buttons: `lucide:check-check` "Mark all in <label> viewed" (`lucide:rotate-ccw` "Clear viewed in <label>" once every file in the group is viewed) and `lucide:list-collapse` "Collapse other groups", which collapses every other group and opens this one. Clicking the header anywhere else toggles the group.
+- Keyboard on a header: `Enter`/`Space` toggle, `→` expands or moves on when already open, `←` collapses, `v` marks the whole group viewed. `←` on a depth-0 row inside a group moves focus to that group's header. `j`/`k` still walk files only, across groups.
+- Tree: 6 px vertical padding; indent 14 px per level starting at 12 px. Folder rows 24 px: `▾`/`▸` 9 px, `lucide:folder` 14 px `--muted`, name 12 px `--muted`; compacted chains render as one row `src/engine/git`. While a folder is collapsed the name is followed by its file count and `+n −m` in monospace 11 px `--muted`, the numbers omitted while a countable file inside still has no stats; an open folder shows nothing, its children carry the numbers.
+- **FileRow** 26 px, 7 px gap: status square 16 × 16 px (§3.3, letter 10 px / 700 monospace) → basename 12.5 px / 500 (tree) or `dir/` `--muted` + basename 500 (flat) with `text-overflow: ellipsis`, struck through and `--muted` when the status is deleted → layer code (§3.3), in Layer mode only on a file that is both staged and unstaged, in Path mode on every uncommitted file → `+n −m` monospace 11 px, `—` for binary, 32 px skeleton bar while stats load (the other marks in §7.2) → viewed checkbox 14 px (tick `--success`). No layer or `generated` chips on the row; those stay on the card header (§7.5) and in the StatsRow (§7.2).
 - Active row: `--accent-subtle` background + `box-shadow: inset 2px 0 0 var(--accent)`. Hover: `--surface-raised`. Viewed row: 55 % opacity. Keyboard focus: focus ring on the row.
-- Flat mode: same row, full path with directory in `--muted`.
+- Flat mode: same row, full path with directory in `--muted`; inside a group the files sit at depth 0.
+- When no file has an uncommitted layer (*Include uncommitted changes* off, or a compare that is not the checked-out branch) grouping is impossible: header row 2 and the group headers are not rendered, no row carries a layer code, and the sidebar is exactly the pre-T9.1 spec — header row 1, the tree, the FileRow and the row states.
 
 ### 7.5 FileCard (T5.3)
 
@@ -241,6 +249,7 @@ Modal 520 px, `--surface`, popover shadow, 12 px radius, title "Keyboard shortcu
 | Focus | focus ring (§5) on `:focus-visible` only |
 | Busy | `lucide:loader-circle` spinning 1 s linear; no skeleton shimmer |
 | Viewed | row 55 % opacity; card collapsed |
+| Group fully viewed | header 55 % opacity, `✓ k/n` in `--success` |
 | Selection in diff | native selection limited to the code column (`user-select: none` on gutters and signs) |
 
 Motion: none beyond the spinner and a 120 ms opacity/height transition on card collapse; both removed under `prefers-reduced-motion`.

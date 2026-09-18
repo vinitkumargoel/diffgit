@@ -24,6 +24,8 @@ export function validatePrefs(raw: unknown): Prefs {
   }
   if (raw.sidebarLayout === "tree" || raw.sidebarLayout === "flat")
     out.sidebarLayout = raw.sidebarLayout;
+  if (raw.sidebarGroup === "layer" || raw.sidebarGroup === "path")
+    out.sidebarGroup = raw.sidebarGroup;
   return out;
 }
 

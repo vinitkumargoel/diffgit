@@ -38,7 +38,7 @@ Step 2 (two agents in parallel):
    Engine track:  T1.1 → T1.5 → T1.2 → T1.3 → T1.4 → T1.6 → T2.2 → T2.1 → T2.3 → T2.4 → T3.1 → T3.2 → T3.3 → T3.4 → T3.5
    UI track:      T4.1 → T4.2 → T4.3 → T4.4 → T5.0 → T5.1 → T5.2 → T5.3 → T5.4 → T5.5 → T5.6
 Step 3 (after T3.5 and T5.6):     T6.0 → T6.1 → T6.2 → T6.3 → T6.4
-Step 4 (sequential):              T7.1 → T7.2 → T7.3 → T7.4 → T7.5 → T8.1 → T8.2 → T8.3
+Step 4 (sequential):              T7.1 → T7.2 → T7.3 → T7.4 → T7.5 → T8.1 → T8.2 → T8.3 → T9.1
 ```
 
 Inside a track, tasks whose "Depends on" are all merged may run in parallel (e.g. T2.2 with T2.1, T5.1 with T5.2). The UI track runs on the mock worker client (`VITE_MOCK_ENGINE=1`) until T3.5 lands, then switches to the real one.
@@ -109,6 +109,7 @@ Keep this board updated (edit this file; one line per task):
 | T8.1 | done | agent / 2026-09-17 | screenshots via scripts/screenshots.ts |
 | T8.2 | blocked | agent / 2026-09-17 | deployed 76c5ce0 on pages.dev; owner: CNAMEs, §13 smoke on 3 repos, tag v1.0.0 |
 | T8.3 | done | agent / 2026-09-17 | V1–V10 + B1–B10 in docs/backlog.md |
+| T9.1 | done | agent / 2026-09-19 | sidebar groups; mockup docs/mockups/review-sidebar-groups.html |
 
 Statuses: `todo` → `in-progress` → `review` → `done` (or `blocked: <reason>`).
 

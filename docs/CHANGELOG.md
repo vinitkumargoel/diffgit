@@ -15,6 +15,20 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T9.1 — Sidebar groups (2026-09-19)
+
+- Owner approved `docs/mockups/review-sidebar-groups.html` (decisions D1–D9, all recommendations taken). The sidebar no longer pins a layer chip to every row: files are grouped by layer under sticky headers, and the layer is said once, in the header. Design §3.3, §7.4 and §8 restated from it; `README.md` describes groups instead of chips.
+- Model and store: `groupOf` / `groupFiles` / `layerCode` / `dirSummary` in `src/ui/treeModel.ts`; `sidebarGroup: "layer" | "path"` pref, `selectHasLayers`, `selectGroupedModel`, `selectGroupTotals` and a batched `setViewed(ids, viewed)` action in `src/ui/store.ts`.
+- **D1** group order is Conflicts, Staged, Unstaged, Untracked, Committed on `<compare>` (VS Code's order with the branch's own commits appended last); **D2** Layer grouping is the default whenever any file has a non-committed layer, Path is the pref, and neither the second header row nor the headers exist otherwise; **D3** a file appears once, in the least-committed layer it touches (conflict → unstaged → staged → untracked → committed), so a staged-then-edited file sits under Unstaged with `MM` and the card is still one diff.
+- **D4** row chips are replaced by git's `status --short` XY code, x in `--chip-staged-fg`, y in `--chip-unstaged-fg`, `?` in `--chip-untracked-fg`, `U` in `--chip-conflict-fg`, `·` in `--muted`, with the full wording in the `aria-label` and title; shown on multi-layer files in Layer mode and on every uncommitted file in Path mode (`LayerChip` stays on the card header and in the StatsRow). **D5** empty groups are never rendered and a filtered header reads `k of n` against the unfiltered diff.
+- **D6** header anatomy: chevron, 7 px layer dot, label, count pill, `+n −m`, viewed `k/n`, plus two hover/focus actions; **D7** folder rows summarise (file count + `+n −m`) only while collapsed; **D8** deleted names are struck through and muted while untracked files keep the `A` square; **D9** the second header row (30 px) carries `Layer | Path` and `n uncommitted`, because two segmented controls do not fit in one 36 px row at 220 px.
+- Keyboard (P5): on a header `Enter`/`Space` toggle, `←`/`→` collapse and expand, `v` marks the whole group viewed; `←` on a depth-0 row moves focus to its group header; `j`/`k` still walk files across groups. Headers are `role="treeitem" aria-level={1}`, rows inside are level 2+, and the container is `role="tree"` in both layouts while grouped.
+- Deviations from the mockup, recorded here: the second header action is "Collapse other groups", not the mockup's "only this group", because that set a `layer:` filter token and `layer:staged` also matches a staged-then-edited file that lives under Unstaged, so the filter and the grouping would disagree; and headers are not sticky once the pane virtualises above 300 rows, because the virtualiser positions rows with transforms.
+- Review (independent, Opus): no medium or higher findings; taken from the low ones: the header accessible name says `1 file`, not `1 files`; the `ChangeLayer`/`SidebarGroupId` casts in `treeModel.ts` are gone so a renamed layer fails to compile instead of silently grouping as committed; collapsing a group that holds the focused row moves focus to the header that caused it instead of stranding it on `<body>`. Not taken: a dedicated key for "Collapse other groups" (`←` on each header does the same).
+- Checks: `bun run check` green (Biome 216 files, 228 engine + 294 UI tests, guards), `bun run e2e` 3/3, screenshots regenerated from the `worktree` fixture and compared with the mockup in both themes.
+
+---
+
 ## States review — Home history, loading, stats, errors, browser gate (2026-09-18)
 
 - Owner approved `docs/mockups/review-history-loading-stats-errors-gate.html` (41 states) in full; Design §7.2, §7.3, §7.7, §7.8 and §13 restated from it, state ids cited.

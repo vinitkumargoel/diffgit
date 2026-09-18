@@ -6,6 +6,8 @@ import {
   configurePersistence,
   isViewed,
   selectCanIncludeWorktree,
+  selectGroupTotals,
+  selectHasLayers,
   selectTotals,
   selectViewedCount,
   selectVisibleFiles,
@@ -136,6 +138,77 @@ describe("store", () => {
     expect(viewedKey("r", s.diff.source, u1)).not.toBe(viewedKey("r", s.diff.source, u2));
     s.toggleViewed("src/a.txt");
     expect(useStore.getState().collapsed.has("src/a.txt")).toBe(false);
+  });
+
+  it("setViewed marks a batch in one update, persists every key and collapses every card", async () => {
+    const saved: [string, boolean][] = [];
+    configurePersistence({
+      loadViewed: async () => new Set(),
+      saveViewed: async (key, viewed) => {
+        saved.push([key, viewed]);
+      },
+    });
+    try {
+      await openBasic();
+      const s = useStore.getState();
+      if (!s.diff) throw new Error("diff missing");
+      const ids = ["src/a.txt", "src/b.txt", "nope.txt"];
+      s.setViewed(ids, true);
+      const after = useStore.getState();
+      expect(selectViewedCount(after)).toBe(2);
+      expect(after.collapsed.has("src/a.txt")).toBe(true);
+      expect(after.collapsed.has("src/b.txt")).toBe(true);
+      expect(after.collapsed.has("nope.txt")).toBe(false);
+      // one saveViewed per *known* file
+      expect(saved.map(([, v]) => v)).toEqual([true, true]);
+      const keys = s.diff.files
+        .filter((f) => f.id === "src/a.txt" || f.id === "src/b.txt")
+        .map((f) => viewedKey(after.repoId ?? "", s.diff?.source as never, f));
+      expect(saved.map(([k]) => k).sort()).toEqual([...keys].sort());
+
+      saved.length = 0;
+      useStore.getState().setViewed(["src/a.txt", "src/b.txt"], false);
+      expect(selectViewedCount(useStore.getState())).toBe(0);
+      expect(useStore.getState().collapsed.has("src/a.txt")).toBe(false);
+      expect(saved.map(([, v]) => v)).toEqual([false, false]);
+
+      // nothing known in the batch: no write at all
+      saved.length = 0;
+      const before = useStore.getState().viewed;
+      useStore.getState().setViewed(["nope.txt"], true);
+      expect(saved).toEqual([]);
+      expect(useStore.getState().viewed).toBe(before);
+    } finally {
+      configurePersistence({});
+    }
+  });
+
+  it("selectHasLayers and selectGroupTotals describe the unfiltered diff", async () => {
+    await openBasic();
+    expect(selectHasLayers(useStore.getState())).toBe(false);
+    expect(selectGroupTotals(useStore.getState())).toEqual({
+      conflict: 0,
+      staged: 0,
+      unstaged: 0,
+      untracked: 0,
+      committed: 12,
+    });
+
+    await useStore.getState().openRepo({ name: "showcase-worktree" });
+    const s = useStore.getState();
+    expect(selectHasLayers(s)).toBe(true);
+    expect(selectGroupTotals(s)).toEqual({
+      conflict: 1,
+      staged: 4,
+      unstaged: 3,
+      untracked: 2,
+      committed: 1,
+    });
+    // memoised on diff.files, and unaffected by the filter
+    const totals = selectGroupTotals(useStore.getState());
+    useStore.getState().setFilter("staged");
+    expect(selectGroupTotals(useStore.getState())).toBe(totals);
+    expect(selectVisibleFiles(useStore.getState()).length).toBeLessThan(11);
   });
 
   it("detached repo defaults to the synthetic HEAD source", async () => {

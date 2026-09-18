@@ -4,13 +4,24 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DiffResult, RepoInfo } from "../../engine/types";
 import basicDiff from "../../test/recorded/showcase.diffresult.json";
 import basic from "../../test/recorded/showcase.repoinfo.json";
+import worktreeDiff from "../../test/recorded/showcase-worktree.diffresult.json";
 import { DEFAULT_PREFS, useStore } from "../store";
 import { EmptyState } from "./EmptyState";
 import ErrorScreen from "./ErrorScreen";
 import { HelpDialog } from "./HelpDialog";
 import { HomeScreen } from "./HomeScreen";
+import { Sidebar } from "./Sidebar";
 import { Toasts } from "./Toasts";
 import { WarningBanners } from "./WarningBanners";
+
+if (!("ResizeObserver" in globalThis)) {
+  class RO {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = RO;
+}
 
 const persistence = vi.hoisted(() => ({
   listRepos: vi.fn(async () => [
@@ -101,6 +112,14 @@ describe("axe (vitest, happy-dom)", () => {
   it("ErrorScreen has no serious or critical issues", async () => {
     useStore.setState({ screen: "error", error: { code: "PERMISSION", message: "denied" } });
     const { container } = render(<ErrorScreen />);
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it("Sidebar (grouped) has no serious or critical issues", async () => {
+    useStore.setState({ diff: worktreeDiff as unknown as DiffResult });
+    const { container } = render(<Sidebar initialRect={{ width: 300, height: 600 }} />);
+    // sanity: the five group headers really are on screen (T9.1)
+    expect(container.querySelectorAll('[role="treeitem"][aria-level="1"]')).toHaveLength(5);
     expect(await violations(container)).toEqual([]);
   });
 

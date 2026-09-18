@@ -71,10 +71,11 @@ Source of truth: [`../Plan.md`](../Plan.md) for behaviour and [`../Design.md`](.
 | T8.1 | README | S | T7.5 |
 | T8.2 | Deploy v1 | S | T8.1 |
 | T8.3 | v2 backlog | S | T8.2 |
+| T9.1 | Sidebar groups for uncommitted work | M | T5.2, T5.6 |
 
 ```
 Phase 0 ──► Phase 1 ──► Phase 2 ──► Phase 3 ──┐
-   │                                          ├──► Phase 6 ──► Phase 7 ──► Phase 8
+   │                                          ├──► Phase 6 ──► Phase 7 ──► Phase 8 ──► Phase 9
    └──► Phase 4 ──► Phase 5 (S1) ─────────────┘
 ```
 

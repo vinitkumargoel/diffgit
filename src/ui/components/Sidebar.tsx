@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { type SidebarLayout, selectVisibleFiles, useStore } from "../store";
+import {
+  type SidebarGroup,
+  type SidebarLayout,
+  selectGroupTotals,
+  selectHasLayers,
+  selectVisibleFiles,
+  useStore,
+} from "../store";
 import { FileTree } from "./FileTree";
 
 const SIDEBAR_MIN = 220;
@@ -12,13 +19,25 @@ const LAYOUTS: { value: SidebarLayout; label: string }[] = [
   { value: "flat", label: "Flat" },
 ];
 
+/** D9: the second header row's mini segmented control. */
+const GROUPINGS: { value: SidebarGroup; label: string }[] = [
+  { value: "layer", label: "Layer" },
+  { value: "path", label: "Path" },
+];
+
+const SEGMENT_CLASS = "rounded-[6px] px-[7px] py-[2px] text-[11px] leading-4 font-medium";
+
 /**
- * Left file navigator (Design §6, §7.4): 36 px header with count and `Tree | Flat`, the file tree,
- * and a 4 px resize handle (220–480 px, persisted in prefs; ← → keys move it 10 px).
+ * Left file navigator (Design §6, §7.4): 36 px header with count and `Tree | Flat`, a 30 px second
+ * row with `Layer | Path` and the uncommitted count when the diff has more than one layer (D9),
+ * the file tree, and a 4 px resize handle (220–480 px, persisted in prefs; ← → keys move it 10 px).
  */
 export function Sidebar({ initialRect }: { initialRect?: { width: number; height: number } }) {
   const width = useStore((s) => s.prefs.sidebarWidth);
   const layout = useStore((s) => s.prefs.sidebarLayout);
+  const grouping = useStore((s) => s.prefs.sidebarGroup);
+  const hasLayers = useStore(selectHasLayers);
+  const committed = useStore(selectGroupTotals).committed;
   const setPref = useStore((s) => s.setPref);
   const total = useStore((s) => s.diff?.files.length ?? 0);
   const visible = useStore(selectVisibleFiles).length;
@@ -82,7 +101,7 @@ export function Sidebar({ initialRect }: { initialRect?: { width: number; height
               key={l.value}
               type="button"
               aria-pressed={layout === l.value}
-              className={`rounded-[6px] px-[7px] py-[2px] text-[11px] leading-4 font-medium ${
+              className={`${SEGMENT_CLASS} ${
                 layout === l.value ? "pressed" : "text-muted hover:text-ink"
               }`}
               onClick={() => setPref("sidebarLayout", l.value)}
@@ -92,6 +111,27 @@ export function Sidebar({ initialRect }: { initialRect?: { width: number; height
           ))}
         </fieldset>
       </div>
+      {hasLayers && (
+        <div className="flex h-[30px] shrink-0 items-center justify-between border-b border-line px-3">
+          <fieldset className="inline-flex rounded-[6px] border border-line bg-surface-raised p-0">
+            <legend className="sr-only">Group files</legend>
+            {GROUPINGS.map((g) => (
+              <button
+                key={g.value}
+                type="button"
+                aria-pressed={grouping === g.value}
+                className={`${SEGMENT_CLASS} ${
+                  grouping === g.value ? "pressed" : "text-muted hover:text-ink"
+                }`}
+                onClick={() => setPref("sidebarGroup", g.value)}
+              >
+                {g.label}
+              </button>
+            ))}
+          </fieldset>
+          <span className="text-[11px] text-muted">{total - committed} uncommitted</span>
+        </div>
+      )}
       <FileTree layout={layout} initialRect={initialRect} />
       <hr
         aria-orientation="vertical"

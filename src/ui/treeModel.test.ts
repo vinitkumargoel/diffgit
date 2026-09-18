@@ -1,8 +1,18 @@
 import { describe, expect, it } from "vitest";
 import type { FileDiff } from "../engine/types";
-import { buildTree, flattenTree, makePathFilter } from "./treeModel";
+import {
+  buildTree,
+  dirSummary,
+  flattenTree,
+  GROUP_ORDER,
+  groupFiles,
+  groupOf,
+  layerCode,
+  makePathFilter,
+  type TreeDir,
+} from "./treeModel";
 
-function fd(path: string): FileDiff {
+function fd(path: string, extra: Partial<FileDiff> = {}): FileDiff {
   return {
     id: path,
     oldPath: path,
@@ -19,6 +29,7 @@ function fd(path: string): FileDiff {
     newSize: 1,
     stats: null,
     tooLarge: false,
+    ...extra,
   };
 }
 
@@ -81,5 +92,166 @@ describe("makePathFilter", () => {
   });
   it("empty filter matches everything", () => {
     expect(makePathFilter("  ")("anything")).toBe(true);
+  });
+});
+
+describe("groupOf (D3: least-committed layer a file touches)", () => {
+  it("returns the group for each single layer", () => {
+    expect(groupOf({ layers: ["conflict"] })).toBe("conflict");
+    expect(groupOf({ layers: ["staged"] })).toBe("staged");
+    expect(groupOf({ layers: ["unstaged"] })).toBe("unstaged");
+    expect(groupOf({ layers: ["untracked"] })).toBe("untracked");
+    expect(groupOf({ layers: ["committed"] })).toBe("committed");
+  });
+
+  it("applies the precedence conflict → unstaged → staged → untracked → committed", () => {
+    expect(groupOf({ layers: ["committed", "staged"] })).toBe("staged");
+    expect(groupOf({ layers: ["committed", "staged", "unstaged"] })).toBe("unstaged");
+    expect(groupOf({ layers: ["staged", "unstaged"] })).toBe("unstaged");
+    expect(groupOf({ layers: ["unstaged", "conflict"] })).toBe("conflict");
+    expect(groupOf({ layers: ["committed", "untracked"] })).toBe("untracked");
+    expect(groupOf({ layers: [] })).toBe("committed");
+  });
+});
+
+describe("groupFiles", () => {
+  it("emits non-empty groups in GROUP_ORDER and keeps the engine order inside a group", () => {
+    const groups = groupFiles([
+      fd("z/committed.ts"),
+      fd("a/untracked.ts", { layers: ["untracked"] }),
+      fd("m/staged-b.ts", { layers: ["staged"] }),
+      fd("a/staged-a.ts", { layers: ["staged"] }),
+      fd("q/both.ts", { layers: ["staged", "unstaged"] }),
+      fd("k/conflict.ts", { layers: ["unstaged", "conflict"] }),
+    ]);
+    expect(groups.map((g) => g.id)).toEqual(GROUP_ORDER);
+    // engine (input) order survives inside the group; the tree is the sorted view
+    expect(groups[1]?.files.map((f) => f.id)).toEqual(["m/staged-b.ts", "a/staged-a.ts"]);
+    expect(groups[1]?.tree.map((n) => n.name)).toEqual(["a", "m"]);
+  });
+
+  it("skips empty groups and puts a staged+unstaged file under Unstaged only", () => {
+    const groups = groupFiles([fd("a.ts", { layers: ["staged", "unstaged"] }), fd("b.ts")]);
+    expect(groups.map((g) => g.id)).toEqual(["unstaged", "committed"]);
+    expect(groups.flatMap((g) => g.files.map((f) => f.id))).toEqual(["a.ts", "b.ts"]);
+  });
+
+  it("returns nothing for an empty file list", () => {
+    expect(groupFiles([])).toEqual([]);
+  });
+});
+
+describe("layerCode (D4: git status --short XY)", () => {
+  it("conflict and untracked colour both columns", () => {
+    expect(layerCode({ layers: ["unstaged", "conflict"], status: "modified" })).toEqual({
+      x: "U",
+      y: "U",
+      label: "Merge conflict (UU)",
+    });
+    expect(layerCode({ layers: ["untracked"], status: "added" })).toEqual({
+      x: "?",
+      y: "?",
+      label: "Untracked file (??)",
+    });
+  });
+
+  it("staged and unstaged: the status letter, then M — or MD for a delete", () => {
+    expect(layerCode({ layers: ["staged", "unstaged"], status: "modified" })).toEqual({
+      x: "M",
+      y: "M",
+      label: "Staged, then edited again (MM)",
+    });
+    expect(layerCode({ layers: ["staged", "unstaged"], status: "added" })).toEqual({
+      x: "A",
+      y: "M",
+      label: "Staged, then edited again (AM)",
+    });
+    expect(layerCode({ layers: ["staged", "unstaged"], status: "deleted" })).toEqual({
+      x: "M",
+      y: "D",
+      label: "Staged, then deleted (MD)",
+    });
+  });
+
+  it("one layer only leaves the other column empty", () => {
+    expect(layerCode({ layers: ["staged"], status: "renamed" })).toEqual({
+      x: "R",
+      y: "·",
+      label: "Staged only (R·)",
+    });
+    expect(layerCode({ layers: ["staged"], status: "copied" })).toEqual({
+      x: "C",
+      y: "·",
+      label: "Staged only (C·)",
+    });
+    expect(layerCode({ layers: ["unstaged"], status: "typechange" })).toEqual({
+      x: "·",
+      y: "T",
+      label: "Unstaged only (·T)",
+    });
+    expect(layerCode({ layers: ["unstaged"], status: "deleted" })).toEqual({
+      x: "·",
+      y: "D",
+      label: "Unstaged only (·D)",
+    });
+  });
+
+  it("a committed-only file has no code", () => {
+    expect(layerCode({ layers: ["committed"], status: "modified" })).toBeNull();
+    expect(layerCode({ layers: [], status: "modified" })).toBeNull();
+  });
+});
+
+describe("dirSummary (D7)", () => {
+  const dirOf = (nodes: ReturnType<typeof buildTree>): TreeDir => {
+    const dir = nodes[0];
+    if (dir?.kind !== "dir") throw new Error("expected dir");
+    return dir;
+  };
+
+  it("counts every file below the node and sums the stats it has", () => {
+    const tree = buildTree([
+      fd("src/ui/a.ts", { stats: { additions: 3, deletions: 1 } }),
+      fd("src/ui/b.ts", { stats: { additions: 4, deletions: 2 } }),
+      fd("src/c.ts", { stats: { additions: 1, deletions: 0 } }),
+      fd("other.ts", { stats: { additions: 9, deletions: 9 } }),
+    ]);
+    expect(dirSummary(dirOf(tree), (f) => f.stats)).toEqual({
+      files: 3,
+      additions: 8,
+      deletions: 3,
+      complete: true,
+    });
+  });
+
+  it("is incomplete while a countable file has no stats; binary and tooLarge never count", () => {
+    const tree = buildTree([
+      fd("src/a.ts", { stats: { additions: 1, deletions: 1 } }),
+      fd("src/pending.ts"),
+    ]);
+    expect(dirSummary(dirOf(tree), (f) => f.stats).complete).toBe(false);
+
+    const skipped = buildTree([
+      fd("src/a.ts", { stats: { additions: 1, deletions: 1 } }),
+      fd("src/logo.png", { binary: true }),
+      fd("src/huge.txt", { tooLarge: true }),
+    ]);
+    expect(dirSummary(dirOf(skipped), (f) => f.stats)).toEqual({
+      files: 3,
+      additions: 1,
+      deletions: 1,
+      complete: true,
+    });
+  });
+
+  it("reads the live stats map through the accessor, not the file's own snapshot", () => {
+    const tree = buildTree([fd("src/a.ts")]);
+    const live: Record<string, FileDiff["stats"]> = { "src/a.ts": { additions: 7, deletions: 2 } };
+    expect(dirSummary(dirOf(tree), (f) => live[f.id] ?? f.stats)).toEqual({
+      files: 1,
+      additions: 7,
+      deletions: 2,
+      complete: true,
+    });
   });
 });

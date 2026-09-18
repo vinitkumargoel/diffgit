@@ -131,6 +131,17 @@ describe("prefs", () => {
     expect(loadPrefs().theme).toBe("dark");
   });
 
+  it("sidebarGroup accepts only 'layer' and 'path' (T9.1)", () => {
+    expect(DEFAULT_PREFS.sidebarGroup).toBe("layer");
+    expect(validatePrefs({ sidebarGroup: "path" }).sidebarGroup).toBe("path");
+    expect(validatePrefs({ sidebarGroup: "layer" }).sidebarGroup).toBe("layer");
+    expect(validatePrefs({ sidebarGroup: "status" }).sidebarGroup).toBe("layer");
+    expect(validatePrefs({ sidebarGroup: 3 }).sidebarGroup).toBe("layer");
+    expect(validatePrefs({}).sidebarGroup).toBe("layer");
+    savePrefs({ ...DEFAULT_PREFS, sidebarGroup: "path" });
+    expect(loadPrefs().sidebarGroup).toBe("path");
+  });
+
   it("storage throwing does not throw out and reports once", () => {
     const reports: string[] = [];
     onStorageError((m) => reports.push(m));

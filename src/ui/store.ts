@@ -29,7 +29,16 @@ import type {
 import { getWorkerClient } from "./engineClient";
 import { LOADING_INLINE_CODES, toUiError, type UiError } from "./errors";
 import { Lru } from "./lru";
-import { buildTree, makeFileFilter, type TreeNode } from "./treeModel";
+import {
+  buildTree,
+  type FileGroup,
+  GROUP_ORDER,
+  groupFiles,
+  groupOf,
+  makeFileFilter,
+  type SidebarGroupId,
+  type TreeNode,
+} from "./treeModel";
 import { viewedKey } from "./viewedKey";
 import type { ClientMetrics, WorkerClient } from "./workerClient";
 
@@ -39,6 +48,8 @@ export type Screen = "home" | "loading" | "repo" | "error";
 export type ViewMode = "unified" | "split";
 export type Theme = "system" | "light" | "dark";
 export type SidebarLayout = "tree" | "flat";
+/** D2: group the sidebar by change layer, or keep the plain path tree. */
+export type SidebarGroup = "layer" | "path";
 export type RefreshMode = "live" | "polling" | "manual";
 export type RefreshReason =
   | "manual"
@@ -57,6 +68,7 @@ export interface Prefs {
   theme: Theme;
   sidebarWidth: number;
   sidebarLayout: SidebarLayout;
+  sidebarGroup: SidebarGroup;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -65,6 +77,7 @@ export const DEFAULT_PREFS: Prefs = {
   theme: "system",
   sidebarWidth: 300,
   sidebarLayout: "tree",
+  sidebarGroup: "layer",
 };
 
 /** The four user-visible loading steps (Plan §6.1 screen 3) and how engine phases map onto them. */
@@ -278,6 +291,8 @@ export interface StoreState {
   loadFileDiff(id: string, opts?: { loadLarge?: boolean }): Promise<void>;
   cancelFileDiff(id: string): void;
   toggleViewed(id: string): void;
+  /** Batch form of `toggleViewed` (T9.1: the group header's "mark all viewed"). */
+  setViewed(ids: string[], viewed: boolean): void;
   setFilter(text: string): void;
   setPref<K extends keyof Prefs>(key: K, value: Prefs[K]): void;
   setActiveFile(id: string | null): void;
@@ -872,6 +887,31 @@ export const useStore = create<StoreState>()((set, get) => {
       void persistence.saveViewed(key, nowViewed);
     },
 
+    setViewed(ids, nowViewed) {
+      const s = get();
+      if (!s.diff) return;
+      const byId = new Map(s.diff.files.map((f) => [f.id, f]));
+      const viewed = new Set(s.viewed);
+      const collapsed = new Set(s.collapsed);
+      const keys: string[] = [];
+      for (const id of ids) {
+        const file = byId.get(id);
+        if (!file) continue;
+        const key = viewedKey(s.repoId ?? "", s.diff.source, file);
+        if (nowViewed) {
+          viewed.add(key);
+          collapsed.add(id);
+        } else {
+          viewed.delete(key);
+          collapsed.delete(id);
+        }
+        keys.push(key);
+      }
+      if (keys.length === 0) return;
+      set({ viewed, collapsed });
+      for (const key of keys) void persistence.saveViewed(key, nowViewed);
+    },
+
     setFilter(text) {
       set({ filter: text });
     },
@@ -1077,6 +1117,42 @@ export function selectTreeModel(s: Pick<StoreState, "diff" | "filter">): TreeNod
   if (treeCache && treeCache.files === files) return treeCache.result;
   const result = buildTree(files);
   treeCache = { files, result };
+  return result;
+}
+
+const NO_FILES: readonly FileDiff[] = [];
+
+/** D2: grouping is possible only when some file touches a layer other than `committed`. */
+export function selectHasLayers(s: Pick<StoreState, "diff">): boolean {
+  for (const f of s.diff?.files ?? NO_FILES) {
+    if (f.layers.some((l) => l !== "committed")) return true;
+  }
+  return false;
+}
+
+let groupedCache: { files: FileDiff[]; result: FileGroup[] } | null = null;
+export function selectGroupedModel(s: Pick<StoreState, "diff" | "filter">): FileGroup[] {
+  const files = selectVisibleFiles(s);
+  if (groupedCache && groupedCache.files === files) return groupedCache.result;
+  const result = groupFiles(files);
+  groupedCache = { files, result };
+  return result;
+}
+
+/** D5: counts over the *unfiltered* diff, so a header can read `k of n` while filtering. */
+let groupTotalsCache: {
+  files: readonly FileDiff[];
+  result: Record<SidebarGroupId, number>;
+} | null = null;
+export function selectGroupTotals(s: Pick<StoreState, "diff">): Record<SidebarGroupId, number> {
+  const files = s.diff?.files ?? NO_FILES;
+  if (groupTotalsCache && groupTotalsCache.files === files) return groupTotalsCache.result;
+  const result = Object.fromEntries(GROUP_ORDER.map((id) => [id, 0])) as Record<
+    SidebarGroupId,
+    number
+  >;
+  for (const f of files) result[groupOf(f)]++;
+  groupTotalsCache = { files, result };
   return result;
 }
 
