@@ -19,7 +19,7 @@ export function BrowserGate({ children }: { children: ReactNode }) {
       <MonitorX size={32} className="text-muted" aria-hidden="true" />
       <h1 className="text-2xl font-semibold leading-8">This browser can't open local folders</h1>
       <p className="text-muted">
-        diffgoel reads your repository through the File System Access API, which only desktop
+        diffgit reads your repository through the File System Access API, which only desktop
         Chromium browsers provide. Please open this page in one of:
       </p>
       <p className="font-medium">Google Chrome · Microsoft Edge · Brave · Arc (desktop)</p>

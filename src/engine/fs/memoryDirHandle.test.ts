@@ -124,7 +124,7 @@ describe("MemoryDirHandle", () => {
   test("marker detection", () => {
     expect(
       isMemoryHandleMarker({
-        __diffgoelMemoryHandle: true,
+        __diffgitMemoryHandle: true,
         kind: "directory",
         snapshotId: "x",
         name: "n",

@@ -50,7 +50,7 @@ export default defineConfig({
     tailwindcss(),
     {
       // `<meta name="build-id">` lets scripts/check-prod.sh verify which commit a host serves.
-      name: "diffgoel-build-id-meta",
+      name: "diffgit-build-id-meta",
       transformIndexHtml(html) {
         return html.replace(
           "</head>",

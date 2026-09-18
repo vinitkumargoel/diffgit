@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>diffgit — Direction E · Precision</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Cpath d='M10 10.5v11' fill='none' stroke='%23e6edf3' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M22 12.6c0 6-12 3.4-12 9' fill='none' stroke='%233fb950' stroke-width='2.4' stroke-linecap='round'/%3E%3Ccircle cx='10' cy='8' r='2.6' fill='%23e6edf3'/%3E%3Ccircle cx='10' cy='24' r='2.6' fill='%23e6edf3'/%3E%3Ccircle cx='22' cy='10' r='2.6' fill='%233fb950'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#ffffff; --bg2:#fafbfc; --surface:#ffffff; --raised:#f6f8fa; --line:#e6e8eb; --line2:#d0d7de;
+  --ink:#0b0c0e; --ink2:#3a3f46; --muted:#6b7280; --dim:#9aa1aa;
+  --green:#1a7f37; --green-bg:#dafbe1; --blue:#0969da; --blue-bg:#ddf4ff; --red:#cf222e; --red-bg:#ffebe9; --yellow:#9a6700; --yellow-bg:#fff8c5; --purple:#6639ba; --purple-bg:#fbefff;
+  --add:#e6ffec; --add-n:#ccffd8; --del:#ffebe9; --del-n:#ffd7d5; --hunk:#ddf4ff;
+  --font:"Inter",system-ui,sans-serif; --display:"Inter Tight","Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0d1117; --bg2:#0b0f14; --surface:#0d1117; --raised:#161b22; --line:#21262d; --line2:#30363d;
+  --ink:#f0f3f6; --ink2:#c9d1d9; --muted:#8b949e; --dim:#57606a;
+  --green:#3fb950; --green-bg:#12261e; --blue:#58a6ff; --blue-bg:#121d2f; --red:#f85149; --red-bg:#25171c; --yellow:#d29922; --yellow-bg:#2d2a16; --purple:#a371f7; --purple-bg:#271e3a;
+  --add:#12261e; --add-n:#1b4d2b; --del:#25171c; --del-n:#5d2426; --hunk:#121d2f;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0d1117; --bg2:#0b0f14; --surface:#0d1117; --raised:#161b22; --line:#21262d; --line2:#30363d;
+  --ink:#f0f3f6; --ink2:#c9d1d9; --muted:#8b949e; --dim:#57606a;
+  --green:#3fb950; --green-bg:#12261e; --blue:#58a6ff; --blue-bg:#121d2f; --red:#f85149; --red-bg:#25171c; --yellow:#d29922; --yellow-bg:#2d2a16; --purple:#a371f7; --purple-bg:#271e3a;
+  --add:#12261e; --add-n:#1b4d2b; --del:#25171c; --del-n:#5d2426; --hunk:#121d2f;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.mono{font-family:var(--mono)}
+kbd{font-family:var(--mono);font-size:11.5px;padding:1px 6px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:5px;background:var(--raised);color:var(--ink2)}
+/* hairline frame */
+.frame{max-width:1200px;margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+@media (max-width:1240px){.frame{border-left:0;border-right:0}}
+.pad{padding:0 48px}
+@media (max-width:760px){.pad{padding:0 20px}}
+.rule{border-top:1px solid var(--line)}
+.btn{display:inline-flex;align-items:center;gap:8px;font:500 14px var(--font);padding:10px 16px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);cursor:pointer;white-space:nowrap;transition:.15s}
+.btn:hover{background:var(--raised)}
+.btn-ink{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn-ink:hover{background:var(--ink);opacity:.9}
+.btn-lg{font-size:15px;padding:13px 20px;border-radius:10px}
+
+nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(12px)}
+nav .frame{border-bottom:1px solid var(--line)}
+nav .pad{display:flex;align-items:center;gap:32px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font:600 16px var(--display);letter-spacing:-.01em}
+.brand svg{width:28px;height:28px;border-radius:8px}
+.brand b{font-weight:600}.brand b i{font-style:normal;color:var(--green)}
+nav .links{display:flex;gap:24px;margin-left:auto;font-size:14px;color:var(--muted)}
+nav .links a:hover{color:var(--ink)}
+@media (max-width:760px){nav .links{display:none}}
+
+/* hero */
+.hero{padding-top:96px;padding-bottom:56px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font:500 13px var(--mono);color:var(--muted)}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--green)}
+h1{font-family:var(--display);font-size:clamp(44px,6.6vw,84px);line-height:.98;letter-spacing:-.045em;font-weight:500;margin:22px 0 26px;max-width:14ch}
+h1 em{font-style:normal;color:var(--green)}
+.lede{font-size:clamp(17px,1.5vw,20px);color:var(--muted);max-width:620px;margin:0 0 34px;line-height:1.5}
+.lede b{color:var(--ink);font-weight:500}
+.cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.cta small{color:var(--dim);font-size:13px;margin-left:6px}
+.hero .grid{display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:end}
+@media (max-width:900px){.hero .grid{grid-template-columns:1fr}}
+.facts{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.facts div{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.facts div span:first-child{color:var(--muted)}
+.facts div span:last-child{font-family:var(--mono);font-size:13px}
+.facts .g{color:var(--green)}
+
+/* ===== interactive demo ===== */
+.demo-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0 14px}
+.demo-head .t{font-size:14px;color:var(--muted)}
+.demo-head .t b{color:var(--ink);font-weight:600}
+.demo-head .keys{display:flex;gap:6px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.demo-head .keys span{display:inline-flex;gap:5px;align-items:center;margin-left:8px}
+.app{border:1px solid var(--line2);border-radius:14px;background:var(--surface);overflow:hidden;font-size:13px;box-shadow:0 30px 80px -40px rgba(0,0,0,.35);outline:none}
+.app:focus-within{box-shadow:0 30px 80px -40px rgba(0,0,0,.35),0 0 0 3px color-mix(in srgb,var(--blue) 30%,transparent)}
+.app .top{display:flex;align-items:center;gap:10px;height:46px;padding:0 14px;background:var(--raised);border-bottom:1px solid var(--line)}
+.app .top .repo{display:flex;align-items:center;gap:8px;font-weight:600}
+.app .top .repo svg{width:20px;height:20px;border-radius:5px}
+.sel{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:6px;padding:3px 8px;background:var(--surface);font-family:var(--mono);font-size:12px}
+.sel .lbl{font-family:var(--font);color:var(--muted);font-size:11.5px}
+.badge{font:600 10px var(--font);padding:0 5px;border-radius:999px;border:1px solid}
+.badge.default{color:var(--blue);border-color:color-mix(in srgb,var(--blue) 50%,transparent);background:var(--blue-bg)}
+.badge.head{color:var(--green);border-color:color-mix(in srgb,var(--green) 50%,transparent);background:var(--green-bg)}
+.app .top .right{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:12.5px}
+.app label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.app input[type=checkbox]{accent-color:var(--blue);width:14px;height:14px;margin:0}
+.live{display:inline-flex;align-items:center;gap:6px;color:var(--green);font-weight:500}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green)}
+.app .stats{display:flex;align-items:center;gap:14px;height:38px;padding:0 14px;border-bottom:1px solid var(--line);color:var(--muted);font-size:12.5px}
+.app .stats b{color:var(--ink);font-weight:600}
+.app .stats .plus{color:var(--green);font-family:var(--mono)}.app .stats .minus{color:var(--red);font-family:var(--mono)}
+.filter{margin-left:auto;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:6px;padding:2px 8px;background:var(--surface)}
+.filter input{border:0;outline:0;background:transparent;font:12.5px var(--font);color:var(--ink);width:130px}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden}
+.seg button{padding:3px 10px;font:500 11.5px var(--font);border:0;background:var(--surface);color:var(--ink2);cursor:pointer}
+.seg button.on{background:var(--raised);color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.app .body{display:grid;grid-template-columns:300px 1fr;height:520px}
+@media (max-width:820px){.app .body{grid-template-columns:1fr;height:auto}.tree{max-height:200px}}
+.tree{border-right:1px solid var(--line);overflow:auto;padding:8px 0;background:var(--bg2)}
+.tree .h{padding:4px 14px 8px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.row{display:flex;align-items:center;gap:8px;height:30px;padding:0 12px;font-family:var(--mono);font-size:12px;color:var(--ink2);white-space:nowrap;position:relative;cursor:pointer;border:0;background:transparent;width:100%;text-align:left}
+.row:hover{background:var(--raised)}
+.row.on{background:var(--blue-bg)}.row.on::before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:2px;background:var(--blue);border-radius:2px}
+.st{width:16px;height:16px;border-radius:4px;font:700 10px/16px var(--mono);text-align:center;flex:none}
+.st.M{background:var(--yellow-bg);color:var(--yellow)}.st.A{background:var(--green-bg);color:var(--green)}.st.D{background:var(--red-bg);color:var(--red)}.st.R{background:var(--blue-bg);color:var(--blue)}
+.row .p{overflow:hidden;text-overflow:ellipsis}.row .p .dir{color:var(--dim)}
+.chip{font:600 9.5px/15px var(--font);padding:0 5px;border-radius:999px;border:1px solid;flex:none}
+.chip.staged{background:var(--green-bg);color:var(--green);border-color:color-mix(in srgb,var(--green) 45%,transparent)}
+.chip.unstaged{background:var(--yellow-bg);color:var(--yellow);border-color:color-mix(in srgb,var(--yellow) 45%,transparent)}
+.chip.untracked{background:var(--purple-bg);color:var(--purple);border-color:color-mix(in srgb,var(--purple) 45%,transparent)}
+.row .n{margin-left:auto;font-size:11px;color:var(--muted)}
+.row .n b{color:var(--green);font-weight:500}.row .n i{color:var(--red);font-style:normal}
+.tick{width:14px;height:14px;border:1px solid var(--line2);border-radius:3px;flex:none;position:relative;background:var(--surface)}
+.tick.on{background:var(--green);border-color:var(--green)}
+.tick.on::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.pane{overflow:auto;padding:14px;background:var(--bg)}
+.card{border:1px solid var(--line2);border-radius:10px;overflow:hidden;background:var(--surface)}
+.card .fh{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;background:var(--raised);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px}
+.card .fh .n{font-size:11px;color:var(--muted)}.card .fh .n b{color:var(--green);font-weight:500}.card .fh .n i{color:var(--red);font-style:normal}
+.card .fh label{margin-left:auto;font-family:var(--font);font-size:11.5px;color:var(--muted);border:1px solid var(--line2);border-radius:6px;padding:2px 8px;background:var(--surface)}
+.l{display:grid;grid-template-columns:44px 44px 1fr;font-family:var(--mono);font-size:12px;line-height:22px;min-height:22px}
+.l>span{padding:0 8px;white-space:pre}
+.l .g{color:var(--dim);text-align:right;user-select:none;font-size:11px;background:var(--bg2)}
+.l.hunk{background:var(--hunk);color:var(--muted)}.l.hunk>span:last-child{grid-column:1/-1;padding-left:14px}
+.l.add{background:var(--add)}.l.add .g{background:var(--add-n);color:var(--green)}
+.l.del{background:var(--del)}.l.del .g{background:var(--del-n);color:var(--red)}
+.l.add .c::before{content:"+ ";color:var(--green)}.l.del .c::before{content:"- ";color:var(--red)}.l.ctx .c::before{content:"  "}
+.l.empty{background:repeating-linear-gradient(-45deg,transparent 0 6px,var(--raised) 6px 7px)}
+.split{display:grid;grid-template-columns:1fr 1fr}
+.split .side .l{grid-template-columns:40px 1fr}
+.split .side:first-child{border-right:1px solid var(--line2)}
+.mode-note{margin:10px 2px 0;font-size:12px;color:var(--dim)}
+.binary{padding:28px;text-align:center;color:var(--muted);font-size:13px}
+.k{color:#cf222e}.f{color:#8250df}.s{color:#0a3069}.w{background:color-mix(in srgb,var(--green) 30%,transparent);border-radius:2px}.wd{background:color-mix(in srgb,var(--red) 30%,transparent);border-radius:2px}
+:root[data-theme="dark"] .k,:root:not([data-theme="light"]) .k{color:#ff7b72}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .f{color:#d2a8ff}:root:not([data-theme="light"]) .s{color:#a5d6ff}}
+:root[data-theme="dark"] .f{color:#d2a8ff}:root[data-theme="dark"] .s{color:#a5d6ff}
+.empty-state{padding:40px;text-align:center;color:var(--muted)}
+
+/* chapters */
+.chapter{display:grid;grid-template-columns:1fr 1fr;gap:64px;padding-top:96px;padding-bottom:96px;align-items:center}
+@media (max-width:900px){.chapter{grid-template-columns:1fr;gap:36px;padding-top:64px;padding-bottom:64px}}
+.num{font:500 13px var(--mono);color:var(--green);margin-bottom:18px;display:flex;gap:12px;align-items:center}
+.num::after{content:"";height:1px;width:40px;background:var(--line2)}
+h2{font-family:var(--display);font-size:clamp(30px,3.8vw,46px);letter-spacing:-.04em;line-height:1.04;margin:0 0 18px;font-weight:500}
+.chapter p{color:var(--muted);font-size:16.5px;margin:0 0 14px;max-width:520px}
+.chapter p b{color:var(--ink);font-weight:500}
+.chapter .more{font-size:14px;color:var(--ink);border-bottom:1px solid var(--line2)}
+.viz{border:1px solid var(--line2);border-radius:14px;background:var(--surface);overflow:hidden}
+.viz .cap{padding:8px 14px;border-bottom:1px solid var(--line);font:12px var(--mono);color:var(--muted);display:flex;justify-content:space-between}
+/* 01 status vs tree */
+.two{display:grid;grid-template-columns:1fr 1fr}
+.two>div{padding:14px}
+.two>div:first-child{border-right:1px solid var(--line);font:12px/1.8 var(--mono);color:var(--muted);white-space:pre;background:var(--bg2);overflow:auto}
+.two .gr{color:var(--green)}.two .rd{color:var(--red)}
+.two .row{height:28px;padding:0 6px}
+/* 02 commit graph svg */
+.graph{width:100%;height:auto;display:block}
+.graph text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.graph .lbl{font-family:var(--font);font-weight:600;fill:var(--ink)}
+.graph .line{stroke:var(--line2);stroke-width:2;fill:none}
+.graph .main{stroke:var(--dim)}
+.graph .feat{stroke:var(--green)}
+.graph .node{fill:var(--surface);stroke:var(--dim);stroke-width:2}
+.graph .node.f{stroke:var(--green)}
+.graph .node.mb{fill:var(--blue);stroke:var(--blue)}
+.graph .ghost{stroke-dasharray:4 4}
+.graph .band{fill:color-mix(in srgb,var(--green) 10%,transparent)}
+/* 03 spec table */
+.spec{width:100%;border-collapse:collapse;font-size:14px}
+.spec td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+.spec tr:last-child td{border-bottom:0}
+.spec td:first-child{color:var(--muted);width:44%}
+.spec td:last-child{font-family:var(--mono);font-size:12.5px}
+.spec .ok{color:var(--green)}
+.spec .hdr{background:var(--bg2);font:12px var(--mono);color:var(--ink2);white-space:pre-wrap;padding:14px}
+.spec .hdr b{color:var(--red);font-weight:600}
+/* 04 timeline */
+.tl{padding:22px 14px;display:flex;align-items:flex-start}
+.tl .s{flex:1;position:relative;padding:24px 10px 0 0}
+.tl .s::before{content:"";position:absolute;top:8px;left:0;right:0;height:1px;background:var(--line2)}
+.tl .s::after{content:"";position:absolute;top:3px;left:0;width:11px;height:11px;border-radius:50%;background:var(--green);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--green)}
+.tl .s b{display:block;font-size:13px;font-weight:600}
+.tl .s span{font:11px/1.4 var(--mono);color:var(--muted);display:block}
+
+/* faq */
+.faq{padding-top:80px;padding-bottom:80px}
+.faq h2{margin-bottom:28px}
+details{border-top:1px solid var(--line)}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;list-style:none;padding:18px 0;font:500 17px var(--display);letter-spacing:-.01em;display:flex;justify-content:space-between;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font:400 22px var(--mono);color:var(--muted)}
+details[open] summary::after{content:"−"}
+details p{margin:-6px 0 20px;color:var(--muted);max-width:720px;font-size:15.5px}
+
+/* final */
+.final{padding-top:110px;padding-bottom:110px;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center}
+@media (max-width:760px){.final{grid-template-columns:1fr}}
+.final h2{font-size:clamp(34px,4.6vw,56px);margin:0 0 10px}
+.final p{color:var(--muted);margin:0}
+.final small{display:block;color:var(--dim);font-size:13px;margin-top:12px}
+footer{padding-top:28px;padding-bottom:28px;font-size:13px;color:var(--dim)}
+footer .pad{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+footer .brand{font-size:14px}footer .brand svg{width:20px;height:20px}
+footer a{color:var(--muted);margin-left:18px}
+.tag{position:fixed;left:12px;bottom:12px;z-index:9;font:600 12px var(--mono);background:var(--ink);color:var(--bg);padding:6px 10px;border-radius:8px;opacity:.85}
+</style>
+</head>
+<body>
+<span class="tag">E · Precision</span>
+<svg style="display:none"><symbol id="logo" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#0d1117"/><path d="M10 10.5v11" fill="none" stroke="#e6edf3" stroke-width="2.4" stroke-linecap="round"/><path d="M22 12.6c0 6-12 3.4-12 9" fill="none" stroke="#3fb950" stroke-width="2.4" stroke-linecap="round"/><circle cx="10" cy="8" r="2.6" fill="#e6edf3"/><circle cx="10" cy="24" r="2.6" fill="#e6edf3"/><circle cx="22" cy="10" r="2.6" fill="#3fb950"/></symbol></svg>
+
+<nav><div class="frame"><div class="pad">
+  <a class="brand" href="#"><svg><use href="#logo"/></svg><b>diff<i>git</i></b></a>
+  <div class="links"><a href="#demo">Demo</a><a href="#how">How it works</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a><a href="#">Docs</a><a href="#">GitHub</a></div>
+  <button class="btn btn-ink">Open repository</button>
+</div></div></nav>
+
+<div class="frame">
+  <header class="hero pad">
+    <div class="grid">
+      <div>
+        <span class="eyebrow"><i></i>local · read-only · no network</span>
+        <h1>The pull request view for code you <em>haven't pushed.</em></h1>
+        <p class="lede">Open the repository on your disk and read <b>base…compare</b> the way a reviewer will, with staged, unstaged and untracked work layered on top. Nothing is uploaded. Nothing is written.</p>
+        <div class="cta"><button class="btn btn-ink btn-lg">Open a repository</button><a class="btn btn-lg" href="#demo">Try the demo below</a><small>Press <kbd>o</kbd></small></div>
+      </div>
+      <div class="facts">
+        <div><span>Runs in</span><span>your browser tab</span></div>
+        <div><span>Uploads</span><span class="g">0 bytes, by CSP</span></div>
+        <div><span>Writes to disk</span><span class="g">none, read-only</span></div>
+        <div><span>Matches</span><span>git diff -M</span></div>
+        <div><span>Browsers</span><span>Chromium, desktop</span></div>
+        <div><span>Licence</span><span>MIT</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="rule"></div>
+
+  <!-- ===== interactive demo ===== -->
+  <section id="demo" class="pad" style="padding-top:8px;padding-bottom:72px">
+    <div class="demo-head">
+      <span class="t"><b>This demo is real.</b> Click a file, toggle split, filter, tick “Viewed”. It's the same components as the app, running on a sample repository.</span>
+      <span class="keys">Keys: <span><kbd>j</kbd><kbd>k</kbd> files</span><span><kbd>s</kbd> split</span><span><kbd>v</kbd> viewed</span><span><kbd>/</kbd> filter</span></span>
+    </div>
+    <div class="app" id="app" tabindex="0" aria-label="Interactive demo of diffgit">
+      <div class="top">
+        <span class="repo"><svg><use href="#logo"/></svg>acme-web</span>
+        <span class="sel"><span class="lbl">base</span>main <span class="badge default">default</span></span>
+        <span style="color:var(--muted)">⇄</span>
+        <span class="sel"><span class="lbl">compare</span>feat/coupons <span class="badge head">HEAD</span></span>
+        <div class="right"><label><input type="checkbox" id="inc" checked>Include uncommitted</label><span class="live">Live</span></div>
+      </div>
+      <div class="stats"><span><b id="nfiles">6</b> files changed</span><span class="plus" id="tplus">+148</span><span class="minus" id="tminus">−37</span><span><b id="nviewed">2</b> / <span id="nfiles2">6</span> viewed</span><span class="filter">/ <input id="filter" placeholder="Filter files"></span><span class="seg" id="seg"><button class="on" data-m="unified">Unified</button><button data-m="split">Split</button></span></div>
+      <div class="body">
+        <div class="tree" id="tree"><div class="h">Files changed</div></div>
+        <div class="pane" id="pane"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <!-- ===== chapters ===== -->
+  <section id="how" class="pad chapter">
+    <div>
+      <div class="num">01 — Layers</div>
+      <h2>What <span class="mono" style="font-weight:500">git status</span> knows, in the diff.</h2>
+      <p>Every other diff viewer stops at the last commit. diffgit reads the index and the working tree after the commits, and labels each file with the layer it came from. A file can be in two layers at once; both chips show, and the diff is the sum.</p>
+      <p>Untracked files respect <span class="mono">.gitignore</span>, <span class="mono">.git/info/exclude</span> and the built-in excludes. Conflicts and generated files are flagged the same way.</p>
+    </div>
+    <div class="viz">
+      <div class="cap"><span>$ git status --short</span><span>diffgit</span></div>
+      <div class="two">
+        <div><span class="gr">M</span><span class="rd">M</span> src/checkout/cart.ts
+<span class="rd">??</span> src/checkout/coupon.ts
+ <span class="rd">M</span> README.md
+<span class="gr">R</span>  src/util/money.ts -> src/lib/money.ts
+<span class="gr">D</span>  src/checkout/legacy.ts
+ <span class="rd">M</span> src/api/orders.ts</div>
+        <div>
+          <div class="row"><span class="st M">M</span><span class="p">cart.ts</span><span class="chip staged">staged</span><span class="chip unstaged">unstaged</span></div>
+          <div class="row"><span class="st A">A</span><span class="p">coupon.ts</span><span class="chip untracked">untracked</span></div>
+          <div class="row"><span class="st M">M</span><span class="p">README.md</span><span class="chip unstaged">unstaged</span></div>
+          <div class="row"><span class="st R">R</span><span class="p">money.ts</span><span class="chip staged">staged</span><span class="n" style="color:var(--blue)">96%</span></div>
+          <div class="row"><span class="st D">D</span><span class="p">legacy.ts</span><span class="chip staged">staged</span></div>
+          <div class="row"><span class="st M">M</span><span class="p">orders.ts</span><span class="chip unstaged">unstaged</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="pad chapter">
+    <div class="viz">
+      <div class="cap"><span>base = main · compare = feat/coupons</span><span>merge-base → compare → index → worktree</span></div>
+      <svg class="graph" viewBox="0 0 560 220" role="img" aria-label="Commit graph showing the three-dot diff range">
+        <rect class="band" x="228" y="20" width="318" height="180" rx="10"/>
+        <path class="line main" d="M40 150H520"/>
+        <path class="line feat" d="M240 150c40 0 40-70 80-70H420"/>
+        <path class="line feat ghost" d="M420 80H470"/>
+        <path class="line feat ghost" d="M470 80H520"/>
+        <circle class="node" cx="80" cy="150" r="7"/><circle class="node" cx="160" cy="150" r="7"/>
+        <circle class="node mb" cx="240" cy="150" r="8"/>
+        <circle class="node" cx="330" cy="150" r="7"/><circle class="node" cx="420" cy="150" r="7"/><circle class="node" cx="500" cy="150" r="7"/>
+        <circle class="node f" cx="340" cy="80" r="7"/><circle class="node f" cx="420" cy="80" r="7"/>
+        <circle class="node f ghost" cx="470" cy="80" r="7"/><circle class="node f ghost" cx="520" cy="80" r="7"/>
+        <text x="40" y="180">main</text><text x="500" y="180" text-anchor="middle">HEAD of main</text>
+        <text x="240" y="180" text-anchor="middle" class="lbl">merge-base</text>
+        <text x="340" y="60" text-anchor="middle">a1f9</text><text x="420" y="60" text-anchor="middle" class="lbl">feat/coupons</text>
+        <text x="470" y="108" text-anchor="middle">index</text><text x="522" y="108" text-anchor="middle">worktree</text>
+        <text x="387" y="40" text-anchor="middle" class="lbl">what you see</text>
+      </svg>
+    </div>
+    <div>
+      <div class="num">02 — Same maths as a pull request</div>
+      <h2>Three-dot, from the merge base.</h2>
+      <p>The diff is <span class="mono">merge-base(base, compare) → compare</span>, exactly what GitHub shows on “Files changed”. Commits that landed on main after you branched don't show up as your changes. Then the index and the working tree are appended as two more steps.</p>
+      <p>Renames are found like <span class="mono">git diff -M</span>: exact matches first, then 50 % similarity, and fixtures are checked against git's own output on every build.</p>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="pad chapter">
+    <div>
+      <div class="num">03 — Live</div>
+      <h2>Save in your editor. Glance at the tab.</h2>
+      <p>Where the browser has <span class="mono">FileSystemObserver</span> (Chrome 129+) the folder is watched. Elsewhere, <span class="mono">.git</span> and the index are polled every two seconds. Only files whose size or mtime changed are re-hashed, with git's own racy-git rule for edits in the same millisecond as the index write.</p>
+      <p><kbd>Shift</kbd>+<kbd>R</kbd> re-hashes everything, when you'd rather be sure than fast.</p>
+    </div>
+    <div class="viz">
+      <div class="cap"><span>refresh pipeline</span><span>typical: 38 ms</span></div>
+      <div class="tl">
+        <div class="s"><b>Save</b><span>cart.ts · 12:04:31.208</span></div>
+        <div class="s"><b>Observed</b><span>FileSystemObserver</span></div>
+        <div class="s"><b>Re-hashed</b><span>1 of 6 files</span></div>
+        <div class="s"><b>Diffed</b><span>1 hunk changed</span></div>
+        <div class="s"><b>Rendered</b><span>+1 line · chips updated</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section id="privacy" class="pad chapter">
+    <div class="viz">
+      <div class="cap"><span>privacy · as shipped</span><span>diffgit.com</span></div>
+      <table class="spec">
+        <tr><td colspan="2" class="hdr">content-security-policy: default-src 'self'; <b>connect-src 'none'</b>; img-src 'self' blob:; worker-src 'self'; script-src 'self'; frame-ancestors 'none'</td></tr>
+        <tr><td>Bytes uploaded</td><td class="ok">0 — the browser blocks every request after load</td></tr>
+        <tr><td>Bytes written to disk</td><td class="ok">0 — read-only handle, every write path throws</td></tr>
+        <tr><td>Cookies, analytics, third-party scripts</td><td class="ok">none</td></tr>
+        <tr><td>Stored in your browser</td><td>recent repo handles, last branch pair, viewed marks, view preferences</td></tr>
+        <tr><td>Stored file contents</td><td class="ok">never</td></tr>
+        <tr><td>Verified by</td><td>e2e: zero requests while open · release checklist: mtime proof on real repos</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="num">04 — Private by construction</div>
+      <h2>Not a promise. A header.</h2>
+      <p>The page can't phone home even if it wanted to. The served Content-Security-Policy forbids network connections from the page and its workers, and an end-to-end test asserts zero requests while a repository is open.</p>
+      <p>Source is public, the build id is in the help dialog, and the deploy script refuses to ship if the served commit doesn't match. <a class="more" href="#">Read the privacy model →</a></p>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section id="faq" class="pad faq">
+    <h2>Questions people ask.</h2>
+    <details><summary>Why only Chromium browsers?</summary><p>diffgit reads the folder through the File System Access API, specifically <span class="mono">showDirectoryPicker()</span>. Firefox and Safari don't ship it. On those browsers the home screen says so instead of failing later.</p></details>
+    <details><summary>Is it really read-only?</summary><p>Yes. The directory is opened with <span class="mono">mode: "read"</span>, and the engine's filesystem adapter has no working write path: every write method throws. A mtime-based proof on real repositories is part of the release checklist.</p></details>
+    <details><summary>Does it work on large repositories?</summary><p>Over 300 changed files, the tree and diff pane virtualise and per-file stats stream in with the visible rows first. Files over 1 MB or 3,000 changed lines collapse behind “Load diff”. Packs over 1 GB, indexes over 200,000 entries and more than 5,000 untracked files are refused or capped with a named banner, never silently wrong.</p></details>
+    <details><summary>What doesn't it support?</summary><p>Linked worktrees, bare repositories, reftable, SHA-256 object format, partial clones and split index are refused or flagged with a code you can look up. Git LFS pointers are diffed as text. Copies (<span class="mono">-C</span>) are not detected. The full list is in the docs.</p></details>
+    <details><summary>Does it replace GitHub's review?</summary><p>No. It's the review you do before the pull request exists: the same diff, with the uncommitted work included, so what you push is what you meant to push.</p></details>
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="pad final">
+    <div>
+      <h2>Open a repository.</h2>
+      <p>Pick the folder that contains <span class="mono">.git</span>. Read access is asked once. The diff appears in seconds.</p>
+      <small>Chrome 86+, Edge, Brave or Arc on desktop · free · MIT</small>
+    </div>
+    <button class="btn btn-ink btn-lg">Open a repository</button>
+  </section>
+
+  <div class="rule"></div>
+  <footer><div class="pad"><span class="brand"><svg><use href="#logo"/></svg><b>diff<i>git</i></b> · build 11648ff</span><span><a href="#">Docs</a><a href="#">Privacy</a><a href="#">Limits</a><a href="#">Changelog</a><a href="#">GitHub</a></span></div></footer>
+</div>
+
+<script>
+/* ===== interactive demo ===== */
+const FILES = [
+ { id:"cart", st:"M", dir:"src/checkout/", name:"cart.ts", layers:["staged","unstaged"], viewed:false,
+   hunks:[{h:"@@ -41,9 +41,14 @@ export function applyCoupon(cart: Cart, code: string)", lines:[
+     ["ctx",41,41,'  <span class="k">const</span> coupon = <span class="f">findCoupon</span>(code);'],
+     ["ctx",42,42,'  <span class="k">if</span> (!coupon) {'],
+     ["del",43,null,'    <span class="k">throw new</span> <span class="f">Error</span>(<span class="s">"Invalid coupon"</span>);'],
+     ["add",null,43,'    <span class="k">return</span> { ...cart, <span class="w">error: <span class="s">"INVALID_COUPON"</span></span> };'],
+     ["ctx",44,44,'  }'],
+     ["del",45,null,'  <span class="k">const</span> discount = <span class="wd">cart.subtotal * coupon.pct</span>;'],
+     ["add",null,45,'  <span class="k">const</span> discount = <span class="w">Math.min(cart.subtotal * coupon.pct, coupon.maxOff ?? Infinity)</span>;'],
+     ["add",null,46,'  <span class="f">track</span>(<span class="s">"coupon.applied"</span>, { code, discount });',"unstaged"],
+     ["ctx",46,47,'  <span class="k">return</span> { ...cart, discount };'],
+   ]},{h:"@@ -88,6 +93,9 @@ export function total(cart: Cart)", lines:[
+     ["ctx",88,93,'  <span class="k">const</span> tax = <span class="f">round</span>(cart.subtotal * TAX);'],
+     ["add",null,94,'  <span class="k">const</span> shipping = cart.items.length ? SHIPPING : <span class="s">0</span>;'],
+     ["add",null,95,'  <span class="k">const</span> discount = cart.discount ?? <span class="s">0</span>;'],
+     ["ctx",89,96,'  <span class="k">return</span> <span class="f">round</span>(cart.subtotal + tax + shipping - discount);'],
+   ]}]},
+ { id:"coupon", st:"A", dir:"src/checkout/", name:"coupon.ts", layers:["untracked"], viewed:false,
+   hunks:[{h:"@@ -0,0 +1,9 @@", lines:[
+     ["add",null,1,'<span class="k">export interface</span> Coupon {',"untracked"],
+     ["add",null,2,'  code: <span class="k">string</span>;',"untracked"],
+     ["add",null,3,'  pct: <span class="k">number</span>;',"untracked"],
+     ["add",null,4,'  maxOff?: <span class="k">number</span>;',"untracked"],
+     ["add",null,5,'}',"untracked"],
+     ["add",null,6,'',"untracked"],
+     ["add",null,7,'<span class="k">export function</span> <span class="f">findCoupon</span>(code: <span class="k">string</span>): Coupon | <span class="k">undefined</span> {',"untracked"],
+     ["add",null,8,'  <span class="k">return</span> COUPONS.find(c => c.code === code.toUpperCase());',"untracked"],
+     ["add",null,9,'}',"untracked"],
+   ]}]},
+ { id:"orders", st:"M", dir:"src/api/", name:"orders.ts", layers:[], viewed:true,
+   hunks:[{h:"@@ -12,7 +12,8 @@ export async function createOrder(cart: Cart)", lines:[
+     ["ctx",12,12,'  <span class="k">const</span> total = <span class="f">totalOf</span>(cart);'],
+     ["del",13,null,'  <span class="k">return</span> db.orders.<span class="f">insert</span>({ items: cart.items, total });'],
+     ["add",null,13,'  <span class="k">return</span> db.orders.<span class="f">insert</span>({ items: cart.items, total, <span class="w">discount: cart.discount</span> });'],
+     ["ctx",14,14,'}'],
+   ]}]},
+ { id:"money", st:"R", dir:"src/lib/", name:"money.ts", from:"src/util/money.ts", sim:96, layers:["staged"], viewed:true,
+   hunks:[{h:"@@ -1,4 +1,4 @@", lines:[
+     ["del",1,null,'<span class="k">export const</span> <span class="f">round</span> = (n: <span class="k">number</span>) => Math.round(n * <span class="wd">100</span>) / <span class="wd">100</span>;'],
+     ["add",null,1,'<span class="k">export const</span> <span class="f">round</span> = (n: <span class="k">number</span>) => Math.round(n * <span class="w">CENTS</span>) / <span class="w">CENTS</span>;'],
+     ["ctx",2,2,'<span class="k">export const</span> <span class="f">format</span> = (n: <span class="k">number</span>) => n.toFixed(2);'],
+   ]}]},
+ { id:"legacy", st:"D", dir:"src/checkout/", name:"legacy.ts", layers:["staged"], viewed:false,
+   hunks:[{h:"@@ -1,4 +0,0 @@", lines:[
+     ["del",1,null,'<span class="k">export function</span> <span class="f">legacyDiscount</span>(cart) {'],
+     ["del",2,null,'  <span class="k">return</span> cart.subtotal * <span class="s">0.1</span>;'],
+     ["del",3,null,'}'],
+   ]}]},
+ { id:"readme", st:"M", dir:"", name:"README.md", layers:["unstaged"], viewed:false,
+   hunks:[{h:"@@ -8,3 +8,6 @@", lines:[
+     ["ctx",8,8,'## Checkout'],
+     ["add",null,9,'',"unstaged"],
+     ["add",null,10,'Coupons are applied with `applyCoupon(cart, code)`. Invalid codes',"unstaged"],
+     ["add",null,11,'return an error on the cart instead of throwing.',"unstaged"],
+   ]}]},
+];
+const state = { sel:"cart", mode:"unified", inc:true, filter:"" };
+const $ = (s) => document.querySelector(s);
+const tree = $("#tree"), pane = $("#pane");
+
+function visibleLines(f){ return f.hunks.map(h => ({ h:h.h, lines: h.lines.filter(l => state.inc || !l[4]) })).filter(h => h.lines.length); }
+function visibleFiles(){
+  return FILES.filter(f => {
+    if (!state.inc && f.layers.length && f.layers.every(l => l !== "staged")) return false;
+    if (state.filter && !(f.dir + f.name).toLowerCase().includes(state.filter.toLowerCase())) return false;
+    return true;
+  });
+}
+function counts(f){ let p=0,m=0; visibleLines(f).forEach(h => h.lines.forEach(l => { if(l[0]==="add")p++; else if(l[0]==="del")m++; })); return {p,m}; }
+
+function render(){
+  const files = visibleFiles();
+  if (!files.find(f => f.id === state.sel)) state.sel = files[0]?.id ?? null;
+  let tp=0,tm=0,tv=0;
+  tree.innerHTML = '<div class="h">Files changed</div>' + files.map(f => {
+    const c = counts(f); tp+=c.p; tm+=c.m; if (f.viewed) tv++;
+    const chips = (state.inc ? f.layers : f.layers.filter(l => l==="staged")).map(l => `<span class="chip ${l}">${l}</span>`).join("");
+    const n = f.st==="R" ? `<span class="n" style="color:var(--blue)">${f.sim}%</span>` : `<span class="n">${c.p?`<b>+${c.p}</b>`:""} ${c.m?`<i>−${c.m}</i>`:""}</span>`;
+    return `<button class="row ${f.id===state.sel?"on":""}" data-id="${f.id}"><span class="st ${f.st}">${f.st}</span><span class="p"><span class="dir">${f.dir}</span>${f.name}</span>${chips}${n}<span class="tick ${f.viewed?"on":""}" data-tick="${f.id}" title="Viewed"></span></button>`;
+  }).join("") + (files.length ? "" : '<div class="empty-state">No files match.</div>');
+  $("#nfiles").textContent = files.length; $("#nfiles2").textContent = files.length;
+  $("#tplus").textContent = "+"+tp; $("#tminus").textContent = "−"+tm; $("#nviewed").textContent = tv;
+  renderPane();
+}
+function line(l, side){
+  const [t,a,b,code] = l;
+  if (side === "left"){ if (t==="add") return `<div class="l empty"><span class="g"></span><span class="c"></span></div>`; return `<div class="l ${t}"><span class="g">${a??""}</span><span class="c">${code}</span></div>`; }
+  if (side === "right"){ if (t==="del") return `<div class="l empty"><span class="g"></span><span class="c"></span></div>`; return `<div class="l ${t}"><span class="g">${b??""}</span><span class="c">${code}</span></div>`; }
+  return `<div class="l ${t}"><span class="g">${a??""}</span><span class="g">${b??""}</span><span class="c">${code}</span></div>`;
+}
+function pairUp(lines){ // align del/add pairs for split view
+  const out=[]; let i=0;
+  while(i<lines.length){
+    if(lines[i][0]==="del"){ const dels=[]; while(i<lines.length&&lines[i][0]==="del")dels.push(lines[i++]); const adds=[]; while(i<lines.length&&lines[i][0]==="add")adds.push(lines[i++]);
+      for(let k=0;k<Math.max(dels.length,adds.length);k++) out.push([dels[k]??["add",null,null,""],adds[k]??["del",null,null,""]]); }
+    else if(lines[i][0]==="add"){ out.push([["add",null,null,""],lines[i++]]); }
+    else { out.push([lines[i],lines[i]]); i++; }
+  }
+  return out;
+}
+function renderPane(){
+  const f = FILES.find(x => x.id === state.sel);
+  if (!f){ pane.innerHTML = '<div class="empty-state">Select a file.</div>'; return; }
+  const c = counts(f), hunks = visibleLines(f);
+  const chips = (state.inc ? f.layers : f.layers.filter(l => l==="staged")).map(l => `<span class="chip ${l}">${l}</span>`).join("");
+  const title = f.st==="R" ? `${f.from} → ${f.dir}${f.name}` : f.dir+f.name;
+  let body;
+  if (state.mode === "unified") body = hunks.map(h => `<div class="l hunk"><span></span><span></span><span>${h.h}</span></div>` + h.lines.map(l => line(l)).join("")).join("");
+  else body = `<div class="split"><div class="side">${hunks.map(h => `<div class="l hunk"><span></span><span>${h.h}</span></div>` + pairUp(h.lines).map(([L]) => line(L,"left")).join("")).join("")}</div><div class="side">${hunks.map(h => `<div class="l hunk"><span></span><span>&nbsp;</span></div>` + pairUp(h.lines).map(([,R]) => line(R,"right")).join("")).join("")}</div></div>`;
+  pane.innerHTML = `<div class="card"><div class="fh"><span class="st ${f.st}">${f.st}</span>${title}<span class="n">${c.p?`<b>+${c.p}</b>`:""} ${c.m?`<i>−${c.m}</i>`:""}</span>${chips}<label><input type="checkbox" id="viewed" ${f.viewed?"checked":""}> Viewed</label></div>${body}</div>
+  <p class="mode-note">${state.mode==="unified"?"Unified view. Press <kbd>s</kbd> for split.":"Split view. Press <kbd>s</kbd> for unified."} ${state.inc?"":"Uncommitted layers hidden: unstaged and untracked changes are not shown."}</p>`;
+  $("#viewed").addEventListener("change", e => { f.viewed = e.target.checked; render(); });
+}
+tree.addEventListener("click", e => {
+  const t = e.target.closest("[data-tick]"); if (t){ const f = FILES.find(x => x.id===t.dataset.tick); f.viewed = !f.viewed; render(); e.stopPropagation(); return; }
+  const r = e.target.closest(".row"); if (r){ state.sel = r.dataset.id; render(); }
+});
+$("#inc").addEventListener("change", e => { state.inc = e.target.checked; render(); });
+$("#filter").addEventListener("input", e => { state.filter = e.target.value; render(); });
+$("#seg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; state.mode = b.dataset.m; [...$("#seg").children].forEach(x => x.classList.toggle("on", x===b)); renderPane(); });
+$("#app").addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT" && e.key !== "Escape") return;
+  const files = visibleFiles(); const i = files.findIndex(f => f.id===state.sel);
+  if (e.key==="j"){ state.sel = files[Math.min(i+1, files.length-1)]?.id; render(); }
+  else if (e.key==="k"){ state.sel = files[Math.max(i-1, 0)]?.id; render(); }
+  else if (e.key==="s"){ state.mode = state.mode==="unified"?"split":"unified"; [...$("#seg").children].forEach(x => x.classList.toggle("on", x.dataset.m===state.mode)); renderPane(); }
+  else if (e.key==="v"){ const f = FILES.find(x => x.id===state.sel); if(f){ f.viewed=!f.viewed; render(); } }
+  else if (e.key==="/"){ e.preventDefault(); $("#filter").focus(); }
+  else if (e.key==="Escape"){ $("#filter").value=""; state.filter=""; render(); $("#app").focus(); }
+  else return;
+  e.preventDefault();
+});
+render();
+</script>
+</body>
+</html>

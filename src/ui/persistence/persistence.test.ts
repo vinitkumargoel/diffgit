@@ -78,7 +78,7 @@ describe("repos", () => {
     const r = await upsertRepo(handle("x"));
     await touchRepo(r.id, { lastTarget: "refs/heads/main" });
     expect((await listRepos())[0]?.lastTarget).toBe("refs/heads/main");
-    const m1 = { __diffgoelMemoryHandle: true, kind: "directory", snapshotId: "s", name: "m" };
+    const m1 = { __diffgitMemoryHandle: true, kind: "directory", snapshotId: "s", name: "m" };
     const m2 = { ...m1, name: "renamed" };
     const s1 = await upsertRepo(m1 as unknown as FileSystemDirectoryHandle);
     const s2 = await upsertRepo(m2 as unknown as FileSystemDirectoryHandle);

@@ -49,17 +49,17 @@ export async function snapshotFromDisk(
   return { id, name, dirs, files };
 }
 
-/** JS source that registers the snapshot on `globalThis.__diffgoelSnapshots[id]` (for addInitScript). */
+/** JS source that registers the snapshot on `globalThis.__diffgitSnapshots[id]` (for addInitScript). */
 export function toInitScript(snapshot: MemorySnapshot): string {
   const json = JSON.stringify(snapshot).replace(/<\/script/gi, "<\\/script");
-  return `(function(){var g=globalThis;g.__diffgoelSnapshots=g.__diffgoelSnapshots||{};g.__diffgoelSnapshots[${JSON.stringify(snapshot.id)}]=${json};})();`;
+  return `(function(){var g=globalThis;g.__diffgitSnapshots=g.__diffgitSnapshots||{};g.__diffgitSnapshots[${JSON.stringify(snapshot.id)}]=${json};})();`;
 }
 
 /** Parses the output of `toInitScript` back into a snapshot (round-trip tests). */
 export function fromInitScript(script: string): MemorySnapshot {
-  const g: { __diffgoelSnapshots?: Record<string, MemorySnapshot> } = {};
+  const g: { __diffgitSnapshots?: Record<string, MemorySnapshot> } = {};
   new Function("globalThis", script)(g);
-  const snaps = g.__diffgoelSnapshots ?? {};
+  const snaps = g.__diffgitSnapshots ?? {};
   const first = Object.values(snaps)[0];
   if (!first) throw new Error("init script registered no snapshot");
   return first;

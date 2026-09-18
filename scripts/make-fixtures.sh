@@ -50,7 +50,7 @@ PNG_GREEN4='iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAD0lEQVR42mNgOMGAQMRx
 # basic: main (3 commits) ← feature (2 commits); main gains 1 more commit after divergence.
 build_basic() { # build_basic <dir>
   local r="$1"; mkdir -p "$r"; G -C "$r" init -q
-  w "$r" README.md "# basic fixture"$'\n'"A small repo for diffgoel tests."$'\n'
+  w "$r" README.md "# basic fixture"$'\n'"A small repo for diffgit tests."$'\n'
   w "$r" src/a.txt "$(lines alpha 1 10)"$'\n'
   w "$r" src/b.txt "$(lines beta 1 5)"$'\n'
   w "$r" docs/guide.md "# Guide"$'\n'"Step one."$'\n'"Step two."$'\n'
@@ -68,7 +68,7 @@ build_basic() { # build_basic <dir>
   w "$r" lib/util.txt "util 1"$'\n'"util 2"$'\n'
   commit "$r" "f2: guide + util"
   G -C "$r" checkout -q main
-  w "$r" README.md "# basic fixture"$'\n'"A small repo for diffgoel tests."$'\n'"Updated on main after divergence."$'\n'
+  w "$r" README.md "# basic fixture"$'\n'"A small repo for diffgit tests."$'\n'"Updated on main after divergence."$'\n'
   w "$r" src/main-only.txt "only on main"$'\n'
   commit "$r" "c4: main moves on"
   G -C "$r" checkout -q feature

@@ -165,13 +165,13 @@ describe("startObserver", () => {
     const stop = startObserver({ kind: "directory" }, onRecords, vi.fn(), {
       ctor: (window as unknown as { FileSystemObserver: never }).FileSystemObserver,
     });
-    expect(window.__diffgoel.observerCount()).toBe(1);
-    window.__diffgoel.emitObserverRecords([
+    expect(window.__diffgit.observerCount()).toBe(1);
+    window.__diffgit.emitObserverRecords([
       { type: "modified", relativePathComponents: ["x.txt"], changedHandleKind: "file" },
       { type: "modified", relativePathComponents: [".git", "HEAD"], changedHandleKind: "file" },
     ]);
     expect(onRecords).toHaveBeenCalledWith(true, ["x.txt"], false);
     stop?.();
-    expect(window.__diffgoel.observerCount()).toBe(0);
+    expect(window.__diffgit.observerCount()).toBe(0);
   });
 });

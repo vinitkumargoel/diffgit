@@ -34,12 +34,12 @@ export interface ShimApi {
 
 declare global {
   interface Window {
-    __diffgoel: ShimApi;
+    __diffgit: ShimApi;
   }
 }
 
 export function installFsaShim(config: ShimConfig): void {
-  const CHANNEL = "diffgoel-e2e";
+  const CHANNEL = "diffgit-e2e";
   const snapshots: Record<string, MemorySnapshot> = {};
   for (const s of config.snapshots) snapshots[s.id] = s;
   let pick = config.pick ?? config.snapshots[0]?.id ?? "";
@@ -108,21 +108,21 @@ export function installFsaShim(config: ShimConfig): void {
   (window as unknown as { showDirectoryPicker: unknown }).showDirectoryPicker = async (opts?: {
     mode?: string;
   }) => {
-    window.__diffgoel.requests.push(`showDirectoryPicker:${opts?.mode ?? "read"}`);
+    window.__diffgit.requests.push(`showDirectoryPicker:${opts?.mode ?? "read"}`);
     if (config.cancel) {
       throw new DOMException("The user aborted a request.", "AbortError");
     }
     const snap = snapshots[pick];
     if (!snap) throw new DOMException("no snapshot selected", "NotFoundError");
     return {
-      __diffgoelMemoryHandle: true,
+      __diffgitMemoryHandle: true,
       kind: "directory",
       snapshotId: snap.id,
       name: snap.name,
     };
   };
 
-  window.__diffgoel = {
+  window.__diffgit = {
     snapshots,
     requests: [],
     setPick(id: string) {

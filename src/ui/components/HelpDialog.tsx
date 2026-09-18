@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { SHORTCUTS } from "../hooks/useShortcuts";
 
 export const PRIVACY_SENTENCES = [
-  "diffgoel opens your folder read-only and never writes to it.",
+  "diffgit opens your folder read-only and never writes to it.",
   "Nothing leaves the browser: no uploads, no network requests, no cloud.",
   "There are no analytics and no tracking.",
 ] as const;

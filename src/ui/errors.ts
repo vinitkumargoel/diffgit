@@ -31,7 +31,7 @@ const COPY: Record<PublicCode, ErrorDescription> = {
   },
   REFTABLE: {
     title: "Reftable refs are not supported",
-    message: "This repository stores refs in reftable format, which diffgoel cannot read yet.",
+    message: "This repository stores refs in reftable format, which diffgit cannot read yet.",
     action: "choose-folder",
   },
   OBJECT_FORMAT_SHA256: {
@@ -58,7 +58,7 @@ const COPY: Record<PublicCode, ErrorDescription> = {
   },
   INDEX_UNSUPPORTED: {
     title: "Unsupported index format",
-    message: "The .git/index file uses a format version diffgoel cannot parse.",
+    message: "The .git/index file uses a format version diffgit cannot parse.",
     action: "choose-folder",
   },
   PERMISSION: {
@@ -92,7 +92,7 @@ const COPY: Record<PublicCode, ErrorDescription> = {
   },
   TOO_LARGE: {
     title: "Too large",
-    message: "This content exceeds the size diffgoel can display.",
+    message: "This content exceeds the size diffgit can display.",
   },
   WORKER_CRASHED: {
     title: "Engine restarted",

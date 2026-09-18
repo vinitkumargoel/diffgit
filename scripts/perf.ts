@@ -30,7 +30,7 @@ if (!hasFixture("perf-5k")) {
   process.exit(1);
 }
 // work on a copy so the recompute-after-edit step never touches the fixture
-const work = mkdtempSync(join(tmpdir(), "diffgoel-perf-"));
+const work = mkdtempSync(join(tmpdir(), "diffgit-perf-"));
 cpSync(fixturePath("perf-5k"), work, { recursive: true });
 
 const progress: Progress[] = [];

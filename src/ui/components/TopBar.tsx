@@ -1,9 +1,10 @@
-import { BookBookmark, CircleHelp } from "lucide-react";
+import { CircleHelp } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { selectCanIncludeWorktree, selectTotals, selectViewedCount, useStore } from "../store";
 import { BranchPicker } from "./BranchPicker";
 import { FileFilter } from "./FileFilter";
 import { IncludeWorktreeToggle } from "./IncludeWorktreeToggle";
+import { Logo } from "./Logo";
 import { RefreshControl } from "./RefreshControl";
 import { SwapButton } from "./SwapButton";
 import { ThemeToggle } from "./ThemeToggle";
@@ -36,9 +37,9 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
 
   return (
     <header className="shrink-0 border-b border-line text-[13px] leading-5 text-ink">
-      <div className="flex min-h-11 flex-wrap items-center gap-2 border-b border-line bg-surface px-3 py-1">
+      <div className="flex min-h-11 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface-raised px-3 py-1">
         <span className="flex items-center gap-1.5 text-sm font-semibold">
-          <BookBookmark size={16} aria-hidden className="text-muted" />
+          <Logo size={20} className="rounded-[5px]" />
           {repo.name}
         </span>
         <span className="text-xs text-muted">base:</span>
@@ -93,7 +94,7 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
         </button>
         <ThemeToggle />
       </div>
-      <div className="flex min-h-10 flex-wrap items-center gap-2 bg-bg px-3 py-1 text-xs">
+      <div className="flex min-h-10 flex-wrap items-center gap-2 bg-surface px-3 py-1 text-xs">
         <span className="font-semibold tabular-nums">
           {totals.files} {totals.files === 1 ? "file" : "files"} changed
         </span>

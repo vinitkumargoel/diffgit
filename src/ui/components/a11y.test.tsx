@@ -16,7 +16,7 @@ const persistence = vi.hoisted(() => ({
   listRepos: vi.fn(async () => [
     {
       id: "r1",
-      name: "diffgoel",
+      name: "diffgit",
       handle: { name: "showcase" },
       lastOpenedAt: Date.now() - 3600_000,
       lastTarget: "refs/heads/main",

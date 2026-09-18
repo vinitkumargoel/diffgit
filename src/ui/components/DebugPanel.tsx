@@ -87,7 +87,7 @@ export function DebugPanel() {
           </tr>
         </tbody>
       </table>
-      <p className="mt-2 text-muted">performance.mark entries: diffgoel:compute-*</p>
+      <p className="mt-2 text-muted">performance.mark entries: diffgit:compute-*</p>
     </aside>
   );
 }

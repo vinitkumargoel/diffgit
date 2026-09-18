@@ -13,10 +13,10 @@ type Store = ReturnType<typeof createStore>;
 let store: Store | null = null;
 let writes = 0;
 function viewedStore(): Store {
-  if (!store) store = createStore("diffgoel-viewed", "viewed");
+  if (!store) store = createStore("diffgit-viewed", "viewed");
   return store;
 }
-export function resetViewedStore(name = "diffgoel-viewed"): void {
+export function resetViewedStore(name = "diffgit-viewed"): void {
   store = createStore(name, "viewed");
   writes = 0;
 }

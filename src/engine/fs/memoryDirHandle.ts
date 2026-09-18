@@ -21,7 +21,7 @@ export interface MemorySnapshot {
 
 /** Marker the E2E picker shim resolves to; structured-cloneable so it survives postMessage/IndexedDB. */
 export interface MemoryHandleMarker {
-  __diffgoelMemoryHandle: true;
+  __diffgitMemoryHandle: true;
   kind: "directory";
   snapshotId: string;
   name: string;
@@ -31,7 +31,7 @@ export function isMemoryHandleMarker(v: unknown): v is MemoryHandleMarker {
   return (
     typeof v === "object" &&
     v !== null &&
-    (v as { __diffgoelMemoryHandle?: unknown }).__diffgoelMemoryHandle === true &&
+    (v as { __diffgitMemoryHandle?: unknown }).__diffgitMemoryHandle === true &&
     typeof (v as { snapshotId?: unknown }).snapshotId === "string"
   );
 }

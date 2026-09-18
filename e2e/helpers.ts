@@ -23,7 +23,7 @@ export async function primeShim(page: Page, config: ShimConfig): Promise<void> {
 /** Home → "Open repository" → repo screen with the file list rendered. */
 export async function openFromHome(page: Page, pick?: string): Promise<void> {
   await page.goto("/");
-  if (pick) await page.evaluate((id) => window.__diffgoel.setPick(id), pick);
+  if (pick) await page.evaluate((id) => window.__diffgit.setPick(id), pick);
   await page.getByRole("button", { name: "Open repository" }).click();
   await expect(page.getByRole("complementary", { name: "Changed files" })).toBeVisible({
     timeout: 20_000,

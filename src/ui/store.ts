@@ -508,14 +508,14 @@ export const useStore = create<StoreState>()((set, get) => {
       const { diffSource, repo } = get();
       if (!diffSource || !repo) return;
       const startedAt = performance.now();
-      performance.mark?.("diffgoel:compute-start");
+      performance.mark?.("diffgit:compute-start");
       set((s) => ({
         refresh: { ...s.refresh, busy: true, phase: s.refresh.phase ?? null },
         perf: { ...s.perf, computeStartedAt: startedAt },
       }));
       try {
         const result = await client().computeDiff(diffSource);
-        performance.mark?.("diffgoel:compute-result");
+        performance.mark?.("diffgit:compute-result");
         const current = get();
         // a newer compute may have started meanwhile; comlink resolves in order, but be defensive
         if (current.diff && result.generation < current.diff.generation) return;
@@ -557,7 +557,7 @@ export const useStore = create<StoreState>()((set, get) => {
           announcementSeq: s.announcementSeq + 1,
           perf: { ...s.perf, lastComputeMs: performance.now() - startedAt, computeStartedAt: null },
         }));
-        performance.mark?.("diffgoel:compute-committed");
+        performance.mark?.("diffgit:compute-committed");
       } catch (e) {
         const err = toUiError(e);
         if (err.code === "CANCELLED" || err.code === "STALE" || err.code === "WORKER_CRASHED") {

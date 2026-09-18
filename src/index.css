@@ -10,12 +10,14 @@
   color-scheme: light;
 
   /* §3.1 neutrals and accent */
-  --bg: #f6f8fa;
+  --bg: #ffffff;
   --surface: #ffffff;
+  --surface-sunken: #fafbfc;
   --surface-raised: #f6f8fa;
   --line: #d0d7de;
-  --ink: #1f2328;
-  --muted: #656d76;
+  --line-subtle: #e6e8eb;
+  --ink: #0b0c0e;
+  --muted: #67707b;
   --accent: #0969da;
   --accent-subtle: #ddf4ff;
   --success: #1a7f37;
@@ -57,7 +59,7 @@
   --chip-conflict-bg: #ffebe9;
   --chip-conflict-fg: #cf222e;
   --chip-generated-bg: #f6f8fa;
-  --chip-generated-fg: #656d76;
+  --chip-generated-fg: #67707b;
 
   /* §3.3 badges */
   --badge-head-bg: #dafbe1;
@@ -67,7 +69,7 @@
   --badge-default-fg: #0969da;
   --badge-default-border: #54aeff;
   --badge-remote-bg: #f6f8fa;
-  --badge-remote-fg: #656d76;
+  --badge-remote-fg: #67707b;
   --badge-remote-border: #d0d7de;
 
   /* §3.4 banners */
@@ -82,20 +84,27 @@
   --progress-track: #e7ecf0;
   --checker-a: #eef1f4;
   --checker-b: #ffffff;
-  --shadow-popover: 0 8px 24px rgba(140, 149, 159, 0.2);
+  --shadow-popover: 0 16px 40px -16px rgba(11, 12, 14, 0.24), 0 1px 2px rgba(11, 12, 14, 0.06);
   --backdrop: rgba(1, 4, 9, 0.5);
   --on-accent: #ffffff;
+
+  /* Brand mark (Logo.tsx). Fixed in both themes: the chip is dark by design. */
+  --brand-chip: #0d1117;
+  --brand-line: #e6edf3;
+  --brand-branch: #3fb950;
 }
 
 .dark {
   color-scheme: dark;
 
   --bg: #0d1117;
-  --surface: #161b22;
-  --surface-raised: #1c2129;
+  --surface: #0d1117;
+  --surface-sunken: #0b0f14;
+  --surface-raised: #161b22;
   --line: #30363d;
-  --ink: #e6edf3;
-  --muted: #8d96a0;
+  --line-subtle: #21262d;
+  --ink: #f0f3f6;
+  --muted: #8b949e;
   --accent: #4493f8;
   --accent-subtle: #121d2f;
   --success: #3fb950;
@@ -110,7 +119,7 @@
   --diff-del-num: #5d2426;
   --diff-del-word: #f8514966;
   --diff-hunk-bg: #121d2f;
-  --diff-hunk-ink: #8d96a0;
+  --diff-hunk-ink: #8b949e;
   --diff-ctx-num: #161b22;
   --diff-empty: repeating-linear-gradient(-45deg, transparent 0 6px, #1c2129 6px 7px);
 
@@ -134,7 +143,7 @@
   --chip-conflict-bg: #25171c;
   --chip-conflict-fg: #f85149;
   --chip-generated-bg: #1c2129;
-  --chip-generated-fg: #8d96a0;
+  --chip-generated-fg: #8b949e;
 
   --badge-head-bg: #12261e;
   --badge-head-fg: #3fb950;
@@ -143,7 +152,7 @@
   --badge-default-fg: #58a6ff;
   --badge-default-border: #58a6ff66;
   --badge-remote-bg: #1c2129;
-  --badge-remote-fg: #8d96a0;
+  --badge-remote-fg: #8b949e;
   --badge-remote-border: #30363d;
 
   --banner-warning-bg: #272115;
@@ -156,17 +165,23 @@
   --progress-track: #21262d;
   --checker-a: #161b22;
   --checker-b: #0d1117;
-  --shadow-popover: 0 8px 24px #010409;
+  --shadow-popover: 0 16px 40px -16px #010409, 0 1px 2px rgba(1, 4, 9, 0.6);
   --backdrop: rgba(1, 4, 9, 0.5);
   /* T5.6 amendment: white on the dark --success (#3fb950) is 2.54:1; dark ink reads at 7.45:1 */
   --on-accent: #0d1117;
+
+  --brand-chip: #0d1117;
+  --brand-line: #e6edf3;
+  --brand-branch: #3fb950;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
   --color-surface-raised: var(--surface-raised);
   --color-line: var(--line);
+  --color-line-subtle: var(--line-subtle);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-accent: var(--accent);

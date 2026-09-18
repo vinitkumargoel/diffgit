@@ -1,12 +1,12 @@
 /**
  * Test-only transport between the Playwright shim (main thread) and the engine worker (T0.4).
- * A `BroadcastChannel("diffgoel-e2e")` carries plain messages; every request has a `reqId` and is
+ * A `BroadcastChannel("diffgit-e2e")` carries plain messages; every request has a `reqId` and is
  * answered by exactly one response. Production builds never import the client (guarded by
  * `import.meta.env.VITE_E2E === "1"` at the call site).
  */
 import type { MemorySnapshot, Mutation } from "../fs/memoryDirHandle";
 
-export const E2E_CHANNEL = "diffgoel-e2e";
+export const E2E_CHANNEL = "diffgit-e2e";
 
 export type E2eRequest =
   | { type: "getSnapshot"; reqId: string; snapshotId: string }

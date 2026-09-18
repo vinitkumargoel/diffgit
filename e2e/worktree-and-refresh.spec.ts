@@ -29,7 +29,7 @@ test("working-tree layers, live refresh through the observer, viewed marks and f
   const row = fileRow(page, "unstaged-mod.txt");
   await expect(row).toContainText(/\+1\s*−1/, { timeout: 15_000 });
   await page.evaluate(async () => {
-    await window.__diffgoel.mutate([
+    await window.__diffgit.mutate([
       {
         op: "write",
         path: "unstaged-mod.txt",
@@ -37,7 +37,7 @@ test("working-tree layers, live refresh through the observer, viewed marks and f
         mtime: Date.now() + 5000,
       },
     ]);
-    window.__diffgoel.emitObserverRecords([
+    window.__diffgit.emitObserverRecords([
       { type: "modified", relativePathComponents: ["unstaged-mod.txt"], changedHandleKind: "file" },
     ]);
   });
@@ -46,10 +46,10 @@ test("working-tree layers, live refresh through the observer, viewed marks and f
 
   // a new untracked file appears
   await page.evaluate(async () => {
-    await window.__diffgoel.mutate([
+    await window.__diffgit.mutate([
       { op: "write", path: "brand-new.txt", text: "hello\n", mtime: Date.now() + 6000 },
     ]);
-    window.__diffgoel.emitObserverRecords([
+    window.__diffgit.emitObserverRecords([
       { type: "appeared", relativePathComponents: ["brand-new.txt"], changedHandleKind: "file" },
     ]);
   });

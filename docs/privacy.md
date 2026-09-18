@@ -1,6 +1,6 @@
 # Privacy & security model
 
-diffgoel is a static page. Everything it does with your repository happens inside your browser.
+diffgit is a static page. Everything it does with your repository happens inside your browser.
 
 ## What never leaves the browser
 
@@ -19,9 +19,9 @@ diffgoel is a static page. Everything it does with your repository happens insid
 
 | Where | What | Why |
 |---|---|---|
-| IndexedDB `diffgoel-repos` | Up to 20 recent repositories: the directory **handle** (an opaque browser token, not a path), the folder name, the last source/target branch names, last-opened time | The "Recent" list on the home screen. The browser re-asks for read permission the next time you open one. |
-| IndexedDB `diffgoel-viewed` | Keys marking files you ticked as "viewed": repository id, refs, file id and blob hashes → timestamp, pruned to 5,000 | Viewed marks survive a reload and reset automatically when the file changes. |
-| `localStorage` `diffgoel:prefs` | View preferences: split/unified, ignore whitespace, theme, sidebar width and similar | Remember your layout. |
+| IndexedDB `diffgit-repos` | Up to 20 recent repositories: the directory **handle** (an opaque browser token, not a path), the folder name, the last source/target branch names, last-opened time | The "Recent" list on the home screen. The browser re-asks for read permission the next time you open one. |
+| IndexedDB `diffgit-viewed` | Keys marking files you ticked as "viewed": repository id, refs, file id and blob hashes → timestamp, pruned to 5,000 | Viewed marks survive a reload and reset automatically when the file changes. |
+| `localStorage` `diffgit:prefs` | View preferences: split/unified, ignore whitespace, theme, sidebar width and similar | Remember your layout. |
 
 No file contents, diffs, or hashes of file contents other than the git blob ids inside viewed keys are
 ever stored. Every storage operation is optional: if storage is blocked or full, the app shows one

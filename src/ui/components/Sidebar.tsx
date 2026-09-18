@@ -59,7 +59,7 @@ export function Sidebar({ initialRect }: { initialRect?: { width: number; height
 
   return (
     <aside
-      className="relative flex shrink-0 flex-col border-r border-line bg-surface text-ink"
+      className="relative flex shrink-0 flex-col border-r border-line bg-surface-sunken text-ink"
       style={{ width: shown }}
       aria-label="Changed files"
     >

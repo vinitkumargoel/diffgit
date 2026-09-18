@@ -1,6 +1,6 @@
 /**
  * Recent repositories in IndexedDB (T4.3). Handles are structured-cloneable, so the real
- * `FileSystemDirectoryHandle` (or an E2E marker) is stored as-is. Store name `diffgoel-repos`.
+ * `FileSystemDirectoryHandle` (or an E2E marker) is stored as-is. Store name `diffgit-repos`.
  */
 import { createStore, del, entries, get, set } from "idb-keyval";
 import { isMemoryHandleMarker } from "../../engine/fs/memoryDirHandle";
@@ -20,11 +20,11 @@ export const MAX_RECENTS = 20;
 type Store = ReturnType<typeof createStore>;
 let store: Store | null = null;
 function repoStore(): Store {
-  if (!store) store = createStore("diffgoel-repos", "repos");
+  if (!store) store = createStore("diffgit-repos", "repos");
   return store;
 }
 /** Test hook: use a fresh database. */
-export function resetRepoStore(name = "diffgoel-repos"): void {
+export function resetRepoStore(name = "diffgit-repos"): void {
   store = createStore(name, "repos");
 }
 

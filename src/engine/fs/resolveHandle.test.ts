@@ -51,7 +51,7 @@ describe("resolveHandle", () => {
     process.env.VITE_E2E = "0";
     await expect(
       resolveHandle({
-        __diffgoelMemoryHandle: true,
+        __diffgitMemoryHandle: true,
         kind: "directory",
         snapshotId: "s",
         name: "n",
@@ -68,7 +68,7 @@ describe("resolveHandle", () => {
     const shim = startShim({ s1: snap });
     try {
       const root = await resolveHandle({
-        __diffgoelMemoryHandle: true,
+        __diffgitMemoryHandle: true,
         kind: "directory",
         snapshotId: "s1",
         name: "repo",
@@ -99,7 +99,7 @@ describe("resolveHandle", () => {
 
       // same marker again reuses the tree (mutations persist)
       const again = await resolveHandle({
-        __diffgoelMemoryHandle: true,
+        __diffgitMemoryHandle: true,
         kind: "directory",
         snapshotId: "s1",
         name: "repo",

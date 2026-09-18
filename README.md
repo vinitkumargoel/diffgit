@@ -1,4 +1,4 @@
-# diffgoel
+# diffgit
 
 **A GitHub-style branch diff for the repository on your disk, including the work you have not
 committed yet, running entirely in your browser.** Open a local git repository, pick a base and a
@@ -10,11 +10,11 @@ folder through the File System Access API and the Content-Security-Policy forbid
 request after the page has loaded.
 
 <p align="center">
-  <img src="docs/screenshots/light.png" alt="diffgoel showing the worktree fixture in light mode: file tree with staged, unstaged and untracked chips, unified hunks with additions and deletions, a mode-change card" width="49%">
+  <img src="docs/screenshots/light.png" alt="diffgit showing the worktree fixture in light mode: file tree with staged, unstaged and untracked chips, unified hunks with additions and deletions, a mode-change card" width="49%">
   <img src="docs/screenshots/dark.png" alt="The same diff in dark mode" width="49%">
 </p>
 
-Live at **https://diff.vinitk.dev** (also `diff-fb.vinitk.dev`, `diff-ds.vinitk.dev`).
+Live at **https://diffgit.com**.
 
 ## How to use
 

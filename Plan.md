@@ -1,7 +1,7 @@
-# diffgoel — Browser-only Git Diff Portal
+# diffgit — Browser-only Git Diff Portal
 
 **Status:** Planning complete. Per-task briefs for implementation agents live in [`tasks/`](tasks/README.md) (one file per task, 43 tasks).
-**Target URL:** https://diff.vinitk.dev (Cloudflare Pages, static)
+**Target URL:** https://diffgit.com (Cloudflare Pages, static)
 **One-line:** Open a local git repo folder in Chrome, pick a source branch and a target branch, and read a GitHub-style diff (including uncommitted work) — nothing leaves the browser, nothing on disk is ever modified.
 
 ---
@@ -11,7 +11,7 @@
 | # | Decision | Choice |
 |---|----------|--------|
 | D1 | App shape | Browser-only static web app. No backend, no local daemon. Git objects read in-browser. |
-| D2 | Hosting | Cloudflare Pages, custom domain `diff.vinitk.dev` (zone already on Cloudflare NS `elsa/max.ns.cloudflare.com`). |
+| D2 | Hosting | Cloudflare Pages, custom domain `diffgit.com` (zone already on Cloudflare NS `elsa/max.ns.cloudflare.com`). |
 | D3 | Folder access | File System Access API (`showDirectoryPicker`). **Chromium-only for v1** (Chrome/Edge/Arc/Brave). Firefox/Safari get a clear "unsupported browser" page. |
 | D4 | Repos | Single active repo at a time + "recent repos" list (handles persisted in IndexedDB). |
 | D5 | Comparison | Source branch (default: checked-out branch) vs target branch (default: repo default branch). **Merge-base / three-dot semantics** like GitHub Compare: diff from `merge-base(target, source)` → `source`. |
@@ -62,7 +62,7 @@
 ## 3. Architecture
 
 ```
-┌────────────────────────────── Browser tab (diff.vinitk.dev) ──────────────────────────────┐
+┌────────────────────────────── Browser tab (diffgit.com) ──────────────────────────────┐
 │                                                                                            │
 │  Main thread (React)                              Web Worker (git engine)                  │
 │  ┌──────────────────────────┐    comlink RPC    ┌──────────────────────────────────────┐   │
@@ -310,14 +310,14 @@ Diff table uses semantic `<table>` with row/col headers hidden visually; status 
 | Persistence | `idb-keyval` |
 | Tests | `bun test` for engine (Node-backed handles), `vitest` + `happy-dom` for UI units, Playwright (Chromium) E2E with in-memory FSA mock |
 | Lint/format | Biome |
-| Deploy | Cloudflare Pages via `bunx wrangler pages deploy dist --project-name diffgoel`; later GitHub Actions |
+| Deploy | Cloudflare Pages via `bunx wrangler pages deploy dist --project-name diffgit`; later GitHub Actions |
 
 ---
 
 ## 8. Repository layout
 
 ```
-diffgoel/
+diffgit/
 ├─ Plan.md
 ├─ README.md
 ├─ package.json  bunfig.toml  tsconfig.json  vite.config.ts  biome.json  playwright.config.ts
@@ -395,9 +395,9 @@ Conventions for every task: owner = one implementation agent; **done** means cod
 - AC: `bun run build` produces `dist/`; `bun run check` passes on the hello-world.
 
 **T0.2 Cloudflare Pages pipeline**
-- `wrangler.toml` (pages project `diffgoel`), `public/_headers` with CSP from §10, `public/_redirects` SPA rule.
-- `bunx wrangler login` (owner runs interactively), `bunx wrangler pages project create diffgoel`, deploy, attach custom domain `diff.vinitk.dev` (Pages → Custom domains; CNAME auto-created in the zone).
-- AC: hello-world reachable at https://diff.vinitk.dev with CSP headers visible in DevTools.
+- `wrangler.toml` (pages project `diffgit`), `public/_headers` with CSP from §10, `public/_redirects` SPA rule.
+- `bunx wrangler login` (owner runs interactively), `bunx wrangler pages project create diffgit`, deploy, attach custom domain `diffgit.com` (Pages → Custom domains; CNAME auto-created in the zone).
+- AC: hello-world reachable at https://diffgit.com with CSP headers visible in DevTools.
 
 **T0.3 Fixture builder**
 - `scripts/make-fixtures.sh` creating every fixture in §9 under `fixtures/`; `scripts/fixture-expectations.sh` writing `fixtures/<name>/expected/*.json`.
@@ -490,7 +490,7 @@ Conventions for every task: owner = one implementation agent; **done** means cod
 ### Phase 8 — Release
 
 **T8.1 README** — what it is, privacy model, supported browsers, limitations list (§5.5, §6.7, §11).
-**T8.2 Deploy v1** to diff.vinitk.dev; smoke test on 3 real repos; tag `v1.0.0`.
+**T8.2 Deploy v1** to diffgit.com; smoke test on 3 real repos; tag `v1.0.0`.
 **T8.3 v2 backlog** file — commit history & single-commit diff, arbitrary ref/SHA input, per-path incremental refresh, copy detection, autocrlf normalisation, LFS pointer rendering, Firefox fallback investigation.
 
 ### Parallelisation map
@@ -515,7 +515,7 @@ Phases 1–3 (engine) and 4–5 (UI on mocked data) run as two independent agent
 - [ ] Split/unified, syntax highlight, expand context, viewed, filter, whitespace toggle all work.
 - [ ] Images show side by side; binaries show a notice; huge files are gated.
 - [ ] DevTools Network shows zero requests after load; folder was opened read-only; `git status` in the repo is unchanged after a session.
-- [ ] Deployed at https://diff.vinitk.dev with CSP headers.
+- [ ] Deployed at https://diffgit.com with CSP headers.
 
 ---
 

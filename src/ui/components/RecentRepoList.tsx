@@ -11,7 +11,10 @@ export interface RecentRepoListProps {
   now?: number;
 }
 
-/** Design §7.8: bordered --surface list, 44 px rows, name 500, "opened 3 h ago" muted 12 px, × on hover/focus. */
+/**
+ * Design §7.8, "Precision" home: hairline rows that match the facts list above — 36 px tall,
+ * name 500, "opened 3 h ago" in mono on the right, × on hover/focus.
+ */
 export function RecentRepoList({ repos, onOpen, onRemove, now }: RecentRepoListProps) {
   const [denied, setDenied] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -38,28 +41,30 @@ export function RecentRepoList({ repos, onOpen, onRemove, now }: RecentRepoListP
 
   return (
     <section aria-label="Recent repositories" className="w-full text-left">
-      <h2 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted">Recent</h2>
-      <ul className="overflow-hidden rounded-[6px] border border-line bg-surface">
+      <h2 className="mb-2 font-mono text-[11px] uppercase leading-4 tracking-[0.06em] text-muted">
+        Recent
+      </h2>
+      <ul className="border-t border-line-subtle">
         {repos.map((repo) => (
-          <li key={repo.id} className="group border-b border-line last:border-b-0">
-            <div className="flex min-h-[44px] items-center gap-3 pr-2">
+          <li key={repo.id} className="group border-b border-line-subtle">
+            <div className="flex min-h-9 items-center gap-1">
               <button
                 type="button"
-                className="flex h-[44px] min-w-0 flex-1 items-center gap-3 px-3 text-left hover:bg-surface-raised focus-visible:bg-surface-raised"
+                className="-mx-2 flex h-9 min-w-0 flex-1 items-center gap-2.5 rounded-[6px] px-2 text-left hover:bg-surface-raised focus-visible:bg-surface-raised disabled:opacity-60"
                 onClick={() => void open(repo)}
                 onKeyDown={(e) => onKey(e, repo)}
                 disabled={busy === repo.id}
                 aria-label={`Open ${repo.name}`}
               >
-                <FolderGit2 size={16} className="shrink-0 text-muted" aria-hidden="true" />
+                <FolderGit2 size={15} className="shrink-0 text-muted" aria-hidden="true" />
                 <span className="truncate text-[13px] font-medium">{repo.name}</span>
-                <span className="ml-auto shrink-0 text-xs text-muted">
+                <span className="ml-auto shrink-0 font-mono text-[11px] text-muted">
                   opened {timeAgo(repo.lastOpenedAt, now)}
                 </span>
               </button>
               <button
                 type="button"
-                className="btn btn-icon h-6 w-6 border-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100"
+                className="btn btn-icon h-6 w-6 border-transparent bg-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100"
                 aria-label={`Remove ${repo.name} from recent repositories`}
                 onClick={() => onRemove(repo)}
               >
@@ -67,7 +72,7 @@ export function RecentRepoList({ repos, onOpen, onRemove, now }: RecentRepoListP
               </button>
             </div>
             {denied === repo.id && (
-              <p className="px-3 pb-2 text-xs text-danger" role="alert">
+              <p className="pb-2 text-xs text-danger" role="alert">
                 Permission denied.{" "}
                 <button type="button" className="underline" onClick={() => void open(repo)}>
                   Try again

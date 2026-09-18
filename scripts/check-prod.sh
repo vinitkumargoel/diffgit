@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Asserts the deployed site serves the production CSP and no Cloudflare-injected scripts (T0.2, T7.4, T8.2).
-# Usage: scripts/check-prod.sh [url] [expected build id]   (default https://diff.vinitk.dev)
+# Usage: scripts/check-prod.sh [url] [expected build id]   (default https://diffgit.com)
 set -euo pipefail
-URL="${1:-https://diff.vinitk.dev}"
+URL="${1:-https://diffgit.com}"
 EXPECTED_BUILD="${2:-}"
 fail=0
 

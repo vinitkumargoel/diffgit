@@ -5,7 +5,7 @@
 import { DEFAULT_PREFS, type Prefs } from "../store";
 import { reportStorageError } from "./storage";
 
-export const PREFS_KEY = "diffgoel.prefs.v1";
+export const PREFS_KEY = "diffgit.prefs.v1";
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;

@@ -16,7 +16,7 @@ L more. Each v2 item names the abstraction that makes it possible.
 | V7 | Multi-pack-index and reftable support. | L | Needs an own `.midx` / reftable reader or isomorphic-git upstream support; `ObjectDb` isolates the object store. | Both are rare in developer checkouts; currently a warning / refusal. |
 | V8 | Firefox / Safari fallback: `webkitdirectory` upload of small repositories into a `MemoryFs`. | M | `MemoryFs` + `DirHandleLike` already back the E2E shim; the missing piece is a file-list → snapshot builder and a "no live refresh" mode. | Read-only, no handles → no refresh; acceptable for small repos. |
 | V9 | Sharable read-only snapshot export: static HTML of the current diff (still no server). | M | `DiffResult` + `FileDiffPayload` are plain JSON; a renderer-only bundle with the data inlined. | Lets a reviewer share a diff without pushing. |
-| V10 | Debug metrics panel (`/#debug`) → opt-in perf trace export (JSON of `EngineMetrics` + `performance` marks). | S | `store.debugMetrics()` and the `diffgoel:*` marks exist. | Makes T8.2-style smoke numbers reproducible by users. |
+| V10 | Debug metrics panel (`/#debug`) → opt-in perf trace export (JSON of `EngineMetrics` + `performance` marks). | S | `store.debugMetrics()` and the `diffgit:*` marks exist. | Makes T8.2-style smoke numbers reproducible by users. |
 
 ## Deferred from v1 (with the review that raised them)
 

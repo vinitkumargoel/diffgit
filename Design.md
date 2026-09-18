@@ -1,6 +1,6 @@
-# diffgoel — Design spec (approved direction A "Classic")
+# diffgit — Design spec (direction "Precision")
 
-**Status:** Approved by the owner on 2026-09-16 from three mocked directions (artifact `36d3fa56-a90f-4e69-8646-d8e6ddfa3974` v1, section A). This file is the **only** visual reference for implementation agents. Do not borrow from the other two directions; do not restyle.
+**Status:** Direction A "Classic" was approved on 2026-09-16 and shipped. On 2026-09-18 the owner approved the **Precision** direction for the marketing site and asked for the product to be unified with it; the product name became **diffgit** (`diffgit.com`) and the brand mark became the diff-coloured branch (§12). Precision is a *tightening* of Classic, not a redesign: the layout, components, density and behaviour below are unchanged, and only the surfaces, hairlines, text colours and brand are restated. This file is the **only** visual reference for implementation agents. Do not restyle beyond it.
 
 **Relationship to other files:** `Plan.md` §6 says *what* the UI contains; this file says *how it looks and behaves visually*. Where the two differ on appearance, this file wins. Task files under `tasks/phase-4-app-shell/` and `tasks/phase-5-diff-ui/` cite the sections below by number (`Design §n`).
 
@@ -8,30 +8,33 @@
 
 ## 1. Direction in one paragraph
 
-GitHub's pull-request "Files changed" tab, one to one. Light and dark, neutral grey scale with a single blue accent, two-row control bar, collapsible file tree on the left, every file as a bordered card stacked in path order, unified diff by default. Nothing decorative: every colour encodes a state (added / removed / modified / renamed / staged / unstaged / untracked / viewed) and every control is where a GitHub user expects it. If a choice is not covered here, do what github.com does.
+GitHub's pull-request "Files changed" tab, one to one, drawn on paper-white (or true-black) ground with hairline rules instead of tonal blocks. Light and dark, neutral grey scale with a single blue accent and green as the brand hue, two-row control bar, collapsible file tree on the left, every file as a bordered card stacked in path order, unified diff by default. Structure is carried by 1 px lines and type weight, not by filled panels: the page ground and the card face are the same colour, and a card is legible because of its border. Nothing decorative: every colour encodes a state (added / removed / modified / renamed / staged / unstaged / untracked / viewed) and every control is where a GitHub user expects it. If a choice is not covered here, do what github.com does.
 
 ## 2. Principles (apply to every screen)
 
 1. **Colour is never the only signal.** Every status has a letter (`A M D R T`), every chip has a word, every dot has a label.
-2. **Density of a code tool, not a marketing page.** Base type 13 px, diff type 12 px, row heights 24–28 px. No hero sections, no large empty margins.
+2. **Density of a code tool.** Base type 13 px, diff type 12 px, row heights 24–28 px. No hero sections, no large empty margins, no illustrations. (The marketing site at `diffgit.com` is the one exception and has its own rules in §13; nothing from it leaks into the app.)
 3. **Sticky context.** The top bar and each file card header stay visible while the diff scrolls.
 4. **Quiet chrome, loud diff.** Chrome uses greys and one accent; the diff body owns green and red.
 5. **Both themes are first-class.** Every colour is a token defined for light and dark. No literal colours in components.
+6. **Separation by line, not by fill.** Prefer a 1 px `--line` border over a background change to separate two regions. `--surface-raised` is reserved for chrome that must recede (card headers, hover, segmented tracks); `--surface-sunken` for the one region that must sit *under* the content (the sidebar).
 
 ## 3. Colour tokens
 
-Define in `src/index.css` as CSS custom properties on `:root`, redefined under `.dark` (class on `<html>`, set by the theme toggle; default follows `prefers-color-scheme`). Expose to Tailwind v4 through `@theme` so utilities like `bg-surface`, `text-muted`, `border-line` exist.
+`--bg` and `--surface` are deliberately the same colour in both themes: cards read as cards because of their `--line` border, not because of a tonal step. Define in `src/index.css` as CSS custom properties on `:root`, redefined under `.dark` (class on `<html>`, set by the theme toggle; default follows `prefers-color-scheme`). Expose to Tailwind v4 through `@theme` so utilities like `bg-surface`, `text-muted`, `border-line` exist.
 
 ### 3.1 Neutrals and accent
 
 | Token | Role | Light | Dark |
 |---|---|---|---|
-| `--bg` | page ground (behind cards, sidebar tree, top bar row 2) | `#f6f8fa` | `#0d1117` |
-| `--surface` | cards, top bar row 1, sidebar, popovers | `#ffffff` | `#161b22` |
-| `--surface-raised` | card headers, hover rows, segmented-control track | `#f6f8fa` | `#1c2129` |
-| `--line` | all borders and dividers | `#d0d7de` | `#30363d` |
-| `--ink` | primary text | `#1f2328` | `#e6edf3` |
-| `--muted` | secondary text, labels, icons at rest | `#656d76` | `#8d96a0` |
+| `--bg` | page ground (diff pane, behind cards) | `#ffffff` | `#0d1117` |
+| `--surface` | cards, top bar row 2, popovers, dialogs, toasts | `#ffffff` | `#0d1117` |
+| `--surface-sunken` | sidebar tree ground (the one region under the content) | `#fafbfc` | `#0b0f14` |
+| `--surface-raised` | card headers, top bar row 1, hover rows, segmented-control track | `#f6f8fa` | `#161b22` |
+| `--line` | borders of cards, controls, sidebar and panes | `#d0d7de` | `#30363d` |
+| `--line-subtle` | dividers *inside* a surface (top bar row 1 → row 2, list separators) | `#e6e8eb` | `#21262d` |
+| `--ink` | primary text | `#0b0c0e` | `#f0f3f6` |
+| `--muted` | secondary text, labels, icons at rest | `#67707b` | `#8b949e` |
 | `--accent` | links, active segment, focus ring, active row bar | `#0969da` | `#4493f8` |
 | `--accent-subtle` | active row background, hunk header background, `default` badge background | `#ddf4ff` | `#121d2f` |
 | `--success` | `+n`, HEAD badge, staged chip, refresh "Live" dot, primary button | `#1a7f37` | `#3fb950` |
@@ -50,7 +53,7 @@ Define in `src/index.css` as CSS custom properties on `:root`, redefined under `
 | `--diff-del-num` | removed line gutter background | `#ffcecb` | `#5d2426` |
 | `--diff-del-word` | word-level highlight inside removed line | `#ff818266` (alpha) | `#f8514966` (alpha) |
 | `--diff-hunk-bg` | hunk header row | `#ddf4ff` | `#121d2f` |
-| `--diff-hunk-ink` | hunk header text | `#57606a` | `#8d96a0` |
+| `--diff-hunk-ink` | hunk header text | `#57606a` | `#8b949e` |
 | `--diff-ctx-num` | context line gutter background | `#f6f8fa` | `#161b22` |
 | `--diff-empty` | split view placeholder cell (hatched) | `repeating-linear-gradient(-45deg, transparent 0 6px, #eaeef2 6px 7px)` | `repeating-linear-gradient(-45deg, transparent 0 6px, #1c2129 6px 7px)` |
 
@@ -71,10 +74,10 @@ Each is a `bg` / `fg` pair (light → dark). Border of a chip = its `fg` at 40 %
 | chip `unstaged` | | `#fff8c5` / `#9a6700` | `#2d2a16` / `#d29922` |
 | chip `untracked` | | `#fbefff` / `#6639ba` | `#271e3a` / `#a371f7` |
 | chip `conflict` | | `#ffebe9` / `#cf222e` | `#25171c` / `#f85149` |
-| chip `generated` | | `#f6f8fa` / `#656d76` | `#1c2129` / `#8d96a0` |
+| chip `generated` | | `#f6f8fa` / `#67707b` | `#1c2129` / `#8b949e` |
 | badge `HEAD` | on compare picker | `#dafbe1` / `#1a7f37`, border `#4ac26b` | `#12261e` / `#3fb950` |
 | badge `default` | on base picker | `#ddf4ff` / `#0969da`, border `#54aeff` | `#121d2f` / `#58a6ff` |
-| badge `remote` | on remote-tracking entries | `#f6f8fa` / `#656d76` | `#1c2129` / `#8d96a0` |
+| badge `remote` | on remote-tracking entries | `#f6f8fa` / `#67707b` | `#1c2129` / `#8b949e` |
 
 ### 3.4 Banners
 
@@ -102,7 +105,7 @@ No web fonts are loaded (CSP `connect-src 'none'`, and the app must work offline
 
 - Spacing scale: 4 / 8 / 12 / 16 px. Card gap 16 px. Pane padding 16 px.
 - Radius: controls and cards 6 px; chips and badges 999 px; status squares 4 px; checkboxes 3 px.
-- Borders: 1 px `--line` everywhere. No shadows except popovers (`0 8px 24px rgba(140,149,159,.2)` light, `0 8px 24px #010409` dark).
+- Borders: 1 px `--line` for anything with an edge (cards, controls, panes); 1 px `--line-subtle` for a divider drawn inside one surface. No shadows except popovers, dialogs and toasts (`0 16px 40px -16px rgba(11,12,14,.24), 0 1px 2px rgba(11,12,14,.06)` light; `0 16px 40px -16px #010409, 0 1px 2px rgba(1,4,9,.6)` dark).
 - Focus ring: `outline: 2px solid var(--accent); outline-offset: 1px` on `:focus-visible` only.
 - Icons: `lucide-react`, 16 px in the top bar and card headers, 14 px inside buttons and rows, colour `--muted` at rest and `--ink` on hover. Tree folder icon 14 px `--muted`.
 
@@ -111,12 +114,12 @@ No web fonts are loaded (CSP `connect-src 'none'`, and the app must work offline
 Optimised for ≥ 1024 px wide; usable down to 900 px (sidebar collapses to an overlay toggled from the top bar below 900 px, out of scope for v1 polish).
 
 ```
-┌ TopBar row 1 (44 px, --surface) ───────────────────────────────────────────┐
+┌ TopBar row 1 (44 px, --surface-raised) ────────────────────────────────────┐
 │ ▣ repo   base: [main ▾ default] ← compare: [feat/x ▾ HEAD] ⇄  ☑ Include…   ↻ Refresh ● Live  ☼ │
-├ TopBar row 2 (40 px, --surface) ───────────────────────────────────────────┤
+├ TopBar row 2 (40 px, --surface) ── divided from row 1 by --line-subtle ────┤
 │ 11 files changed · +576 −131 │ 3 / 11 viewed ▬▬▬  …  [🔍 Filter files… /] [Unified|Split] [␣] │
 ├ WarningBanners (36 px each, stack) ────────────────────────────────────────┤
-├ Sidebar 300 px (--surface, right border) ┬ DiffPane (--bg, scrolls) ──────┤
+├ Sidebar 300 px (--surface-sunken, right border) ┬ DiffPane (--bg, scrolls)┤
 │ Files changed (11)      [Tree|Flat]      │ ┌ FileCard ────────────────────┐ │
 │ ▾ 📁 src/engine/git                      │ │ ▾ M src/engine/git/worktree.ts│ │
 │     M worktree.ts  unstaged  +142 −18 ☐  │ │ @@ hunk header               │ │
@@ -134,7 +137,7 @@ Names match Plan §6.2 and the task files. Sizes are the rendered values, not Ta
 
 ### 7.1 TopBar row 1 (T5.1)
 
-Left to right, 8 px gap, vertically centred:
+Background `--surface-raised`, bottom border `--line-subtle`. Left to right, 8 px gap, vertically centred:
 
 1. **Repo name**: `lucide:book-marked` 16 px + name, 14 px / 600. Not a button.
 2. `base:` label (`--muted`, 12 px) then **BranchPicker** trigger; `←` glyph (`--muted`, `title="Shows what compare adds on top of base"`); `compare:` label then the second trigger.
@@ -149,7 +152,7 @@ Left to right, 8 px gap, vertically centred:
 
 ### 7.2 TopBar row 2 (T5.1)
 
-Left: **summary** `11 files changed` (600) `·` `+576` (`--success` 600) `−131` (`--danger` 600), 12 px. Divider. **ViewedCounter**: `3 / 11 viewed` (`--muted`, tabular) + 80 × 6 px progress bar (`#e7ecf0` light / `#21262d` dark track, `--success` fill, 3 px radius). Spacer. **FileFilter**: bordered input 240 px, `lucide:search` 13 px, placeholder "Filter files…", `/` kbd hint on the right (10 px monospace, bordered), clear `×` appears when non-empty; below the input nothing, but the sidebar header shows "n of m files" while a filter is active. **ViewControls**: segmented control (bordered, 6 px radius, 4 px 10 px padding per segment) `Unified | Split`, active segment `--surface` fill with 1 px inset `--accent` ring and `--accent` text; then a 28 × 28 px icon button for whitespace (`lucide:space` or the `␣` glyph, tooltip "Ignore whitespace", pressed state uses the same active treatment).
+Background `--surface`, bottom border `--line` (the bar's outer edge). Left: **summary** `11 files changed` (600) `·` `+576` (`--success` 600) `−131` (`--danger` 600), 12 px. Divider. **ViewedCounter**: `3 / 11 viewed` (`--muted`, tabular) + 80 × 6 px progress bar (`#e7ecf0` light / `#21262d` dark track, `--success` fill, 3 px radius). Spacer. **FileFilter**: bordered input 240 px, `lucide:search` 13 px, placeholder "Filter files…", `/` kbd hint on the right (10 px monospace, bordered), clear `×` appears when non-empty; below the input nothing, but the sidebar header shows "n of m files" while a filter is active. **ViewControls**: segmented control (bordered, 6 px radius, 4 px 10 px padding per segment) `Unified | Split`, active segment `--surface` fill with 1 px inset `--accent` ring and `--accent` text; then a 28 × 28 px icon button for whitespace (`lucide:space` or the `␣` glyph, tooltip "Ignore whitespace", pressed state uses the same active treatment).
 
 ### 7.3 WarningBanners (T5.5)
 
@@ -198,7 +201,7 @@ All notices share: 28 px padding, centred, 13 px `--muted`, optional bordered bu
 
 Same tokens, centred column `max-width: 560px`, 15 px body text, 24 px gaps.
 
-- **HomeScreen**: `lucide:book-marked` 32 px + "diffgoel" 24 px / 600; one-paragraph privacy statement in `--muted`; primary button "Open repository" (`--success` fill, white text, 6 px radius, 8 px 16 px, 14 px / 500; `lucide:folder-open` 16 px); then **RecentRepoList** as a bordered list (`--surface`, 6 px radius): rows 44 px with `lucide:folder-git-2`, name 500, "opened 3 h ago" `--muted` 12 px, `×` remove on hover/focus. Denied state shows an inline `--danger` line "Permission denied. Try again" under the row.
+- **HomeScreen**: `lucide:git-branch` 32 px in `--success` (the brand mark's green, §12) + "diffgit" 24 px / 600; one-paragraph privacy statement in `--muted`; primary button "Open repository" (`--success` fill, white text, 6 px radius, 8 px 16 px, 14 px / 500; `lucide:folder-open` 16 px); then **RecentRepoList** as a bordered list (`--surface`, 6 px radius): rows 44 px with `lucide:folder-git-2`, name 500, "opened 3 h ago" `--muted` 12 px, `×` remove on hover/focus. Denied state shows an inline `--danger` line "Permission denied. Try again" under the row.
 - **BrowserGate**: same column; `lucide:monitor-x` 32 px; "This browser can't open local folders"; list of supported browsers as plain text; privacy line.
 - **LoadingScreen**: repo name, four phases as a vertical list (`lucide:circle-check` `--success` done, spinner current, `lucide:circle` `--muted` pending) with counts `Scanning working tree 1,240 / 5,000` tabular; `Cancel` bordered button.
 - **EmptyState** (replaces the pane; sidebar hidden): `lucide:git-compare` 32 px `--muted`; "No changes between `feat/x` and `main`" with branch names in monospace; "Working tree is clean" line when applicable; secondary bordered button "Change base".
@@ -236,15 +239,66 @@ Motion: none beyond the spinner and a 120 ms opacity/height transition on card c
 
 - **Do** use tokens from §3 only. A literal colour in `src/ui/**` fails review.
 - **Do** keep the two-row top bar; do not merge rows or move controls to a status bar.
+- **Do** separate regions with a border before reaching for a background colour (§2.6).
 - **Do** keep unified as the default view and the tree as the default sidebar mode.
 - **Don't** add a dark-only or light-only component; every component renders in both themes.
-- **Don't** add a web font, a shadow on cards, gradients, or rounded pills for buttons.
+- **Don't** add a web font, a shadow on cards, gradients, or rounded pills for buttons. Shadows belong to popovers, dialogs and toasts only.
+- **Don't** reintroduce a tonal step between `--bg` and `--surface`, or give the diff pane a grey ground.
 - **Don't** introduce a third accent hue. Green and red belong to the diff and to `+n −m`.
 
 ## 11. Implementation notes
 
-- `src/index.css`: `@import "tailwindcss";` then `:root { … }` / `.dark { … }` token blocks from §3, then `@theme inline { --color-bg: var(--bg); … }` so Tailwind utilities read the runtime tokens (needed for the toggle to work without a rebuild).
+- `src/index.css`: `@import "tailwindcss";` then `:root { … }` / `.dark { … }` token blocks from §3 (including `--surface-sunken` and `--line-subtle`, which must exist in both blocks — `contrast.test.ts` asserts the two blocks declare identical token names), then `@theme inline { --color-bg: var(--bg); … }` so Tailwind utilities read the runtime tokens (needed for the toggle to work without a rebuild).
 - Theme toggle (T5.6) sets `document.documentElement.classList.toggle("dark")` and persists `prefs.theme` (`"system" | "light" | "dark"`); on `"system"` a `matchMedia("(prefers-color-scheme: dark)")` listener drives the class.
 - `src/ui/components/StatusIcon.tsx`, `LayerChip.tsx`, `Badge.tsx` are small shared primitives created in T5.2 and reused by T5.1/T5.3; do not duplicate their styling.
 - Icons come from `lucide-react` (added in Phase 5). Import icons individually.
 - The diff renderer chosen in ADR-001 is themed via CSS variables in §3.2; if it exposes its own theme object, map it from the same variables rather than hard-coding hex values twice.
+
+## 12. Brand
+
+**Name:** `diffgit`, always lower-case, one word, never capitalised mid-sentence. Domain `diffgit.com`.
+
+**Mark ("branch, diff-coloured"):** a git branch glyph on a `#0d1117` tile with a 7/32 corner radius.
+The trunk and its two nodes are `#e6edf3` — the base branch, the thing that already exists. The
+diverging arm and its node are `#3fb950` — the compare branch, the work you added. The mark therefore
+says what the product does, not merely "git". It ships as `public/favicon.svg` at 32 × 32 and must stay
+legible at 16 px: do not add a third colour, an outline, or a gradient, and do not recolour the tile
+for light mode — the dark tile is the mark in both themes.
+
+**Wordmark:** `diff` in `--ink` + `git` in `--success`, weight 600, tracking −0.01em. Use the split
+colour only where the wordmark stands alone (site header, footer, README); the app's HomeScreen
+heading is plain `--ink`.
+
+**In-app use:** the app does not render the tile. The HomeScreen shows `lucide:git-branch` at 32 px in
+`--success` (§7.8), which echoes the mark using tokens only — an inline SVG with literal hexes would
+fail the §10 colour guard.
+
+**Green's two jobs.** `--success` is both the brand hue and the diff's "added" hue. That is deliberate
+and is not a third accent: blue stays the interactive colour (links, focus, active segment) and green
+stays the additive/positive colour (`+n`, staged, Live, brand). Never use green for an interactive
+control that is not the primary action.
+
+## 13. Marketing site (`diffgit.com`, direction "Precision")
+
+Out of the app bundle and out of scope for the task files; recorded here so the two surfaces stay
+related. It shares §3's tokens and §12's brand, and breaks §2.2 (density) on purpose.
+
+- **Frame.** One 1200 px column with a 1 px `--line` rule on the left and right edge, running the whole
+  page; every section is separated by a full-width horizontal rule of the same colour. 48 px inner
+  gutter, 20 px below 760 px wide.
+- **Type.** Display in Inter Tight 500, clamped 44→84 px, tracking −0.045em, line-height 0.98; body
+  Inter 400 at 16–20 px; all code, paths, refs and numbers in JetBrains Mono. Fonts must be
+  **self-hosted** (`font-src 'self'`) — the CSP forbids fetching them.
+- **Hero.** Eyebrow (`local · read-only · no network`), headline with the last phrase in `--success`,
+  one-paragraph lede, two buttons, and a right-hand facts table of six `label → value` rows on
+  `--line` dividers. No screenshot.
+- **Demo, not a screenshot.** Directly under the hero sits a working copy of the diff UI on a sample
+  repository: selectable files, Unified/Split, filter, Viewed ticks, an "Include uncommitted" toggle
+  that really removes the unstaged and untracked layers, and the `j` `k` `s` `v` `/` keys. It is built
+  from the same tokens and row/card specs as §7.
+- **Chapters.** Four numbered two-column sections (Layers, Three-dot, Live, Privacy), each a short
+  argument beside an explanatory visual — `git status` output against the diffgit tree, an SVG commit
+  graph of the merge-base range, the refresh pipeline as a timeline, and the privacy model as a spec
+  table quoting the served CSP. No feature-card grids.
+- **Close.** A five-question FAQ as `<details>` rows on `--line`, then a single call to action.
+

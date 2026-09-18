@@ -91,7 +91,7 @@ describe("HomeScreen", () => {
     (window as unknown as { showDirectoryPicker: unknown }).showDirectoryPicker = pick;
     render(<HomeScreen />);
     fireEvent.click(screen.getByRole("button", { name: /Open repository/ }));
-    await waitFor(() => expect(pick).toHaveBeenCalledWith({ mode: "read", id: "diffgoel-repo" }));
+    await waitFor(() => expect(pick).toHaveBeenCalledWith({ mode: "read", id: "diffgit-repo" }));
     expect(useStore.getState().toasts).toEqual([]);
     expect(useStore.getState().screen).toBe("home");
 

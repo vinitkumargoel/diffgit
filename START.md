@@ -1,10 +1,10 @@
-# START HERE — diffgoel implementation kickoff
+# START HERE — diffgit implementation kickoff
 
 This file is the entry point for whoever (human or agent) drives the implementation. It tells you what to read, in what order to run the tasks, how to brief an implementation agent, and how to track progress.
 
 ## 1. What we are building (30 seconds)
 
-A static web app at https://diff.vinitk.dev. In Chrome you pick a local git repo folder, choose a **base** branch (default: the repo's default branch) and a **compare** branch (default: the checked-out one), and read a GitHub-style diff of what compare adds on top of base, including uncommitted work when compare is the checked-out branch. It auto-refreshes as you edit. Nothing leaves the browser and nothing on disk is ever written.
+A static web app at https://diffgit.com. In Chrome you pick a local git repo folder, choose a **base** branch (default: the repo's default branch) and a **compare** branch (default: the checked-out one), and read a GitHub-style diff of what compare adds on top of base, including uncommitted work when compare is the checked-out branch. It auto-refreshes as you edit. Nothing leaves the browser and nothing on disk is ever written.
 
 ## 2. Reading order
 
@@ -50,8 +50,8 @@ Spikes gate work: T1.6 must pass before Phase 2 starts; T5.0 before T5.3; T6.0 b
 Give the agent **one task file** and this prompt (fill in the id):
 
 ```
-You are implementing task <ID> of the diffgoel project.
-Working directory: /Users/homepc/Official/work/personal/diffgoel
+You are implementing task <ID> of the diffgit project.
+Working directory: /Users/homepc/Official/work/personal/diffgit
 Read, in order: tasks/README.md, tasks/<phase-dir>/<ID>-*.md, then the Plan.md sections that file cites. For a UI task (T4.4, T5.x) also read Design.md in full and the Design sections the task cites.
 Rules: follow tasks/README.md conventions exactly; implement only that task's deliverables; UI must match Design.md (tokens only, no literal colours, no restyling); never write to a user's git repo; no Playwright tests outside T7.1.
 Definition of done: code + tests, `bun run check` green, every acceptance criterion ticked with evidence, a 3–6 line entry in docs/CHANGELOG.md, and a Conventional Commit `feat(<ID>): ...`.
@@ -67,7 +67,7 @@ Keep this board updated (edit this file; one line per task):
 | Task | Status | Agent / date | Notes |
 |------|--------|--------------|-------|
 | T0.1 | done | agent / 2026-09-16 | |
-| T0.2 | blocked: owner must add CNAMEs diff / diff-fb / diff-ds → diffgoel.pages.dev | agent / 2026-09-16 | project + deploy + domain registration done; pages.dev passes check-prod; `diff_fb` rejected (underscore) → registered `diff-fb` |
+| T0.2 | blocked: owner must point `diffgit.com` at `diffgit.pages.dev` | agent / 2026-09-16 | project + deploy + domain registration done; pages.dev passes check-prod |
 | T0.3 | done | agent / 2026-09-16 | 27 fixtures, jq required |
 | T0.4 | done | agent / 2026-09-16 | shim verified in bun (E2E policy) |
 | T1.1 | done | agent / 2026-09-16 | |

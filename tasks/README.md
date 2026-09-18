@@ -1,4 +1,4 @@
-# diffgoel — Task index for implementation agents
+# diffgit — Task index for implementation agents
 
 Source of truth: [`../Plan.md`](../Plan.md) for behaviour and [`../Design.md`](../Design.md) for appearance (approved direction A "Classic", 2026-09-16). Every task file cites the Plan sections it implements; UI task files also cite Design sections. Read those sections before starting; do not re-open decisions in Plan §0 or restyle away from Design.md.
 
