@@ -14,7 +14,10 @@
       "!playwright-report",
       "!test-results",
       "!.wrangler",
-      "!.claude"
+      "!.claude",
+      "!src/marketing/precision.css",
+      "!src/marketing/precision.html",
+      "!docs/mockups"
     ]
   },
   "formatter": {

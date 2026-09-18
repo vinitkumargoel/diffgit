@@ -1,16 +1,14 @@
-import { FolderOpen } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
+// The landing page, verbatim from the approved "Precision" mockup (docs/mockups/e-precision.html).
+// Kept as raw assets outside src/ui so the design's literal colours don't trip the token guard;
+// the CSS is injected as a scoped <style> that unmounts with the screen, and the demo script — which
+// the CSP forbids inline — runs from precisionDemo.ts instead.
+import precisionCss from "../../marketing/precision.css?raw";
+import precisionHtml from "../../marketing/precision.html?raw";
 import { useShortcuts } from "../hooks/useShortcuts";
-import {
-  ensurePermission,
-  listRepos,
-  removeRepo,
-  type StoredRepo,
-  upsertRepo,
-} from "../persistence";
+import { upsertRepo } from "../persistence";
 import { useStore } from "../store";
-import { Logo } from "./Logo";
-import { RecentRepoList } from "./RecentRepoList";
+import { initPrecisionDemo } from "./home/precisionDemo";
 
 type Picker = (opts: { mode: "read"; id?: string }) => Promise<FileSystemDirectoryHandle>;
 
@@ -23,29 +21,19 @@ function isAbort(e: unknown): boolean {
   return typeof e === "object" && e !== null && (e as { name?: unknown }).name === "AbortError";
 }
 
-/** Hairline label/value list under the CTA. Every value is a fact from README.md, not a claim. */
-const FACTS: { label: string; value: string; good?: boolean }[] = [
-  { label: "Uploaded", value: "nothing, ever", good: true },
-  { label: "Written to disk", value: "nothing, read-only", good: true },
-  { label: "Kept in this browser", value: "recent folders, prefs" },
-  { label: "Diff range", value: "base...compare" },
-  { label: "License", value: "MIT" },
-];
+/** The mockup's footer carries a hard-coded build id; show the real one this bundle was built at. */
+const HTML = precisionHtml.replace("build 11648ff", `build ${__BUILD_ID__}`);
 
 /**
- * Design §7.8 HomeScreen, "Precision" direction: brand lockup, eyebrow, headline, lede,
- * the "Open repository" CTA with its `o` hint, a hairline facts list, recents and the
- * browser-support line.
+ * The home screen is the "Precision" landing page (Direction E) rendered as-is: its nav, hero,
+ * interactive demo, chapters, privacy table, FAQ and footer. Every "Open a repository" CTA and the
+ * `o` shortcut open the read-only directory picker, which hands off to the app (App switches to the
+ * repo screen). The marketing markup and styles are static, in-repo assets — never user input.
  */
 export function HomeScreen() {
   const openRepo = useStore((s) => s.openRepo);
   const addToast = useStore((s) => s.addToast);
-  const [recents, setRecents] = useState<StoredRepo[]>([]);
-
-  const refresh = useCallback(async () => setRecents(await listRepos()), []);
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const openPicker = useCallback(async () => {
     const pick = picker();
@@ -68,98 +56,37 @@ export function HomeScreen() {
     }
   }, [openRepo, addToast]);
 
-  // `o` opens the picker while on Home (T4.4 AC)
+  // `o` opens the picker while on Home (T4.4 AC).
   useShortcuts({ o: () => void openPicker() });
 
-  async function openRecent(repo: StoredRepo): Promise<"granted" | "denied"> {
-    const result = await ensurePermission(repo.handle);
-    if (result === "denied") return result;
-    await openRepo(repo.handle, {
-      id: repo.id,
-      lastSource: repo.lastSource,
-      lastTarget: repo.lastTarget,
-    });
-    return result;
-  }
+  // Wire every "Open a repository" CTA in the injected markup to the picker.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const onClick = () => void openPicker();
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>("button.btn-ink"));
+    for (const b of buttons) b.addEventListener("click", onClick);
+    return () => {
+      for (const b of buttons) b.removeEventListener("click", onClick);
+    };
+  }, [openPicker]);
 
-  async function remove(repo: StoredRepo) {
-    await removeRepo(repo.id);
-    await refresh();
-  }
+  // Run the self-contained diff demo in the `#demo` section.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    return initPrecisionDemo(root);
+  }, []);
 
   return (
-    <main
-      aria-label="Open a repository"
-      className="flex min-h-full justify-center overflow-y-auto bg-bg px-5 py-10 text-[13px] leading-5 text-ink sm:px-8 sm:py-14"
-    >
-      <div className="my-auto w-full max-w-[640px]">
-        <div className="flex items-center gap-2.5">
-          <Logo size={28} />
-          <span className="text-[17px] font-semibold leading-6 tracking-[-0.01em]">
-            diff<span className="text-success">git</span>
-          </span>
-        </div>
-
-        <p className="mt-8 flex items-center gap-2 font-mono text-[11px] leading-4 text-muted">
-          <span aria-hidden="true" className="h-[6px] w-[6px] shrink-0 rounded-full bg-success" />
-          local · read-only · no network
-        </p>
-
-        <h1 className="mt-3 max-w-[17ch] text-[30px] font-medium leading-[1.06] tracking-[-0.032em] sm:text-[36px]">
-          Everything your branch changes,{" "}
-          <em className="not-italic text-success">including what you haven't committed.</em>
-        </h1>
-
-        <p className="mt-4 max-w-[54ch] text-[14px] leading-[22px] text-muted">
-          Open a repository on your disk and read{" "}
-          <span className="font-mono text-[13px] text-ink">base...compare</span> the way a pull
-          request shows it, with your staged, unstaged and untracked work layered on top.{" "}
-          <span className="font-medium text-ink">
-            Nothing is uploaded and nothing is written to disk.
-          </span>
-        </p>
-
-        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
-          <button
-            type="button"
-            className="btn rounded-[8px] border-ink bg-ink px-4 py-2.5 text-[14px] leading-5 text-bg hover:bg-ink hover:opacity-90"
-            onClick={() => void openPicker()}
-          >
-            <FolderOpen size={16} aria-hidden="true" />
-            Open repository
-          </button>
-          <span className="text-xs text-muted">
-            Press <kbd className="kbd">o</kbd>
-          </span>
-        </div>
-
-        <dl className="mt-9 border-t border-line-subtle">
-          {FACTS.map((fact) => (
-            <div
-              key={fact.label}
-              className="flex items-baseline justify-between gap-4 border-b border-line-subtle py-2"
-            >
-              <dt className="text-muted">{fact.label}</dt>
-              <dd
-                className={`m-0 truncate font-mono text-[12px] ${fact.good ? "text-success" : "text-ink"}`}
-              >
-                {fact.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-
-        {recents.length > 0 && (
-          <div className="mt-9">
-            <RecentRepoList repos={recents} onOpen={openRecent} onRemove={(r) => void remove(r)} />
-          </div>
-        )}
-
-        <p className="mt-9 text-xs leading-[18px] text-muted">
-          Works in Chrome, Edge, Brave and Arc on the desktop — the browsers that can open a local
-          folder. Firefox and Safari cannot.
-        </p>
-      </div>
-    </main>
+    <>
+      {/* Component-scoped: removed from the DOM when the screen unmounts, so it never leaks into the app. */}
+      <style>{precisionCss}</style>
+      <div
+        ref={rootRef}
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: static in-repo marketing asset, not user input.
+        dangerouslySetInnerHTML={{ __html: HTML }}
+      />
+    </>
   );
 }

@@ -73,17 +73,6 @@ describe("BrowserGate", () => {
 });
 
 describe("HomeScreen", () => {
-  it("lists recents from persistence and opens one after a permission check", async () => {
-    render(<HomeScreen />);
-    await waitFor(() => expect(screen.getByText("diffgoel")).toBeTruthy());
-    expect(screen.getByText("opened 3 h ago")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Open diffgoel" }));
-    await waitFor(() => expect(useStore.getState().screen).toBe("repo"));
-    expect(persistence.ensurePermission).toHaveBeenCalledWith(repos[0]?.handle);
-    expect(useStore.getState().repoId).toBe("r1");
-    expect(useStore.getState().diffSource?.targetRef).toBe("refs/heads/main");
-  });
-
   it("cancelling the picker (AbortError) shows nothing; success opens the repo read-only", async () => {
     const pick = vi.fn(async () => {
       throw new DOMException("cancelled", "AbortError");

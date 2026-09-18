@@ -1,0 +1,183 @@
+<svg style="display:none"><symbol id="logo" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#0d1117"/><path d="M10 10.5v11" fill="none" stroke="#e6edf3" stroke-width="2.4" stroke-linecap="round"/><path d="M22 12.6c0 6-12 3.4-12 9" fill="none" stroke="#3fb950" stroke-width="2.4" stroke-linecap="round"/><circle cx="10" cy="8" r="2.6" fill="#e6edf3"/><circle cx="10" cy="24" r="2.6" fill="#e6edf3"/><circle cx="22" cy="10" r="2.6" fill="#3fb950"/></symbol></svg>
+
+<nav><div class="frame"><div class="pad">
+  <a class="brand" href="#"><svg><use href="#logo"/></svg><b>diff<i>git</i></b></a>
+  <div class="links"><a href="#demo">Demo</a><a href="#how">How it works</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a><a href="#">Docs</a><a href="#">GitHub</a></div>
+  <button class="btn btn-ink">Open repository</button>
+</div></div></nav>
+
+<div class="frame">
+  <header class="hero pad">
+    <div class="grid">
+      <div>
+        <span class="eyebrow"><i></i>local · read-only · no network</span>
+        <h1>The pull request view for code you <em>haven't pushed.</em></h1>
+        <p class="lede">Open the repository on your disk and read <b>base…compare</b> the way a reviewer will, with staged, unstaged and untracked work layered on top. Nothing is uploaded. Nothing is written.</p>
+        <div class="cta"><button class="btn btn-ink btn-lg">Open a repository</button><a class="btn btn-lg" href="#demo">Try the demo below</a><small>Press <kbd>o</kbd></small></div>
+      </div>
+      <div class="facts">
+        <div><span>Runs in</span><span>your browser tab</span></div>
+        <div><span>Uploads</span><span class="g">0 bytes, by CSP</span></div>
+        <div><span>Writes to disk</span><span class="g">none, read-only</span></div>
+        <div><span>Matches</span><span>git diff -M</span></div>
+        <div><span>Browsers</span><span>Chromium, desktop</span></div>
+        <div><span>Licence</span><span>MIT</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="rule"></div>
+
+  <!-- ===== interactive demo ===== -->
+  <section id="demo" class="pad" style="padding-top:8px;padding-bottom:72px">
+    <div class="demo-head">
+      <span class="t"><b>This demo is real.</b> Click a file, toggle split, filter, tick “Viewed”. It's the same components as the app, running on a sample repository.</span>
+      <span class="keys">Keys: <span><kbd>j</kbd><kbd>k</kbd> files</span><span><kbd>s</kbd> split</span><span><kbd>v</kbd> viewed</span><span><kbd>/</kbd> filter</span></span>
+    </div>
+    <div class="app" id="app" tabindex="0" aria-label="Interactive demo of diffgit">
+      <div class="top">
+        <span class="repo"><svg><use href="#logo"/></svg>acme-web</span>
+        <span class="sel"><span class="lbl">base</span>main <span class="badge default">default</span></span>
+        <span style="color:var(--muted)">⇄</span>
+        <span class="sel"><span class="lbl">compare</span>feat/coupons <span class="badge head">HEAD</span></span>
+        <div class="right"><label><input type="checkbox" id="inc" checked>Include uncommitted</label><span class="live">Live</span></div>
+      </div>
+      <div class="stats"><span><b id="nfiles">6</b> files changed</span><span class="plus" id="tplus">+148</span><span class="minus" id="tminus">−37</span><span><b id="nviewed">2</b> / <span id="nfiles2">6</span> viewed</span><span class="filter">/ <input id="filter" aria-label="Filter files" placeholder="Filter files"></span><span class="seg" id="seg"><button class="on" data-m="unified">Unified</button><button data-m="split">Split</button></span></div>
+      <div class="body">
+        <div class="tree" id="tree"><div class="h">Files changed</div></div>
+        <div class="pane" id="pane"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <!-- ===== chapters ===== -->
+  <section id="how" class="pad chapter">
+    <div>
+      <div class="num">01 — Layers</div>
+      <h2>What <span class="mono" style="font-weight:500">git status</span> knows, in the diff.</h2>
+      <p>Every other diff viewer stops at the last commit. diffgit reads the index and the working tree after the commits, and labels each file with the layer it came from. A file can be in two layers at once; both chips show, and the diff is the sum.</p>
+      <p>Untracked files respect <span class="mono">.gitignore</span>, <span class="mono">.git/info/exclude</span> and the built-in excludes. Conflicts and generated files are flagged the same way.</p>
+    </div>
+    <div class="viz">
+      <div class="cap"><span>$ git status --short</span><span>diffgit</span></div>
+      <div class="two">
+        <div><span class="gr">M</span><span class="rd">M</span> src/checkout/cart.ts
+<span class="rd">??</span> src/checkout/coupon.ts
+ <span class="rd">M</span> README.md
+<span class="gr">R</span>  src/util/money.ts -> src/lib/money.ts
+<span class="gr">D</span>  src/checkout/legacy.ts
+ <span class="rd">M</span> src/api/orders.ts</div>
+        <div>
+          <div class="row"><span class="st M">M</span><span class="p">cart.ts</span><span class="chip staged">staged</span><span class="chip unstaged">unstaged</span></div>
+          <div class="row"><span class="st A">A</span><span class="p">coupon.ts</span><span class="chip untracked">untracked</span></div>
+          <div class="row"><span class="st M">M</span><span class="p">README.md</span><span class="chip unstaged">unstaged</span></div>
+          <div class="row"><span class="st R">R</span><span class="p">money.ts</span><span class="chip staged">staged</span><span class="n" style="color:var(--blue)">96%</span></div>
+          <div class="row"><span class="st D">D</span><span class="p">legacy.ts</span><span class="chip staged">staged</span></div>
+          <div class="row"><span class="st M">M</span><span class="p">orders.ts</span><span class="chip unstaged">unstaged</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="pad chapter">
+    <div class="viz">
+      <div class="cap"><span>base = main · compare = feat/coupons</span><span>merge-base → compare → index → worktree</span></div>
+      <svg class="graph" viewBox="0 0 560 220" role="img" aria-label="Commit graph showing the three-dot diff range">
+        <rect class="band" x="228" y="20" width="318" height="180" rx="10"/>
+        <path class="line main" d="M40 150H520"/>
+        <path class="line feat" d="M240 150c40 0 40-70 80-70H420"/>
+        <path class="line feat ghost" d="M420 80H470"/>
+        <path class="line feat ghost" d="M470 80H520"/>
+        <circle class="node" cx="80" cy="150" r="7"/><circle class="node" cx="160" cy="150" r="7"/>
+        <circle class="node mb" cx="240" cy="150" r="8"/>
+        <circle class="node" cx="330" cy="150" r="7"/><circle class="node" cx="420" cy="150" r="7"/><circle class="node" cx="500" cy="150" r="7"/>
+        <circle class="node f" cx="340" cy="80" r="7"/><circle class="node f" cx="420" cy="80" r="7"/>
+        <circle class="node f ghost" cx="470" cy="80" r="7"/><circle class="node f ghost" cx="520" cy="80" r="7"/>
+        <text x="40" y="180">main</text><text x="500" y="180" text-anchor="middle">HEAD of main</text>
+        <text x="240" y="180" text-anchor="middle" class="lbl">merge-base</text>
+        <text x="340" y="60" text-anchor="middle">a1f9</text><text x="420" y="60" text-anchor="middle" class="lbl">feat/coupons</text>
+        <text x="470" y="108" text-anchor="middle">index</text><text x="522" y="108" text-anchor="middle">worktree</text>
+        <text x="387" y="40" text-anchor="middle" class="lbl">what you see</text>
+      </svg>
+    </div>
+    <div>
+      <div class="num">02 — Same maths as a pull request</div>
+      <h2>Three-dot, from the merge base.</h2>
+      <p>The diff is <span class="mono">merge-base(base, compare) → compare</span>, exactly what GitHub shows on “Files changed”. Commits that landed on main after you branched don't show up as your changes. Then the index and the working tree are appended as two more steps.</p>
+      <p>Renames are found like <span class="mono">git diff -M</span>: exact matches first, then 50 % similarity, and fixtures are checked against git's own output on every build.</p>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="pad chapter">
+    <div>
+      <div class="num">03 — Live</div>
+      <h2>Save in your editor. Glance at the tab.</h2>
+      <p>Where the browser has <span class="mono">FileSystemObserver</span> (Chrome 129+) the folder is watched. Elsewhere, <span class="mono">.git</span> and the index are polled every two seconds. Only files whose size or mtime changed are re-hashed, with git's own racy-git rule for edits in the same millisecond as the index write.</p>
+      <p><kbd>Shift</kbd>+<kbd>R</kbd> re-hashes everything, when you'd rather be sure than fast.</p>
+    </div>
+    <div class="viz">
+      <div class="cap"><span>refresh pipeline</span><span>typical: 38 ms</span></div>
+      <div class="tl">
+        <div class="s"><b>Save</b><span>cart.ts · 12:04:31.208</span></div>
+        <div class="s"><b>Observed</b><span>FileSystemObserver</span></div>
+        <div class="s"><b>Re-hashed</b><span>1 of 6 files</span></div>
+        <div class="s"><b>Diffed</b><span>1 hunk changed</span></div>
+        <div class="s"><b>Rendered</b><span>+1 line · chips updated</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section id="privacy" class="pad chapter">
+    <div class="viz">
+      <div class="cap"><span>privacy · as shipped</span><span>diffgit.com</span></div>
+      <table class="spec">
+        <tr><td colspan="2" class="hdr">content-security-policy: default-src 'self'; <b>connect-src 'none'</b>; img-src 'self' blob:; worker-src 'self'; script-src 'self'; frame-ancestors 'none'</td></tr>
+        <tr><td>Bytes uploaded</td><td class="ok">0 — the browser blocks every request after load</td></tr>
+        <tr><td>Bytes written to disk</td><td class="ok">0 — read-only handle, every write path throws</td></tr>
+        <tr><td>Cookies, analytics, third-party scripts</td><td class="ok">none</td></tr>
+        <tr><td>Stored in your browser</td><td>recent repo handles, last branch pair, viewed marks, view preferences</td></tr>
+        <tr><td>Stored file contents</td><td class="ok">never</td></tr>
+        <tr><td>Verified by</td><td>e2e: zero requests while open · release checklist: mtime proof on real repos</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="num">04 — Private by construction</div>
+      <h2>Not a promise. A header.</h2>
+      <p>The page can't phone home even if it wanted to. The served Content-Security-Policy forbids network connections from the page and its workers, and an end-to-end test asserts zero requests while a repository is open.</p>
+      <p>Source is public, the build id is in the help dialog, and the deploy script refuses to ship if the served commit doesn't match. <a class="more" href="#">Read the privacy model →</a></p>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section id="faq" class="pad faq">
+    <h2>Questions people ask.</h2>
+    <details><summary>Why only Chromium browsers?</summary><p>diffgit reads the folder through the File System Access API, specifically <span class="mono">showDirectoryPicker()</span>. Firefox and Safari don't ship it. On those browsers the home screen says so instead of failing later.</p></details>
+    <details><summary>Is it really read-only?</summary><p>Yes. The directory is opened with <span class="mono">mode: "read"</span>, and the engine's filesystem adapter has no working write path: every write method throws. A mtime-based proof on real repositories is part of the release checklist.</p></details>
+    <details><summary>Does it work on large repositories?</summary><p>Over 300 changed files, the tree and diff pane virtualise and per-file stats stream in with the visible rows first. Files over 1 MB or 3,000 changed lines collapse behind “Load diff”. Packs over 1 GB, indexes over 200,000 entries and more than 5,000 untracked files are refused or capped with a named banner, never silently wrong.</p></details>
+    <details><summary>What doesn't it support?</summary><p>Linked worktrees, bare repositories, reftable, SHA-256 object format, partial clones and split index are refused or flagged with a code you can look up. Git LFS pointers are diffed as text. Copies (<span class="mono">-C</span>) are not detected. The full list is in the docs.</p></details>
+    <details><summary>Does it replace GitHub's review?</summary><p>No. It's the review you do before the pull request exists: the same diff, with the uncommitted work included, so what you push is what you meant to push.</p></details>
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="pad final">
+    <div>
+      <h2>Open a repository.</h2>
+      <p>Pick the folder that contains <span class="mono">.git</span>. Read access is asked once. The diff appears in seconds.</p>
+      <small>Chrome 86+, Edge, Brave or Arc on desktop · free · MIT</small>
+    </div>
+    <button class="btn btn-ink btn-lg">Open a repository</button>
+  </section>
+
+  <div class="rule"></div>
+  <footer><div class="pad"><span class="brand"><svg><use href="#logo"/></svg><b>diff<i>git</i></b> · build 11648ff</span><span><a href="#">Docs</a><a href="#">Privacy</a><a href="#">Limits</a><a href="#">Changelog</a><a href="#">GitHub</a></span></div></footer>
+</div>
