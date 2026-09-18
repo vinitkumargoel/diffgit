@@ -1,22 +1,22 @@
 # Deploying diffgit (Cloudflare Pages)
 
-Static site, project `diffgit`, custom domain `diffgit.com` (zone `diffgit.com` is on Cloudflare).
+Static site, Cloudflare Pages project `diffgoel` (serves `diffgoel.pages.dev`), custom domain `diffgit.com` (zone `diffgit.com` is on Cloudflare).
 `public/_headers` (CSP with `connect-src 'none'`) and `public/_redirects` (SPA fallback) are copied into
 `dist/` by Vite and applied by Pages.
 
 ## One-time setup (owner)
 
 1. `bunx wrangler login` — interactive OAuth; cannot be automated.
-2. `bunx wrangler pages project create diffgit --production-branch main`
+2. `bunx wrangler pages project create diffgoel --production-branch main`
 3. `bun run deploy` — builds and uploads `dist/`; note the `*.pages.dev` URL it prints.
 4. Attach the domain. Wrangler 4.x has no `pages domain` command; use the dashboard
-   (Workers & Pages → diffgit → Custom domains → Set up a custom domain → `diffgit.com`), which
+   (Workers & Pages → diffgoel → Custom domains → Set up a custom domain → `diffgit.com`), which
    also creates the CNAME automatically because the zone is on the same account. Via the API the
    domain registration is:
-   `curl -X POST -H "Authorization: Bearer $TOKEN" -d '{"name":"diffgit.com"}' https://api.cloudflare.com/client/v4/accounts/<account>/pages/projects/diffgit/domains`
-   but the DNS record is **not** created for you — add `CNAME diff → diffgit.pages.dev` (proxied) in
+   `curl -X POST -H "Authorization: Bearer $TOKEN" -d '{"name":"diffgit.com"}' https://api.cloudflare.com/client/v4/accounts/<account>/pages/projects/diffgoel/domains`
+   but the DNS record is **not** created for you — add `CNAME diff → diffgoel.pages.dev` (proxied) in
    the zone (needs a token with `dns_records:write`; wrangler's OAuth token has only `zone:read`).
-   Status is visible at `.../pages/projects/diffgit/domains/diffgit.com` (`pending` →
+   Status is visible at `.../pages/projects/diffgoel/domains/diffgit.com` (`pending` →
    `active`); certificate issuance takes a few minutes after DNS resolves.
 5. Verify: `scripts/check-prod.sh` (CSP header identical to `public/_headers`, no injected scripts,
    deep links return 200).
@@ -25,7 +25,7 @@ Static site, project `diffgit`, custom domain `diffgit.com` (zone `diffgit.com` 
 
 ```
 bun run check && bunx playwright test   # green first
-bun run deploy                          # = bun run build && scripts/check-dist.sh && bunx wrangler pages deploy dist --project-name diffgit
+bun run deploy                          # = bun run build && scripts/check-dist.sh && bunx wrangler pages deploy dist --project-name diffgoel --force
 scripts/check-prod.sh https://diffgit.com "$(git rev-parse --short HEAD)"   # headers + served build id
 ```
 
@@ -58,21 +58,23 @@ Email Obfuscation, scope it with a Configuration Rule that disables them for `di
 
 - `wrangler pages project create` in wrangler 4.132 delegates to the Workers-based Pages and fails
   without an entry point; `--force` created the classic Pages project (only needed once).
-- `diffgit.pages.dev` serves the hello-world with every header from `public/_headers`; the deep
+- `diffgoel.pages.dev` serves the hello-world with every header from `public/_headers`; the deep
   link returns 200. `scripts/check-prod.sh <url>` uses GET (HEAD may omit custom headers) with retries
   (this network shows intermittent TLS resets to Cloudflare edges).
 - Custom domain `diffgit.com` was registered on the project (status `pending`, "CNAME record not
   set") and is waiting for the owner to add the CNAME as described in step 4.
-- 2026-09-18: the project was renamed to `diffgit` and the single production hostname is
-  `diffgit.com`. It waits for its proxied CNAME `diffgit.com → diffgit.pages.dev`; it does not
-  resolve yet. The custom domain serves the same latest production deployment as `diffgit.pages.dev`.
+- 2026-09-18: the product/code was renamed to `diffgit` with a single production hostname
+  `diffgit.com`. The Cloudflare Pages **project keeps its original name `diffgoel`** — Pages
+  projects can't be renamed — so `bun run deploy` targets `--project-name diffgoel`. `diffgit.com`
+  is now live (proxied CNAME `diffgit.com → diffgoel.pages.dev`) and serves the same latest
+  production deployment as `diffgoel.pages.dev`.
 
 ## Rollback
 
-Dashboard → Workers & Pages → diffgit → Deployments → (previous deployment) → ⋯ → **Rollback to this deployment**.
+Dashboard → Workers & Pages → diffgoel → Deployments → (previous deployment) → ⋯ → **Rollback to this deployment**.
 Or redeploy an older commit: `git checkout <sha> && bun run deploy`.
 
 ## Optional: Git-connected automatic deploys
 
-Pages → diffgit → Settings → Builds & deployments → Connect to Git; build command `bun run build`,
+Pages → diffgoel → Settings → Builds & deployments → Connect to Git; build command `bun run build`,
 output `dist`. Keep `bun run deploy` as the manual path; both use the same `_headers`.
