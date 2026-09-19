@@ -17,6 +17,9 @@
  * T10.6 adds `pathHistories` and `blames` for the three `history` files the blame oracles cover, so
  * T11.6 can build the Blame and History card modes against real attributions.
  *
+ * T10.7 adds `secrets`: every `SecretFinding` of the recorded working tree, so T11.9 can build the
+ * banner and the popover against real (fake-credential) findings.
+ *
  * T10.5 adds `walks` (the whole history per variant — default, first-parent, all, per path — which
  * the mock pages itself), `commits` (`CommitDetails`), `commitStats`, `branches` (the Branches
  * table with its cells filled), `aheadBehind` and `reachable`, plus the `octopus` fixture so the
@@ -40,6 +43,7 @@ import type {
   RangeSource,
   RepoOperation,
   ResolvedRevision,
+  SecretFinding,
   WalkRequest,
 } from "../src/engine/types";
 import { fixturePath, HISTORY_FIXTURE, hasExpected, loadExpectedLines } from "../src/test/fixtures";
@@ -160,6 +164,8 @@ async function record(name: string, v2: boolean): Promise<void> {
       if (!f.layers.includes("conflict")) continue;
       conflicts[f.id] = await session.conflict(result.generation, f.id);
     }
+    // T10.7: also before any further computeDiff — the scan takes the current generation.
+    const secrets: SecretFinding[] = await session.scanSecrets(result.generation);
     const revisions: Record<string, ResolvedRevision> = {};
     for (const line of hasExpected(name, "rev-parse") ? loadExpectedLines(name, "rev-parse") : []) {
       const expr = line.split("\t")[0] as string;
@@ -268,6 +274,8 @@ async function record(name: string, v2: boolean): Promise<void> {
       // T10.6: `git log --follow` per path and one blame per path and `-w` setting.
       pathHistories,
       blames,
+      // T10.7: the secret scan of the recorded working tree.
+      secrets,
     };
     writeFileSync(`${OUT}${name}.v2.json`, `${JSON.stringify(payload, null, 2)}\n`);
     console.log(
@@ -278,7 +286,7 @@ async function record(name: string, v2: boolean): Promise<void> {
         `${Object.keys(explanations).length} explanations, ` +
         `${walks.all?.commits.length ?? 0} commits (graph ${walks.all?.graphAvailable ?? false}), ` +
         `${branches.length} branches, ${Object.keys(pathHistories).length} path histories, ` +
-        `${Object.keys(blames).length} blames`,
+        `${Object.keys(blames).length} blames, ${secrets.length} secret findings`,
     );
   }
   await session.close();
@@ -298,5 +306,7 @@ for (const name of [
   "hidden",
   // T10.5: the three-parent merge, so the lane column has an octopus to draw.
   "octopus",
+  // T10.7: the planted fake credentials, for the secret banner and popover.
+  "secrets",
 ])
   await record(name, true);

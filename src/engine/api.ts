@@ -23,6 +23,7 @@ import type {
   RepoOperation,
   RepoWarning,
   ResolvedRevision,
+  SecretFinding,
   StashInfo,
   TagInfo,
   WalkPage,
@@ -42,7 +43,9 @@ export type ProgressPhase =
   /** T10.5: a page of `walkCommits` (`done` = rows emitted). */
   | "history"
   /** T10.6: one revision of `blame` (`done`/`total` = revisions reverse-diffed). */
-  | "blame";
+  | "blame"
+  /** T10.7: the secret scan (`done`/`total` = files scanned). */
+  | "secrets";
 
 export interface Progress {
   phase: ProgressPhase;
@@ -334,6 +337,15 @@ export interface EngineApi {
    * phase `"blame"`.
    */
   blame(ref: string, path: string, opts: BlameRequest): Promise<BlamePayload>;
+  /**
+   * Token shapes and high-entropy strings in the **added** lines of the staged and unstaged layers
+   * of generation `generation` (T10.7, atlas tab 14). Nothing leaves the machine and nothing is
+   * written: the scan reuses the hunks the diff pane already computes. Findings are sorted by path
+   * then line, capped at `SECRET_FINDING_CAP`, and a `SECRETS_FOUND` warning with the count goes to
+   * the sink whenever there is at least one. `STALE` when `generation` is not current, `CANCELLED`
+   * when a newer `scanSecrets()` supersedes this one. Progress phase `"secrets"`.
+   */
+  scanSecrets(generation: number): Promise<SecretFinding[]>;
   /** Move these files to the front of the background stats queue (visible sidebar rows). */
   prioritise(ids: string[]): Promise<void>;
   /** Cheap change signature per tier for the polling fallback (T6.3). */

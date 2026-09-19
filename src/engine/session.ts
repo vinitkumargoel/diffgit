@@ -59,6 +59,16 @@ import {
   walkCommits as runWalk,
 } from "./git/walk";
 import { type ScannerOptions, WorktreeScanner } from "./git/worktree";
+import { SECRET_ALLOWLIST_FILE } from "./scan/secretRules";
+import {
+  addedLines,
+  type ScanTarget,
+  SECRET_FINDING_CAP,
+  scanTarget,
+  secretAllowlist,
+  secretsWarning,
+  sortFindings,
+} from "./scan/secrets";
 import type {
   AheadBehind,
   BlamePayload,
@@ -78,6 +88,7 @@ import type {
   RepoOperation,
   RepoWarning,
   ResolvedRevision,
+  SecretFinding,
   StashInfo,
   TagInfo,
   WalkPage,
@@ -767,6 +778,79 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       });
       return out.payload;
     });
+  }
+
+  // ---- secret scan (T10.7, atlas tab 14) -------------------------------------------------------
+
+  /**
+   * Token shapes and high-entropy strings in the **added** lines of the staged and unstaged layers
+   * of `generation`. Reuses `describeFile`, so the scan looks at exactly the hunks the diff pane
+   * renders and costs what the change costs, not what the repository costs.
+   *
+   * Skipped without reading a byte: rows with no uncommitted layer, `generated` files (lockfiles,
+   * minified bundles), and paths listed in `.diffgitignore-secrets`. Skipped after loading: binary
+   * files and files the UI already gates as `tooLarge`. Allowlisted lines
+   * (`# diffgit:allow-secret`) and bare sha1/sha256 digests are dropped by the scanner itself.
+   */
+  async scanSecrets(generation: number): Promise<SecretFinding[]> {
+    this.requireGeneration(generation);
+    return this.single("scanSecrets", async (signal) => {
+      const t0 = performance.now();
+      const cur = this.requireGeneration(generation);
+      const allowed = secretAllowlist(await this.readTextOrNull(SECRET_ALLOWLIST_FILE));
+      const candidates = cur.result.files.filter((f) => {
+        if (f.generated === true) return false;
+        if (!f.layers.includes("staged") && !f.layers.includes("unstaged")) return false;
+        return !allowed((f.newPath ?? f.oldPath ?? f.id) as string);
+      });
+      this.progress({ phase: "secrets", done: 0, total: candidates.length });
+      const findings: SecretFinding[] = [];
+      let done = 0;
+      for (const f of candidates) {
+        throwIfAborted(signal, "secret scan");
+        const path = (f.newPath ?? f.oldPath) as string;
+        const loaded = await loadSides(f, cur.comp.sides, { db: this.db, fs: this.fs }, signal);
+        const d = describeFile(f, loaded, {
+          ignoreWhitespace: false,
+          attrBinary: await this.attrs.isBinary(path),
+          attrGenerated: await this.attrs.isGenerated(path),
+        });
+        done++;
+        this.progress({ phase: "secrets", done, total: candidates.length });
+        if (d.classification.binary || d.classification.generated || d.classification.tooLarge)
+          continue;
+        const target: ScanTarget = {
+          fileId: f.id,
+          path,
+          // A row with unstaged work is reported as `unstaged`: that is where the line is now.
+          layer: f.layers.includes("unstaged") ? "unstaged" : "staged",
+          lines: addedLines(d.hunks),
+        };
+        findings.push(...scanTarget(target));
+      }
+      const sorted = sortFindings(findings);
+      const shown = sorted.slice(0, SECRET_FINDING_CAP);
+      if (sorted.length > 0)
+        RepoSession.emitWarning(this.sink, secretsWarning(sorted.length, shown.length));
+      this.progress({
+        phase: "secrets",
+        done: candidates.length,
+        total: candidates.length,
+        durationMs: performance.now() - t0,
+      });
+      return shown;
+    });
+  }
+
+  /** A repo-root text file, or null when it does not exist (`.diffgitignore-secrets`). */
+  private async readTextOrNull(path: string): Promise<string | null> {
+    try {
+      return await this.fs.readText(`/${path}`);
+    } catch (e) {
+      const code = errorCode(e);
+      if (code === "ENOENT" || code === "EISDIR" || code === "ENOTDIR") return null;
+      throw e;
+    }
   }
 
   /** The working-tree bytes of a tracked path, or null when it is gone or unreadable. */

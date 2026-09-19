@@ -49,7 +49,7 @@ export async function commitStats(
   deps: CommitStatsDeps,
   oids: Oid[],
 ): Promise<Record<Oid, CommitStats>> {
-  const out: Record<Oid, CommitStats> = {};
+  const done = new Map<Oid, CommitStats>();
   for (let i = 0; i < oids.length; i += COMMIT_STATS_BATCH) {
     throwIfAborted(deps.signal, "commit stats");
     const batch = oids.slice(i, i + COMMIT_STATS_BATCH);
@@ -57,14 +57,21 @@ export async function commitStats(
       batch.map((oid) =>
         deps.limit(async () => {
           try {
-            out[oid] = await statsForCommit(deps, oid);
+            done.set(oid, await statsForCommit(deps, oid));
           } catch (e) {
             if (e instanceof EngineError && (e.code === "CANCELLED" || e.code === "STALE")) throw e;
-            out[oid] = null;
+            done.set(oid, null);
           }
         }),
       ),
     );
+  }
+  // Keyed in the caller's order, not the order the batch happened to finish in: the record is a
+  // structured-cloneable result, and `bun run record` must be byte-stable (T10.7).
+  const out: Record<Oid, CommitStats> = {};
+  for (const oid of oids) {
+    const stats = done.get(oid);
+    if (stats !== undefined) out[oid] = stats;
   }
   return out;
 }

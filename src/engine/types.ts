@@ -420,3 +420,27 @@ export interface BlamePayload {
   /** `maxRevisions` was reached; the remaining lines carry the oldest revision seen (`BLAME_CAPPED`). */
   capped: boolean;
 }
+
+// ---- v2 secret scan (T10.7, docs/v2-contracts.md) ---------------------------------------------
+
+/**
+ * One rule match on one added line of the uncommitted work (`EngineApi.scanSecrets`, atlas tab 14).
+ *
+ * `masked` is the redacted preview the UI shows by default (first 8 characters, an ellipsis, the
+ * last 4 — never the middle of the token) so a screen share does not leak the credential; `full` is
+ * the matched value itself, which the card's explicit **Reveal** click shows and nothing else ever
+ * renders. `entropy` is the Shannon entropy of the matched value in bits/char, rounded to two
+ * decimals — the "why flagged" second signal, present for every finding even when its rule did not
+ * gate on it. `layer` is `unstaged` whenever the file has unstaged work, because that is where the
+ * line is right now.
+ */
+export interface SecretFinding {
+  fileId: string;
+  path: string;
+  line: number;
+  rule: string;
+  entropy: number;
+  masked: string;
+  full: string;
+  layer: "staged" | "unstaged";
+}
