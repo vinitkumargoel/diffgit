@@ -343,6 +343,31 @@ group and the popover show. `treeModel` gained `SidebarSectionId = SidebarGroupI
 `Hidden` is a sidebar *section*, never a group of the diff, so `groupOf` / `GROUP_ORDER` /
 `selectGroupTotals` are untouched.
 
+<!-- T11.5 --> `HistoryState.commits` is now the real `CommitSummary[]` (the `PendingEngineType`
+annotation is gone) and the slice gained `laneOverflow: boolean`, which reads
+`WalkPage.laneOverflow` forward-compatibly — T10.5b adds the field and the list header then offers
+the `first-parent` toggle. `StoreState` also gained `commitDetails: Record<Oid, CommitDetailsEntry>`
+(`loading | ready | error`, cached per oid for the session), `commitStats: Record<Oid,
+CommitDetails["stats"]>`, `stack: StackState` (`commits`, `base`, `tip`, `label`, `loading`,
+`ready`, `capped`) and `compareBase: { expr; display } | null` — the base picker's side while it is
+a plain ref, so `Compare with base…` means the branch the user chose rather than the parent the
+last commit click put on the base side. Actions: `setHistoryTab`, `loadHistory(reset?)`,
+`setHistoryQuery`, `setHistoryOption("firstParent" | "all", on)`, `showCommit(oid, { extend })`,
+`loadCommitDetails`, `requestCommitStats`, `searchCommits` (null until T10.8 ships `search`),
+`loadStack` and `compareCommitWithBase`. Selector `selectHistoryRows(s)`.
+Selecting a commit builds `RangeSource{ commit, fromRef: "<oid>^", fromOid: firstParent ?? null,
+toOid: oid, threeDot: false }` and a shift-selected pair builds `older…newer` (two-dot, no
+`commit`); both are applied through an internal `applyRange` that, unlike `applySides`, neither
+remembers a branch pair nor invalidates the stack. `walkCommits` is asked for `HISTORY_PAGE` (50)
+commits from the compare side while that side is a plain ref and from `HEAD` once a commit
+selection has turned the source into a range. `commitStats` and `walkCommits` are single-in-flight
+in the engine, so the visible rows queue in the store and one drain loop serialises the batches; a
+`STALE` answer to a *cursored* page discards the list and walks again from the tip (T10.5b), never
+appends. New pure module `src/ui/history.ts` (`laneX`, `laneColor`, `LANE_TOKENS`, `edgePath`,
+`incomingPath`, `incomingLanes`, `commitRange`, `spanRange`, `matchesCommit`, `refChipKind`,
+`formatCommitDate`, `formatSignature`, `cherryPickCommand`, `shortOid`, the page sizes) owns the
+lane geometry and every string the list and the card show.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).

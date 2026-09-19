@@ -45,17 +45,12 @@ interface Action {
  * Built on cmdk, like the BranchPicker, so the keyboard behaviour and the list styling are shared.
  * Search scopes (§14.5) are added by T11.8.
  */
-export function CommandPalette({
-  onHelp,
-  onReflog,
-}: {
-  onHelp?: () => void;
-  onReflog?: () => void;
-} = {}) {
+export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
   const open = useStore((s) => s.palette);
   const setPalette = useStore((s) => s.setPalette);
   const mode = useStore((s) => s.mode);
   const setMode = useStore((s) => s.setMode);
+  const setHistoryTab = useStore((s) => s.setHistoryTab);
   const prefs = useStore((s) => s.prefs);
   const setPref = useStore((s) => s.setPref);
   const setActiveFile = useStore((s) => s.setActiveFile);
@@ -156,11 +151,14 @@ export function CommandPalette({
         run: () => setPref("showHidden", !prefs.showHidden),
       },
       {
-        // T11.3: the Reflog list ships now; T11.5 gives it the History sidebar sub-tab of §14.5.
+        // T11.5: the Reflog list is the History sidebar's third sub-tab (Design §14.5).
         id: "reflog",
         label: "Show reflog",
         keywords: ["HEAD", "history", "lost commit", "orphan", "undo"],
-        run: () => onReflog?.(),
+        run: () => {
+          setHistoryTab("reflog");
+          setMode("history");
+        },
       },
       {
         id: "help",
@@ -183,7 +181,7 @@ export function CommandPalette({
       },
     ];
     return list;
-  }, [prefs, cache, setMode, setPref, requestRefresh, addToast, onHelp, onReflog]);
+  }, [prefs, cache, setMode, setHistoryTab, setPref, requestRefresh, addToast, onHelp]);
 
   // Pre-narrowed so a 5,000-file diff never renders 5,000 rows; cmdk ranks the survivors.
   const fileRows = useMemo(

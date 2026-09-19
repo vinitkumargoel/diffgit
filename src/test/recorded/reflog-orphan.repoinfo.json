@@ -1,0 +1,38 @@
+{
+  "id": "recorded-reflog-orphan",
+  "name": "reflog-orphan",
+  "headBranch": "main",
+  "headOid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+  "detached": false,
+  "unborn": false,
+  "headDisplay": "main",
+  "refs": [
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+      "isDefault": true,
+      "isCheckedOut": true
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+    "isDefault": true,
+    "isCheckedOut": true
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": [],
+  "operation": null,
+  "jj": false,
+  "hasCommitGraph": false
+}

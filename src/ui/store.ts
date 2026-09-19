@@ -18,16 +18,24 @@ import type {
   ProgressSink,
   StatsBatch,
 } from "../engine/api";
-import { defaultDiffSource, isWorktreeSource } from "../engine/diffSource";
+import {
+  defaultDiffSource,
+  isWorktreeSource,
+  sourceLabels,
+  sourceRefs,
+} from "../engine/diffSource";
 import type { WarningCode } from "../engine/errors";
 import type {
   BranchesSource,
+  CommitDetails,
+  CommitSummary,
   DiffResult,
   DiffSource,
   FileDiff,
   HiddenEntry,
   Oid,
   PathExplanation,
+  RangeSource,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -36,11 +44,21 @@ import type {
   ResolvedRevision,
   StashInfo,
   TagInfo,
+  WalkRequest,
 } from "../engine/types";
 import type { CompareSpec } from "./compareHash";
-import { buildSource, labelOf, revToSide, type SideRev, sideOf } from "./compareSource";
+import { buildSource, isRefExpr, labelOf, revToSide, type SideRev, sideOf } from "./compareSource";
 import { getWorkerClient } from "./engineClient";
 import { LOADING_INLINE_CODES, toUiError, type UiError } from "./errors";
+import {
+  COMMIT_STATS_BATCH,
+  commitRange,
+  HISTORY_PAGE,
+  matchesCommit,
+  STACK_LIMIT,
+  shortOid,
+  spanRange,
+} from "./history";
 import { Lru } from "./lru";
 import { revisionOfRef } from "./refGroups";
 import {
@@ -228,15 +246,19 @@ export type ConflictEntry =
 export const CONFLICT_PRELOAD_LIMIT = 100;
 /** Rows `loadReflog` asks the engine for (Design §14.5; T11.5 will page beyond this). */
 export const REFLOG_LIMIT = 200;
-/** `markReachable` is called in batches of this size (task T11.3), once T10.5 ships it. */
+/** `markReachable` is called in batches of this size (T11.3; T10.5 ships the method). */
 export const REACHABLE_BATCH = 50;
 
 /**
- * T10.5 ships `markReachable`; until then the client simply does not have it, so the reflog's
- * `unreachable` badge stays unrendered instead of guessing. Feature check, not a contract change.
+ * T10.8 ships `search`; until then the client simply does not have it, so the History search box
+ * says the list loads more as you scroll instead of guessing. Feature check, not a contract change.
  */
-type MaybeReachable = {
-  markReachable?(oids: Oid[]): Promise<Record<Oid, boolean>>;
+type MaybeSearch = {
+  search?(req: {
+    scope: "commits";
+    query: string;
+    limit: number;
+  }): Promise<{ hits: { oid?: Oid }[] }>;
 };
 
 export interface Toast {
@@ -304,17 +326,16 @@ export interface OpenOptions {
 
 /**
  * Stands in for an engine type that `docs/v2-contracts.md` names but a later phase-10 task still
- * has to add to `src/engine/types.ts` (`SecretFinding` T10.7, `CommitSummary`
- * T10.5, `BisectState & BisectStep` T10.11 — `RepoOperation` was widened by T11.3 and
- * `HiddenEntry` by T11.4). `never` keeps the
- * field honest: it exists and the shell can switch on it, but nothing can put data in it until the
- * task that owns the type widens this one annotation.
+ * has to add to `src/engine/types.ts` (`SecretFinding` T10.7, `BisectState & BisectStep` T10.11 —
+ * `RepoOperation` was widened by T11.3, `HiddenEntry` by T11.4 and `CommitSummary` by T11.5).
+ * `never` keeps the field honest: it exists and the shell can switch on it, but nothing can put
+ * data in it until the task that owns the type widens this one annotation.
  */
 type PendingEngineType = never;
 
-/** History-mode state (Design §14.5); T11.5 fills it. */
+/** History-mode state (Design §14.5). */
 export interface HistoryState {
-  commits: PendingEngineType[];
+  commits: CommitSummary[];
   cursor: string | null;
   loading: boolean;
   selected: Oid | null;
@@ -323,6 +344,11 @@ export interface HistoryState {
   firstParent: boolean;
   all: boolean;
   capped: boolean;
+  /**
+   * T10.5b will add `WalkPage.laneOverflow`: the graph needed more lanes than the column can show.
+   * The header then offers the `first-parent` toggle and nothing else (atlas tab 03 risk row).
+   */
+  laneOverflow: boolean;
 }
 
 export const INITIAL_HISTORY: HistoryState = {
@@ -334,6 +360,42 @@ export const INITIAL_HISTORY: HistoryState = {
   query: "",
   firstParent: false,
   all: false,
+  capped: false,
+  laneOverflow: false,
+};
+
+/** T11.5: the CommitCard payload of one commit, keyed by oid in `commitDetails`. */
+export type CommitDetailsEntry =
+  | { status: "loading" }
+  | { status: "ready"; data: CommitDetails }
+  | { status: "error"; error: UiError };
+
+/**
+ * The Stack sub-tab (Design §14.5): the commits compare has since the merge base, newest first.
+ * `tip` / `label` are the branch pair the list was computed for, so picking a commit — which turns
+ * the source into a range — never makes the stack recompute itself into "the stack of one commit".
+ */
+export interface StackState {
+  commits: CommitSummary[];
+  /** Merge base the walk stopped at; null when the pair has none (unrelated histories). */
+  base: Oid | null;
+  /** Compare-side expression the walk started from, and the `base … compare` label to print. */
+  tip: string | null;
+  label: string;
+  loading: boolean;
+  /** False until a walk for the current branch pair has finished (a picker change resets it). */
+  ready: boolean;
+  /** The walk stopped at `STACK_LIMIT` without reaching the merge base. */
+  capped: boolean;
+}
+
+export const INITIAL_STACK: StackState = {
+  commits: [],
+  base: null,
+  tip: null,
+  label: "",
+  loading: false,
+  ready: false,
   capped: false,
 };
 
@@ -396,6 +458,18 @@ export interface StoreState {
    */
   hidden: HiddenEntry[] | null;
   history: HistoryState;
+  /** T11.5: `commitDetails(oid)` per commit the CommitCard has shown, kept for the session. */
+  commitDetails: Record<Oid, CommitDetailsEntry>;
+  /** T11.5: `+n −m` per commit against its first parent; `null` = the engine could not count it. */
+  commitStats: Record<Oid, CommitDetails["stats"]>;
+  /** T11.5: the Stack sub-tab's commits for the current branch pair. */
+  stack: StackState;
+  /**
+   * T11.5: the base picker's side as long as it was a plain ref. Picking a commit turns the source
+   * into `parent…commit`, so the *base* the CommitCard's `Compare with base…` means is the branch
+   * the user chose, not the parent the last click put there.
+   */
+  compareBase: { expr: string; display: string } | null;
   /** Running bisect (T11.13). */
   bisect: PendingEngineType | null;
   /** Command palette open (Design §14.1). */
@@ -480,6 +554,38 @@ export interface StoreState {
   setMode(mode: AppMode): void;
   /** Opens or closes the command palette (`⌘K` / `Ctrl+K`, the row 1 icon button). */
   setPalette(open: boolean): void;
+
+  // ---- History mode (T11.5, Design §14.5) ----
+  /** `Commits | Stack | Reflog` in the History sidebar. */
+  setHistoryTab(tab: HistoryTab): void;
+  /**
+   * One `walkCommits` page. `reset` throws the list away and walks from the tip again (the
+   * `first-parent` / `all branches` toggles); otherwise it appends the page after `cursor` and is
+   * a no-op once the walk is exhausted or one is already in flight.
+   */
+  loadHistory(reset?: boolean): Promise<void>;
+  /** The search box; filters the commits already walked (Design §14.5). */
+  setHistoryQuery(query: string): void;
+  /** The two toggles under the search box; either one re-walks from the tip. */
+  setHistoryOption(key: "firstParent" | "all", on: boolean): void;
+  /**
+   * Shows one commit: the source becomes `parent…commit` (a root commit against the empty tree).
+   * `extend` (Shift-click) keeps the earlier selection as the other end and shows `older…newer`.
+   */
+  showCommit(oid: Oid, opts?: { extend?: boolean }): Promise<void>;
+  /** The CommitCard payload; cached per oid for the session. */
+  loadCommitDetails(oid: Oid): Promise<void>;
+  /** `+n −m` for the rows that are on screen, batched and serialised (one call in flight). */
+  requestCommitStats(oids: Oid[]): void;
+  /**
+   * Design §14.5: Enter with no local match. T10.8 owns `search`, so until it ships this answers
+   * `null` and the list says it loads more as you scroll — never a guess.
+   */
+  searchCommits(query: string): Promise<Oid[] | null>;
+  /** The Stack sub-tab: compare's commits since the merge base, newest first. */
+  loadStack(): Promise<void>;
+  /** CommitCard action `Compare with base…`: the range `base…commit` (Design §14.5). */
+  compareCommitWithBase(oid: Oid): void;
 }
 
 let toastSeq = 0;
@@ -565,6 +671,13 @@ function findRef(repo: RepoInfo, nameOrRef: string): RepoRef | null {
 
 /** The `listTags` + `listStashes` pass for the pickers; one per open (T11.2). */
 let pickerSources: Promise<void> | null = null;
+
+/**
+ * T11.5: `commitStats` is single-in-flight in the engine like every other method, so a second call
+ * would cancel the first. The visible rows queue here and one drain loop serialises the batches.
+ */
+const commitStatsQueue = new Set<Oid>();
+let commitStatsDraining = false;
 
 /** Only a v1 branch pair is remembered for the next open; a range is deep-linked by hash instead. */
 function withRef(src: BranchesSource, side: "source" | "target", ref: RepoRef): BranchesSource {
@@ -680,7 +793,14 @@ export const useStore = create<StoreState>()((set, get) => {
       return;
     }
     const src = guardWorktree(built, repo);
-    set({ diffSource: src });
+    // T11.5: a picker change is a new branch pair, so the Stack tab has to walk again. Picking a
+    // commit goes through `applyRange` instead and deliberately leaves the stack alone.
+    set((s) => ({
+      diffSource: src,
+      stack: { ...s.stack, ready: false },
+      compareBase:
+        from.branchRef === null ? s.compareBase : { expr: from.branchRef, display: from.display },
+    }));
     if (src.kind === "branches") {
       void persistence.touchRepo(get().repoId ?? "", {
         lastSource: src.sourceRef,
@@ -688,6 +808,30 @@ export const useStore = create<StoreState>()((set, get) => {
       });
     }
     get().requestRefresh("branch-change");
+  }
+
+  /**
+   * T11.5: commits the History list picks. Unlike `applySides` it never touches the remembered
+   * branch pair (a range is deep-linked by hash, not persisted) and never invalidates the stack.
+   */
+  function applyRange(src: RangeSource): void {
+    const { repo } = get();
+    if (!repo) return;
+    set({ diffSource: guardWorktree(src, repo) });
+    get().requestRefresh("branch-change");
+  }
+
+  /**
+   * Which ref the History list walks: the compare side while it is a plain branch (Design §14.1,
+   * "in History mode the pickers still define the branch that is walked"), and `HEAD` once picking
+   * a commit has turned the source into a range — a list that truncated itself at the row you just
+   * clicked would be unusable.
+   */
+  function walkTip(): string {
+    const src = get().diffSource;
+    if (!src) return "HEAD";
+    const { sourceRef } = sourceRefs(src);
+    return isRefExpr(sourceRef) ? sourceRef : "HEAD";
   }
 
   return {
@@ -726,6 +870,10 @@ export const useStore = create<StoreState>()((set, get) => {
     secrets: null,
     hidden: null,
     history: INITIAL_HISTORY,
+    commitDetails: {},
+    commitStats: {},
+    stack: INITIAL_STACK,
+    compareBase: null,
     bisect: null,
     palette: false,
     snapshotMode: false,
@@ -798,6 +946,8 @@ export const useStore = create<StoreState>()((set, get) => {
           set((s) => ({
             repo: info,
             diffSource: src,
+            // T11.5: the base picker's side, remembered for `Compare with base…`.
+            compareBase: { expr: src.targetRef, display: src.target },
             // Design §14.3: the operation banner is driven by `RepoInfo.operation`, which the
             // scheduler refreshes through `reloadRefs()` on every git-side tick.
             operation: info.operation,
@@ -883,6 +1033,10 @@ export const useStore = create<StoreState>()((set, get) => {
         secrets: null,
         hidden: null,
         history: INITIAL_HISTORY,
+        commitDetails: {},
+        commitStats: {},
+        stack: INITIAL_STACK,
+        compareBase: null,
         bisect: null,
         palette: false,
         snapshotMode: false,
@@ -891,6 +1045,7 @@ export const useStore = create<StoreState>()((set, get) => {
         stashes: null,
       });
       pickerSources = null;
+      commitStatsQueue.clear();
     },
 
     setSource(refOrName) {
@@ -1205,13 +1360,12 @@ export const useStore = create<StoreState>()((set, get) => {
         const entries = await client().reflog("HEAD", REFLOG_LIMIT);
         if (!get().repo) return;
         set({ reflog: entries });
-        // T10.5 ships `markReachable`; until then every row's `reachable` stays null and the
-        // `unreachable` badge is simply not rendered (feature check, never a guess).
-        const withReach = client() as WorkerClient & MaybeReachable;
-        if (typeof withReach.markReachable !== "function") return;
+        // T10.5's `reflog()` already fills `reachable` from one batched walk; the batches below
+        // re-confirm it for a recording (or a future reader) that left the field unknown.
+        if (entries.every((e) => e.reachable !== null)) return;
         for (let i = 0; i < entries.length; i += REACHABLE_BATCH) {
           const batch = entries.slice(i, i + REACHABLE_BATCH);
-          const map = await withReach.markReachable(batch.map((e) => e.newOid));
+          const map = await client().markReachable(batch.map((e) => e.newOid));
           const cur = get().reflog;
           if (cur === null) return;
           set({
@@ -1392,6 +1546,255 @@ export const useStore = create<StoreState>()((set, get) => {
 
     setPalette(open) {
       set({ palette: open });
+    },
+
+    setHistoryTab(tab) {
+      set({ historyTab: tab });
+    },
+
+    async loadHistory(reset = false) {
+      const { repo, history } = get();
+      if (!repo || history.loading) return;
+      if (!reset && history.cursor === null && history.commits.length > 0) return;
+      const cursor = reset ? undefined : (history.cursor ?? undefined);
+      set((s) => ({
+        history: reset
+          ? {
+              ...s.history,
+              commits: [],
+              cursor: null,
+              capped: false,
+              laneOverflow: false,
+              loading: true,
+            }
+          : { ...s.history, loading: true },
+      }));
+      try {
+        const req: WalkRequest = {
+          from: [walkTip()],
+          firstParent: history.firstParent,
+          limit: HISTORY_PAGE,
+          ...(cursor === undefined ? {} : { cursor }),
+          ...(history.all ? { all: true } : {}),
+        };
+        const page = await client().walkCommits(req);
+        if (!get().repo) return;
+        // T10.5b: `WalkPage.laneOverflow` is not in the type yet; read it forward-compatibly.
+        const overflow = (page as { laneOverflow?: boolean }).laneOverflow === true;
+        set((s) => {
+          const seen = new Set(s.history.commits.map((c) => c.oid));
+          const added = page.commits.filter((c) => !seen.has(c.oid));
+          return {
+            history: {
+              ...s.history,
+              commits: [...s.history.commits, ...added],
+              cursor: page.cursor,
+              capped: s.history.capped || page.capped,
+              laneOverflow: s.history.laneOverflow || overflow,
+              loading: false,
+            },
+          };
+        });
+        get().requestCommitStats(page.commits.map((c) => c.oid));
+      } catch (e) {
+        const err = toUiError(e);
+        set((s) => ({ history: { ...s.history, loading: false } }));
+        // T10.5b: a cursor goes STALE when the refs moved under the walk. The pages either side of
+        // that move do not line up, so the list is thrown away and walked again from the tip —
+        // appending would duplicate rows.
+        if (err.code === "STALE" && cursor !== undefined) {
+          await get().loadHistory(true);
+          return;
+        }
+        // A superseded walk is normal (one in flight per method); the list keeps what it has.
+        ignoreStale(e);
+      }
+    },
+
+    setHistoryQuery(query) {
+      set((s) => ({ history: { ...s.history, query } }));
+    },
+
+    setHistoryOption(key, on) {
+      if (get().history[key] === on) return;
+      set((s) => ({ history: { ...s.history, [key]: on } }));
+      void get().loadHistory(true);
+    },
+
+    async showCommit(oid, opts = {}) {
+      const { repo, history } = get();
+      if (!repo) return;
+      const commits = history.commits;
+      const anchor = opts.extend ? (history.rangeStart ?? history.selected) : null;
+      if (anchor !== null && anchor !== oid) {
+        // The list is newest first, so the higher index is the older commit.
+        const ai = commits.findIndex((c) => c.oid === anchor);
+        const bi = commits.findIndex((c) => c.oid === oid);
+        const [older, newer] = ai > bi ? [anchor, oid] : [oid, anchor];
+        set((s) => ({ history: { ...s.history, selected: newer, rangeStart: older } }));
+        applyRange(spanRange(older, newer));
+        return;
+      }
+      set((s) => ({ history: { ...s.history, selected: oid, rangeStart: null } }));
+      let parent = commits.find((c) => c.oid === oid)?.parents[0] ?? null;
+      if (!commits.some((c) => c.oid === oid)) {
+        // A commit that is not in the walk (a Reflog row, an orphan): its parent comes from
+        // `commitDetails`, which the card needs anyway.
+        await get().loadCommitDetails(oid);
+        const entry = get().commitDetails[oid];
+        if (entry?.status === "error") return;
+        parent = entry?.status === "ready" ? (entry.data.parents[0] ?? null) : null;
+        if (get().history.selected !== oid) return;
+      }
+      applyRange(commitRange(oid, parent));
+      void get().loadCommitDetails(oid);
+    },
+
+    async loadCommitDetails(oid) {
+      const existing = get().commitDetails[oid];
+      if (existing && existing.status !== "error") return;
+      if (!get().repo) return;
+      set((s) => ({ commitDetails: { ...s.commitDetails, [oid]: { status: "loading" } } }));
+      try {
+        const data = await client().commitDetails(oid);
+        if (!get().repo) return;
+        set((s) => ({ commitDetails: { ...s.commitDetails, [oid]: { status: "ready", data } } }));
+      } catch (e) {
+        const err = toUiError(e);
+        if (err.code === "STALE" || err.code === "CANCELLED" || err.code === "WORKER_CRASHED") {
+          set((s) => {
+            const { [oid]: dropped, ...rest } = s.commitDetails;
+            return dropped?.status === "loading" ? { commitDetails: rest } : {};
+          });
+          return;
+        }
+        set((s) => ({
+          commitDetails: { ...s.commitDetails, [oid]: { status: "error", error: err } },
+        }));
+      }
+    },
+
+    requestCommitStats(oids) {
+      const have = get().commitStats;
+      for (const oid of oids) if (!(oid in have)) commitStatsQueue.add(oid);
+      if (commitStatsDraining || commitStatsQueue.size === 0 || !get().repo) return;
+      commitStatsDraining = true;
+      void (async () => {
+        try {
+          while (commitStatsQueue.size > 0 && get().repo) {
+            const batch = [...commitStatsQueue].slice(0, COMMIT_STATS_BATCH);
+            for (const oid of batch) commitStatsQueue.delete(oid);
+            const map = await client().commitStats(batch);
+            if (!get().repo) return;
+            set((s) => ({ commitStats: { ...s.commitStats, ...map } }));
+          }
+        } catch (e) {
+          // Superseded or stale: the rows keep their skeletons and the next window asks again.
+          ignoreStale(e);
+        } finally {
+          commitStatsDraining = false;
+        }
+      })();
+    },
+
+    async searchCommits(query) {
+      const c = client() as WorkerClient & MaybeSearch;
+      if (typeof c.search !== "function") return null;
+      try {
+        const res = await c.search({ scope: "commits", query, limit: HISTORY_PAGE });
+        return res.hits.flatMap((h) => (h.oid ? [h.oid] : []));
+      } catch (e) {
+        ignoreStale(e);
+        return [];
+      }
+    },
+
+    async loadStack() {
+      const { repo, diffSource, diff, stack } = get();
+      if (!repo || !diffSource || stack.loading) return;
+      const { sourceRef } = sourceRefs(diffSource);
+      const base = diff?.mergeBase ?? (diffSource.kind === "range" ? diffSource.fromOid : null);
+      const label = labelOf(diffSource);
+      set((s) => ({ stack: { ...s.stack, loading: true, tip: sourceRef, label } }));
+      try {
+        let commits: CommitSummary[] = [];
+        let cursor: string | undefined;
+        let capped = false;
+        let reachedBase = false;
+        /** T10.5b: one restart from the tip when a cursor goes STALE under a moving ref. */
+        let restarts = 0;
+        while (!reachedBase && commits.length < STACK_LIMIT) {
+          let page: Awaited<ReturnType<WorkerClient["walkCommits"]>>;
+          try {
+            page = await client().walkCommits({
+              from: [sourceRef],
+              firstParent: true,
+              limit: HISTORY_PAGE,
+              ...(cursor === undefined ? {} : { cursor }),
+            });
+          } catch (e) {
+            if (toUiError(e).code !== "STALE" || cursor === undefined || restarts >= 1) throw e;
+            restarts++;
+            commits = [];
+            cursor = undefined;
+            continue;
+          }
+          for (const c of page.commits) {
+            if (c.oid === base) {
+              reachedBase = true;
+              break;
+            }
+            if (commits.length >= STACK_LIMIT) break;
+            commits.push(c);
+          }
+          if (page.cursor === null) {
+            // The whole branch was walked; with no merge base every commit belongs to the stack.
+            reachedBase = true;
+            break;
+          }
+          cursor = page.cursor;
+        }
+        if (!reachedBase && commits.length >= STACK_LIMIT) capped = true;
+        if (!get().repo) return;
+        set({
+          stack: {
+            commits,
+            base,
+            tip: sourceRef,
+            label,
+            loading: false,
+            ready: true,
+            capped,
+          },
+        });
+        get().requestCommitStats(commits.map((c) => c.oid));
+      } catch (e) {
+        ignoreStale(e);
+        set((s) => ({ stack: { ...s.stack, loading: false, ready: true } }));
+      }
+    },
+
+    compareCommitWithBase(oid) {
+      const { repo, diffSource, compareBase, prefs } = get();
+      if (!repo || !diffSource) return;
+      const base = compareBase ?? {
+        expr: sourceRefs(diffSource).targetRef,
+        display: sourceLabels(diffSource).target,
+      };
+      const baseOid = base.expr === "HEAD" ? repo.headOid : (findRef(repo, base.expr)?.oid ?? null);
+      applyRange({
+        kind: "range",
+        from: base.display,
+        to: shortOid(oid),
+        fromRef: base.expr,
+        toRef: oid,
+        fromOid: baseOid,
+        toOid: oid,
+        threeDot: !prefs.twoDot,
+        includeWorktree: false,
+      });
+      set((s) => ({ history: { ...s.history, selected: oid, rangeStart: null } }));
+      void get().loadCommitDetails(oid);
     },
 
     async fileBytes(id, side) {
@@ -1625,6 +2028,22 @@ export function selectConflictKind(
 ): ConflictKind | undefined {
   const entry = s.conflicts[id];
   return entry?.status === "ready" ? entry.data.kind : undefined;
+}
+
+/**
+ * T11.5: the commit rows the History list shows — everything walked so far, narrowed by the search
+ * box (subject, author, email, oid prefix or a ref name). Memoised on the list and the query, like
+ * `selectVisibleFiles`, so scrolling never re-filters.
+ */
+let historyCache: { commits: CommitSummary[]; query: string; result: CommitSummary[] } | null =
+  null;
+export function selectHistoryRows(s: Pick<StoreState, "history">): CommitSummary[] {
+  const { commits, query } = s.history;
+  if (historyCache && historyCache.commits === commits && historyCache.query === query)
+    return historyCache.result;
+  const result = query.trim() === "" ? commits : commits.filter((c) => matchesCommit(c, query));
+  historyCache = { commits, query, result };
+  return result;
 }
 
 /** File id → conflict kind for every payload that has arrived (shallow-compared by the sidebar). */

@@ -264,5 +264,7 @@ for (const name of [
   "hidden",
   // T10.5: the three-parent merge, so the lane column has an octopus to draw.
   "octopus",
+  // T11.5: the reset that orphaned two commits, so the Reflog tab has a real `unreachable` row.
+  "reflog-orphan",
 ])
   await record(name, true);

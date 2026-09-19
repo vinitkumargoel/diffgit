@@ -7,7 +7,6 @@ import { FilesView } from "./FilesView";
 import { HelpDialog } from "./HelpDialog";
 import { HistoryView } from "./HistoryView";
 import { InsightsView } from "./InsightsView";
-import { ReflogDialog } from "./ReflogList";
 import { TopBar } from "./TopBar";
 import { WarningBanners } from "./WarningBanners";
 
@@ -21,8 +20,6 @@ import { WarningBanners } from "./WarningBanners";
 export default function RepoScreen() {
   const mode = useStore((s) => s.mode);
   const [helpOpen, setHelpOpen] = useState(false);
-  // T11.3: until T11.5 gives the reflog its History sub-tab, the palette opens it as a dialog.
-  const [reflogOpen, setReflogOpen] = useState(false);
   useShortcuts({
     r: () => useStore.getState().requestRefresh("manual"),
     R: () => useStore.getState().requestRefresh("force"),
@@ -47,9 +44,8 @@ export default function RepoScreen() {
       {mode === "history" && <HistoryView />}
       {mode === "branches" && <BranchesView />}
       {mode === "insights" && <InsightsView />}
-      <CommandPalette onHelp={() => setHelpOpen(true)} onReflog={() => setReflogOpen(true)} />
+      <CommandPalette onHelp={() => setHelpOpen(true)} />
       <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
-      <ReflogDialog open={reflogOpen} onClose={() => setReflogOpen(false)} />
     </main>
   );
 }

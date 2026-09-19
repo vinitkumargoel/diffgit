@@ -1,5 +1,5 @@
 import { EyeOff } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useSidebarResize } from "../hooks/useSidebarResize";
 import {
   type SidebarGroup,
   type SidebarLayout,
@@ -9,11 +9,6 @@ import {
   useStore,
 } from "../store";
 import { FileTree } from "./FileTree";
-
-const SIDEBAR_MIN = 220;
-const SIDEBAR_MAX = 480;
-const clampSidebarWidth = (w: number): number =>
-  Math.round(Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, w)));
 
 const LAYOUTS: { value: SidebarLayout; label: string }[] = [
   { value: "tree", label: "Tree" },
@@ -45,38 +40,7 @@ export function Sidebar({ initialRect }: { initialRect?: { width: number; height
   const filtering = useStore((s) => s.filter.trim() !== "");
   const showHidden = useStore((s) => s.prefs.showHidden);
 
-  const [dragWidth, setDragWidth] = useState<number | null>(null);
-  const startX = useRef(0);
-  const startW = useRef(width);
-  const shown = dragWidth ?? width;
-
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    startX.current = e.clientX;
-    startW.current = width;
-    setDragWidth(width);
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (dragWidth === null) return;
-    setDragWidth(clampSidebarWidth(startW.current + (e.clientX - startX.current)));
-  };
-  const endDrag = useCallback(() => {
-    if (dragWidth === null) return;
-    if (dragWidth !== width) setPref("sidebarWidth", dragWidth);
-    setDragWidth(null);
-  }, [dragWidth, width, setPref]);
-  useEffect(() => {
-    if (dragWidth === null) return;
-    document.body.style.cursor = "col-resize";
-    return () => {
-      document.body.style.cursor = "";
-    };
-  }, [dragWidth]);
-
-  const nudge = (delta: number) => {
-    const next = clampSidebarWidth(width + delta);
-    if (next !== width) setPref("sidebarWidth", next);
-  };
+  const { shown, handleProps } = useSidebarResize(width, (w) => setPref("sidebarWidth", w));
 
   return (
     <aside
@@ -147,34 +111,7 @@ export function Sidebar({ initialRect }: { initialRect?: { width: number; height
         </div>
       )}
       <FileTree layout={layout} initialRect={initialRect} />
-      <hr
-        aria-orientation="vertical"
-        aria-label="Resize sidebar"
-        aria-valuemin={SIDEBAR_MIN}
-        aria-valuemax={SIDEBAR_MAX}
-        aria-valuenow={shown}
-        tabIndex={0}
-        className="absolute top-0 right-0 m-0 h-full w-1 cursor-col-resize border-0 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowLeft") {
-            e.preventDefault();
-            nudge(-10);
-          } else if (e.key === "ArrowRight") {
-            e.preventDefault();
-            nudge(10);
-          } else if (e.key === "Home") {
-            e.preventDefault();
-            nudge(SIDEBAR_MIN - width);
-          } else if (e.key === "End") {
-            e.preventDefault();
-            nudge(SIDEBAR_MAX - width);
-          }
-        }}
-      />
+      <hr {...handleProps} />
     </aside>
   );
 }

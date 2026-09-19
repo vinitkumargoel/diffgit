@@ -22,6 +22,7 @@ import mergeV2 from "../../test/recorded/merge-conflict.v2.json";
 import rebaseDiff from "../../test/recorded/rebase-conflict.diffresult.json";
 import rebaseInfo from "../../test/recorded/rebase-conflict.repoinfo.json";
 import rebaseV2 from "../../test/recorded/rebase-conflict.v2.json";
+import orphanV2 from "../../test/recorded/reflog-orphan.v2.json";
 import { type ConflictEntry, DEFAULT_PREFS, type StoreState, useStore } from "../store";
 import { FileCard } from "./FileCard";
 import { OperationBanner } from "./OperationBanner";
@@ -306,16 +307,18 @@ describe("ReflogList (Design §14.5)", () => {
     expect(rows[0]?.textContent).toContain("rebase (pick): t1: clean commit");
   });
 
-  it("marks an orphaned commit `unreachable`, and says nothing while reachability is unknown", () => {
+  it("marks the orphaned commits `unreachable`, and says nothing while reachability is unknown", () => {
+    // T11.5: `reflog-orphan` is a real reset that orphaned two commits, and T10.5's `reflog()`
+    // fills `reachable`, so the badge is driven by recorded data rather than a hand-made row.
+    seed({ reflog: orphanV2.reflog as unknown as ReflogEntry[] });
     render(<ReflogList />);
-    // T10.5 ships markReachable; every recorded row still has `reachable: null`
-    expect(screen.queryAllByText("unreachable")).toHaveLength(0);
+    expect(screen.getAllByText("unreachable")).toHaveLength(2);
     cleanup();
 
-    const first = entries[0] as ReflogEntry;
-    seed({ reflog: [{ ...first, reachable: false }, ...entries.slice(1)] });
+    // A reader that has not computed reachability leaves it null; the badge stays off.
+    seed({ reflog: entries.map((e) => ({ ...e, reachable: null })) });
     render(<ReflogList />);
-    expect(screen.getAllByText("unreachable")).toHaveLength(1);
+    expect(screen.queryAllByText("unreachable")).toHaveLength(0);
   });
 
   it("a row becomes the compare source (T11.2 setRevision)", () => {

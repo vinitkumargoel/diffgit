@@ -1,0 +1,481 @@
+{
+  "tags": [],
+  "stashes": [],
+  "reflog": [
+    {
+      "index": 0,
+      "expr": "HEAD@{0}",
+      "oldOid": "9f920895bac7d57238446250bc6b1e529057ffc2",
+      "newOid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+      "action": "commit",
+      "message": "commit: c5: work after the reset",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    },
+    {
+      "index": 1,
+      "expr": "HEAD@{1}",
+      "oldOid": "14c77533a88cbeaf673c2fde62b011258a115545",
+      "newOid": "9f920895bac7d57238446250bc6b1e529057ffc2",
+      "action": "reset",
+      "message": "reset: moving to HEAD~2",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    },
+    {
+      "index": 2,
+      "expr": "HEAD@{2}",
+      "oldOid": "f956822f4d6b4f237e501911264a7471e3ea26a8",
+      "newOid": "14c77533a88cbeaf673c2fde62b011258a115545",
+      "action": "commit",
+      "message": "commit: c4: fourth (orphaned by the reset)",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": false
+    },
+    {
+      "index": 3,
+      "expr": "HEAD@{3}",
+      "oldOid": "9f920895bac7d57238446250bc6b1e529057ffc2",
+      "newOid": "f956822f4d6b4f237e501911264a7471e3ea26a8",
+      "action": "commit",
+      "message": "commit: c3: third (orphaned by the reset)",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": false
+    },
+    {
+      "index": 4,
+      "expr": "HEAD@{4}",
+      "oldOid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
+      "newOid": "9f920895bac7d57238446250bc6b1e529057ffc2",
+      "action": "commit",
+      "message": "commit: c2: second",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    },
+    {
+      "index": 5,
+      "expr": "HEAD@{5}",
+      "oldOid": null,
+      "newOid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
+      "action": "commit (initial)",
+      "message": "commit (initial): c1: first",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    }
+  ],
+  "operation": null,
+  "conflicts": {},
+  "hidden": [
+    {
+      "path": "expected",
+      "kind": "ignored-dir",
+      "count": 13
+    }
+  ],
+  "explanations": {},
+  "revisions": {},
+  "ranges": [],
+  "walks": {
+    "default": {
+      "commits": [
+        {
+          "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+          "parents": ["9f920895bac7d57238446250bc6b1e529057ffc2"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c5: work after the reset",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "9f920895bac7d57238446250bc6b1e529057ffc2",
+          "parents": ["1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: second",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: first",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    },
+    "first-parent": {
+      "commits": [
+        {
+          "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+          "parents": ["9f920895bac7d57238446250bc6b1e529057ffc2"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c5: work after the reset",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "9f920895bac7d57238446250bc6b1e529057ffc2",
+          "parents": ["1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: second",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: first",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    },
+    "all": {
+      "commits": [
+        {
+          "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+          "parents": ["9f920895bac7d57238446250bc6b1e529057ffc2"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c5: work after the reset",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "9f920895bac7d57238446250bc6b1e529057ffc2",
+          "parents": ["1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: second",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: first",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    }
+  },
+  "commits": {
+    "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752": {
+      "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+      "parents": ["9f920895bac7d57238446250bc6b1e529057ffc2"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c5: work after the reset",
+      "refs": ["HEAD", "main"],
+      "body": "",
+      "tree": "ac56c747e50578eb7be0cdcecc791c2f7210244a",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 0
+      }
+    },
+    "9f920895bac7d57238446250bc6b1e529057ffc2": {
+      "oid": "9f920895bac7d57238446250bc6b1e529057ffc2",
+      "parents": ["1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c2: second",
+      "refs": [],
+      "body": "",
+      "tree": "313eba2d168cdf6ede5f9caa87c9f1b5f7c3d304",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808": {
+      "oid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
+      "parents": [],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c1: first",
+      "refs": [],
+      "body": "",
+      "tree": "20e50a07feffafe7699bf38ff4027a606f406eaa",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 0
+      }
+    }
+  },
+  "commitStats": {
+    "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "9f920895bac7d57238446250bc6b1e529057ffc2": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    }
+  },
+  "branches": [
+    {
+      "ref": {
+        "name": "main",
+        "fullName": "refs/heads/main",
+        "kind": "local",
+        "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+        "isDefault": true,
+        "isCheckedOut": true
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+        "subject": "c5: work after the reset",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": null,
+      "merged": true,
+      "tags": []
+    }
+  ],
+  "aheadBehind": {},
+  "reachable": {
+    "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752": true,
+    "9f920895bac7d57238446250bc6b1e529057ffc2": true,
+    "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808": true,
+    "14c77533a88cbeaf673c2fde62b011258a115545": false,
+    "f956822f4d6b4f237e501911264a7471e3ea26a8": false
+  }
+}

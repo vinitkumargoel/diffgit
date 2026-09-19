@@ -1,9 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { BranchesSource, DiffSource, RangeSource, RepoInfo } from "../engine/types";
+import type {
+  BranchesSource,
+  DiffResult,
+  DiffSource,
+  RangeSource,
+  RepoInfo,
+} from "../engine/types";
 import basicInfo from "../test/recorded/showcase.repoinfo.json";
 import { Lru } from "./lru";
 import {
   configurePersistence,
+  INITIAL_HISTORY,
+  INITIAL_STACK,
   isViewed,
   selectCanIncludeWorktree,
   selectConflictKind,
@@ -11,6 +19,7 @@ import {
   selectGroupTotals,
   selectHasLayers,
   selectHiddenEntries,
+  selectHistoryRows,
   selectSourceLabel,
   selectTotals,
   selectViewedCount,
@@ -66,7 +75,11 @@ describe("store: v2 shell (T11.1)", () => {
       firstParent: false,
       all: false,
       capped: false,
+      laneOverflow: false,
     });
+    expect(s.commitDetails).toEqual({});
+    expect(s.commitStats).toEqual({});
+    expect(s.stack.ready).toBe(false);
   });
 
   it("setMode switches and closes the palette; closing the repo returns to Files", async () => {
@@ -587,20 +600,28 @@ describe("store: operation, conflicts and reflog (T11.3)", () => {
     }
   });
 
-  it("loadReflog reads HEAD's log once; `unreachable` stays unknown until T10.5 ships markReachable", async () => {
-    await useStore.getState().openRepo({ name: "rebase-conflict" }, { id: "rc" });
-    expect("markReachable" in mock).toBe(false);
+  it("loadReflog reads HEAD's log once; T10.5 fills `reachable` on every row", async () => {
+    await useStore.getState().openRepo({ name: "reflog-orphan" }, { id: "orphan" });
     await useStore.getState().loadReflog();
     const log = useStore.getState().reflog ?? [];
     expect(log[0]?.expr).toBe("HEAD@{0}");
-    expect(log[0]?.action).toBe("rebase (pick)");
-    expect(log.every((e) => e.reachable === null)).toBe(true);
+    expect(log[0]?.action).toBe("commit");
+    // `reflog()` fills reachability itself (T10.5), so no row is left unknown.
+    expect(log.every((e) => typeof e.reachable === "boolean")).toBe(true);
+    // the reset orphaned c3 and c4; everything still on `main` stays reachable
+    expect(log.filter((e) => e.reachable === false).map((e) => e.expr)).toEqual([
+      "HEAD@{2}",
+      "HEAD@{3}",
+    ]);
   });
 
-  it("loadReflog fills `reachable` in batches once the client exposes markReachable", async () => {
+  it("loadReflog fills `reachable` in batches when the recording left it unknown", async () => {
     const calls: string[][] = [];
     setStoreClient({
       ...mock,
+      // A reader that has not computed reachability leaves the field null (`ReflogEntry.reachable`).
+      reflog: async (expr: string, limit: number) =>
+        (await mock.reflog(expr, limit)).map((e) => ({ ...e, reachable: null })),
       markReachable: async (oids: string[]) => {
         calls.push(oids);
         return Object.fromEntries(oids.map((o, i) => [o, i > 0]));
@@ -693,5 +714,194 @@ describe("store: hidden paths and the built-in excludes (T11.4)", () => {
     useStore.getState().setPref("builtinExcludes", false);
     await Promise.resolve();
     expect(mock.lastOpenOptions).toBeUndefined();
+  });
+});
+
+describe("store: History mode (T11.5)", () => {
+  const openHistory = () => useStore.getState().openRepo({ name: "history" }, { id: "hist" });
+  const headOid = "822313f6746d7982943f0d59fc5e09b626769141";
+  const headParent = "82bc6c6d1bc309b9e6463af370ec95aa4866a78c";
+  /** `main~5`, the merge base the recorded `main~5…main` range was captured against. */
+  const fiveBack = "10f27d53c19de4ea66ac966ec37d30d9871abc64";
+
+  function range(src: DiffSource | null | undefined): RangeSource | null {
+    return src && src.kind === "range" ? src : null;
+  }
+
+  it("walks the first page and pages the rest with the cursor", async () => {
+    await openHistory();
+    await useStore.getState().loadHistory();
+    let h = useStore.getState().history;
+    expect(h.commits).toHaveLength(50); // HISTORY_PAGE
+    expect(h.cursor).toBe("50");
+    expect(h.commits[0]?.oid).toBe(headOid);
+    await useStore.getState().loadHistory();
+    h = useStore.getState().history;
+    expect(h.commits).toHaveLength(60); // the whole recorded walk
+    expect(h.cursor).toBeNull();
+    // exhausted: asking again is a no-op rather than a second walk
+    await useStore.getState().loadHistory();
+    expect(useStore.getState().history.commits).toHaveLength(60);
+  });
+
+  it("re-walks from the tip when `first-parent` or `all branches` is toggled", async () => {
+    await openHistory();
+    await useStore.getState().loadHistory();
+    expect(useStore.getState().history.commits).toHaveLength(50);
+    useStore.getState().setHistoryOption("firstParent", true);
+    await vi.waitFor(() => {
+      const h = useStore.getState().history;
+      expect(h.loading).toBe(false);
+      expect(h.commits).toHaveLength(48); // the whole --first-parent walk fits in one page
+    });
+    expect(useStore.getState().history.cursor).toBeNull();
+    useStore.getState().setHistoryOption("all", true);
+    await vi.waitFor(() => expect(useStore.getState().history.cursor).toBe("50"));
+    // `--all` seeds from every ref, so it starts on another branch's tip and is wider
+    const all = useStore.getState().history.commits;
+    expect(all[0]?.refs).toEqual(["preflight/a"]);
+    expect(Math.max(...all.map((c) => c.laneCount ?? 1))).toBe(3);
+  });
+
+  it("a STALE cursor throws the list away and walks again from the tip (T10.5b)", async () => {
+    let staled = false;
+    setStoreClient({
+      ...mock,
+      walkCommits: async (req: { cursor?: string }) => {
+        if (req.cursor !== undefined && !staled) {
+          staled = true;
+          throw { code: "STALE", message: "the refs moved" };
+        }
+        return mock.walkCommits(req as never);
+      },
+    } as unknown as MockWorkerClient);
+    await openHistory();
+    await useStore.getState().loadHistory();
+    await useStore.getState().loadHistory(); // this one goes STALE and restarts at page 1
+    expect(staled).toBe(true);
+    const h = useStore.getState().history;
+    expect(h.commits).toHaveLength(50);
+    expect(h.commits.map((c) => c.oid)).toHaveLength(new Set(h.commits.map((c) => c.oid)).size);
+  });
+
+  it("filters the walked commits client-side", async () => {
+    await openHistory();
+    await useStore.getState().loadHistory();
+    useStore.getState().setHistoryQuery("bump manifest");
+    const rows = selectHistoryRows(useStore.getState());
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every((c) => c.subject.includes("bump manifest"))).toBe(true);
+    useStore.getState().setHistoryQuery(headOid.slice(0, 7));
+    expect(selectHistoryRows(useStore.getState()).map((c) => c.oid)).toEqual([headOid]);
+  });
+
+  it("picking a commit makes the source parent…commit and loads its details", async () => {
+    await openHistory();
+    await useStore.getState().loadHistory();
+    await useStore.getState().showCommit(headOid);
+    const src = range(useStore.getState().diffSource);
+    expect(src?.commit).toBe(headOid);
+    expect(src?.fromOid).toBe(headParent);
+    expect(src?.toOid).toBe(headOid);
+    expect(src?.threeDot).toBe(false);
+    expect(selectSourceLabel(useStore.getState())).toBe("82bc6c6 .. 822313f");
+    await vi.waitFor(() => {
+      const entry = useStore.getState().commitDetails[headOid];
+      expect(entry?.status).toBe("ready");
+    });
+    expect(useStore.getState().history.selected).toBe(headOid);
+  });
+
+  it("shift-picking a second commit makes the range older…newer", async () => {
+    await openHistory();
+    await useStore.getState().loadHistory();
+    await useStore.getState().showCommit(headOid);
+    await useStore.getState().showCommit(fiveBack, { extend: true });
+    const src = range(useStore.getState().diffSource);
+    expect([src?.fromOid, src?.toOid]).toEqual([fiveBack, headOid]);
+    expect(src?.commit).toBeUndefined();
+    expect(useStore.getState().history.rangeStart).toBe(fiveBack);
+    expect(useStore.getState().history.selected).toBe(headOid);
+  });
+
+  it("`Compare with base…` keeps the base picker's branch, not the parent of the last pick", async () => {
+    await openHistory();
+    await useStore.getState().loadHistory();
+    await useStore.getState().showCommit(headOid);
+    useStore.getState().compareCommitWithBase(fiveBack);
+    const src = range(useStore.getState().diffSource);
+    expect(src?.fromRef).toBe("refs/heads/main");
+    expect(src?.toOid).toBe(fiveBack);
+    expect(src?.threeDot).toBe(true); // the three-dot default of the picker footer
+  });
+
+  it("batches commitStats for the rows it is asked about, one call at a time", async () => {
+    const batches: string[][] = [];
+    setStoreClient({
+      ...mock,
+      commitStats: async (oids: string[]) => {
+        batches.push(oids);
+        return mock.commitStats(oids);
+      },
+    } as unknown as MockWorkerClient);
+    await openHistory();
+    await useStore.getState().loadHistory(); // the page asks for its own rows
+    await vi.waitFor(() => expect(useStore.getState().commitStats[headOid]).toBeTruthy());
+    expect(batches[0]).toHaveLength(50);
+    const before = batches.length;
+    // already known: nothing is asked twice
+    useStore.getState().requestCommitStats([headOid, headParent]);
+    await Promise.resolve();
+    expect(batches).toHaveLength(before);
+    expect(useStore.getState().commitStats[headOid]).toEqual({
+      files: 1,
+      additions: 5,
+      deletions: 0,
+    });
+  });
+
+  it("searchCommits answers null until T10.8 ships `search`, and maps its hits when it does", async () => {
+    await openHistory();
+    expect(await useStore.getState().searchCommits("anything")).toBeNull();
+    setStoreClient({
+      ...mock,
+      search: async () => ({ hits: [{ kind: "commit", oid: headOid }, { kind: "file" }] }),
+    } as unknown as MockWorkerClient);
+    expect(await useStore.getState().searchCommits("anything")).toEqual([headOid]);
+  });
+
+  it("the stack walks back to the merge base, newest first", async () => {
+    await openHistory();
+    // the recorded default pair is main…main, so nothing is stacked on the base
+    await useStore.getState().loadStack();
+    expect(useStore.getState().stack.commits).toHaveLength(0);
+    expect(useStore.getState().stack.ready).toBe(true);
+    // move the base five commits back, the range `bun run record` captured
+    const diff = useStore.getState().diff as DiffResult;
+    useStore.setState({ diff: { ...diff, mergeBase: fiveBack }, stack: INITIAL_STACK });
+    await useStore.getState().loadStack();
+    const stack = useStore.getState().stack;
+    expect(stack.base).toBe(fiveBack);
+    expect(stack.commits.map((c) => c.oid)).toEqual([
+      headOid,
+      headParent,
+      "fb9edcd9be63538ff6d425970ceaaaf27e1009ee",
+      "8295928b1c222c2877dbcf442573effe40d97e5a",
+      "87a3a12b31ee4268cf84cfed8254425a12658c7a",
+    ]);
+    expect(stack.capped).toBe(false);
+  });
+
+  it("closeRepo drops the walk, the details and the stack", async () => {
+    await openHistory();
+    await useStore.getState().loadHistory();
+    await useStore.getState().showCommit(headOid);
+    await useStore.getState().closeRepo();
+    const s = useStore.getState();
+    expect(s.history).toEqual(INITIAL_HISTORY);
+    expect(s.commitDetails).toEqual({});
+    expect(s.commitStats).toEqual({});
+    expect(s.stack).toEqual(INITIAL_STACK);
+    expect(s.compareBase).toBeNull();
   });
 });

@@ -47,6 +47,9 @@ import octopusV2 from "../test/recorded/octopus.v2.json";
 import rebaseDiff from "../test/recorded/rebase-conflict.diffresult.json";
 import rebaseInfo from "../test/recorded/rebase-conflict.repoinfo.json";
 import rebaseV2 from "../test/recorded/rebase-conflict.v2.json";
+import orphanDiff from "../test/recorded/reflog-orphan.diffresult.json";
+import orphanInfo from "../test/recorded/reflog-orphan.repoinfo.json";
+import orphanV2 from "../test/recorded/reflog-orphan.v2.json";
 import basicDiff from "../test/recorded/showcase.diffresult.json";
 import basicInfo from "../test/recorded/showcase.repoinfo.json";
 import worktreeDiff from "../test/recorded/showcase-worktree.diffresult.json";
@@ -169,6 +172,12 @@ const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult; v2?: Recorded
     info: octopusInfo as RepoInfo,
     diff: octopusDiff as DiffResult,
     v2: octopusV2 as unknown as RecordedV2,
+  },
+  // T11.5: the reset that orphaned two commits, so the Reflog tab has a real `unreachable` row
+  "reflog-orphan": {
+    info: orphanInfo as RepoInfo,
+    diff: orphanDiff as DiffResult,
+    v2: orphanV2 as unknown as RecordedV2,
   },
   // T10.4: the ignored dir / ignored file / index flags / 11 MB file, for the Hidden group (T11.4)
   hidden: {

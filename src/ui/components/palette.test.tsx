@@ -35,6 +35,9 @@ function seed(overrides: Partial<StoreState> = {}) {
     setFilter: vi.fn(),
     loadFileDiff: vi.fn(async () => {}),
     cancelFileDiff: vi.fn(),
+    // T11.5: History mode walks on mount; these tests only care about the shell.
+    loadHistory: vi.fn(async () => {}),
+    loadStack: vi.fn(async () => {}),
   };
   useStore.setState({
     ...initial,
@@ -86,7 +89,8 @@ describe("ModeSwitch (Design §14.1)", () => {
       "false",
     );
     // the body is replaced; the file tree belongs to Files mode only (Design §14 rule 3)
-    expect(screen.getByText("coming in T11.5")).toBeTruthy();
+    expect(screen.getByRole("complementary", { name: "History" })).toBeTruthy();
+    expect(screen.getByRole("listbox", { name: "Commits" })).toBeTruthy();
     expect(screen.queryByRole("tree")).toBeNull();
   });
 
@@ -159,14 +163,18 @@ describe("CommandPalette (Design §14.1)", () => {
     }
   });
 
-  it("T11.3: `Show reflog` opens the reflog dialog (T11.5 moves it to the History sidebar)", () => {
+  it("T11.5: `Show reflog` opens the History sidebar on its Reflog sub-tab", () => {
     seed({ reflog: [] });
     render(<RepoScreen />);
     fireEvent.click(paletteButton());
     fireEvent.click(inPalette().getByText("Show reflog"));
     expect(useStore.getState().palette).toBe(false);
-    const dialog = screen.getByRole("dialog", { name: "Reflog · HEAD" });
-    expect(dialog.textContent).toContain("What moved HEAD, newest first");
+    expect(useStore.getState().mode).toBe("history");
+    expect(useStore.getState().historyTab).toBe("reflog");
+    expect(screen.getByRole("button", { name: "Reflog" }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+    expect(document.body.textContent).toContain("No reflog is kept for this repository");
   });
 
   it("running an action closes the palette and does the thing", () => {
