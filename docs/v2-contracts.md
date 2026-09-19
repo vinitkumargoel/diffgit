@@ -690,6 +690,37 @@ module `src/ui/secrets.ts` (`SECRET_TAG`, `ALLOW_LINE_COMMENT`, `ALLOWLIST_FILE`
 imports `ALLOW_COMMENT` / `SECRET_ALLOWLIST_FILE` / `RULESET_DATE` from
 `src/engine/scan/secretRules.ts` (pure data, no imports of its own) so the spellings cannot drift.
 
+<!-- T11.12 --> `StoreState` gained `insights: InsightsState` (`result`, `loading`, `error`, the
+`tip` + `period` the result answers, `cached` = it came from `diffgit-derived`, and `walked` = the
+live count the skeleton shows) with `loadInsights({ force })`, `setInsightsPeriod(period)` and
+`showHotspot(path)`; `closeRepo` resets the slice to `INITIAL_INSIGHTS`. `loadInsights` is a no-op
+while the slice already holds this tip and period, so the page may call it from an effect; it reads
+`derivedKey.insights(repoId, tipOid, period)` first and writes the engine's answer back there, and
+a repository with no commits (`RepoInfo.headOid === null`) is answered with `EMPTY_RESULT` without
+touching the engine. `STALE` / `CANCELLED` go through `ignoreStale`.
+
+**`sinceMs` is computed in the UI**, by the pure `sinceMsFor(period, anchor)` (`90d` → 90 days,
+`1y` → 365, `all` → `undefined`, i.e. send no `sinceMs`), where `anchor` is the new exported
+selector **`selectInsightsAnchor(s)`**: the newest commit date the store already knows (the commit
+list's tip, or the newest `BranchRow.lastCommit`) and `Date.now()` only when it knows none. The
+engine has no clock in this call — `activity` ends at the week of the newest commit, not at today
+(`<!-- T10.9 -->`) — and the derived key carries only tip + period, so anchoring on a commit keeps
+`90 d` meaning the same window for as long as that cache entry is valid, and a repository whose
+last commit is a year old shows its last 90 active days instead of an empty page.
+
+`INSIGHTS_CAPPED` is printed by the page as **one inline line** under the footer (Design §14, rule
+2, as T11.6 did with `BLAME_CAPPED`), driven by `InsightsResult.capped` rather than by the warning;
+`loadInsights` therefore calls `dismissWarning("INSIGHTS_CAPPED")` when the answer is capped, so the
+same fact never also takes a banner — `WarningBanners` itself was not touched. New pure module
+`src/ui/insights.ts` (`INSIGHTS_LIMIT` = 12 hotspots per group, `INSIGHTS_PERIODS`, `sinceMsFor`,
+`countOrder`/`heatOfCount`/`heatFill` (the §3.6 ramp by rank, `blame.ts`'s rule for age),
+`CELL`/`GAP`/`GUTTER`/`gridWidth`/`gridHeight`, `dayMs`/`formatDay`/`dayLabel`/`weekLabel`,
+`hotspotGroups`/`barPercent`/`maxScore`/`hotspotValue`/`hotspotTitle`, `sharePercent`/`botsLine`,
+`summaryLine`/`walkedLine`/`cappedLine`/`emptyPeriodLine`, `EMPTY_RESULT` and every string) owns the
+maths and the copy. `TopBar` now hides the `StatsRow` in Insights as well as Branches, which is
+§14.1's "in Branches and Insights the row is replaced by the page's own header"; `ModePlaceholder`
+was deleted with the last placeholder mode it existed for.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).
