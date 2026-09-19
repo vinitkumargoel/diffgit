@@ -135,6 +135,66 @@ export const WARNING_COPY: Record<WarningCode, WarningCopy> = {
     subject: "Path type changed",
     message: "A path switched between file and directory; its diff may be incomplete.",
   },
+  HISTORY_CAPPED: {
+    level: "warning",
+    subject: "History capped",
+    message: "Only the first pages of history were walked; older commits are not shown.",
+  },
+  NO_REFLOG: {
+    level: "info",
+    subject: "No reflog",
+    message: "This repository keeps no reflog, so recent operations cannot be listed.",
+  },
+  SEARCH_CAPPED: {
+    level: "warning",
+    subject: "Search capped",
+    message: "The search stopped at its limit; there may be more matches.",
+  },
+  BLAME_CAPPED: {
+    level: "warning",
+    subject: "Blame capped",
+    message: "Blame stopped after its revision limit; older lines are attributed to that commit.",
+  },
+  INSIGHTS_CAPPED: {
+    level: "warning",
+    subject: "Insights capped",
+    message: "Insights were computed from a sample of the history, not all of it.",
+  },
+  HIDDEN_CAPPED: {
+    level: "warning",
+    subject: "Hidden files capped",
+    message: "Only the first 2,000 hidden paths are listed.",
+  },
+  COMMIT_GRAPH_STALE: {
+    level: "warning",
+    subject: "Commit graph out of date",
+    message: "The commit-graph file is older than the refs; history was walked without it.",
+  },
+  SECRETS_FOUND: {
+    level: "error",
+    subject: "Possible secret",
+    message: "Uncommitted changes contain something that looks like a credential.",
+  },
+  OPERATION_IN_PROGRESS: {
+    level: "info",
+    subject: "Operation in progress",
+    message: "A merge, rebase, cherry-pick, revert or bisect is running in this repository.",
+  },
+  SNAPSHOT_MODE: {
+    level: "info",
+    subject: "Snapshot mode",
+    message: "This browser can only read the folder once; re-open it to refresh.",
+  },
+  JJ_COLOCATED: {
+    level: "info",
+    subject: "Colocated jj repository",
+    message: "This repository is also a jj workspace; git refs may lag behind jj.",
+  },
+  PATCH_ONLY: {
+    level: "info",
+    subject: "Patch only",
+    message: "A patch file is open, not a repository; there is no working tree to compare.",
+  },
 };
 
 const UNKNOWN: WarningCopy = {

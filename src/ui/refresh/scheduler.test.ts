@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { sourceLabels } from "../../engine/diffSource";
 import type { RepoInfo } from "../../engine/types";
 import showcase from "../../test/recorded/showcase.repoinfo.json";
 import type { UiError } from "../errors";
@@ -6,6 +7,12 @@ import { setStoreClient, useStore } from "../store";
 import type { WorkerClient } from "../workerClient";
 import { createMockWorkerClient, type MockWorkerClient } from "../workerClient.mock";
 import { CONFIG_PATH, createScheduler, type Scheduler, type SchedulerDeps } from "./scheduler";
+
+/** Display name of the base side, whichever DiffSource kind the store holds (T10.1 union). */
+function baseLabel(): string | null {
+  const src = useStore.getState().diffSource;
+  return src ? sourceLabels(src).target : null;
+}
 
 const initial = useStore.getState();
 let mock: MockWorkerClient;
@@ -149,7 +156,7 @@ describe("scheduler", () => {
     await open();
     useStore.getState().setTarget("topic");
     await s.flush();
-    expect(useStore.getState().diffSource?.target).toBe("topic");
+    expect(baseLabel()).toBe("topic");
     const moved: RepoInfo = {
       ...(showcase as unknown as RepoInfo),
       headBranch: "main",
@@ -183,7 +190,7 @@ describe("scheduler", () => {
     });
     s.request("poll:git");
     await s.flush();
-    expect(useStore.getState().diffSource?.target).toBe("main");
+    expect(baseLabel()).toBe("main");
   });
 
   it("superseded computes are silent; other errors surface as one toast", async () => {

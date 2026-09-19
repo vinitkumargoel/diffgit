@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { RepoInfo } from "../engine/types";
+import type { BranchesSource, DiffSource, RepoInfo } from "../engine/types";
 import basicInfo from "../test/recorded/showcase.repoinfo.json";
 import { Lru } from "./lru";
 import {
@@ -18,6 +18,11 @@ import { viewedKey } from "./viewedKey";
 import { createMockWorkerClient, type MockWorkerClient } from "./workerClient.mock";
 
 let mock: MockWorkerClient;
+/** Narrows the store's DiffSource to the branch pair these tests always build (T10.1 union). */
+function branches(src: DiffSource | null | undefined): BranchesSource | null {
+  return src && src.kind === "branches" ? src : null;
+}
+
 const initial = useStore.getState();
 
 beforeEach(() => {
@@ -72,17 +77,17 @@ describe("store", () => {
   it("remembered branches are applied when they still exist", async () => {
     await openBasic({ id: "r1", lastTarget: "refs/remotes/origin/main", lastSource: "nope" });
     const s = useStore.getState().diffSource;
-    expect(s?.targetRef).toBe("refs/remotes/origin/main");
-    expect(s?.target).toBe("origin/main");
-    expect(s?.sourceRef).toBe("refs/heads/feature");
+    expect(branches(s)?.targetRef).toBe("refs/remotes/origin/main");
+    expect(branches(s)?.target).toBe("origin/main");
+    expect(branches(s)?.sourceRef).toBe("refs/heads/feature");
   });
 
   it("swap flips both sides and turns the worktree layer off when source is no longer HEAD", async () => {
     await openBasic();
     useStore.getState().swapBranches();
     const s = useStore.getState().diffSource;
-    expect(s?.source).toBe("main");
-    expect(s?.target).toBe("feature");
+    expect(branches(s)?.source).toBe("main");
+    expect(branches(s)?.target).toBe("feature");
     expect(s?.includeWorktree).toBe(false);
     expect(selectCanIncludeWorktree(useStore.getState())).toBe(false);
     useStore.getState().setIncludeWorktree(true); // guarded: stays off
@@ -349,8 +354,8 @@ describe("store", () => {
       expect(s.screen).toBe("repo");
       const last = touched.at(-1) as { id: string; patch: Record<string, unknown> };
       expect(last.id).toBe("r1");
-      expect(last.patch.lastSource).toBe(s.diffSource?.sourceRef);
-      expect(last.patch.lastTarget).toBe(s.diffSource?.targetRef);
+      expect(last.patch.lastSource).toBe(branches(s.diffSource)?.sourceRef);
+      expect(last.patch.lastTarget).toBe(branches(s.diffSource)?.targetRef);
       expect(typeof last.patch.lastOpenMs).toBe("number");
       expect(s.toasts.some((t) => t.message.includes("nope no longer exists"))).toBe(true);
     } finally {

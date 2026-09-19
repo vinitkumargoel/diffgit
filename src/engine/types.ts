@@ -60,16 +60,37 @@ export interface RefSnapshot {
   defaultRef: RepoRef | null;
 }
 
-// What are we comparing? Designed so v2 can add {kind:"commit"} and {kind:"range"}.
+// What are we comparing? A union (docs/v2-contracts.md): branches (v1) or an arbitrary range (T10.1).
 // Amendment: carries full ref names ("refs/heads/x", "refs/remotes/o/x" or the literal "HEAD").
-export type DiffSource = {
+export interface BranchesSource {
   kind: "branches";
   source: string; // display name, e.g. "feature" or "origin/main"
   target: string;
   sourceRef: string; // full ref name or "HEAD"
   targetRef: string;
   includeWorktree: boolean;
-};
+}
+
+/**
+ * Any two points in the repository (T10.1): tags, stashes, SHAs, `HEAD~3`, the empty tree.
+ * `from` is the base (old side), `to` is the compare side (new side) — the same orientation as
+ * `target`/`source` on `BranchesSource`. The UI resolves both sides with `resolveRevision` before
+ * calling `computeDiff`, so the engine never has to re-parse the expression.
+ */
+export interface RangeSource {
+  kind: "range";
+  from: string; // display names ("v2.3.0", "stash@{0}", "a1b2c3d", "main")
+  to: string;
+  fromRef: string; // resolvable expressions (see resolveRevision)
+  toRef: string;
+  fromOid: Oid | null; // null = the empty tree (EMPTY_TREE_OID)
+  toOid: Oid;
+  threeDot: boolean; // true → merge-base(from,to)…to ; false → from..to (plain tree diff)
+  includeWorktree: boolean; // honoured only when toOid === HEAD oid (isWorktreeSource)
+  commit?: Oid; // set when this range is "show one commit" (from = first parent)
+}
+
+export type DiffSource = BranchesSource | RangeSource;
 
 export type ChangeLayer = "committed" | "staged" | "unstaged" | "untracked" | "conflict";
 export type FileStatus = "added" | "modified" | "deleted" | "renamed" | "copied" | "typechange";
@@ -112,3 +133,55 @@ export interface FileContents {
 
 /** Tree entry mode of a submodule (gitlink). */
 export const MODE_GITLINK = 0o160000;
+
+// ---- v2 revision model (T10.1, docs/v2-contracts.md) ------------------------------------------
+
+/**
+ * A git author/committer/tagger line. `timestamp` is epoch **milliseconds** (every timestamp that
+ * crosses the worker boundary is, like `DiffResult.computedAt`); `tzOffsetMin` is the recorded zone
+ * offset in minutes, as isomorphic-git reports it (`Date.getTimezoneOffset()` convention).
+ */
+export interface Signature {
+  name: string;
+  email: string;
+  timestamp: number;
+  tzOffsetMin: number;
+}
+
+/** What `resolveRevision(expr)` made of one revision expression. */
+export interface ResolvedRevision {
+  expr: string;
+  /** null only for `<root>^` → the empty tree. */
+  oid: Oid | null;
+  kind: "branch" | "remote" | "tag" | "stash" | "commit" | "head" | "empty-tree";
+  /** "main", "v2.3.0", "stash@{0}", "a1b2c3d" — what the picker shows. */
+  display: string;
+  /** refs/heads/main, refs/tags/v2.3.0 — only when the expression named a ref outright. */
+  fullRef?: string;
+  /** The annotated tag object the commit in `oid` was peeled from. */
+  peeledFrom?: Oid;
+}
+
+export interface TagInfo {
+  name: string; // "v2.3.0"
+  fullName: string; // "refs/tags/v2.3.0"
+  oid: Oid; // what the ref points at (the tag object for an annotated tag)
+  targetOid: Oid; // the peeled commit
+  annotated: boolean;
+  message?: string;
+  tagger?: Signature;
+  timestamp?: number; // epoch ms of the tagger line
+}
+
+export interface StashInfo {
+  index: number; // 0 = newest
+  expr: string; // "stash@{0}"
+  oid: Oid; // the stash commit
+  message: string; // reflog message, e.g. "On main: wip: tracked only"
+  timestamp: number; // epoch ms of the reflog entry
+  baseOid: Oid; // first parent: HEAD when the stash was made
+  indexOid: Oid; // second parent: the staged state
+  untrackedOid: Oid | null; // third parent (`git stash -u`), else null
+  /** Files the stash touches; null when not computed (see `countStashFiles`). */
+  files: number | null;
+}

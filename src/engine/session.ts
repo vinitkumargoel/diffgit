@@ -23,6 +23,7 @@ import { loadSide, loadSides } from "./diff/contentLoader";
 import { type DiffComputation, DiffEngine } from "./diff/diffEngine";
 import { detectRenames } from "./diff/renames";
 import { describeFile, HUGE_FILE_BYTES, LARGE_FILE_BYTES, toPayload } from "./diff/textDiff";
+import { sourceRefs } from "./diffSource";
 import { EngineError, type EngineErrorJSON, errorCode, isPublicCode } from "./errors";
 import type { DirHandleLike } from "./fs/dirHandleLike";
 import { createFsaFs, type FsaFs } from "./fs/fsaFs";
@@ -34,6 +35,9 @@ import { type IndexSnapshot, readIndex } from "./git/indexReader";
 import { checkLayout } from "./git/layoutChecks";
 import { ObjectDb } from "./git/objectDb";
 import { loadRefs } from "./git/refStore";
+import { resolveRevision } from "./git/revisions";
+import { countStashFiles, listStashes } from "./git/stash";
+import { listTags } from "./git/tags";
 import { type ScannerOptions, WorktreeScanner } from "./git/worktree";
 import type {
   DiffResult,
@@ -43,6 +47,9 @@ import type {
   RepoCapabilities,
   RepoInfo,
   RepoWarning,
+  ResolvedRevision,
+  StashInfo,
+  TagInfo,
 } from "./types";
 import { CancelledError, pLimit, throwIfAborted } from "./util/concurrency";
 
@@ -69,6 +76,8 @@ interface Current {
 const NO_SESSION = () => new EngineError("INTERNAL", "No repository is open.");
 /** Plan §11 R3: warn when the packs read so far exceed this. */
 const MEMORY_WARN_BYTES = 300 * 1024 * 1024;
+/** How many stashes get a file count eagerly (T10.1); the rest keep `files: null`. */
+const STASH_FILE_COUNT_LIMIT = 50;
 
 /** Translate anything thrown inside the engine into the plain object that crosses the worker boundary. */
 export function toPublicError(e: unknown): PublicError {
@@ -82,6 +91,8 @@ export function toPublicError(e: unknown): PublicError {
     if (finalHint !== undefined) json.hint = finalHint;
     const path = (e as { path?: unknown } | null)?.path;
     if (typeof path === "string") (json as EngineErrorJSON).path = path;
+    const detail = (e as { detail?: unknown } | null)?.detail;
+    if (typeof detail === "string") (json as EngineErrorJSON).detail = detail;
     return json;
   };
   if (code !== undefined && isPublicCode(code)) return out(code);
@@ -127,6 +138,8 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   private statsStartedAt = 0;
   private memoryWarned = false;
   private readonly repoWarnings: RepoWarning[] = [];
+  /** method name → token of the newest call (one in-flight per method, T10.1). */
+  private readonly singleFlight = new Map<string, symbol>();
   private readonly statsLimit: <T>(fn: () => Promise<T>) => Promise<T>;
 
   private constructor(
@@ -321,6 +334,47 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     } finally {
       if (this.inflight === ac) this.inflight = null;
     }
+  }
+
+  // ---- revisions, tags, stashes (T10.1) --------------------------------------------------------
+
+  /**
+   * One in-flight call per method name (phase-10 convention): a newer call of the same method makes
+   * the older one reject with `CANCELLED` instead of resolving with data the UI no longer wants.
+   */
+  private async single<T>(method: string, fn: () => Promise<T>): Promise<T> {
+    const token = Symbol(method);
+    this.singleFlight.set(method, token);
+    try {
+      const out = await this.withRootCheck(fn);
+      if (this.singleFlight.get(method) !== token) throw new CancelledError(method);
+      return out;
+    } finally {
+      if (this.singleFlight.get(method) === token) this.singleFlight.delete(method);
+    }
+  }
+
+  async resolveRevision(expr: string): Promise<ResolvedRevision> {
+    this.assertOpen();
+    return this.single("resolveRevision", () => resolveRevision(this.db, this.refs, expr));
+  }
+
+  async listTags(): Promise<TagInfo[]> {
+    this.assertOpen();
+    return this.single("listTags", () => listTags(this.db));
+  }
+
+  async listStashes(): Promise<StashInfo[]> {
+    this.assertOpen();
+    return this.single("listStashes", async () => {
+      const stashes = await listStashes(this.fs, this.db);
+      // The picker shows a file count per stash (Design §14.1); it costs two tree flattens each,
+      // so only the stack a human would scroll gets one.
+      for (const s of stashes.slice(0, STASH_FILE_COUNT_LIMIT)) {
+        s.files = await countStashFiles(this.db, s);
+      }
+      return stashes;
+    });
   }
 
   private async applyRenames(comp: DiffComputation, signal: AbortSignal): Promise<FileDiff[]> {
@@ -693,8 +747,10 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       "/.git/ORIG_HEAD",
     ]);
     if (this.refs.headBranch) paths.add(`/.git/refs/heads/${this.refs.headBranch}`);
-    for (const ref of [this.lastSource?.sourceRef, this.lastSource?.targetRef]) {
-      if (ref && ref !== "HEAD") paths.add(`/.git/${ref}`);
+    const last = this.lastSource ? sourceRefs(this.lastSource) : null;
+    for (const ref of [last?.sourceRef, last?.targetRef]) {
+      // only full ref names are files under .git; a range may name a SHA or `stash@{0}`
+      if (ref?.startsWith("refs/")) paths.add(`/.git/${ref}`);
     }
     try {
       for (const remote of await this.fs.readdirWithKinds("/.git/refs/remotes")) {
@@ -792,6 +848,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     this.inflight?.abort();
     for (const ac of this.fileDiffAborts.values()) ac.abort();
     this.fileDiffAborts.clear();
+    this.singleFlight.clear();
     this.stopStats();
     this.current = null;
     this.db.dropCaches(true);

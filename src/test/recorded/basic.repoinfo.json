@@ -2,7 +2,7 @@
   "id": "recorded-basic",
   "name": "basic",
   "headBranch": "feature",
-  "headOid": "d77b2f48c7fb90cbf3c4bd5c9ee1f159a73c7c07",
+  "headOid": "2fa7483f994102c1a5e24f0395417df61a3cc2c2",
   "detached": false,
   "unborn": false,
   "headDisplay": "feature",
@@ -11,7 +11,7 @@
       "name": "feature",
       "fullName": "refs/heads/feature",
       "kind": "local",
-      "oid": "d77b2f48c7fb90cbf3c4bd5c9ee1f159a73c7c07",
+      "oid": "2fa7483f994102c1a5e24f0395417df61a3cc2c2",
       "isDefault": false,
       "isCheckedOut": true
     },
@@ -19,7 +19,7 @@
       "name": "main",
       "fullName": "refs/heads/main",
       "kind": "local",
-      "oid": "37e349c936b45f53ff870925d5002d19c6d2bf10",
+      "oid": "e6474f9260bfa645409b38281946467ac0c34ed3",
       "isDefault": true,
       "isCheckedOut": false
     }
@@ -28,7 +28,7 @@
     "name": "main",
     "fullName": "refs/heads/main",
     "kind": "local",
-    "oid": "37e349c936b45f53ff870925d5002d19c6d2bf10",
+    "oid": "e6474f9260bfa645409b38281946467ac0c34ed3",
     "isDefault": true,
     "isCheckedOut": false
   },

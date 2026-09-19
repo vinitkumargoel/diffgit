@@ -1,0 +1,165 @@
+{
+  "tags": [],
+  "stashes": [
+    {
+      "index": 0,
+      "expr": "stash@{0}",
+      "oid": "632bf968606294738eb86e929596f787f04098e8",
+      "message": "On main: wip: with untracked",
+      "timestamp": 1704067200000,
+      "baseOid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "indexOid": "a079515024800fc009a37bbef87b3c01fda475f6",
+      "untrackedOid": "1fb4409438c7e18a489aaac417327333a2b70f1f",
+      "files": 2
+    },
+    {
+      "index": 1,
+      "expr": "stash@{1}",
+      "oid": "6622462c5b8d28bc3773f3716bb08042cab077ba",
+      "message": "On main: wip: tracked only",
+      "timestamp": 1704067200000,
+      "baseOid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "indexOid": "a079515024800fc009a37bbef87b3c01fda475f6",
+      "untrackedOid": null,
+      "files": 1
+    }
+  ],
+  "revisions": {
+    "HEAD": {
+      "expr": "HEAD",
+      "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "kind": "head",
+      "display": "HEAD",
+      "fullRef": "HEAD"
+    },
+    "main": {
+      "expr": "main",
+      "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "kind": "branch",
+      "display": "main",
+      "fullRef": "refs/heads/main"
+    },
+    "stash@{0}": {
+      "expr": "stash@{0}",
+      "oid": "632bf968606294738eb86e929596f787f04098e8",
+      "kind": "stash",
+      "display": "stash@{0}"
+    },
+    "stash@{0}^": {
+      "expr": "stash@{0}^",
+      "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "kind": "commit",
+      "display": "stash@{0}^"
+    },
+    "stash@{0}^2": {
+      "expr": "stash@{0}^2",
+      "oid": "a079515024800fc009a37bbef87b3c01fda475f6",
+      "kind": "commit",
+      "display": "stash@{0}^2"
+    },
+    "stash@{0}^3": {
+      "expr": "stash@{0}^3",
+      "oid": "1fb4409438c7e18a489aaac417327333a2b70f1f",
+      "kind": "commit",
+      "display": "stash@{0}^3"
+    },
+    "stash@{1}": {
+      "expr": "stash@{1}",
+      "oid": "6622462c5b8d28bc3773f3716bb08042cab077ba",
+      "kind": "stash",
+      "display": "stash@{1}"
+    },
+    "stash@{1}^": {
+      "expr": "stash@{1}^",
+      "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "kind": "commit",
+      "display": "stash@{1}^"
+    },
+    "stash@{1}^2": {
+      "expr": "stash@{1}^2",
+      "oid": "a079515024800fc009a37bbef87b3c01fda475f6",
+      "kind": "commit",
+      "display": "stash@{1}^2"
+    }
+  },
+  "ranges": [
+    {
+      "source": {
+        "kind": "range",
+        "from": "HEAD",
+        "to": "stash@{0}",
+        "fromRef": "HEAD",
+        "toRef": "stash@{0}",
+        "fromOid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+        "toOid": "632bf968606294738eb86e929596f787f04098e8",
+        "threeDot": false,
+        "includeWorktree": false
+      },
+      "result": {
+        "source": {
+          "kind": "range",
+          "from": "HEAD",
+          "to": "stash@{0}",
+          "fromRef": "HEAD",
+          "toRef": "stash@{0}",
+          "fromOid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+          "toOid": "632bf968606294738eb86e929596f787f04098e8",
+          "threeDot": false,
+          "includeWorktree": false
+        },
+        "mergeBase": null,
+        "files": [
+          {
+            "id": "b.txt",
+            "oldPath": "b.txt",
+            "newPath": "b.txt",
+            "status": "modified",
+            "layers": ["unstaged"],
+            "oldOid": "7f98fa5df839ca1c41ebf1023000daaed9f5578d",
+            "newOid": "239cd955173a8ae0a493b554cda0bc59b965f509",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 42,
+            "newSize": 57,
+            "stats": {
+              "additions": 1,
+              "deletions": 1
+            },
+            "tooLarge": false
+          },
+          {
+            "id": "stashed-untracked.txt",
+            "oldPath": null,
+            "newPath": "stashed-untracked.txt",
+            "status": "added",
+            "layers": ["untracked"],
+            "oldOid": null,
+            "newOid": "e7807070ab10280c7c251e1920ab2cad72b151b4",
+            "oldMode": null,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 0,
+            "newSize": 32,
+            "stats": {
+              "additions": 1,
+              "deletions": 0
+            },
+            "tooLarge": false
+          }
+        ],
+        "totals": {
+          "files": 2,
+          "additions": 2,
+          "deletions": 1
+        },
+        "computedAt": 1704067200000,
+        "durationMs": 0,
+        "generation": 2,
+        "warnings": []
+      }
+    }
+  ]
+}

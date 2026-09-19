@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sourceRefs } from "../../engine/diffSource";
 import { describeError, errorReport, type UiError } from "../errors";
 import { ensurePermission, removeRepo } from "../persistence";
 import { useStore } from "../store";
@@ -32,7 +33,10 @@ export function useErrorActions() {
       await openRepo(handle, {
         ...(repoId ? { id: repoId } : {}),
         ...(diffSource && !opts.defaults
-          ? { lastSource: diffSource.sourceRef, lastTarget: diffSource.targetRef }
+          ? {
+              lastSource: sourceRefs(diffSource).sourceRef,
+              lastTarget: sourceRefs(diffSource).targetRef,
+            }
           : {}),
         ...(opts.skipWorktree ? { skipWorktree: true } : {}),
       });

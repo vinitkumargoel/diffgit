@@ -1,4 +1,5 @@
 import { GitCompare, Search } from "lucide-react";
+import { sourceLabels } from "../../engine/diffSource";
 import { useShortcuts } from "../hooks/useShortcuts";
 import { useStore } from "../store";
 import { CenteredColumn } from "./CenteredColumn";
@@ -22,9 +23,10 @@ const Branch = ({ name }: { name: string }) => (
 export function EmptyState() {
   const src = useStore((s) => s.diffSource);
   const swapBranches = useStore((s) => s.swapBranches);
-  // DiffSource.source / target are the display names; *Ref are the full ref names
-  const source = src?.source ?? "";
-  const target = src?.target ?? "";
+  // `sourceLabels` gives the display names of either DiffSource kind (compare / base)
+  const labels = src ? sourceLabels(src) : null;
+  const source = labels?.source ?? "";
+  const target = labels?.target ?? "";
   const sameRef = source !== "" && source === target;
   return (
     <CenteredColumn as="section" label="No changes">

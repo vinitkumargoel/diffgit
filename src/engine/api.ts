@@ -6,7 +6,16 @@
  * `RepoInfo` structurally satisfies `RefSnapshot`, so the UI can call `isWorktreeSource(src, info)`.
  */
 import type { EngineErrorJSON, PublicCode } from "./errors";
-import type { DiffResult, DiffSource, FileDiff, RepoInfo, RepoWarning } from "./types";
+import type {
+  DiffResult,
+  DiffSource,
+  FileDiff,
+  RepoInfo,
+  RepoWarning,
+  ResolvedRevision,
+  StashInfo,
+  TagInfo,
+} from "./types";
 
 export type ProgressPhase =
   | "layout"
@@ -132,6 +141,17 @@ export interface EngineApi {
   reloadRefs(): Promise<RepoInfo>;
   /** Cancels any in-flight compute; the superseded call rejects with `CANCELLED`. */
   computeDiff(src: DiffSource): Promise<DiffResult>;
+  /**
+   * Resolves one revision expression (T10.1): full refs, `HEAD`, short names in git's precedence,
+   * 7–40 hex SHA prefixes, `~n`, `^`, `^n`, `^{}`, `stash@{n}` and chains of those. Annotated tags
+   * are peeled to their commit. Rejects with `REV_NOT_FOUND`, or `REV_AMBIGUOUS` (candidate oids in
+   * `detail`) when a short SHA matches more than one object.
+   */
+  resolveRevision(expr: string): Promise<ResolvedRevision>;
+  /** Every tag, loose and packed, annotated ones peeled (T10.1). */
+  listTags(): Promise<TagInfo[]>;
+  /** The stash stack, newest first (T10.1). */
+  listStashes(): Promise<StashInfo[]>;
   fileStats(generation: number, ids: string[]): Promise<Record<string, FileStats>>;
   fileDiff(generation: number, id: string, opts: FileDiffOptions): Promise<FileDiffPayload>;
   cancelFileDiff(id: string): Promise<void>;

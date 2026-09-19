@@ -15,6 +15,18 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T10.1 — Range sources, revision resolver, tags, stashes (2026-09-19)
+
+- `DiffSource` is now `BranchesSource | RangeSource`. `DiffEngine.compute` takes a range: three-dot uses the merge base as before, two-dot uses the `from` tree directly (`mergeBase: null`), `fromOid: null`/`EMPTY_TREE_OID` is git's empty tree, and the working tree is layered only when `isWorktreeSource` says the compare side is HEAD. A stash as the compare side is layered like the working tree it came from — second parent's tree `staged`, the stash's own tree `unstaged`, third parent's tree `untracked` — which is what makes "2 files (1 untracked)" possible.
+- New engine modules `git/revisions.ts` (`resolveRevision`: refs, `HEAD`, git's short-name order, 7–40 hex prefixes with `REV_AMBIGUOUS` candidates in `detail`, `~n`/`^`/`^n`/`^{}`/`^{commit}` chains, `stash@{n}`, tag peeling, `<root>^` → empty tree), `git/tags.ts` and `git/stash.ts`; `ObjectDb` gained `listTagNames`, `readTag`, `expandOid`, `readGitText`. `RepoSession`/`EngineApi`/`WorkerClient` gained `resolveRevision`, `listTags`, `listStashes`, each single-in-flight (`CANCELLED` on supersede).
+- **Decisions:** every timestamp crossing the boundary is epoch milliseconds; `EngineError`/`UiError` gained `detail?: string` so `REV_AMBIGUOUS` can carry its candidates; `resolveRevision` always returns a *commit* with the annotated tag object in `peeledFrom` (so `git rev-parse v1.0.0` equals `peeledFrom ?? oid`); a stash is recognised structurally (parents plus the `index on ` message), not by the expression, so a pasted SHA works too.
+- UI kept compiling with narrowing only: `diffSource.ts` gained `sourceLabels()` / `sourceRefs()`, used by `viewedKey`, `TopBar`, `FileTree`, `EmptyState`, `LoadingScreen`, `ErrorScreen`, `useErrorActions`, the probe and the scheduler toast; `setSource`/`setTarget`/`swapBranches` and the scheduler's deleted-branch fallback guard on `kind === "branches"`. No redesign — T11.2 owns the range pickers.
+- Tests: `revisions.test.ts` replays every line of `expected/rev-parse.txt` for `history`/`tags`/`stash`; `tags.test.ts` and `stash.test.ts` equal `git tag -l` / `git stash list` / `git rev-list --parents`; `rangeDiff.test.ts` equals a new `expected/range-name-status.txt` recording (added to `scripts/fixture-expectations.sh`, since T10.0 recorded no range diffs). `bun run record` now also records `tags`/`stash`/`history` plus `<fixture>.v2.json` (tags, stashes, revisions, range results) for the mock.
+- **Follow-up:** `src/ui/errors.ts`, `src/ui/warnings.ts` and `docs/errors.md` carry placeholder copy for the 12 new warning codes and 3 new public codes so `errors.docs.test.ts` stays green — T11.1 owns the final wording. Re-recording moved `src/test/recorded/basic.*` to the current fixture oids.
+- Checks: `bun run check` green — tsc, Biome (233 files), 258 engine tests (24 files), 297 UI tests (26 files), guards.
+
+---
+
 ## T10.0 — v2 fixtures (2026-09-19)
 
 - `scripts/make-fixtures.sh` builds ten new repositories with the real git CLI (2.50.1) and fixed identities/dates, so rebuilds are byte-identical: `tags`, `stash`, `rebase-conflict`, `merge-conflict`, `cherry-pick-conflict`, `reflog-orphan`, `history` (60 commits on `main`, a `topic` merge, a `git mv` rename, a whitespace-only commit, `.mailmap`, a `renovate[bot]` author, 3 lightweight + 1 annotated tag, `commit-graph write --reachable --changed-paths`), `secrets`, `hidden` and `octopus`.

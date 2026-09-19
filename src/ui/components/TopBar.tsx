@@ -1,4 +1,5 @@
 import { CircleHelp } from "lucide-react";
+import { sourceRefs } from "../../engine/diffSource";
 import { selectCanIncludeWorktree, useStore } from "../store";
 import { BranchPicker } from "./BranchPicker";
 import { IncludeWorktreeToggle } from "./IncludeWorktreeToggle";
@@ -26,6 +27,9 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
 
   if (!repo || !diffSource) return null;
 
+  // T10.1: the pickers still show refs; `sourceRefs` reads either DiffSource kind.
+  const refs = sourceRefs(diffSource);
+
   return (
     <header className="shrink-0 border-b border-line text-[13px] leading-5 text-ink">
       <div className="flex min-h-11 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface-raised px-3 py-1">
@@ -34,12 +38,7 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
           {repo.name}
         </span>
         <span className="text-xs text-muted">base:</span>
-        <BranchPicker
-          label="base"
-          value={diffSource.targetRef}
-          refs={repo.refs}
-          onSelect={setTarget}
-        />
+        <BranchPicker label="base" value={refs.targetRef} refs={repo.refs} onSelect={setTarget} />
         <span
           role="img"
           aria-label="Shows what compare adds on top of base"
@@ -51,14 +50,11 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
         <span className="text-xs text-muted">compare:</span>
         <BranchPicker
           label="compare"
-          value={diffSource.sourceRef}
+          value={refs.sourceRef}
           refs={repo.refs}
           onSelect={setSource}
         />
-        <SwapButton
-          disabled={diffSource.sourceRef === diffSource.targetRef}
-          onClick={swapBranches}
-        />
+        <SwapButton disabled={refs.sourceRef === refs.targetRef} onClick={swapBranches} />
         <Divider />
         <IncludeWorktreeToggle
           checked={diffSource.includeWorktree}

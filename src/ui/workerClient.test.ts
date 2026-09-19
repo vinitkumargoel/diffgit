@@ -173,3 +173,58 @@ describe("real worker client (fake worker)", () => {
     client.terminate();
   });
 });
+
+describe("mock worker client: v2 sources (T10.1)", () => {
+  it("serves the recorded tags, stashes and revisions", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "tags" }, sink());
+    const tags = await client.listTags();
+    expect(tags.map((x) => x.name)).toEqual(["v0.1.0", "v0.2.0", "v1.0.0", "v1.1.0"]);
+    expect(tags.find((x) => x.name === "v1.0.0")?.annotated).toBe(true);
+    expect(await client.resolveRevision("v1.0.0")).toMatchObject({
+      kind: "tag",
+      display: "v1.0.0",
+      fullRef: "refs/tags/v1.0.0",
+    });
+    await expect(client.resolveRevision("nope")).rejects.toMatchObject({ code: "REV_NOT_FOUND" });
+    expect(await client.listStashes()).toEqual([]);
+  });
+
+  it("replays a recorded range, including a stash with its untracked file", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "stash" }, sink());
+    const stashes = await client.listStashes();
+    expect(stashes.map((s) => s.expr)).toEqual(["stash@{0}", "stash@{1}"]);
+    expect(stashes[0]?.untrackedOid).not.toBeNull();
+    expect(stashes[0]?.files).toBe(2);
+
+    const head = await client.resolveRevision("HEAD");
+    const stash = await client.resolveRevision("stash@{0}");
+    const range: DiffSource = {
+      kind: "range",
+      from: head.display,
+      to: stash.display,
+      fromRef: "HEAD",
+      toRef: "stash@{0}",
+      fromOid: head.oid,
+      toOid: stash.oid as string,
+      threeDot: false,
+      includeWorktree: false,
+    };
+    const diff = await client.computeDiff(range);
+    expect(diff.source).toEqual(range);
+    expect(diff.files.map((f) => [f.id, f.layers])).toEqual([
+      ["b.txt", ["unstaged"]],
+      ["stashed-untracked.txt", ["untracked"]],
+    ]);
+    expect(client.lastSource()).toEqual(range);
+  });
+
+  it("a fixture without a v2 recording answers with empty lists", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "showcase" }, sink());
+    expect(await client.listTags()).toEqual([]);
+    expect(await client.listStashes()).toEqual([]);
+    await expect(client.resolveRevision("main")).rejects.toMatchObject({ code: "REV_NOT_FOUND" });
+  });
+});

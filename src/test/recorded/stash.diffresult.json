@@ -1,0 +1,62 @@
+{
+  "source": {
+    "kind": "branches",
+    "source": "main",
+    "target": "main",
+    "sourceRef": "refs/heads/main",
+    "targetRef": "refs/heads/main",
+    "includeWorktree": true
+  },
+  "mergeBase": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+  "files": [
+    {
+      "id": "a.txt",
+      "oldPath": "a.txt",
+      "newPath": "a.txt",
+      "status": "modified",
+      "layers": ["unstaged"],
+      "oldOid": "88559250612f926b67f89221bcd47571f9b4b5f3",
+      "newOid": "a2ab61d642400098d0519ee9fb4830a1c5805ee7",
+      "oldMode": 33188,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 48,
+      "newSize": 67,
+      "stats": {
+        "additions": 1,
+        "deletions": 0
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "left-untracked.txt",
+      "oldPath": null,
+      "newPath": "left-untracked.txt",
+      "status": "added",
+      "layers": ["untracked"],
+      "oldOid": null,
+      "newOid": "6ffe192ce31874a3ef8e63391ac1c8f41f08b7fd",
+      "oldMode": null,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 0,
+      "newSize": 16,
+      "stats": {
+        "additions": 1,
+        "deletions": 0
+      },
+      "tooLarge": false
+    }
+  ],
+  "totals": {
+    "files": 2,
+    "additions": 2,
+    "deletions": 0
+  },
+  "computedAt": 1704067200000,
+  "durationMs": 0,
+  "generation": 1,
+  "warnings": []
+}

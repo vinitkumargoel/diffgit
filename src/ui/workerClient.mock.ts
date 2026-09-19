@@ -6,13 +6,31 @@
  * the sink in batches, and exposes `mutate()` so `probe()` signatures change.
  */
 import type { FileStats, ProgressSink } from "../engine/api";
-import type { DiffResult, DiffSource, FileDiff, RepoInfo } from "../engine/types";
+import { isWorktreeSource, sourceRefs } from "../engine/diffSource";
+import type {
+  DiffResult,
+  DiffSource,
+  FileDiff,
+  RepoInfo,
+  ResolvedRevision,
+  StashInfo,
+  TagInfo,
+} from "../engine/types";
 import realBasicDiff from "../test/recorded/basic.diffresult.json";
 import realBasicInfo from "../test/recorded/basic.repoinfo.json";
+import historyDiff from "../test/recorded/history.diffresult.json";
+import historyInfo from "../test/recorded/history.repoinfo.json";
+import historyV2 from "../test/recorded/history.v2.json";
 import basicDiff from "../test/recorded/showcase.diffresult.json";
 import basicInfo from "../test/recorded/showcase.repoinfo.json";
 import worktreeDiff from "../test/recorded/showcase-worktree.diffresult.json";
 import worktreeInfo from "../test/recorded/showcase-worktree.repoinfo.json";
+import stashDiff from "../test/recorded/stash.diffresult.json";
+import stashInfo from "../test/recorded/stash.repoinfo.json";
+import stashV2 from "../test/recorded/stash.v2.json";
+import tagsDiff from "../test/recorded/tags.diffresult.json";
+import tagsInfo from "../test/recorded/tags.repoinfo.json";
+import tagsV2 from "../test/recorded/tags.v2.json";
 import realWorktreeDiff from "../test/recorded/worktree.diffresult.json";
 import realWorktreeInfo from "../test/recorded/worktree.repoinfo.json";
 import type { UiError } from "./errors";
@@ -25,6 +43,14 @@ import {
   type RestartListener,
   type WorkerClient,
 } from "./workerClient";
+
+/** What `bun run record` writes to `src/test/recorded/<fixture>.v2.json` (T10.1). */
+interface RecordedV2 {
+  tags: TagInfo[];
+  stashes: StashInfo[];
+  revisions: Record<string, ResolvedRevision>;
+  ranges: { source: DiffSource; result: DiffResult }[];
+}
 
 export interface MockWorkerClient extends WorkerClient {
   isMock: true;
@@ -48,9 +74,25 @@ function b64(s: string): Uint8Array {
   return out;
 }
 
-const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult }> = {
+const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult; v2?: RecordedV2 }> = {
   basic: { info: realBasicInfo as RepoInfo, diff: realBasicDiff as DiffResult },
   worktree: { info: realWorktreeInfo as RepoInfo, diff: realWorktreeDiff as DiffResult },
+  // v2 fixtures (T10.1): tags, stashes and range diffs recorded from the real engine
+  tags: {
+    info: tagsInfo as RepoInfo,
+    diff: tagsDiff as DiffResult,
+    v2: tagsV2 as unknown as RecordedV2,
+  },
+  stash: {
+    info: stashInfo as RepoInfo,
+    diff: stashDiff as DiffResult,
+    v2: stashV2 as unknown as RecordedV2,
+  },
+  history: {
+    info: historyInfo as RepoInfo,
+    diff: historyDiff as DiffResult,
+    v2: historyV2 as unknown as RecordedV2,
+  },
   showcase: { info: basicInfo as RepoInfo, diff: basicDiff as DiffResult },
   "showcase-worktree": { info: worktreeInfo as RepoInfo, diff: worktreeDiff as DiffResult },
   // synthetic 5,000-file repo (Plan §6.7) for virtualisation checks; handle name "large"
@@ -99,7 +141,7 @@ function err(code: UiError["code"], message: string): UiError {
 }
 
 export function createMockWorkerClient(opts: { latency?: number } = {}): MockWorkerClient {
-  let current: { info: RepoInfo; diff: DiffResult } | null = null;
+  let current: { info: RepoInfo; diff: DiffResult; v2?: RecordedV2 } | null = null;
   let sink: ProgressSink | null = null;
   let generation = 0;
   let mutations = 0;
@@ -154,16 +196,31 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       sink?.onProgress({ phase: "diff" });
       await wait(client.latency);
       if (gen !== generation) throw err("CANCELLED", "superseded");
+      // A range the recorder captured is replayed verbatim (T10.1); anything else is derived from
+      // the default recording the same way v1 always did.
+      const recordedRange = findRange(src);
+      if (recordedRange) {
+        const result: DiffResult = {
+          ...recordedRange,
+          source: src,
+          files: recordedRange.files.map((f) => ({ ...f, stats: null })),
+          generation: gen,
+          computedAt: 1758000000000 + mutations * 1000,
+          durationMs: 5 + mutations,
+        };
+        lastResult = result;
+        scheduleStats(recordedRange.files, gen);
+        sink?.onProgress({ phase: "diff", durationMs: result.durationMs });
+        return result;
+      }
+      const { sourceRef, targetRef } = sourceRefs(src);
       let files: FileDiff[] = current.diff.files;
-      if (!src.includeWorktree || src.sourceRef !== `refs/heads/${current.info.headBranch}`) {
+      if (!src.includeWorktree || !isWorktreeSource(src, current.info)) {
         files = files
           .filter((f) => f.layers.includes("committed"))
           .map((f) => ({ ...f, layers: ["committed"] as FileDiff["layers"] }));
       }
-      if (
-        src.sourceRef === src.targetRef &&
-        files.every((f) => f.layers.every((l) => l === "committed"))
-      ) {
+      if (sourceRef === targetRef && files.every((f) => f.layers.every((l) => l === "committed"))) {
         files = [];
       }
       const totals = files.reduce(
@@ -192,6 +249,23 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       scheduleStats(files, gen);
       sink?.onProgress({ phase: "diff", durationMs: result.durationMs });
       return result;
+    },
+    async resolveRevision(expr) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const found = v2.revisions[expr.trim()];
+      if (!found) throw err("REV_NOT_FOUND", `Cannot resolve "${expr}".`);
+      return found;
+    },
+    async listTags() {
+      const v2 = requireV2();
+      await wait(client.latency);
+      return v2.tags;
+    },
+    async listStashes() {
+      const v2 = requireV2();
+      await wait(client.latency);
+      return v2.stashes;
     },
     async fileStats(gen, ids) {
       const files = requireGen(gen);
@@ -272,6 +346,25 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       for (const l of restartListeners) l(current?.info ?? null, null);
     },
   };
+
+  /** The v2 recording of the open handle; fixtures without one behave as an empty repository. */
+  function requireV2(): RecordedV2 {
+    if (!current) throw err("INTERNAL", "no repo open");
+    return current.v2 ?? { tags: [], stashes: [], revisions: {}, ranges: [] };
+  }
+
+  /** The recorded result for this exact range, if `bun run record` captured it. */
+  function findRange(src: DiffSource): DiffResult | null {
+    if (src.kind !== "range" || !current?.v2) return null;
+    const hit = current.v2.ranges.find(
+      (r) =>
+        r.source.kind === "range" &&
+        r.source.fromOid === src.fromOid &&
+        r.source.toOid === src.toOid &&
+        r.source.threeDot === src.threeDot,
+    );
+    return hit ? hit.result : null;
+  }
 
   function requireGen(gen: number): FileDiff[] {
     if (!lastResult || gen !== lastResult.generation)

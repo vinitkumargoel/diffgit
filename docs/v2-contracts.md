@@ -12,6 +12,11 @@ Warning codes (append to `WARNING_CODES`): `HISTORY_CAPPED`, `NO_REFLOG`, `SEARC
 Public error codes (append to `PUBLIC_CODES`): `REV_NOT_FOUND` (an expression did not resolve),
 `REV_AMBIGUOUS` (short SHA matched several objects; `detail` lists candidates), `NOT_A_PATCH`.
 `src/ui/warnings.ts` and `docs/errors.md` gain a row per code (T11.1 for the UI copy).
+<!-- T10.1 --> `EngineError`, `EngineErrorJSON`, `PublicError` and `UiError` gain `detail?: string`
+so `REV_AMBIGUOUS` can carry its candidates across the worker boundary; it is the comma-separated
+list of full oids. T10.1 added all the codes above and placeholder copy for them in
+`src/ui/errors.ts` / `src/ui/warnings.ts` / `docs/errors.md` (the parity test in
+`src/ui/errors.docs.test.ts` requires a row per code); T11.1 owns the final wording.
 
 ## Constants
 
@@ -34,6 +39,22 @@ export type DiffSource = BranchesSource | RangeSource;
 ```
 `diffSource.ts`: `isWorktreeSource` returns true for a `RangeSource` whose `toOid` equals `headOid`
 and `includeWorktree`; `defaultDiffSource` unchanged. `DiffResult.mergeBase` is null for two-dot.
+<!-- T10.1 --> `diffSource.ts` also exports `sourceLabels(src)` → `{ source, target }` (display
+names) and `sourceRefs(src)` → `{ sourceRef, targetRef }` (resolvable expressions); a `RangeSource`
+maps `to`/`toRef` to `source`/`sourceRef` and `from`/`fromRef` to `target`/`targetRef`. Everything
+that only names or keys the two sides (`viewedKey`, `TopBar`, the scheduler's toast, the probe) uses
+these instead of narrowing the union. `defaultDiffSource` is declared as returning `BranchesSource`.
+A `RangeSource` whose `to` is a stash commit is layered like the working tree it came from: the
+second parent's tree is `staged`, the stash's own tree is `unstaged`, the third parent's tree is
+`untracked`. `fromOid: null` and `fromOid: EMPTY_TREE_OID` both mean the empty tree.
+
+<!-- T10.1 --> Every timestamp in these shapes (`Signature.timestamp`, `TagInfo.timestamp`,
+`StashInfo.timestamp`, and the ones later tasks add) is epoch **milliseconds**, like
+`DiffResult.computedAt`. `Signature.tzOffsetMin` is isomorphic-git's `timezoneOffset`
+(`Date.getTimezoneOffset()` convention). `StashInfo.files` counts the base→stash tree diff plus the
+untracked files the stash kept; `RepoSession.listStashes()` fills it for the first 50 stashes.
+`resolveRevision` additionally accepts `^{}` and `^{commit}` (no-ops once a tag has been peeled) and
+requires at least 7 hex characters for a SHA prefix.
 
 ```ts
 export interface ResolvedRevision {

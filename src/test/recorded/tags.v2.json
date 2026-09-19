@@ -1,0 +1,263 @@
+{
+  "tags": [
+    {
+      "name": "v0.1.0",
+      "fullName": "refs/tags/v0.1.0",
+      "oid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+      "targetOid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+      "annotated": false
+    },
+    {
+      "name": "v0.2.0",
+      "fullName": "refs/tags/v0.2.0",
+      "oid": "7f276549ffed610f8419f52e68edadb1348b883b",
+      "targetOid": "7f276549ffed610f8419f52e68edadb1348b883b",
+      "annotated": false
+    },
+    {
+      "name": "v1.0.0",
+      "fullName": "refs/tags/v1.0.0",
+      "oid": "11f05d304a2a99fc00f110ab8db9e3a61f6b0dd8",
+      "targetOid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "annotated": true,
+      "message": "annotated release 1.0.0\n",
+      "tagger": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "timestamp": 1704067200000
+    },
+    {
+      "name": "v1.1.0",
+      "fullName": "refs/tags/v1.1.0",
+      "oid": "a985da1704ea7b799dfb6c533ad5ad9047d4894f",
+      "targetOid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+      "annotated": true,
+      "message": "annotated release 1.1.0\n",
+      "tagger": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "timestamp": 1704067200000
+    }
+  ],
+  "stashes": [],
+  "revisions": {
+    "HEAD": {
+      "expr": "HEAD",
+      "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+      "kind": "head",
+      "display": "HEAD",
+      "fullRef": "HEAD"
+    },
+    "main": {
+      "expr": "main",
+      "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+      "kind": "branch",
+      "display": "main",
+      "fullRef": "refs/heads/main"
+    },
+    "main~1": {
+      "expr": "main~1",
+      "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "kind": "commit",
+      "display": "main~1"
+    },
+    "main~2": {
+      "expr": "main~2",
+      "oid": "7f276549ffed610f8419f52e68edadb1348b883b",
+      "kind": "commit",
+      "display": "main~2"
+    },
+    "release": {
+      "expr": "release",
+      "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "kind": "branch",
+      "display": "release",
+      "fullRef": "refs/heads/release"
+    },
+    "refs/heads/release": {
+      "expr": "refs/heads/release",
+      "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "kind": "branch",
+      "display": "release",
+      "fullRef": "refs/heads/release"
+    },
+    "v0.1.0": {
+      "expr": "v0.1.0",
+      "oid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+      "kind": "tag",
+      "display": "v0.1.0",
+      "fullRef": "refs/tags/v0.1.0"
+    },
+    "v0.2.0": {
+      "expr": "v0.2.0",
+      "oid": "7f276549ffed610f8419f52e68edadb1348b883b",
+      "kind": "tag",
+      "display": "v0.2.0",
+      "fullRef": "refs/tags/v0.2.0"
+    },
+    "v1.0.0": {
+      "expr": "v1.0.0",
+      "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "kind": "tag",
+      "display": "v1.0.0",
+      "fullRef": "refs/tags/v1.0.0",
+      "peeledFrom": "11f05d304a2a99fc00f110ab8db9e3a61f6b0dd8"
+    },
+    "v1.0.0^{}": {
+      "expr": "v1.0.0^{}",
+      "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "kind": "tag",
+      "display": "v1.0.0",
+      "fullRef": "refs/tags/v1.0.0",
+      "peeledFrom": "11f05d304a2a99fc00f110ab8db9e3a61f6b0dd8"
+    },
+    "v1.0.0^{commit}": {
+      "expr": "v1.0.0^{commit}",
+      "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "kind": "tag",
+      "display": "v1.0.0",
+      "fullRef": "refs/tags/v1.0.0",
+      "peeledFrom": "11f05d304a2a99fc00f110ab8db9e3a61f6b0dd8"
+    },
+    "v1.1.0": {
+      "expr": "v1.1.0",
+      "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+      "kind": "tag",
+      "display": "v1.1.0",
+      "fullRef": "refs/tags/v1.1.0",
+      "peeledFrom": "a985da1704ea7b799dfb6c533ad5ad9047d4894f"
+    },
+    "refs/tags/v1.0.0": {
+      "expr": "refs/tags/v1.0.0",
+      "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "kind": "tag",
+      "display": "v1.0.0",
+      "fullRef": "refs/tags/v1.0.0",
+      "peeledFrom": "11f05d304a2a99fc00f110ab8db9e3a61f6b0dd8"
+    }
+  },
+  "ranges": [
+    {
+      "source": {
+        "kind": "range",
+        "from": "v0.1.0",
+        "to": "v1.0.0",
+        "fromRef": "v0.1.0",
+        "toRef": "v1.0.0",
+        "fromOid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+        "toOid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+        "threeDot": true,
+        "includeWorktree": false
+      },
+      "result": {
+        "source": {
+          "kind": "range",
+          "from": "v0.1.0",
+          "to": "v1.0.0",
+          "fromRef": "v0.1.0",
+          "toRef": "v1.0.0",
+          "fromOid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+          "toOid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+          "threeDot": true,
+          "includeWorktree": false
+        },
+        "mergeBase": "1e919f3681161418fef2e272272c9cb707fa65f6",
+        "files": [
+          {
+            "id": "file.txt",
+            "oldPath": "file.txt",
+            "newPath": "file.txt",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "15de8c595165b452a50183cbd034f9427f2df9a0",
+            "newOid": "c455ecb1561d6f6ac5963e2c0bdf482b01d4614b",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 12,
+            "newSize": 14,
+            "stats": {
+              "additions": 1,
+              "deletions": 1
+            },
+            "tooLarge": false
+          }
+        ],
+        "totals": {
+          "files": 1,
+          "additions": 1,
+          "deletions": 1
+        },
+        "computedAt": 1704067200000,
+        "durationMs": 0,
+        "generation": 2,
+        "warnings": []
+      }
+    },
+    {
+      "source": {
+        "kind": "range",
+        "from": "v0.1.0",
+        "to": "v1.0.0",
+        "fromRef": "v0.1.0",
+        "toRef": "v1.0.0",
+        "fromOid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+        "toOid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+        "threeDot": false,
+        "includeWorktree": false
+      },
+      "result": {
+        "source": {
+          "kind": "range",
+          "from": "v0.1.0",
+          "to": "v1.0.0",
+          "fromRef": "v0.1.0",
+          "toRef": "v1.0.0",
+          "fromOid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+          "toOid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+          "threeDot": false,
+          "includeWorktree": false
+        },
+        "mergeBase": null,
+        "files": [
+          {
+            "id": "file.txt",
+            "oldPath": "file.txt",
+            "newPath": "file.txt",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "15de8c595165b452a50183cbd034f9427f2df9a0",
+            "newOid": "c455ecb1561d6f6ac5963e2c0bdf482b01d4614b",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 12,
+            "newSize": 14,
+            "stats": {
+              "additions": 1,
+              "deletions": 1
+            },
+            "tooLarge": false
+          }
+        ],
+        "totals": {
+          "files": 1,
+          "additions": 1,
+          "deletions": 1
+        },
+        "computedAt": 1704067200000,
+        "durationMs": 0,
+        "generation": 3,
+        "warnings": []
+      }
+    }
+  ]
+}

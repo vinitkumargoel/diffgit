@@ -40,6 +40,10 @@ export const PUBLIC_CODES = [
   "WORKER_CRASHED",
   "STORAGE_UNAVAILABLE",
   "INTERNAL",
+  // v2 (T10.1, docs/v2-contracts.md § Codes)
+  "REV_NOT_FOUND",
+  "REV_AMBIGUOUS",
+  "NOT_A_PATCH",
 ] as const;
 export type PublicCode = (typeof PUBLIC_CODES)[number];
 
@@ -73,6 +77,19 @@ export const WARNING_CODES = [
   "STALE_PACK_RETRIED",
   "REFRESH_DEGRADED",
   "PATH_TYPE_CHANGED",
+  // v2 (T10.1, docs/v2-contracts.md § Codes)
+  "HISTORY_CAPPED",
+  "NO_REFLOG",
+  "SEARCH_CAPPED",
+  "BLAME_CAPPED",
+  "INSIGHTS_CAPPED",
+  "HIDDEN_CAPPED",
+  "COMMIT_GRAPH_STALE",
+  "SECRETS_FOUND",
+  "OPERATION_IN_PROGRESS",
+  "SNAPSHOT_MODE",
+  "JJ_COLOCATED",
+  "PATCH_ONLY",
 ] as const;
 export type WarningCode = (typeof WARNING_CODES)[number];
 
@@ -84,18 +101,22 @@ export interface EngineErrorJSON {
   message: string;
   hint?: string;
   path?: string;
+  /** Machine-readable extra (T10.1): `REV_AMBIGUOUS` lists the candidate oids here, comma-separated. */
+  detail?: string;
 }
 
 export interface EngineErrorOptions {
   hint?: string;
   cause?: unknown;
   path?: string;
+  detail?: string;
 }
 
 export class EngineError extends Error {
   readonly code: EngineErrorCode;
   readonly hint?: string;
   readonly path?: string;
+  readonly detail?: string;
 
   constructor(code: EngineErrorCode, message?: string, opts: EngineErrorOptions = {}) {
     super(message ?? code, opts.cause === undefined ? undefined : { cause: opts.cause });
@@ -103,6 +124,7 @@ export class EngineError extends Error {
     this.code = code;
     if (opts.hint !== undefined) this.hint = opts.hint;
     if (opts.path !== undefined) this.path = opts.path;
+    if (opts.detail !== undefined) this.detail = opts.detail;
   }
 
   /** Plain, structured-cloneable shape for crossing the worker boundary (comlink loses prototypes). */
@@ -110,6 +132,7 @@ export class EngineError extends Error {
     const json: EngineErrorJSON = { name: "EngineError", code: this.code, message: this.message };
     if (this.hint !== undefined) json.hint = this.hint;
     if (this.path !== undefined) json.path = this.path;
+    if (this.detail !== undefined) json.detail = this.detail;
     return json;
   }
 }

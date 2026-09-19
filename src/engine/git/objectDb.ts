@@ -2,8 +2,9 @@
  * ObjectDb (T1.3, Plan §5.2): the only place that calls isomorphic-git. Pure reads, one shared
  * `cache` object per session, memoised flattened trees, stale-pack retry.
  *
- * Allowed isomorphic-git calls: resolveRef, listBranches, readCommit, readTree, readBlob,
- * findMergeBase (and walk(TREE) / listRemotes if ever needed). Nothing here may write.
+ * Allowed isomorphic-git calls: resolveRef, listBranches, listTags, readCommit, readTree, readBlob,
+ * readTag, expandOid, findMergeBase (and walk(TREE) / listRemotes if ever needed). Nothing here may
+ * write.
  */
 import git from "isomorphic-git";
 import { EngineError, errorCode } from "../errors";
@@ -22,6 +23,16 @@ export interface CommitInfo {
 export interface MergeBaseResult {
   oid: Oid | null; // all[0]; null when unrelated or history is missing (shallow)
   all: Oid[];
+}
+
+/** An annotated tag object (T10.1); `object` is what it points at, possibly another tag. */
+export interface TagObjectInfo {
+  oid: Oid;
+  object: Oid;
+  type: "blob" | "tree" | "commit" | "tag";
+  tag: string;
+  message: string;
+  tagger?: { name: string; email: string; timestamp: number; timezoneOffset: number };
 }
 
 const DIR = "/";
@@ -129,8 +140,69 @@ export class ObjectDb {
     return line.startsWith("ref: ") ? line.slice(5).trim() : null;
   }
 
+  /**
+   * Raw text of a file under `.git/` (e.g. `logs/refs/stash`); null when it does not exist.
+   * `readSymref` is the ref-shaped cousin of this.
+   */
+  async readGitText(path: string): Promise<string | null> {
+    try {
+      return await this.fs.readText(`.git/${path}`);
+    } catch (e) {
+      const code = errorCode(e);
+      if (code === "ENOENT" || code === "ENOTDIR" || code === "EISDIR") return null;
+      throw e;
+    }
+  }
+
   async listLocalBranches(): Promise<string[]> {
     return git.listBranches({ fs: this.fs, dir: DIR });
+  }
+
+  /** Tag names (loose + packed-refs), without the `refs/tags/` prefix, sorted bytewise. */
+  async listTagNames(): Promise<string[]> {
+    const names = await git.listTags({ fs: this.fs, dir: DIR });
+    return names.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  }
+
+  /** Reads an annotated tag object; null when `oid` is not a tag (a lightweight tag's target). */
+  async readTag(oid: Oid): Promise<TagObjectInfo | null> {
+    return this.withStalePackRetry(async () => {
+      try {
+        const r = await git.readTag({ fs: this.fs, dir: DIR, oid, cache: this.cache });
+        const out: TagObjectInfo = {
+          oid: r.oid,
+          object: r.tag.object,
+          type: r.tag.type,
+          tag: r.tag.tag,
+          message: r.tag.message,
+        };
+        if (r.tag.tagger) out.tagger = r.tag.tagger;
+        return out;
+      } catch (e) {
+        if (errorCode(e) === "ObjectTypeError") return null;
+        throw e;
+      }
+    });
+  }
+
+  /**
+   * Objects whose oid starts with `prefix` (loose + every pack index). Returns every candidate so
+   * the caller can raise `REV_AMBIGUOUS` with the list; empty when nothing matches.
+   */
+  async expandOid(prefix: string): Promise<Oid[]> {
+    return this.withStalePackRetry(async () => {
+      try {
+        return [await git.expandOid({ fs: this.fs, dir: DIR, oid: prefix, cache: this.cache })];
+      } catch (e) {
+        const code = errorCode(e);
+        if (code === "NotFoundError") return [];
+        if (code === "AmbiguousError") {
+          const matches = (e as { data?: { matches?: unknown } }).data?.matches;
+          return (Array.isArray(matches) ? (matches as Oid[]) : []).slice().sort();
+        }
+        throw e;
+      }
+    });
   }
 
   /** Branch names under `refs/remotes/<remote>/`, without the `HEAD` pseudo-entry. */

@@ -280,6 +280,37 @@ const COPY: Record<PublicCode, ErrorDescription> = {
       },
     ],
   },
+  REV_NOT_FOUND: {
+    title: "Revision not found",
+    message: "Nothing in this repository matches that revision.",
+    tone: "grey",
+    icon: "GitBranch",
+    fix: [
+      {
+        label: "What to do",
+        text: "Use a branch, tag or stash name, or a SHA of at least 7 characters. `~n`, `^` and `^n` are supported; other gitrevisions syntax is not.",
+      },
+    ],
+  },
+  REV_AMBIGUOUS: {
+    title: "Ambiguous revision",
+    message: "That short SHA matches more than one object.",
+    tone: "grey",
+    icon: "GitBranch",
+    fix: [{ label: "What to do", text: "Type more characters of the SHA." }],
+  },
+  NOT_A_PATCH: {
+    title: "Not a patch file",
+    message: "The file is not a unified diff that diffgit can read.",
+    tone: "grey",
+    icon: "FileText",
+    fix: [
+      {
+        label: "What to do",
+        text: "Open a `.patch` or `.diff` produced by `git format-patch` or `git diff`.",
+      },
+    ],
+  },
 };
 
 /** Codes that, when thrown while a repository is opening, stay on the loading screen attached to the phase (L4). */
@@ -304,6 +335,8 @@ export interface UiError {
   code: PublicCode;
   message: string;
   hint?: string;
+  /** Machine-readable extra (T10.1): `REV_AMBIGUOUS` carries the candidate oids, comma-separated. */
+  detail?: string;
 }
 
 /** Normalises anything thrown by the client into a `UiError`. */
@@ -317,8 +350,13 @@ export function toUiError(e: unknown): UiError {
     typeof e === "object" && e !== null && typeof (e as { hint?: unknown }).hint === "string"
       ? (e as { hint: string }).hint
       : undefined;
+  const detail =
+    typeof e === "object" && e !== null && typeof (e as { detail?: unknown }).detail === "string"
+      ? (e as { detail: string }).detail
+      : undefined;
   const ui: UiError = { code: isPublicCode(code) ? code : "INTERNAL", message };
   if (hint !== undefined) ui.hint = hint;
+  if (detail !== undefined) ui.detail = detail;
   return ui;
 }
 

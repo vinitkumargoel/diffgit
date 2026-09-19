@@ -18,6 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
+import { sourceLabels } from "../../engine/diffSource";
 import {
   describeError,
   type ErrorDescription,
@@ -185,8 +186,9 @@ export default function ErrorScreen() {
   if (goneWhileOpen)
     message =
       "The folder went away while the diff was open. The last diff is still on screen behind this message and will not update.";
-  if (code === "REF_NOT_FOUND" && diffSource?.source)
-    message = `\`${diffSource.source}\` no longer exists — it was deleted or renamed while it was selected.`;
+  const compareName = diffSource ? sourceLabels(diffSource).source : "";
+  if (code === "REF_NOT_FOUND" && compareName !== "")
+    message = `\`${compareName}\` no longer exists — it was deleted or renamed while it was selected.`;
   if (code === "IO_ERROR") {
     const path = pathIn(error?.hint) ?? pathIn(error?.message);
     if (path) message = `A file could not be read: \`${path}\`.`;

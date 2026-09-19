@@ -17,7 +17,14 @@ import type {
   ProbeTier,
   ProgressSink,
 } from "../engine/api";
-import type { DiffResult, DiffSource, RepoInfo } from "../engine/types";
+import type {
+  DiffResult,
+  DiffSource,
+  RepoInfo,
+  ResolvedRevision,
+  StashInfo,
+  TagInfo,
+} from "../engine/types";
 import { toUiError, type UiError } from "./errors";
 
 export type RestartListener = (info: RepoInfo | null, error: UiError | null) => void;
@@ -66,6 +73,9 @@ export interface WorkerClient {
   info(): Promise<RepoInfo>;
   reloadRefs(): Promise<RepoInfo>;
   computeDiff(src: DiffSource): Promise<DiffResult>;
+  resolveRevision(expr: string): Promise<ResolvedRevision>;
+  listTags(): Promise<TagInfo[]>;
+  listStashes(): Promise<StashInfo[]>;
   fileStats(generation: number, ids: string[]): Promise<Record<string, FileStats>>;
   fileDiff(generation: number, id: string, opts: FileDiffOptions): Promise<FileDiffPayload>;
   cancelFileDiff(id: string): Promise<void>;
@@ -193,6 +203,9 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
       metrics.lastResultBytes = approxBytes(result);
       return result;
     },
+    resolveRevision: (expr) => call((r) => r.resolveRevision(expr), "resolveRevision"),
+    listTags: () => call((r) => r.listTags(), "listTags"),
+    listStashes: () => call((r) => r.listStashes(), "listStashes"),
     fileStats: (generation, ids) => call((r) => r.fileStats(generation, ids), "fileStats"),
     fileDiff: (generation, id, opts) => call((r) => r.fileDiff(generation, id, opts), "fileDiff"),
     cancelFileDiff: (id) => call((r) => r.cancelFileDiff(id), "cancelFileDiff"),

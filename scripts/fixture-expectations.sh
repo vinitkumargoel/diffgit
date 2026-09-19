@@ -190,6 +190,17 @@ rev_parse_txt() { # rev_parse_txt <repo> <expr...>   →  "<expr>\t<oid|<unresol
   done
 }
 
+# T10.1 range parity: one line per changed path, prefixed with the range label.
+range_ns() { # range_ns <repo> <label> <git diff args...>
+  local r="$1" label="$2"; shift 2
+  G -C "$r" diff --name-status "$@" | awk -v l="$label" 'NF{print l "\t" $0}'
+}
+show_ns() { # show_ns <repo> <label> <rev>
+  local r="$1" label="$2" rev="$3"
+  G -C "$r" show --name-status --format= "$rev" | awk -v l="$label" 'NF{print l "\t" $0}'
+}
+EMPTY_TREE=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+
 # The midpoint sequence `git bisect` would visit, replaying "the midpoint is always good".
 bisect_sequence() { # bisect_sequence <repo> <good> <bad>
   local r="$1" good="$2" bad="$3" i=0 mid remaining
@@ -272,6 +283,10 @@ dump_v2() { # dump_v2 <fixture-name>
       G -C "$r" tag -l --format="$TAG_FMT" > "$exp/tag-list.txt"
       rev_parse_txt "$r" HEAD main main~1 main~2 release refs/heads/release \
         v0.1.0 v0.2.0 v1.0.0 'v1.0.0^{}' 'v1.0.0^{commit}' v1.1.0 refs/tags/v1.0.0 > "$exp/rev-parse.txt"
+      { range_ns "$r" 'v0.1.0..v1.0.0' v0.1.0 v1.0.0
+        range_ns "$r" 'v0.1.0...v1.0.0' v0.1.0...v1.0.0
+        show_ns  "$r" 'show v1.0.0' 'v1.0.0^{}'
+      } > "$exp/range-name-status.txt"
       ;;
     stash)
       G -C "$r" stash list --format='%gd %H %s' > "$exp/stash-list.txt"
@@ -279,6 +294,11 @@ dump_v2() { # dump_v2 <fixture-name>
         G -C "$r" rev-list --parents -n 1 'stash@{1}'; } > "$exp/stash-parents.txt"
       rev_parse_txt "$r" HEAD main 'stash@{0}' 'stash@{0}^' 'stash@{0}^2' 'stash@{0}^3' \
         'stash@{1}' 'stash@{1}^' 'stash@{1}^2' 'stash@{1}^3' > "$exp/rev-parse.txt"
+      { range_ns "$r" 'HEAD..stash@{0}' HEAD 'stash@{0}'
+        range_ns "$r" 'HEAD..stash@{0}^2' HEAD 'stash@{0}^2'
+        range_ns "$r" 'HEAD..stash@{0}^3' HEAD 'stash@{0}^3'
+        range_ns "$r" 'HEAD..stash@{1}' HEAD 'stash@{1}'
+      } > "$exp/range-name-status.txt"
       ;;
     reflog-orphan)
       G -C "$r" reflog --format='%H %gs' > "$exp/reflog.txt"
@@ -314,6 +334,13 @@ dump_v2() { # dump_v2 <fixture-name>
       rev_parse_txt "$r" HEAD main main~1 main~5 'main^' 'main^2' refs/heads/main topic \
         preflight/a 'preflight/a~2' preflight/base v0.1.0 v0.3.0 v1.0.0 'v1.0.0^{}' \
         "$root" "${root:0:7}" "${root}^" > "$exp/rev-parse.txt"
+      { range_ns "$r" 'main~5..main' main~5 main
+        range_ns "$r" 'main~5...main' main~5...main
+        range_ns "$r" 'topic...main' topic...main
+        range_ns "$r" 'empty..root' "$EMPTY_TREE" "$root"
+        show_ns  "$r" 'show main' main
+        show_ns  "$r" 'show root' "$root"
+      } > "$exp/range-name-status.txt"
       record_preflight_outcome
       ;;
     secrets)

@@ -2,14 +2,29 @@
  * DiffEngine (T3.2, Plan §5.6 steps 1–5 and 8, D5–D7): merge-base compare plus working-tree
  * layering. Produces the file list with the right old side (merge base) and new side (source tip,
  * index or worktree) and layer badges. Renames, binary flags and stats are filled in by T3.3/T3.4.
+ *
+ * T10.1 added `RangeSource`: any two points (tags, SHAs, stashes, the empty tree), three-dot
+ * (merge base, as branches always did) or two-dot (the `from` tree directly). A stash as the
+ * compare side is layered like the working tree it came from — index tree as `staged`, its own tree
+ * as `unstaged`, the third parent's tree as `untracked`.
  */
 
 import { isWorktreeSource } from "../diffSource";
 import type { WarningCode } from "../errors";
+import { EMPTY_TREE_OID } from "../git/hash";
 import type { IndexSnapshot } from "../git/indexReader";
 import type { FlatTree, ObjectDb } from "../git/objectDb";
+import { readStashCommits } from "../git/stash";
 import type { Change, WorktreeScanner, WorktreeStatus } from "../git/worktree";
-import type { ChangeLayer, DiffSource, FileDiff, Oid, RefSnapshot, RepoWarning } from "../types";
+import type {
+  ChangeLayer,
+  DiffSource,
+  FileDiff,
+  Oid,
+  RangeSource,
+  RefSnapshot,
+  RepoWarning,
+} from "../types";
 import { throwIfAborted } from "../util/concurrency";
 import { comparePaths, treeDiff } from "./treeDiff";
 
@@ -63,6 +78,25 @@ interface Working {
   layers: Set<ChangeLayer>;
 }
 
+/** The three trees a stash entry carries, once its parents have been read. */
+interface StashLayers {
+  index: FlatTree;
+  work: FlatTree;
+  untracked: FlatTree | null;
+}
+
+/** What steps 1–4 produce, whichever `DiffSource` kind asked for it. */
+interface Resolved {
+  sourceOid: Oid | null;
+  targetOid: Oid | null;
+  mergeBase: Oid | null;
+  sourceTree: FlatTree | null;
+  baseTree: FlatTree | null;
+  stash: StashLayers | null;
+  /** Both sides are the same commit and nothing is layered on top: there is nothing to show. */
+  nothing: boolean;
+}
+
 export class DiffEngine {
   constructor(
     private readonly db: ObjectDb,
@@ -81,86 +115,38 @@ export class DiffEngine {
     const warnings: RepoWarning[] = [];
     const refs = this.refs;
 
-    // 1. resolve
-    const sourceOid = await resolveSourceRef(this.db, refs, src.sourceRef);
-    const targetOid = await resolveSourceRef(this.db, refs, src.targetRef);
-    throwIfAborted(signal, "Diff");
-
-    // 2. worktree applicability (D6)
+    // 1. worktree applicability (D6)
     let includeWorktree = src.includeWorktree;
     if (includeWorktree && !isWorktreeSource(src, refs)) {
       includeWorktree = false;
       warnings.push(
         warning(
           "WORKTREE_NOT_APPLICABLE",
-          "Uncommitted changes are only shown when the compare branch is the checked-out branch.",
+          src.kind === "range"
+            ? "Uncommitted changes are only shown when the compare side is the checked-out commit."
+            : "Uncommitted changes are only shown when the compare branch is the checked-out branch.",
           refs.headDisplay,
         ),
       );
     }
 
-    // 3. same commit, no worktree → nothing to show
-    if (sourceOid === targetOid && !includeWorktree) {
+    // 2–4. resolve both sides, the merge base and the trees
+    const r =
+      src.kind === "range"
+        ? await this.resolveRange(src, includeWorktree, warnings, signal)
+        : await this.resolveBranches(src, includeWorktree, warnings, signal);
+    if (r.nothing) {
       return {
         files: [],
-        mergeBase: sourceOid,
-        sourceOid,
-        targetOid,
+        mergeBase: r.sourceOid,
+        sourceOid: r.sourceOid,
+        targetOid: r.targetOid,
         warnings,
         sides: {},
         includeWorktree,
       };
     }
-
-    // 4. merge base and trees
-    const sourceTree: FlatTree | null = sourceOid ? await this.db.flattenTree(sourceOid) : null;
-    throwIfAborted(signal, "Diff");
-    let mergeBase: Oid | null = null;
-    let baseTree: FlatTree | null = null;
-    if (sourceOid && targetOid) {
-      if (sourceOid === targetOid) {
-        mergeBase = sourceOid;
-        baseTree = sourceTree;
-      } else {
-        const mb = await this.db.findMergeBase(sourceOid, targetOid);
-        if (mb.all.length > 1) {
-          warnings.push(
-            warning(
-              "MULTIPLE_MERGE_BASES",
-              `The branches have ${mb.all.length} merge bases; using ${(mb.oid ?? "").slice(0, 7)}.`,
-              mb.all.join(","),
-            ),
-          );
-        }
-        mergeBase = mb.oid;
-        if (mergeBase) baseTree = await this.db.flattenTree(mergeBase);
-        else {
-          // Two-dot fallback: with no common ancestor we compare source against target directly
-          // (an empty base would show the whole source tree as added, which is not what anyone wants).
-          baseTree = await this.db.flattenTree(targetOid);
-          warnings.push(
-            this.opts.shallow
-              ? warning(
-                  "SHALLOW",
-                  "Shallow clone: no merge base is available; showing a direct comparison with the base branch.",
-                )
-              : warning(
-                  "UNRELATED_HISTORIES",
-                  "The branches share no history; showing a direct comparison.",
-                ),
-          );
-        }
-      }
-    } else if (!sourceOid && targetOid) {
-      // unborn source (no commits yet): compare index/worktree directly against the target tree
-      baseTree = await this.db.flattenTree(targetOid);
-      warnings.push(
-        warning(
-          "UNRELATED_HISTORIES",
-          "The compare side has no commits yet; showing a direct comparison.",
-        ),
-      );
-    }
+    const { sourceOid, targetOid, mergeBase, sourceTree, baseTree, stash } = r;
     throwIfAborted(signal, "Diff");
 
     // 5. committed layer
@@ -173,6 +159,35 @@ export class DiffEngine {
         layers: new Set<ChangeLayer>(["committed"]),
       });
     }
+
+    // Layer helpers, shared by the working tree (6) and a stash compare side (6b).
+    const get = (path: string): Working => {
+      let w = final.get(path);
+      if (!w) {
+        const b = baseTree?.[path];
+        w = { old: b ? { oid: b.oid, mode: b.mode } : null, new: null, layers: new Set() };
+        // a path untouched by the committed layer still has a "new" side in the source tree
+        const s = sourceTree?.[path];
+        if (s) w.new = { oid: s.oid, mode: s.mode, kind: "tree" };
+        final.set(path, w);
+      }
+      return w;
+    };
+    const applyChange = (path: string, c: Change, kind: SideKind, layer: ChangeLayer) => {
+      const w = get(path);
+      w.new =
+        c.newOid !== null ||
+        (kind === "worktree" && c.newMode !== null && c.newOid === null && c.newSize !== undefined)
+          ? {
+              oid: c.newOid,
+              mode: c.newMode as number,
+              kind,
+              ...(c.newSize !== undefined ? { size: c.newSize } : {}),
+              ...(c.newLastModified !== undefined ? { lastModified: c.newLastModified } : {}),
+            }
+          : null;
+      w.layers.add(layer);
+    };
 
     // 6. working-tree layer
     let worktree: WorktreeStatus | undefined;
@@ -198,36 +213,6 @@ export class DiffEngine {
       }
       if (worktree) {
         for (const w of worktree.warnings) warnings.push(w);
-        const get = (path: string): Working => {
-          let w = final.get(path);
-          if (!w) {
-            const b = baseTree?.[path];
-            w = { old: b ? { oid: b.oid, mode: b.mode } : null, new: null, layers: new Set() };
-            // a path untouched by the committed layer still has a "new" side in the source tree
-            const s = sourceTree?.[path];
-            if (s) w.new = { oid: s.oid, mode: s.mode, kind: "tree" };
-            final.set(path, w);
-          }
-          return w;
-        };
-        const applyChange = (path: string, c: Change, kind: SideKind, layer: ChangeLayer) => {
-          const w = get(path);
-          w.new =
-            c.newOid !== null ||
-            (kind === "worktree" &&
-              c.newMode !== null &&
-              c.newOid === null &&
-              c.newSize !== undefined)
-              ? {
-                  oid: c.newOid,
-                  mode: c.newMode as number,
-                  kind,
-                  ...(c.newSize !== undefined ? { size: c.newSize } : {}),
-                  ...(c.newLastModified !== undefined ? { lastModified: c.newLastModified } : {}),
-                }
-              : null;
-          w.layers.add(layer);
-        };
         for (const [path, c] of Object.entries(worktree.staged))
           applyChange(path, c, "index", "staged");
         for (const [path, c] of Object.entries(worktree.unstaged))
@@ -247,6 +232,22 @@ export class DiffEngine {
           const w = get(path);
           w.new = { oid: null, mode: w.new?.mode ?? 0o100644, kind: "worktree" };
           w.layers.add("conflict");
+        }
+      }
+    }
+
+    // 6b. stash compare side: the same three layers, read out of the stash's parents instead of
+    // the index and the working tree (this is what makes "3 files (1 untracked)" possible).
+    if (stash) {
+      for (const [path, c] of Object.entries(treeDiff(sourceTree, stash.index)))
+        applyChange(path, c, "index", "staged");
+      for (const [path, c] of Object.entries(treeDiff(stash.index, stash.work)))
+        applyChange(path, c, "tree", "unstaged");
+      if (stash.untracked) {
+        for (const [path, entry] of Object.entries(stash.untracked)) {
+          const w = get(path);
+          w.new = { oid: entry.oid, mode: entry.mode, kind: "tree" };
+          w.layers.add("untracked");
         }
       }
     }
@@ -291,5 +292,150 @@ export class DiffEngine {
     }
 
     return { files, mergeBase, sourceOid, targetOid, warnings, worktree, sides, includeWorktree };
+  }
+
+  /** Steps 2–4 for a `BranchesSource` (v1 behaviour). `null` = nothing to show. */
+  private async resolveBranches(
+    src: DiffSource & { kind: "branches" },
+    includeWorktree: boolean,
+    warnings: RepoWarning[],
+    signal?: AbortSignal,
+  ): Promise<Resolved> {
+    const refs = this.refs;
+    const sourceOid = await resolveSourceRef(this.db, refs, src.sourceRef);
+    const targetOid = await resolveSourceRef(this.db, refs, src.targetRef);
+    throwIfAborted(signal, "Diff");
+    const nothing = {
+      sourceOid,
+      targetOid,
+      mergeBase: sourceOid,
+      sourceTree: null,
+      baseTree: null,
+      stash: null,
+      nothing: true,
+    };
+    if (sourceOid === targetOid && !includeWorktree) return nothing;
+
+    const sourceTree: FlatTree | null = sourceOid ? await this.db.flattenTree(sourceOid) : null;
+    throwIfAborted(signal, "Diff");
+    let mergeBase: Oid | null = null;
+    let baseTree: FlatTree | null = null;
+    if (sourceOid && targetOid) {
+      if (sourceOid === targetOid) {
+        mergeBase = sourceOid;
+        baseTree = sourceTree;
+      } else {
+        const mb = await this.mergeBaseOf(sourceOid, targetOid, warnings);
+        mergeBase = mb;
+        if (mergeBase) baseTree = await this.db.flattenTree(mergeBase);
+        else {
+          // Two-dot fallback: with no common ancestor we compare source against target directly
+          // (an empty base would show the whole source tree as added, which is not what anyone wants).
+          baseTree = await this.db.flattenTree(targetOid);
+          warnings.push(
+            this.opts.shallow
+              ? warning(
+                  "SHALLOW",
+                  "Shallow clone: no merge base is available; showing a direct comparison with the base branch.",
+                )
+              : warning(
+                  "UNRELATED_HISTORIES",
+                  "The branches share no history; showing a direct comparison.",
+                ),
+          );
+        }
+      }
+    } else if (!sourceOid && targetOid) {
+      // unborn source (no commits yet): compare index/worktree directly against the target tree
+      baseTree = await this.db.flattenTree(targetOid);
+      warnings.push(
+        warning(
+          "UNRELATED_HISTORIES",
+          "The compare side has no commits yet; showing a direct comparison.",
+        ),
+      );
+    }
+    return { sourceOid, targetOid, mergeBase, sourceTree, baseTree, stash: null, nothing: false };
+  }
+
+  /** Steps 2–4 for a `RangeSource` (T10.1). */
+  private async resolveRange(
+    src: RangeSource,
+    includeWorktree: boolean,
+    warnings: RepoWarning[],
+    signal?: AbortSignal,
+  ): Promise<Resolved> {
+    const emptyBase = src.fromOid === null || src.fromOid === EMPTY_TREE_OID;
+    const targetOid = emptyBase ? null : (src.fromOid as Oid);
+
+    // A stash is a commit whose tree is a working tree: compare from the commit it was made on and
+    // layer its index / untracked parents on top. Any other commit is its own compare tip.
+    const stashCommits = includeWorktree ? null : await readStashCommits(this.db, src.toOid);
+    throwIfAborted(signal, "Diff");
+    const sourceOid = stashCommits ? stashCommits.baseOid : src.toOid;
+    let stash: StashLayers | null = null;
+    if (stashCommits) {
+      stash = {
+        index: await this.db.flattenTree(stashCommits.indexOid),
+        work: await this.db.flattenTree(src.toOid),
+        untracked: stashCommits.untrackedOid
+          ? await this.db.flattenTree(stashCommits.untrackedOid)
+          : null,
+      };
+      throwIfAborted(signal, "Diff");
+    }
+
+    if (sourceOid === targetOid && !includeWorktree && !stash) {
+      return {
+        sourceOid,
+        targetOid,
+        mergeBase: sourceOid,
+        sourceTree: null,
+        baseTree: null,
+        stash: null,
+        nothing: true,
+      };
+    }
+
+    const sourceTree = await this.db.flattenTree(sourceOid);
+    throwIfAborted(signal, "Diff");
+    let mergeBase: Oid | null = null;
+    let baseTree: FlatTree | null = null;
+    if (emptyBase) {
+      baseTree = {}; // git's empty tree: everything on the compare side is an addition
+    } else if (!src.threeDot) {
+      baseTree = await this.db.flattenTree(targetOid as Oid); // two-dot: the `from` tree itself
+    } else if (sourceOid === targetOid) {
+      mergeBase = sourceOid;
+      baseTree = sourceTree;
+    } else {
+      mergeBase = await this.mergeBaseOf(sourceOid, targetOid as Oid, warnings);
+      if (mergeBase) baseTree = await this.db.flattenTree(mergeBase);
+      else {
+        baseTree = await this.db.flattenTree(targetOid as Oid);
+        warnings.push(
+          warning(
+            "UNRELATED_HISTORIES",
+            "The two sides share no history; showing a direct comparison.",
+          ),
+        );
+      }
+    }
+    return { sourceOid, targetOid, mergeBase, sourceTree, baseTree, stash, nothing: false };
+  }
+
+  /** Merge base with the `MULTIPLE_MERGE_BASES` warning both source kinds emit. */
+  private async mergeBaseOf(a: Oid, b: Oid, warnings: RepoWarning[]): Promise<Oid | null> {
+    const mb = await this.db.findMergeBase(a, b);
+    if (mb.all.length > 1) {
+      warnings.push(
+        warning(
+          "MULTIPLE_MERGE_BASES",
+          `The branches have ${mb.all.length} merge bases; using ${(mb.oid ?? "").slice(0, 7)}.`,
+          mb.all.join(","),
+        ),
+      );
+    }
+    return mb.oid;
   }
 }

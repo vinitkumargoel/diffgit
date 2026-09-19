@@ -7,8 +7,8 @@
  * observer (T6.2) and poller (T6.3) lifetimes and the degradation ladder live → polling → manual.
  */
 
-import { defaultDiffSource, isWorktreeSource } from "../../engine/diffSource";
-import type { RepoWarning } from "../../engine/types";
+import { defaultDiffSource, isWorktreeSource, sourceLabels } from "../../engine/diffSource";
+import type { DiffSource, RepoWarning } from "../../engine/types";
 import type { UiError } from "../errors";
 import { toUiError } from "../errors";
 import { type RefreshMode, type RefreshReason, setRefreshHooks, useStore } from "../store";
@@ -190,35 +190,45 @@ export function createScheduler(deps: SchedulerDeps): Scheduler {
     const info = await deps.client.reloadRefs();
     const cur = store.getState();
     if (!cur.repo || !cur.diffSource) return;
-    let src = cur.diffSource;
+    let src: DiffSource = cur.diffSource;
     const headMoved =
       info.headBranch !== before.repo?.headBranch || info.unborn !== before.repo?.unborn;
-    const sourceGone = !info.refs.some((r) => r.fullName === src.sourceRef);
-    const targetGone = !info.refs.some((r) => r.fullName === src.targetRef);
-    if (headMoved || sourceGone) {
-      const def = defaultDiffSource(info);
-      src = {
-        ...src,
-        source: def.source,
-        sourceRef: def.sourceRef,
-        includeWorktree: cur.diffSource.includeWorktree || headMoved,
-      };
-    }
-    if (targetGone) {
-      const def = defaultDiffSource(info);
-      src = { ...src, target: def.target, targetRef: def.targetRef };
+    // Only a branch pair can follow HEAD or fall back when a ref disappears; a range (T10.1) names
+    // commits that stay valid, so it is left alone apart from the worktree guard below.
+    const branches = cur.diffSource.kind === "branches" ? cur.diffSource : null;
+    let gone: string | null = null;
+    if (branches) {
+      const sourceGone = !info.refs.some((r) => r.fullName === branches.sourceRef);
+      const targetGone = !info.refs.some((r) => r.fullName === branches.targetRef);
+      let next = branches;
+      if (headMoved || sourceGone) {
+        const def = defaultDiffSource(info);
+        next = {
+          ...next,
+          source: def.source,
+          sourceRef: def.sourceRef,
+          includeWorktree: branches.includeWorktree || headMoved,
+        };
+      }
+      if (targetGone) {
+        const def = defaultDiffSource(info);
+        next = { ...next, target: def.target, targetRef: def.targetRef };
+      }
+      src = next;
+      gone = sourceGone ? branches.source : targetGone ? branches.target : null;
     }
     if (src.includeWorktree && !isWorktreeSource(src, info))
       src = { ...src, includeWorktree: false };
     store.setState({ repo: info, diffSource: src });
     // E5.4: the selected branch was deleted; the fallback is silent otherwise.
-    const gone = sourceGone ? cur.diffSource.source : targetGone ? cur.diffSource.target : null;
-    if (gone !== null)
+    if (gone !== null) {
+      const labels = sourceLabels(src);
       store.getState().addToast({
         level: "info",
-        message: `${gone} was deleted. Now comparing ${src.target} … ${src.source}.`,
+        message: `${gone} was deleted. Now comparing ${labels.target} … ${labels.source}.`,
         action: { label: "Pick branch", onClick: focusComparePicker },
       });
+    }
   }
 
   function handleError(err: UiError): void {

@@ -1,6 +1,7 @@
 import { Circle, CircleCheck, CircleX, LoaderCircle, TriangleAlert } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import type { ProgressPhase } from "../../engine/api";
+import { sourceLabels } from "../../engine/diffSource";
 import type { WarningCode } from "../../engine/errors";
 import type { RepoWarning } from "../../engine/types";
 import { describeError, type UiError } from "../errors";
@@ -212,9 +213,9 @@ export function LoadingScreen() {
             </h1>
             {diffSource && (
               <div className="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[12.5px] text-ink/80">
-                <span className="text-accent">{diffSource.target}</span>
+                <span className="text-accent">{sourceLabels(diffSource).target}</span>
                 <span className="text-muted/70">…</span>
-                <span className="text-success">{diffSource.source}</span>
+                <span className="text-success">{sourceLabels(diffSource).source}</span>
                 {diffSource.includeWorktree && (
                   <span className="text-muted/70">· uncommitted included</span>
                 )}

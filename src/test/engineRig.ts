@@ -10,7 +10,7 @@ import { type IndexSnapshot, readIndex } from "../engine/git/indexReader";
 import { ObjectDb } from "../engine/git/objectDb";
 import { loadRefs } from "../engine/git/refStore";
 import { WorktreeScanner } from "../engine/git/worktree";
-import type { DiffSource, RefSnapshot } from "../engine/types";
+import type { BranchesSource, RefSnapshot } from "../engine/types";
 import { fixturePath } from "./fixtures";
 
 export interface EngineRig {
@@ -23,7 +23,7 @@ export interface EngineRig {
   engine: DiffEngine;
   readIndex: () => Promise<IndexSnapshot>;
   /** DiffSource for `<source> vs <target>` by display name ("feature", "main", "origin/main", "HEAD"). */
-  source(source: string, target: string, includeWorktree?: boolean): DiffSource;
+  source(source: string, target: string, includeWorktree?: boolean): BranchesSource;
 }
 
 export async function openEngine(

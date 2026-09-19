@@ -41,6 +41,9 @@ The registry is `src/engine/errors.ts`. Three tiers:
 | `WORKER_CRASHED` | `WorkerClient.onCrash` (worker `error` / `messageerror`), rejects every in-flight call | Engine restarted | retry |
 | `STORAGE_UNAVAILABLE` | `persistence/index.ts` (`reportStorageError`, once per session) | Storage unavailable | – |
 | `INTERNAL` | `workerApi.need()` (no session); `toPublicError` fallback; `WorkerClient` after `terminate()`; `observer.ts` on an unexpected exception; `EROFS` (D16 violation) | Something went wrong | retry |
+| `REV_NOT_FOUND` | `revisions.resolveRevision` (T10.1: an expression did not resolve) | Revision not found | – |
+| `REV_AMBIGUOUS` | `revisions.resolveRevision` (T10.1: a short SHA matched several objects; `detail` lists them) | Ambiguous revision | – |
+| `NOT_A_PATCH` | `parsePatch` (T10.12: the text is not a unified diff) | Not a patch file | – |
 
 ## Warning codes
 
@@ -67,6 +70,18 @@ The registry is `src/engine/errors.ts`. Three tiers:
 | `STALE_PACK_RETRIED` | `ObjectDb.withStalePackRetry`, `RepoSession.withStaleRetry` | Repository changed while reading | warning |
 | `REFRESH_DEGRADED` | `refresh/scheduler.ts` (ladder live → polling → manual) | Live refresh unavailable | warning |
 | `PATH_TYPE_CHANGED` | `WorktreeScanner` (file ↔ directory at the same path) | Path type changed | warning |
+| `HISTORY_CAPPED` | `walkCommits` (T10.5: the page limit was reached) | History capped | warning |
+| `NO_REFLOG` | `reflog` (T10.2: no `.git/logs`) | No reflog | info |
+| `SEARCH_CAPPED` | `search` (T10.8: the scan limit was reached) | Search capped | warning |
+| `BLAME_CAPPED` | `blame` (T10.6: `maxRevisions` reached) | Blame capped | warning |
+| `INSIGHTS_CAPPED` | `insights` (T10.9: the walk limit was reached) | Insights capped | warning |
+| `HIDDEN_CAPPED` | `listHidden` (T10.4: more than 2,000 paths) | Hidden files capped | warning |
+| `COMMIT_GRAPH_STALE` | `walkCommits` (T10.5: the commit-graph predates the refs) | Commit graph out of date | warning |
+| `SECRETS_FOUND` | `scanSecrets` (T10.7: a rule matched an added line) | Possible secret | error |
+| `OPERATION_IN_PROGRESS` | `operation` (T10.2: MERGE_HEAD / rebase-merge / CHERRY_PICK_HEAD / BISECT_LOG) | Operation in progress | info |
+| `SNAPSHOT_MODE` | `browserGate` (T11.15: Firefox/Safari read-once mode) | Snapshot mode | info |
+| `JJ_COLOCATED` | `layoutChecks` (T10.12: `.jj` beside `.git`) | Colocated jj repository | info |
+| `PATCH_ONLY` | `parsePatch` (T10.12: patch-only mode, no repository) | Patch only | info |
 
 ## Silent-failure review (every `catch` in `src/**`, 2026-09-17)
 

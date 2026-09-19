@@ -1,0 +1,355 @@
+{
+  "tags": [
+    {
+      "name": "v0.1.0",
+      "fullName": "refs/tags/v0.1.0",
+      "oid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "targetOid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "annotated": false
+    },
+    {
+      "name": "v0.2.0",
+      "fullName": "refs/tags/v0.2.0",
+      "oid": "52052fc357c12a45a641e38d1d910fdec75f4241",
+      "targetOid": "52052fc357c12a45a641e38d1d910fdec75f4241",
+      "annotated": false
+    },
+    {
+      "name": "v0.3.0",
+      "fullName": "refs/tags/v0.3.0",
+      "oid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+      "targetOid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+      "annotated": false
+    },
+    {
+      "name": "v1.0.0",
+      "fullName": "refs/tags/v1.0.0",
+      "oid": "b611cc845ddc7e1ddf0374473da5db8c21892a1a",
+      "targetOid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "annotated": true,
+      "message": "annotated release 1.0.0\n",
+      "tagger": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "timestamp": 1704067200000
+    }
+  ],
+  "stashes": [],
+  "revisions": {
+    "HEAD": {
+      "expr": "HEAD",
+      "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "kind": "head",
+      "display": "HEAD",
+      "fullRef": "HEAD"
+    },
+    "main": {
+      "expr": "main",
+      "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "kind": "branch",
+      "display": "main",
+      "fullRef": "refs/heads/main"
+    },
+    "main~1": {
+      "expr": "main~1",
+      "oid": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+      "kind": "commit",
+      "display": "main~1"
+    },
+    "main~5": {
+      "expr": "main~5",
+      "oid": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+      "kind": "commit",
+      "display": "main~5"
+    },
+    "main^": {
+      "expr": "main^",
+      "oid": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+      "kind": "commit",
+      "display": "main^"
+    },
+    "refs/heads/main": {
+      "expr": "refs/heads/main",
+      "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "kind": "branch",
+      "display": "main",
+      "fullRef": "refs/heads/main"
+    },
+    "topic": {
+      "expr": "topic",
+      "oid": "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81",
+      "kind": "branch",
+      "display": "topic",
+      "fullRef": "refs/heads/topic"
+    },
+    "preflight/a": {
+      "expr": "preflight/a",
+      "oid": "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a",
+      "kind": "branch",
+      "display": "preflight/a",
+      "fullRef": "refs/heads/preflight/a"
+    },
+    "preflight/a~2": {
+      "expr": "preflight/a~2",
+      "oid": "1b64210831f4bd1984875c179e4e804cc91c33e2",
+      "kind": "commit",
+      "display": "preflight/a~2"
+    },
+    "preflight/base": {
+      "expr": "preflight/base",
+      "oid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "kind": "branch",
+      "display": "preflight/base",
+      "fullRef": "refs/heads/preflight/base"
+    },
+    "v0.1.0": {
+      "expr": "v0.1.0",
+      "oid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "kind": "tag",
+      "display": "v0.1.0",
+      "fullRef": "refs/tags/v0.1.0"
+    },
+    "v0.3.0": {
+      "expr": "v0.3.0",
+      "oid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+      "kind": "tag",
+      "display": "v0.3.0",
+      "fullRef": "refs/tags/v0.3.0"
+    },
+    "v1.0.0": {
+      "expr": "v1.0.0",
+      "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "kind": "tag",
+      "display": "v1.0.0",
+      "fullRef": "refs/tags/v1.0.0",
+      "peeledFrom": "b611cc845ddc7e1ddf0374473da5db8c21892a1a"
+    },
+    "v1.0.0^{}": {
+      "expr": "v1.0.0^{}",
+      "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "kind": "tag",
+      "display": "v1.0.0",
+      "fullRef": "refs/tags/v1.0.0",
+      "peeledFrom": "b611cc845ddc7e1ddf0374473da5db8c21892a1a"
+    },
+    "5772d43fe1036c123baac6d6792d31986659a515": {
+      "expr": "5772d43fe1036c123baac6d6792d31986659a515",
+      "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+      "kind": "commit",
+      "display": "5772d43"
+    },
+    "5772d43": {
+      "expr": "5772d43",
+      "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+      "kind": "commit",
+      "display": "5772d43"
+    },
+    "5772d43fe1036c123baac6d6792d31986659a515^": {
+      "expr": "5772d43fe1036c123baac6d6792d31986659a515^",
+      "oid": null,
+      "kind": "empty-tree",
+      "display": "5772d43fe1036c123baac6d6792d31986659a515^"
+    }
+  },
+  "ranges": [
+    {
+      "source": {
+        "kind": "range",
+        "from": "main~5",
+        "to": "main",
+        "fromRef": "main~5",
+        "toRef": "main",
+        "fromOid": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+        "toOid": "822313f6746d7982943f0d59fc5e09b626769141",
+        "threeDot": true,
+        "includeWorktree": false
+      },
+      "result": {
+        "source": {
+          "kind": "range",
+          "from": "main~5",
+          "to": "main",
+          "fromRef": "main~5",
+          "toRef": "main",
+          "fromOid": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+          "toOid": "822313f6746d7982943f0d59fc5e09b626769141",
+          "threeDot": true,
+          "includeWorktree": false
+        },
+        "mergeBase": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+        "files": [
+          {
+            "id": "package.json",
+            "oldPath": "package.json",
+            "newPath": "package.json",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "3b72d9fa459d7ffa863d5a2bc8f3fbba31abb773",
+            "newOid": "4e93dae1524f65ffc9beaf6a0362d42381c6aba9",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 50,
+            "newSize": 50,
+            "stats": {
+              "additions": 1,
+              "deletions": 1
+            },
+            "tooLarge": false
+          },
+          {
+            "id": "src/mod1.txt",
+            "oldPath": "src/mod1.txt",
+            "newPath": "src/mod1.txt",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "fa12e5220e91b7a164eab717ec1c6fd8ef935a51",
+            "newOid": "99ee9e5ee0a0677e2e1cf5cc5d8d6d6c379f8fa7",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 541,
+            "newSize": 591,
+            "stats": {
+              "additions": 5,
+              "deletions": 0
+            },
+            "tooLarge": false
+          },
+          {
+            "id": "src/mod2.txt",
+            "oldPath": "src/mod2.txt",
+            "newPath": "src/mod2.txt",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "af4db33481abd6d0cf6c2dcc17554ad57b014ed8",
+            "newOid": "5b59f16919573c64c757c0df70a37530d2b6ee5a",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 551,
+            "newSize": 601,
+            "stats": {
+              "additions": 5,
+              "deletions": 0
+            },
+            "tooLarge": false
+          },
+          {
+            "id": "src/mod3.txt",
+            "oldPath": "src/mod3.txt",
+            "newPath": "src/mod3.txt",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "851e8a719d86a012e661b3ad75e8566d6d308140",
+            "newOid": "87530c2aecc475304d79a9c7c12d2bfb5b368868",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 561,
+            "newSize": 611,
+            "stats": {
+              "additions": 5,
+              "deletions": 0
+            },
+            "tooLarge": false
+          },
+          {
+            "id": "src/mod4.txt",
+            "oldPath": "src/mod4.txt",
+            "newPath": "src/mod4.txt",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "9e6601f72701b4f9c2e451cfec998ccfdaba41a8",
+            "newOid": "99cf850abef48bb45b79014727ccad2518d0f28e",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 581,
+            "newSize": 631,
+            "stats": {
+              "additions": 5,
+              "deletions": 0
+            },
+            "tooLarge": false
+          }
+        ],
+        "totals": {
+          "files": 5,
+          "additions": 21,
+          "deletions": 1
+        },
+        "computedAt": 1704067200000,
+        "durationMs": 0,
+        "generation": 2,
+        "warnings": []
+      }
+    },
+    {
+      "source": {
+        "kind": "range",
+        "from": "main~1",
+        "to": "main",
+        "fromRef": "main~1",
+        "toRef": "main",
+        "fromOid": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+        "toOid": "822313f6746d7982943f0d59fc5e09b626769141",
+        "threeDot": false,
+        "includeWorktree": false
+      },
+      "result": {
+        "source": {
+          "kind": "range",
+          "from": "main~1",
+          "to": "main",
+          "fromRef": "main~1",
+          "toRef": "main",
+          "fromOid": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+          "toOid": "822313f6746d7982943f0d59fc5e09b626769141",
+          "threeDot": false,
+          "includeWorktree": false
+        },
+        "mergeBase": null,
+        "files": [
+          {
+            "id": "src/mod4.txt",
+            "oldPath": "src/mod4.txt",
+            "newPath": "src/mod4.txt",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "9e6601f72701b4f9c2e451cfec998ccfdaba41a8",
+            "newOid": "99cf850abef48bb45b79014727ccad2518d0f28e",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 581,
+            "newSize": 631,
+            "stats": {
+              "additions": 5,
+              "deletions": 0
+            },
+            "tooLarge": false
+          }
+        ],
+        "totals": {
+          "files": 1,
+          "additions": 5,
+          "deletions": 0
+        },
+        "computedAt": 1704067200000,
+        "durationMs": 0,
+        "generation": 3,
+        "warnings": []
+      }
+    }
+  ]
+}

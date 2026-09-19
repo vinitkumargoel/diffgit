@@ -19,6 +19,7 @@ import type {
 import { defaultDiffSource, isWorktreeSource } from "../engine/diffSource";
 import type { WarningCode } from "../engine/errors";
 import type {
+  BranchesSource,
   DiffResult,
   DiffSource,
   FileDiff,
@@ -389,14 +390,15 @@ function findRef(repo: RepoInfo, nameOrRef: string): RepoRef | null {
   );
 }
 
-function withRef(src: DiffSource, side: "source" | "target", ref: RepoRef): DiffSource {
+/** The pickers only ever move a branch source; a range is built by T11.2, not edited here. */
+function withRef(src: BranchesSource, side: "source" | "target", ref: RepoRef): BranchesSource {
   return side === "source"
     ? { ...src, source: ref.name, sourceRef: ref.fullName }
     : { ...src, target: ref.name, targetRef: ref.fullName };
 }
 
 /** Enforces D6: the toggle can only be on when the source is the checked-out state. */
-function guardWorktree(src: DiffSource, repo: RepoInfo): DiffSource {
+function guardWorktree<T extends DiffSource>(src: T, repo: RepoInfo): T {
   if (src.includeWorktree && !isWorktreeSource(src, repo))
     return { ...src, includeWorktree: false };
   return src;
@@ -651,7 +653,7 @@ export const useStore = create<StoreState>()((set, get) => {
 
     setSource(refOrName) {
       const { repo, diffSource } = get();
-      if (!repo || !diffSource) return;
+      if (!repo || !diffSource || diffSource.kind !== "branches") return;
       const ref = typeof refOrName === "string" ? findRef(repo, refOrName) : refOrName;
       if (!ref) return;
       const src = guardWorktree(withRef(diffSource, "source", ref), repo);
@@ -662,7 +664,7 @@ export const useStore = create<StoreState>()((set, get) => {
 
     setTarget(refOrName) {
       const { repo, diffSource } = get();
-      if (!repo || !diffSource) return;
+      if (!repo || !diffSource || diffSource.kind !== "branches") return;
       const ref = typeof refOrName === "string" ? findRef(repo, refOrName) : refOrName;
       if (!ref) return;
       set({ diffSource: withRef(diffSource, "target", ref) });
@@ -672,8 +674,9 @@ export const useStore = create<StoreState>()((set, get) => {
 
     swapBranches() {
       const { repo, diffSource } = get();
-      if (!repo || !diffSource || diffSource.sourceRef === diffSource.targetRef) return;
-      const swapped: DiffSource = {
+      if (!repo || !diffSource || diffSource.kind !== "branches") return;
+      if (diffSource.sourceRef === diffSource.targetRef) return;
+      const swapped: BranchesSource = {
         ...diffSource,
         source: diffSource.target,
         sourceRef: diffSource.targetRef,

@@ -497,3 +497,44 @@ describe("worker boundary (comlink over a MessageChannel)", () => {
     }
   });
 });
+
+describe("revisions, tags and stashes over the session (T10.1)", () => {
+  test("resolveRevision, listTags and listStashes reach the worker api", async () => {
+    const api = createEngineApi({
+      resolve: async () => await NodeDirHandle.open(fixturePath("stash")),
+    });
+    const k = sink();
+    await api.open("stash", k.s);
+    expect(await api.resolveRevision("stash@{0}")).toMatchObject({
+      kind: "stash",
+      display: "stash@{0}",
+    });
+    const stashes = await api.listStashes();
+    expect(stashes.map((s) => s.expr)).toEqual(["stash@{0}", "stash@{1}"]);
+    // the session fills the picker's file count, which listStashes() alone leaves null
+    expect(stashes.map((s) => s.files)).toEqual([2, 1]);
+    expect(await api.listTags()).toEqual([]);
+    await api.close();
+  });
+
+  test("an unknown revision crosses the boundary as REV_NOT_FOUND, an ambiguous one carries detail", async () => {
+    const { session } = await openFixture("history");
+    await expect(session.resolveRevision("nope")).rejects.toMatchObject({ code: "REV_NOT_FOUND" });
+    expect(toPublicError(new EngineError("REV_AMBIGUOUS", "two", { detail: "a,b" }))).toEqual({
+      name: "EngineError",
+      code: "REV_AMBIGUOUS",
+      message: "two",
+      detail: "a,b",
+    });
+    await session.close();
+  });
+
+  test("a superseded call of the same method rejects with CANCELLED", async () => {
+    const { session } = await openFixture("tags");
+    const first = session.listTags();
+    const second = session.listTags();
+    await expect(first).rejects.toMatchObject({ code: "CANCELLED" });
+    expect((await second).length).toBe(4);
+    await session.close();
+  });
+});

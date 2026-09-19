@@ -17,6 +17,7 @@ import {
   useState,
 } from "react";
 import { useShallow } from "zustand/react/shallow";
+import { sourceLabels } from "../../engine/diffSource";
 import type { FileDiff } from "../../engine/types";
 import { useShortcuts } from "../hooks/useShortcuts";
 import { requestScrollTo } from "../scrollBus";
@@ -107,7 +108,7 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
   /** D2: layout-independent — grouping needs a second layer *and* the pref. */
   const grouped = hasLayers && sidebarGroup === "layer";
   const filtering = filter.trim() !== "";
-  const compare = diff?.source.source ?? "";
+  const compare = diff ? sourceLabels(diff.source).source : "";
 
   const [collapsedDirs, setCollapsedDirs] = useState<ReadonlySet<string>>(() => new Set());
   const [collapsedGroups, setCollapsedGroups] = useState<ReadonlySet<SidebarGroupId>>(

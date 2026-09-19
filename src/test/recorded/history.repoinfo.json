@@ -1,0 +1,59 @@
+{
+  "id": "recorded-history",
+  "name": "history",
+  "headBranch": "main",
+  "headOid": "822313f6746d7982943f0d59fc5e09b626769141",
+  "detached": false,
+  "unborn": false,
+  "headDisplay": "main",
+  "refs": [
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "isDefault": true,
+      "isCheckedOut": true
+    },
+    {
+      "name": "preflight/a",
+      "fullName": "refs/heads/preflight/a",
+      "kind": "local",
+      "oid": "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a",
+      "isDefault": false,
+      "isCheckedOut": false
+    },
+    {
+      "name": "preflight/base",
+      "fullName": "refs/heads/preflight/base",
+      "kind": "local",
+      "oid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "isDefault": false,
+      "isCheckedOut": false
+    },
+    {
+      "name": "topic",
+      "fullName": "refs/heads/topic",
+      "kind": "local",
+      "oid": "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81",
+      "isDefault": false,
+      "isCheckedOut": false
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+    "isDefault": true,
+    "isCheckedOut": true
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": []
+}

@@ -2826,6 +2826,302 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
 </div>
 `;
 
+exports[`warning registry > snapshots one banner per code in both themes > banner BLAME_CAPPED (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Blame capped
+    </strong>
+     
+    Blame stopped after its revision limit; older lines are attributed to that commit.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      BLAME_CAPPED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Blame capped"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner BLAME_CAPPED (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Blame capped
+    </strong>
+     
+    Blame stopped after its revision limit; older lines are attributed to that commit.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      BLAME_CAPPED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Blame capped"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner COMMIT_GRAPH_STALE (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Commit graph out of date
+    </strong>
+     
+    The commit-graph file is older than the refs; history was walked without it.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      COMMIT_GRAPH_STALE
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Commit graph out of date"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner COMMIT_GRAPH_STALE (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Commit graph out of date
+    </strong>
+     
+    The commit-graph file is older than the refs; history was walked without it.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      COMMIT_GRAPH_STALE
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Commit graph out of date"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
 exports[`warning registry > snapshots one banner per code in both themes > banner CONFIG_INCLUDE_SKIPPED (dark) 1`] = `
 <div
   class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
@@ -3418,6 +3714,302 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
 </div>
 `;
 
+exports[`warning registry > snapshots one banner per code in both themes > banner HIDDEN_CAPPED (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Hidden files capped
+    </strong>
+     
+    Only the first 2,000 hidden paths are listed.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      HIDDEN_CAPPED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Hidden files capped"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner HIDDEN_CAPPED (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Hidden files capped
+    </strong>
+     
+    Only the first 2,000 hidden paths are listed.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      HIDDEN_CAPPED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Hidden files capped"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner HISTORY_CAPPED (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      History capped
+    </strong>
+     
+    Only the first pages of history were walked; older commits are not shown.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      HISTORY_CAPPED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: History capped"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner HISTORY_CAPPED (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      History capped
+    </strong>
+     
+    Only the first pages of history were walked; older commits are not shown.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      HISTORY_CAPPED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: History capped"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
 exports[`warning registry > snapshots one banner per code in both themes > banner INDEX_CHECKSUM (dark) 1`] = `
 <div
   class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
@@ -3703,6 +4295,306 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
   </p>
   <button
     aria-label="Dismiss: Index too large"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner INSIGHTS_CAPPED (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Insights capped
+    </strong>
+     
+    Insights were computed from a sample of the history, not all of it.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      INSIGHTS_CAPPED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Insights capped"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner INSIGHTS_CAPPED (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Insights capped
+    </strong>
+     
+    Insights were computed from a sample of the history, not all of it.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      INSIGHTS_CAPPED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Insights capped"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner JJ_COLOCATED (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-info-bg border-banner-info-border"
+  data-level="info"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-info shrink-0 text-accent"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="M12 16v-4"
+    />
+    <path
+      d="M12 8h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Colocated jj repository
+    </strong>
+     
+    This repository is also a jj workspace; git refs may lag behind jj.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      JJ_COLOCATED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Colocated jj repository"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner JJ_COLOCATED (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-info-bg border-banner-info-border"
+  data-level="info"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-info shrink-0 text-accent"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="M12 16v-4"
+    />
+    <path
+      d="M12 8h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Colocated jj repository
+    </strong>
+     
+    This repository is also a jj workspace; git refs may lag behind jj.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      JJ_COLOCATED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Colocated jj repository"
     class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
@@ -4174,6 +5066,310 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
 </div>
 `;
 
+exports[`warning registry > snapshots one banner per code in both themes > banner NO_REFLOG (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-info-bg border-banner-info-border"
+  data-level="info"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-info shrink-0 text-accent"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="M12 16v-4"
+    />
+    <path
+      d="M12 8h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      No reflog
+    </strong>
+     
+    This repository keeps no reflog, so recent operations cannot be listed.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      NO_REFLOG
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: No reflog"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner NO_REFLOG (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-info-bg border-banner-info-border"
+  data-level="info"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-info shrink-0 text-accent"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="M12 16v-4"
+    />
+    <path
+      d="M12 8h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      No reflog
+    </strong>
+     
+    This repository keeps no reflog, so recent operations cannot be listed.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      NO_REFLOG
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: No reflog"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner OPERATION_IN_PROGRESS (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-info-bg border-banner-info-border"
+  data-level="info"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-info shrink-0 text-accent"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="M12 16v-4"
+    />
+    <path
+      d="M12 8h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Operation in progress
+    </strong>
+     
+    A merge, rebase, cherry-pick, revert or bisect is running in this repository.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      OPERATION_IN_PROGRESS
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Operation in progress"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner OPERATION_IN_PROGRESS (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-info-bg border-banner-info-border"
+  data-level="info"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-info shrink-0 text-accent"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="M12 16v-4"
+    />
+    <path
+      d="M12 8h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Operation in progress
+    </strong>
+     
+    A merge, rebase, cherry-pick, revert or bisect is running in this repository.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      OPERATION_IN_PROGRESS
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Operation in progress"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
 exports[`warning registry > snapshots one banner per code in both themes > banner PACK_LARGE (dark) 1`] = `
 <div
   class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
@@ -4295,6 +5491,158 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
   </p>
   <button
     aria-label="Dismiss: Large pack files"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner PATCH_ONLY (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-info-bg border-banner-info-border"
+  data-level="info"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-info shrink-0 text-accent"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="M12 16v-4"
+    />
+    <path
+      d="M12 8h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Patch only
+    </strong>
+     
+    A patch file is open, not a repository; there is no working tree to compare.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      PATCH_ONLY
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Patch only"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner PATCH_ONLY (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-info-bg border-banner-info-border"
+  data-level="info"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-info shrink-0 text-accent"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="M12 16v-4"
+    />
+    <path
+      d="M12 8h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Patch only
+    </strong>
+     
+    A patch file is open, not a repository; there is no working tree to compare.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      PATCH_ONLY
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Patch only"
     class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >
@@ -4766,6 +6114,306 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
 </div>
 `;
 
+exports[`warning registry > snapshots one banner per code in both themes > banner SEARCH_CAPPED (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Search capped
+    </strong>
+     
+    The search stopped at its limit; there may be more matches.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SEARCH_CAPPED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Search capped"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner SEARCH_CAPPED (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Search capped
+    </strong>
+     
+    The search stopped at its limit; there may be more matches.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SEARCH_CAPPED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Search capped"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner SECRETS_FOUND (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-error-bg border-banner-error-border"
+  data-level="error"
+  role="alert"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-circle-x lucide-x-circle shrink-0 text-danger"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="m15 9-6 6"
+    />
+    <path
+      d="m9 9 6 6"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Possible secret
+    </strong>
+     
+    Uncommitted changes contain something that looks like a credential.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SECRETS_FOUND
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Possible secret"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner SECRETS_FOUND (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-error-bg border-banner-error-border"
+  data-level="error"
+  role="alert"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-circle-x lucide-x-circle shrink-0 text-danger"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="m15 9-6 6"
+    />
+    <path
+      d="m9 9 6 6"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Possible secret
+    </strong>
+     
+    Uncommitted changes contain something that looks like a credential.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SECRETS_FOUND
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Possible secret"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
 exports[`warning registry > snapshots one banner per code in both themes > banner SHALLOW (dark) 1`] = `
 <div
   class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
@@ -4887,6 +6535,158 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
   </p>
   <button
     aria-label="Dismiss: Shallow clone"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner SNAPSHOT_MODE (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-info-bg border-banner-info-border"
+  data-level="info"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-info shrink-0 text-accent"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="M12 16v-4"
+    />
+    <path
+      d="M12 8h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Snapshot mode
+    </strong>
+     
+    This browser can only read the folder once; re-open it to refresh.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SNAPSHOT_MODE
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Snapshot mode"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner SNAPSHOT_MODE (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-info-bg border-banner-info-border"
+  data-level="info"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-info shrink-0 text-accent"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="12"
+      cy="12"
+      r="10"
+    />
+    <path
+      d="M12 16v-4"
+    />
+    <path
+      d="M12 8h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Snapshot mode
+    </strong>
+     
+    This browser can only read the folder once; re-open it to refresh.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      SNAPSHOT_MODE
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Snapshot mode"
     class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
     type="button"
   >

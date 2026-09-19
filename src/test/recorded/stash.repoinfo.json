@@ -1,0 +1,35 @@
+{
+  "id": "recorded-stash",
+  "name": "stash",
+  "headBranch": "main",
+  "headOid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+  "detached": false,
+  "unborn": false,
+  "headDisplay": "main",
+  "refs": [
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "isDefault": true,
+      "isCheckedOut": true
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+    "isDefault": true,
+    "isCheckedOut": true
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": []
+}

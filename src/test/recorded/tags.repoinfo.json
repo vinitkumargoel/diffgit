@@ -1,0 +1,43 @@
+{
+  "id": "recorded-tags",
+  "name": "tags",
+  "headBranch": "main",
+  "headOid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+  "detached": false,
+  "unborn": false,
+  "headDisplay": "main",
+  "refs": [
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+      "isDefault": true,
+      "isCheckedOut": true
+    },
+    {
+      "name": "release",
+      "fullName": "refs/heads/release",
+      "kind": "local",
+      "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "isDefault": false,
+      "isCheckedOut": false
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+    "isDefault": true,
+    "isCheckedOut": true
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": []
+}
