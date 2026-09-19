@@ -13,6 +13,8 @@ export interface RefreshControlProps {
   phase?: ProgressPhase | null;
   /** `force` is true for Shift+click and long-press (T6.4). */
   onRefresh: (force: boolean) => void;
+  /** T11.15: snapshot mode has no live/polling story at all, so the dot and word are left out. */
+  hideMode?: boolean;
 }
 
 /** Holding the button this long (ms) triggers a force refresh. */
@@ -45,7 +47,14 @@ const TEXT: Record<RefreshMode, string> = {
 };
 
 /** Refresh button + status dot/word (Design §7.1 item 7). T6.x supplies live/polling; until then Manual. */
-export function RefreshControl({ mode, busy, lastAt, phase, onRefresh }: RefreshControlProps) {
+export function RefreshControl({
+  mode,
+  busy,
+  lastAt,
+  phase,
+  onRefresh,
+  hideMode,
+}: RefreshControlProps) {
   const now = useNow(5000, lastAt !== null);
   const when = lastAt === null ? "Not refreshed yet" : `Last refreshed ${secondsAgo(lastAt, now)}`;
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -60,7 +69,11 @@ export function RefreshControl({ mode, busy, lastAt, phase, onRefresh }: Refresh
       type="button"
       className="btn"
       title={`${when}. ${FORCE_HINT}`}
-      aria-label={`Refresh (${WORD[mode]}). ${when}. ${busy ? label : FORCE_HINT}`}
+      aria-label={
+        hideMode
+          ? `Refresh. ${when}. ${busy ? label : FORCE_HINT}`
+          : `Refresh (${WORD[mode]}). ${when}. ${busy ? label : FORCE_HINT}`
+      }
       aria-busy={busy}
       disabled={busy}
       onPointerDown={(e) => {
@@ -90,8 +103,12 @@ export function RefreshControl({ mode, busy, lastAt, phase, onRefresh }: Refresh
         <RefreshCw size={14} aria-hidden />
       )}
       {label}
-      <span aria-hidden className={`ml-1 inline-block size-2 rounded-full ${DOT[mode]}`} />
-      <span className={`font-medium ${TEXT[mode]}`}>{WORD[mode]}</span>
+      {!hideMode && (
+        <>
+          <span aria-hidden className={`ml-1 inline-block size-2 rounded-full ${DOT[mode]}`} />
+          <span className={`font-medium ${TEXT[mode]}`}>{WORD[mode]}</span>
+        </>
+      )}
     </button>
   );
 }

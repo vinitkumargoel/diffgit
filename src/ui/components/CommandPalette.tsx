@@ -5,7 +5,7 @@ import { useShallow } from "zustand/react/shallow";
 import type { FileDiff, SearchHit } from "../../engine/types";
 import { formatBytes } from "../format";
 import { shortOid } from "../history";
-import { pickAndOpenRepo } from "../openRepo";
+import { openRepoOnce, pickAndOpenRepo } from "../openRepo";
 import { clearDerived, type DerivedSize, derivedSize } from "../persistence/derived";
 import { requestScrollTo } from "../scrollBus";
 import {
@@ -275,6 +275,20 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
             addToast({ level: "info", message: "Cached blame, history and insights cleared." });
           });
         },
+      },
+      {
+        // T11.15: the read-once flow Firefox and Safari get from the gate, available everywhere —
+        // which is how snapshot mode is exercised on a Chromium browser.
+        id: "open-once",
+        label: "Open once (snapshot)",
+        keywords: ["folder", "read once", "firefox", "safari", "webkitdirectory", "no refresh"],
+        run: () =>
+          void openRepoOnce().catch((e: unknown) =>
+            addToast({
+              level: "error",
+              message: e instanceof Error ? e.message : "Couldn't read the folder.",
+            }),
+          ),
       },
     ];
     return list;

@@ -996,6 +996,36 @@ exported `layerCountLabel`) and `RecentRow.Highlight` is now exported for the ca
 `RecentPanel`'s rows became the `RepoCard` grid; `RecentRow` itself is untouched and still serves
 the nav popover (H5), and the Continue card (H1, exactly one repository) shows the same summary
 strip.
+<!-- T11.15 --> Snapshot mode (Firefox/Safari read-once, Design §14.6, atlas tab 18). **Neither
+`OpenOptions` nor `RepoInfo` gained a `snapshotMode` field, and neither needed one**: the *handle*
+says it. `<input type="file" webkitdirectory>` hands the page `File` objects, and a `File` is
+structured-cloneable while a `MemoryDirHandle` (or any object with methods) is not — a memory handle
+therefore **cannot** cross the worker boundary that `WorkerClient.open(handle)` posts across. So the
+page posts the files themselves and the tree is laid out **inside the worker**: new engine module
+`src/engine/fs/fileSnapshot.ts` (`FileSnapshot` = `{ __diffgitFileSnapshot: true, kind: "directory",
+name, entries: { path, file }[], readAt }`, `isFileSnapshot`, `fileSnapshotHandle`) returns a
+`DirHandleLike` whose `getFile()` returns the browser's own `File`, so bytes are read only when the
+engine calls `arrayBuffer()`/`stream()` — never for a path outside `.git` that the diff does not
+want. `resolveHandle` accepts the payload before its existing branches; nothing else in the engine
+knows about snapshot mode, and `RepoSession` is unchanged. The alternative — running the engine on
+the main thread — would fork `WorkerClient` for one browser and give Firefox the frozen UI the
+worker exists to prevent.
+Page side: `src/ui/fs/memoryDirHandle.ts` (`SNAPSHOT_ENTRY_LIMIT` = 100,000, `SnapshotInputFile`,
+`SnapshotProgress`, `SnapshotTooLargeError`, `collectSnapshot`, `relativePathOf`, `rootNameOf`,
+`promptForRepositoryFiles`) walks the list in chunks, reporting `{ entries, total, bytes }` for the
+gate's counter and refusing a folder above the limit with advice. `src/ui/openRepo.ts` gained
+`openRepoOnce(files?, onProgress?)` — the gate passes what its own input collected, the palette
+action `Open once (snapshot)` passes nothing and a detached input is used.
+`StoreState` gained one field, `snapshotReadAt: number | null` (the tag's "read at 14:02"), beside
+T11.1's `snapshotMode`; both are set by `openRepo` itself, which recognises the payload with
+`isFileSnapshot` — there is no second open action. In that mode `openRepo` **starts no scheduler and
+writes no Recent entry** (there is no handle to observe or store), and appends `SNAPSHOT_WARNING`
+(`SNAPSHOT_MODE`, warning level) to `RepoInfo.warnings` so every `recompute()` merges it back.
+`BrowserGate` steps aside while `snapshotMode` is true, `RefreshControl` takes `hideMode` so the
+Live dot and word are not drawn, and `StatsRow` carries the `--attention` tag
+`Snapshot mode · read at 14:02 · Re-open to refresh` (`readAtLabel`), whose link re-runs
+`openRepoOnce()`. `closeRepo` resets both fields, which is also how the error screens' "Choose
+another folder" puts the gate back.
 
 ## Persistence additions
 

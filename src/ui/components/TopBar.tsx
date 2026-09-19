@@ -39,6 +39,8 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
   const ownHeader = useStore((s) => s.mode === "branches" || s.mode === "insights");
   const tags = useStore((s) => s.tags);
   const stashes = useStore((s) => s.stashes);
+  // T11.15 / Design §14.6: snapshot mode cannot refresh itself, so the Live dot is not drawn.
+  const snapshotMode = useStore((s) => s.snapshotMode);
 
   if (!repo || !diffSource) return null;
 
@@ -105,6 +107,7 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
           busy={refresh.busy}
           lastAt={refresh.lastAt}
           phase={refresh.phase ?? null}
+          hideMode={snapshotMode}
           onRefresh={(force) => requestRefresh(force ? "force" : "manual")}
         />
         <button
