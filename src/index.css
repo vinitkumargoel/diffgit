@@ -634,6 +634,24 @@
     color: var(--muted);
     font-size: 12px;
   }
+  /* T11.8: the sentences inside the palette's search results — what was scanned, what was capped,
+     what found nothing. One line in the list, never a banner (Design §14, rule 2). */
+  .palette-note {
+    padding: 6px 10px;
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 16px;
+  }
+  /* The footer line that explains the scope prefixes (T11.8 deliverables). */
+  .palette-footer {
+    padding: 6px 10px;
+    border-top: 1px solid var(--line);
+    background: var(--surface-sunken);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 16px;
+  }
   .spin {
     animation: spin 1s linear infinite;
   }

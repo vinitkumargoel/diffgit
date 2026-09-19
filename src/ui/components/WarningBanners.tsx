@@ -117,10 +117,13 @@ export function WarningBanners() {
   const visible = warnings.filter(
     // T11.6: `BLAME_CAPPED` belongs to one blame of one file, not to the repository, so the card
     // prints it as a single inline line with a `Continue` button instead (Design §14, rule 2).
+    // T11.8: `SEARCH_CAPPED` is the same shape — it belongs to one search in the palette, which
+    // prints it as one line inside its own results and forgets it when the palette closes.
     (w) =>
       !dismissed.has(w.code) &&
       w.code !== "OPERATION_IN_PROGRESS" &&
       w.code !== "BLAME_CAPPED" &&
+      w.code !== "SEARCH_CAPPED" &&
       w.code !== "SECRETS_FOUND",
   );
   if (visible.length === 0 && operation === null && secrets === 0) return null;

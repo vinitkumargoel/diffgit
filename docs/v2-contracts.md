@@ -661,6 +661,48 @@ is shown as one inline line above the table, driven by the rows themselves (`bra
 back a row with `lastCommit: null` for a tip it could not read) rather than by the warning, which
 `recompute()` replaces on the next diff. `MenuItem` moved out of `CommitCard.tsx` into
 `components/MenuItem.tsx` and gained a `disabled` + `title` pair, so both `…` menus share one row.
+
+<!-- T11.8 --> `StoreState` gained `search: SearchState` (`scope`, `query`, `regex`, `path`,
+`commits`, `loading`, `result`, `error`) and the actions `runSearch({ scope, query, regex, commits?
+})`, `widenSearch()` and `cancelSearch()`. It is **one slot, not a cache**: the palette shows one
+scope at a time, a newer query supersedes the one before it, and closing the palette resets it —
+`closeRepo` does too. Only the store knows a search ran; no other surface reads the slice.
+The palette is the whole UI (Design §14, rule 2: "search scopes live in the command palette"). A
+query becomes a search only when it starts with a prefix — `>` commits, `grep:` worktree, `-S`
+pickaxe (`msg:` is accepted as the atlas mockup's spelling of `>`), with `regex:` straight after the
+prefix setting `SearchRequest.regex`. Without a prefix the box is exactly the command list T11.1
+built, so nothing about the palette's old behaviour changed; `Scopes` rows are offered only on the
+empty box, where they cannot compete with a command for the highlighted row.
+One search is in flight at a time. `runSearch` takes a **ticket**; an answer — or a `CANCELLED`
+rejection — whose ticket is no longer current lands nowhere, which is also how `Escape` cancels: the
+engine exposes no `cancelSearch`, so the running call is abandoned rather than aborted (the task's
+"else ignore result"), `STALE`/`CANCELLED` go through `ignoreStale`, and the box drops back to the
+bare prefix so a second `Escape` closes the palette as it always did. Input is debounced by
+`SEARCH_DEBOUNCE_MS` (200), and results are rendered only while the slice describes exactly what is
+in the box, so a pending debounce never shows the previous query's hits under a newer one.
+`SearchRequest` is built from the contract and nothing else: `limit` is always `SEARCH_HIT_LIMIT`
+(200); `path` is the **path part** of the file filter (`parseFilter`, because `status:` / `layer:`
+are the sidebar's vocabulary, not the engine's) and is omitted when empty; `commits` is sent only
+for the pickaxe scope, where the contract makes it mandatory — `PICKAXE_COMMITS` (200), which the
+`Widen ×5` row multiplies up to `PICKAXE_COMMITS_MAX` (5,000). `regex` is omitted rather than sent
+as `false`, so the recorded `searchKey(req)` of `src/engine/search/query.ts` matches.
+`SEARCH_CAPPED` is filtered out of `WarningBanners` (like `OPERATION_IN_PROGRESS`, `BLAME_CAPPED`
+and `SECRETS_FOUND`): `capped` belongs to one search, and the palette prints it as **one line
+inside the results** next to `scanned` and the duration — the atlas's "the cost is visible and
+chosen". Enter on a hit does what the hit is: an `oid` selects that commit in History mode
+(`showCommit`), a `kind: "file"` hit opens its card in Files mode and scrolls to the line through
+T11.9's `requestScrollTo(id, line)`, and the pickaxe's one hit with no `oid` (`Uncommitted changes`)
+is the working tree, which is Files mode. A grep hit for a path outside the current comparison has
+no card to open and says so in a toast rather than jumping nowhere.
+T11.5's `searchCommits` is untouched: it is the History list's own box (Enter with no local match)
+and returns oids, which is a different question from the palette's.
+New pure module `src/ui/search.ts` (`SearchScope`, `SEARCH_DEBOUNCE_MS`, `SEARCH_HIT_LIMIT`,
+`PICKAXE_COMMITS`, `PICKAXE_COMMITS_MAX`, `WIDEN_FACTOR`, `REGEX_PREFIX`, `SCOPE_PREFIXES`,
+`ADVERTISED_PREFIXES`, `parseSearch`, `scopeLabel`, `nextWiden`, `widenLabel`, `resultsHeading`,
+`formatSearchDuration`, `scannedLine`, `CAPPED_LINE`, `emptyLine`, `promptLine`, `FOOTER_LINE`,
+`hitLocation`, `occurrencesLabel`, `WORKING_TREE_HIT`, `notInDiffNote`) owns the grammar and every
+string the palette prints.
+
 <!-- T11.9 --> `StoreState.secrets` is now the real `SecretFinding[] | null` (the
 `PendingEngineType` annotation T11.1 left is gone). `null` means "this diff has not been scanned",
 `[]` is a real answer, and the two are different things: an export (T11.10) must treat `null` as

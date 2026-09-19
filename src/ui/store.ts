@@ -45,6 +45,7 @@ import type {
   RepoRef,
   RepoWarning,
   ResolvedRevision,
+  SearchResult,
   SecretFinding,
   StashInfo,
   TagInfo,
@@ -68,6 +69,7 @@ import {
 import { Lru } from "./lru";
 import { derivedKey, getDerived, setDerived } from "./persistence/derived";
 import { revisionOfRef } from "./refGroups";
+import { nextWiden, PICKAXE_COMMITS, SEARCH_HIT_LIMIT, type SearchScope } from "./search";
 import { foundNote, hasUncommittedLayer, NO_FINDINGS_NOTE, NOTHING_TO_SCAN_NOTE } from "./secrets";
 import {
   buildTree,
@@ -465,6 +467,38 @@ export const INITIAL_BRANCHES: BranchesState = {
   query: "",
 };
 
+/**
+ * T11.8 — the one search the palette is showing (Design §14.1: the palette is where the scopes
+ * live). It is deliberately a single slot rather than a cache per scope: the palette shows one
+ * scope at a time, a newer query supersedes the one before it, and `Escape` throws the answer away.
+ * `scope === null` means nothing has been asked for the current input.
+ */
+export interface SearchState {
+  scope: SearchScope | null;
+  /** The query as it was sent to the engine (trimmed), not what is currently in the box. */
+  query: string;
+  regex: boolean;
+  /** `SearchRequest.path`: the path part of the file filter when the search ran; null = whole repo. */
+  path: string | null;
+  /** `SearchRequest.commits` for the pickaxe scope; `Widen ×5` multiplies it. */
+  commits: number;
+  loading: boolean;
+  result: SearchResult | null;
+  /** A refused query (an empty, over-long or uncompilable pattern is `INTERNAL` plus a hint). */
+  error: UiError | null;
+}
+
+export const INITIAL_SEARCH: SearchState = {
+  scope: null,
+  query: "",
+  regex: false,
+  path: null,
+  commits: PICKAXE_COMMITS,
+  loading: false,
+  result: null,
+  error: null,
+};
+
 export interface StoreState {
   screen: Screen;
   repo: RepoInfo | null;
@@ -559,6 +593,8 @@ export interface StoreState {
   stashes: StashInfo[] | null;
   /** Branches mode (T11.7, Design §14.6). */
   branches: BranchesState;
+  /** The palette's search scopes (T11.8, Design §14.1 rule 2, atlas tab 05). */
+  search: SearchState;
 
   // actions
   openRepo(handle: unknown, opts?: OpenOptions): Promise<void>;
@@ -707,6 +743,28 @@ export interface StoreState {
    * layer never reaches the engine: it answers `[]` directly. `STALE` / `CANCELLED` are ignored.
    */
   scanSecrets(opts?: { announce?: boolean }): Promise<void>;
+
+  // ---- Search scopes in the palette (T11.8, Design §14.1, atlas tab 05) ----
+  /**
+   * Runs one `search(req)` and parks the answer in `search`. The path is taken from the **path
+   * part** of the current file filter (`status:` / `layer:` tokens are meaningless to the engine's
+   * path scope), `commits` is only sent for the pickaxe scope — where the contract makes it
+   * mandatory — and `limit` is always `SEARCH_HIT_LIMIT`.
+   *
+   * One search is in flight at a time: every call takes a ticket, and an answer whose ticket is no
+   * longer the current one is dropped, so a newer query always wins and `STALE` / `CANCELLED` from
+   * the superseded call go through `ignoreStale` instead of reaching the palette.
+   */
+  runSearch(req: {
+    scope: SearchScope;
+    query: string;
+    regex: boolean;
+    commits?: number;
+  }): Promise<void>;
+  /** `Widen ×5`: the same pickaxe query over five times the range, up to `PICKAXE_COMMITS_MAX`. */
+  widenSearch(): Promise<void>;
+  /** `Escape` on a running search, and every close of the palette: forget it and stop listening. */
+  cancelSearch(): void;
 }
 
 let toastSeq = 0;
@@ -826,6 +884,14 @@ let commitStatsDraining = false;
 /** T11.7: the same rule for `branchCells` — the table's visible rows queue, one loop drains them. */
 const branchCellQueue = new Set<string>();
 let branchCellsDraining = false;
+
+/**
+ * T11.8: the ticket of the newest `search` call. `search` is single-in-flight in the engine, so a
+ * newer query cancels the older one there; here the ticket is what makes the older *answer* — or
+ * its `CANCELLED` rejection — land nowhere. `cancelSearch` and `closeRepo` bump it too, so a reply
+ * that arrives after `Escape` cannot repopulate a palette the user has already dismissed.
+ */
+let searchTicket = 0;
 
 /**
  * T11.7: **the base branch**. It is chosen once and then remembered, but it is not a preference of
@@ -1087,6 +1153,7 @@ export const useStore = create<StoreState>()((set, get) => {
     tags: null,
     stashes: null,
     branches: INITIAL_BRANCHES,
+    search: INITIAL_SEARCH,
 
     async openRepo(handle, opts = {}) {
       await get().closeRepo();
@@ -1253,11 +1320,13 @@ export const useStore = create<StoreState>()((set, get) => {
         tags: null,
         stashes: null,
         branches: INITIAL_BRANCHES,
+        search: INITIAL_SEARCH,
       });
       pickerSources = null;
       commitStatsQueue.clear();
       branchCellQueue.clear();
       secretsAfterStats = null;
+      searchTicket++;
     },
 
     setSource(refOrName) {
@@ -2263,6 +2332,80 @@ export const useStore = create<StoreState>()((set, get) => {
       const s = get();
       if (!s.diff) return null;
       return client().fileBytes(s.diff.generation, id, side);
+    },
+
+    // ---- Search scopes in the palette (T11.8, Design §14.1, atlas tab 05) ----
+    async runSearch(req) {
+      const ticket = ++searchTicket;
+      const query = req.query.trim();
+      const commits = req.scope === "pickaxe" ? (req.commits ?? PICKAXE_COMMITS) : undefined;
+      if (!get().repo || query === "") {
+        set({
+          search: {
+            ...INITIAL_SEARCH,
+            scope: req.scope,
+            query,
+            regex: req.regex,
+            commits: commits ?? PICKAXE_COMMITS,
+          },
+        });
+        return;
+      }
+      // Only the path part: `status:` / `layer:` are the sidebar's vocabulary, not the engine's.
+      const path = parseFilter(get().filter).path.trim();
+      set({
+        search: {
+          scope: req.scope,
+          query,
+          regex: req.regex,
+          path: path === "" ? null : path,
+          commits: commits ?? PICKAXE_COMMITS,
+          loading: true,
+          result: null,
+          error: null,
+        },
+      });
+      try {
+        const result = await client().search({
+          scope: req.scope,
+          query,
+          limit: SEARCH_HIT_LIMIT,
+          ...(req.regex ? { regex: true } : {}),
+          ...(path === "" ? {} : { path }),
+          ...(commits === undefined ? {} : { commits }),
+        });
+        if (ticket !== searchTicket) return; // a newer query, or Escape, got there first
+        set((s) => ({ search: { ...s.search, loading: false, result } }));
+      } catch (e) {
+        if (ticket !== searchTicket) return;
+        const err = toUiError(e);
+        ignoreStale(e);
+        if (err.code === "STALE" || err.code === "CANCELLED") {
+          set((s) => ({ search: { ...s.search, loading: false } }));
+          return;
+        }
+        set((s) => ({ search: { ...s.search, loading: false, error: err } }));
+      }
+    },
+
+    async widenSearch() {
+      const s = get().search;
+      const next = s.scope === "pickaxe" ? nextWiden(s.commits) : null;
+      if (s.scope === null || next === null) return;
+      await get().runSearch({
+        scope: s.scope,
+        query: s.query,
+        regex: s.regex,
+        commits: next,
+      });
+    },
+
+    cancelSearch() {
+      // The engine exposes no `cancelSearch`, so the running call is abandoned rather than aborted:
+      // the ticket makes its answer land nowhere (T11.8 deliverables, "else ignore result").
+      searchTicket++;
+      if (get().search === INITIAL_SEARCH) return;
+      set({ search: INITIAL_SEARCH });
     },
   };
 });
