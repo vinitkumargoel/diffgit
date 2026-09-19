@@ -37,4 +37,21 @@ directory with JSON dumped from git (see the expectations script for the exact c
 | `partial` | `main` | `main`, `origin/*` | `--filter=blob:none` promisor clone (refused) | `git config remote.origin.promisor` |
 | `perf-5k` | `feature` | `main`, `feature`, `other` | 5,000 files / 200 dirs, packed; only with `FIXTURES_PERF=1` | `git ls-files \| wc -l` |
 
-`expected/` in every fixture is listed in that fixture's `.git/info/exclude` (written by the expectations script) so neither git nor the engine reports it as untracked.
+## v2 fixtures (T10.0, `docs/v2-contracts.md` § "Fixtures to add")
+
+None of these has a `feature` branch, so the phase-3 parity suites that enumerate `fixtures/` skip them.
+
+| Fixture | HEAD | Branches | What it exercises | Verify |
+|---|---|---|---|---|
+| `tags` | `main` | `main`, `release` | 2 lightweight + 2 annotated tags; `v1.0.0` sits on `release`'s tip | `git tag -l --format='%(refname) %(objecttype) %(objectname) %(*objectname)'` |
+| `stash` | `main` | `main` | two stashes, `stash@{0}` pushed with `-u` (three parents); worktree left dirty | `git stash list` |
+| `rebase-conflict` | detached (rebase) | `main`, `topic` | `git rebase -i` stopped at step 2 of 3; `rebase-merge/{git-rebase-todo,done}` both present; one `UU`, one `AA` | `git status --porcelain=v1`; `cat .git/rebase-merge/msgnum .git/rebase-merge/end` |
+| `merge-conflict` | `main` (merging) | `main`, `topic` | `MERGE_HEAD` present, one `UU`, one `UD` (modify/delete, deleted by them) | `git status --porcelain=v1` |
+| `cherry-pick-conflict` | `main` (picking) | `main`, `topic` | `CHERRY_PICK_HEAD` present, one `UU` | `cat .git/CHERRY_PICK_HEAD` |
+| `reflog-orphan` | `main` | `main` | `git reset --hard HEAD~2` left two commits reachable only from the reflog | `git reflog`; `git fsck --unreachable` |
+| `history` | `main` | `main`, `topic`, `preflight/base`, `preflight/a` | 60 commits on `main` (one merge of `topic`, one root), `git mv` + edit rename, whitespace-only re-indent, `.mailmap` with two addresses for one author, a `renovate[bot]` author, 3 lightweight + 1 annotated tag, `commit-graph write --reachable --changed-paths`; `preflight/a` = one commit that collides with `main`, one touching the same file elsewhere, one clean | `git rev-list --count main`; `git log --graph --oneline --all` |
+| `secrets` | `main` | `main` | fake AWS / GitHub / Anthropic keys and an RSA private key block across the staged and unstaged layers, a 40-char hex sha that must not be flagged, one `# diffgit:allow-secret` line | `git diff`; `git diff --cached` |
+| `hidden` | `main` | `main` | ignored `dist/` (3 files), ignored `.env.local`, `skip-worktree` and `assume-unchanged` files edited on disk, an 11 MB tracked file modified in the worktree, an untracked `.DS_Store` (git shows it, diffgit's built-in excludes do not) | `git check-ignore -v <paths>`; `git ls-files -v` |
+| `octopus` | `main` | `main`, `side-a`, `side-b` | three-parent merge commit | `git rev-list --parents -n 1 HEAD` |
+
+`expected/` in every fixture is listed in that fixture's `.git/info/exclude` (written by the expectations script) so neither git nor the engine reports it as untracked. Alongside the JSON dumps, the v2 fixtures carry `expected/*.txt` — git's own output for `tag -l`, `stash list`, `reflog`, `ls-files -u`, `ls-files -v`, `check-ignore -v`, `log --graph`, `log -S`, `log --follow`, `blame --porcelain` (with and without `-w`), `rev-list --left-right --count`, `rev-list --bisect`, `rev-parse` and `shortlog -sn`. `history/expected/preflight-outcome.txt` is the real `git rebase` result for `preflight/a` onto `main`, replayed on throwaway clones so the fixture itself is never rebased.

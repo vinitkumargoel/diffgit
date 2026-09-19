@@ -31,6 +31,81 @@ export function loadExpected<T = unknown>(name: string, file: string): T {
   return JSON.parse(readFileSync(p, "utf8")) as T;
 }
 
+/**
+ * Reads `fixtures/<name>/expected/<file>` verbatim (file may omit the `.txt` suffix). These are the
+ * plain-text recordings of git's own output added by T10.0 — `git blame --porcelain`,
+ * `git reflog`, `git tag -l`, `git stash list`, and so on.
+ */
+export function loadExpectedText(name: string, file: string): string {
+  const f = file.endsWith(".txt") ? file : `${file}.txt`;
+  const p = join(fixturePath(name), "expected", f);
+  if (!existsSync(p)) throw new Error(`${MISSING} (expected file ${p} not found)`);
+  return readFileSync(p, "utf8");
+}
+
+/** `loadExpectedText` split into lines, with the trailing newline and blank lines dropped. */
+export function loadExpectedLines(name: string, file: string): string[] {
+  return loadExpectedText(name, file)
+    .split("\n")
+    .filter((l) => l.length > 0);
+}
+
+// ---- v2 fixtures (T10.0); see docs/v2-contracts.md § "Fixtures to add" ----
+
+/** Fixture repositories added for the phase-10 engine. */
+export const V2_FIXTURES = [
+  "tags",
+  "stash",
+  "rebase-conflict",
+  "merge-conflict",
+  "cherry-pick-conflict",
+  "reflog-orphan",
+  "history",
+  "secrets",
+  "hidden",
+  "octopus",
+] as const;
+export type V2Fixture = (typeof V2_FIXTURES)[number];
+
+/** Names inside the `history` fixture that the walker/blame/insights/preflight tests address. */
+export const HISTORY_FIXTURE = {
+  name: "history",
+  defaultBranch: "main",
+  topicBranch: "topic",
+  /** Branched off an older point; three commits that T10.11 predicts a rebase outcome for. */
+  preflightBranch: "preflight/a",
+  /** The commit `preflight/a` was branched from, kept as a ref for convenience. */
+  preflightBase: "preflight/base",
+  lightweightTags: ["v0.1.0", "v0.2.0", "v0.3.0"],
+  annotatedTag: "v1.0.0",
+  renamedFrom: "src/renamed-from.txt",
+  renamedTo: "src/renamed-to.txt",
+  /** Edited by several commits on both `main` and `preflight/a`. */
+  hotPath: "src/hot.txt",
+  /** Re-indented by exactly one whitespace-only commit. */
+  indentPath: "src/indent.txt",
+  manifestPath: "package.json",
+  /** Two addresses in `.mailmap`, both mapped to the first. */
+  mailmapAuthor: {
+    name: "Ada Lovelace",
+    email: "ada@example.com",
+    alias: "ada.lovelace@corp.example.com",
+  },
+  botAuthor: "renovate[bot]",
+} as const;
+
+/** Paths planted in the `hidden` fixture, by the reason each one is not shown (T10.4). */
+export const HIDDEN_FIXTURE = {
+  name: "hidden",
+  ignoredDir: "dist",
+  ignoredDirCount: 3,
+  ignoredFile: ".env.local",
+  builtinExcluded: ".DS_Store",
+  skipWorktree: "src/skipped.txt",
+  assumeUnchanged: "src/assumed.txt",
+  tooLarge: "big.txt",
+} as const;
+
 // ---- Shapes written by scripts/fixture-expectations.sh ----
 
 export interface ExpectedMeta {

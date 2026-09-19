@@ -6,9 +6,17 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 FIX="$ROOT/fixtures"
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 LC_ALL=C
+# The preflight replay (T10.0) rebases throwaway clones, so it needs the same fixed identity/date.
+export GIT_AUTHOR_NAME=test GIT_AUTHOR_EMAIL=test@example.com
+export GIT_COMMITTER_NAME=test GIT_COMMITTER_EMAIL=test@example.com
+export GIT_AUTHOR_DATE="2024-01-01T00:00:00Z" GIT_COMMITTER_DATE="2024-01-01T00:00:00Z"
 command -v jq >/dev/null || { echo "jq is required (brew install jq / apt-get install jq)" >&2; exit 1; }
 
-G() { git -c core.autocrlf=false -c core.untrackedCache=false -c core.fsmonitor=false -c diff.renameLimit=1000 "$@"; }
+G() {
+  git -c core.autocrlf=false -c core.untrackedCache=false -c core.fsmonitor=false \
+      -c diff.renameLimit=1000 -c protocol.file.allow=always -c advice.detachedHead=false \
+      -c commit.gpgsign=false -c core.hooksPath=/dev/null -c gc.auto=0 "$@"
+}
 
 # git diff -z --name-status → [{status, similarity, oldPath, newPath}]
 name_status_json() { # name_status_json <repo> <git diff args...>
@@ -167,14 +175,204 @@ dump() { # dump <fixture-name>
   esac
 }
 
+# ----------------------------------------------------------------------------------------------
+# v2 expectations (T10.0). Plain-text dumps of git's own answers, one file per command, under
+# fixtures/<name>/expected/*.txt. Named in docs/v2-contracts.md § "Fixtures to add".
+
+TAG_FMT='%(refname) %(objecttype) %(objectname) %(*objectname)'
+
+rev_parse_txt() { # rev_parse_txt <repo> <expr...>   →  "<expr>\t<oid|<unresolved>>"
+  local r="$1"; shift
+  local e out
+  for e in "$@"; do
+    out=$(G -C "$r" rev-parse --verify --quiet "$e" 2>/dev/null || true)
+    printf '%s\t%s\n' "$e" "${out:-<unresolved>}"
+  done
+}
+
+# The midpoint sequence `git bisect` would visit, replaying "the midpoint is always good".
+bisect_sequence() { # bisect_sequence <repo> <good> <bad>
+  local r="$1" good="$2" bad="$3" i=0 mid remaining
+  while :; do
+    remaining=$(G -C "$r" rev-list --count "$bad" "^$good")
+    mid=$(G -C "$r" rev-list --bisect "$bad" "^$good")
+    printf 'step %d good %s bad %s remaining %s midpoint %s\n' "$i" "$good" "$bad" "$remaining" "$mid"
+    if [ "$remaining" -le 1 ] || [ "$mid" = "$bad" ] || [ "$i" -gt 32 ]; then break; fi
+    good="$mid"; i=$((i + 1))
+  done
+  return 0
+}
+
+state_files() { # state_files <dir> <file...>
+  local d="$1"; shift
+  local f
+  for f in "$@"; do
+    if [ -f "$d/$f" ]; then printf '%s\t%s\n' "$f" "$(tr -d '\n' < "$d/$f")"; else printf '%s\t<absent>\n' "$f"; fi
+  done
+}
+
+# The real `git rebase` outcome for history's preflight/a, recorded on throwaway clones so the
+# fixture itself is never touched (T10.11 grades its predictions against this).
+record_preflight_outcome() {
+  local src="$FIX/history" out="$FIX/history/expected/preflight-outcome.txt"
+  local tmp="$FIX/_tmp-preflight" mb commits c rc guard orig
+  rm -rf "$tmp"
+  G clone -q --no-hardlinks --branch preflight/a "$src" "$tmp" 2>/dev/null
+  G -C "$tmp" branch -q -f main origin/main
+  mb=$(G -C "$tmp" merge-base main preflight/a)
+  commits=$(G -C "$tmp" rev-list --reverse "$mb..preflight/a")
+  {
+    echo "# real 'git rebase' outcomes for preflight/a onto main, run on throwaway clones of fixtures/history"
+    echo "branch preflight/a"
+    echo "onto main"
+    echo "merge-base $mb"
+    echo "## git rebase main preflight/a"
+  } > "$out"
+  rc=0; guard=0
+  G -C "$tmp" rebase main >/dev/null 2>&1 || rc=1
+  while [ "$rc" != 0 ]; do
+    guard=$((guard + 1))
+    [ "$guard" -le 8 ] || { echo "preflight: rebase never finished" >&2; exit 1; }
+    orig=$(G -C "$tmp" rev-parse REBASE_HEAD)
+    printf 'stopped %s %s\n' "$orig" "$(G -C "$src" log -1 --format=%s "$orig")" >> "$out"
+    G -C "$tmp" diff --name-only --diff-filter=U | sed 's/^/  conflicted /' >> "$out"
+    rc=0; G -C "$tmp" rebase --skip >/dev/null 2>&1 || rc=1
+  done
+  printf 'completed %s\n' "$(G -C "$tmp" rev-list --count "main..HEAD")" >> "$out"
+  rm -rf "$tmp"
+
+  echo "## git rebase --onto main <commit>^ <commit>, one commit at a time" >> "$out"
+  for c in $commits; do
+    rm -rf "$tmp"
+    G clone -q --no-hardlinks --branch preflight/a "$src" "$tmp" 2>/dev/null
+    G -C "$tmp" branch -q -f main origin/main
+    rc=0
+    G -C "$tmp" rebase --onto main "$c^" "$c" >/dev/null 2>&1 || rc=1
+    if [ "$rc" = 0 ]; then
+      printf 'commit %s clean %s\n' "$c" "$(G -C "$src" log -1 --format=%s "$c")" >> "$out"
+    else
+      printf 'commit %s conflict %s\n' "$c" "$(G -C "$src" log -1 --format=%s "$c")" >> "$out"
+      G -C "$tmp" diff --name-only --diff-filter=U | sed 's/^/  conflicted /' >> "$out"
+      G -C "$tmp" rebase --abort >/dev/null 2>&1 || true
+    fi
+    rm -rf "$tmp"
+  done
+}
+
+dump_v2() { # dump_v2 <fixture-name>
+  local name="$1" r="$FIX/$1" exp="$FIX/$1/expected" root
+  case "$name" in
+    tags|stash|reflog-orphan|history|secrets|hidden|octopus|merge-conflict|rebase-conflict|cherry-pick-conflict) ;;
+    *) return 0 ;;
+  esac
+  G -C "$r" status --porcelain=v1 --branch --untracked-files=all > "$exp/status.txt"
+
+  case "$name" in
+    tags)
+      G -C "$r" tag -l --format="$TAG_FMT" > "$exp/tag-list.txt"
+      rev_parse_txt "$r" HEAD main main~1 main~2 release refs/heads/release \
+        v0.1.0 v0.2.0 v1.0.0 'v1.0.0^{}' 'v1.0.0^{commit}' v1.1.0 refs/tags/v1.0.0 > "$exp/rev-parse.txt"
+      ;;
+    stash)
+      G -C "$r" stash list --format='%gd %H %s' > "$exp/stash-list.txt"
+      { G -C "$r" rev-list --parents -n 1 'stash@{0}'
+        G -C "$r" rev-list --parents -n 1 'stash@{1}'; } > "$exp/stash-parents.txt"
+      rev_parse_txt "$r" HEAD main 'stash@{0}' 'stash@{0}^' 'stash@{0}^2' 'stash@{0}^3' \
+        'stash@{1}' 'stash@{1}^' 'stash@{1}^2' 'stash@{1}^3' > "$exp/rev-parse.txt"
+      ;;
+    reflog-orphan)
+      G -C "$r" reflog --format='%H %gs' > "$exp/reflog.txt"
+      G -C "$r" reflog --format='%gd %H %gs' > "$exp/reflog-selectors.txt"
+      comm -13 <(G -C "$r" rev-list --all | sort -u) <(G -C "$r" reflog --format=%H | sort -u) > "$exp/orphan.txt"
+      ;;
+    history)
+      root=$(G -C "$r" rev-list --max-parents=0 main)
+      G -C "$r" log --graph --oneline --date-order --all > "$exp/log-graph.txt"
+      G -C "$r" log --date-order --format=%H --all > "$exp/log-all-date-order.txt"
+      G -C "$r" log --date-order --format=%H main > "$exp/log-main-date-order.txt"
+      G -C "$r" log --date-order --first-parent --format=%H main > "$exp/log-main-first-parent.txt"
+      G -C "$r" log --format=%H main -- src/hot.txt > "$exp/log-path-hot.txt"
+      G -C "$r" log --format=%H main -- src/renamed-to.txt > "$exp/log-path-renamed.txt"
+      G -C "$r" log --follow --format=%H main -- src/renamed-to.txt > "$exp/log-follow-renamed.txt"
+      G -C "$r" blame --porcelain main -- src/hot.txt > "$exp/blame-src-hot.txt"
+      G -C "$r" blame -w --porcelain main -- src/hot.txt > "$exp/blame-src-hot-w.txt"
+      G -C "$r" blame --porcelain main -- src/renamed-to.txt > "$exp/blame-src-renamed-to.txt"
+      G -C "$r" blame -w --porcelain main -- src/renamed-to.txt > "$exp/blame-src-renamed-to-w.txt"
+      G -C "$r" blame --porcelain main -- src/indent.txt > "$exp/blame-src-indent.txt"
+      G -C "$r" blame -w --porcelain main -- src/indent.txt > "$exp/blame-src-indent-w.txt"
+      { printf 'main...topic\t%s\n' "$(G -C "$r" rev-list --left-right --count main...topic)"
+        printf 'main...preflight/a\t%s\n' "$(G -C "$r" rev-list --left-right --count main...preflight/a)"
+        printf 'main...preflight/base\t%s\n' "$(G -C "$r" rev-list --left-right --count main...preflight/base)"
+      } > "$exp/rev-list-left-right-count.txt"
+      G -C "$r" log -S'hot-main' --format=%H main > "$exp/log-S-hot-main.txt"
+      G -C "$r" log -S'renamed payload marker' --format=%H main > "$exp/log-S-payload.txt"
+      G -C "$r" shortlog -sn --no-merges main > "$exp/shortlog.txt"
+      G -C "$r" shortlog -sne --no-merges main > "$exp/shortlog-email.txt"
+      G -C "$r" tag -l --format="$TAG_FMT" > "$exp/tag-list.txt"
+      G -C "$r" log --format= --name-only main | sed '/^$/d' | sort | uniq -c | sort -rn > "$exp/name-only-counts.txt"
+      bisect_sequence "$r" "$root" "$(G -C "$r" rev-parse main)" > "$exp/rev-list-bisect.txt"
+      rev_parse_txt "$r" HEAD main main~1 main~5 'main^' 'main^2' refs/heads/main topic \
+        preflight/a 'preflight/a~2' preflight/base v0.1.0 v0.3.0 v1.0.0 'v1.0.0^{}' \
+        "$root" "${root:0:7}" "${root}^" > "$exp/rev-parse.txt"
+      record_preflight_outcome
+      ;;
+    secrets)
+      G -C "$r" diff > "$exp/diff-unstaged.txt"
+      G -C "$r" diff --cached > "$exp/diff-staged.txt"
+      ;;
+    hidden)
+      G -C "$r" check-ignore -v --no-index --non-matching \
+        dist dist/bundle.js dist/bundle.js.map dist/index.html .env.local .DS_Store \
+        src/app.txt src/skipped.txt src/assumed.txt big.txt notes.txt README.md \
+        > "$exp/check-ignore.txt" || [ $? -eq 1 ]
+      G -C "$r" ls-files -v > "$exp/ls-files-v.txt"
+      G -C "$r" status --porcelain=v1 --untracked-files=all --ignored=matching > "$exp/status-ignored.txt"
+      ;;
+    octopus)
+      G -C "$r" log --graph --oneline --date-order --all > "$exp/log-graph.txt"
+      G -C "$r" rev-list --parents -n 1 HEAD > "$exp/merge-parents.txt"
+      ;;
+    merge-conflict)
+      G -C "$r" ls-files -u > "$exp/ls-files-u.txt"
+      G -C "$r" reflog --format='%H %gs' > "$exp/reflog.txt"
+      state_files "$(G -C "$r" rev-parse --absolute-git-dir)" MERGE_HEAD MERGE_MODE ORIG_HEAD > "$exp/operation.txt"
+      ;;
+    cherry-pick-conflict)
+      G -C "$r" ls-files -u > "$exp/ls-files-u.txt"
+      G -C "$r" reflog --format='%H %gs' > "$exp/reflog.txt"
+      state_files "$(G -C "$r" rev-parse --absolute-git-dir)" CHERRY_PICK_HEAD ORIG_HEAD > "$exp/operation.txt"
+      ;;
+    rebase-conflict)
+      G -C "$r" ls-files -u > "$exp/ls-files-u.txt"
+      G -C "$r" reflog --format='%H %gs' > "$exp/reflog.txt"
+      { local d; d="$(G -C "$r" rev-parse --absolute-git-dir)/rebase-merge"
+        state_files "$d" msgnum end onto head-name orig-head stopped-sha interactive
+        echo "git-rebase-todo"; sed 's/^/  /' "$d/git-rebase-todo"
+        echo "done"; sed 's/^/  /' "$d/done"
+      } > "$exp/operation.txt"
+      ;;
+  esac
+}
+
+# Every recorded .txt must exist and carry something; an empty one is a silently broken expectation.
+check_txt_non_empty() {
+  local f bad=0
+  for f in "$FIX"/*/expected/*.txt; do
+    [ -e "$f" ] || continue
+    if [ ! -s "$f" ]; then echo "EMPTY EXPECTATION: $f" >&2; bad=1; fi
+  done
+  [ "$bad" = 0 ] || exit 1
+}
+
 main() {
   local d name n=0
   for d in "$FIX"/*/; do
     name=$(basename "$d")
     case "$name" in _*) continue ;; esac
     [ -e "$d/.git" ] || continue
-    dump "$name"; n=$((n + 1))
+    dump "$name"; dump_v2 "$name"; n=$((n + 1))
   done
+  check_txt_non_empty
   echo "expectations written for $n fixtures"
 }
 main "$@"

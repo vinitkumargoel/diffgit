@@ -15,6 +15,17 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T10.0 — v2 fixtures (2026-09-19)
+
+- `scripts/make-fixtures.sh` builds ten new repositories with the real git CLI (2.50.1) and fixed identities/dates, so rebuilds are byte-identical: `tags`, `stash`, `rebase-conflict`, `merge-conflict`, `cherry-pick-conflict`, `reflog-orphan`, `history` (60 commits on `main`, a `topic` merge, a `git mv` rename, a whitespace-only commit, `.mailmap`, a `renovate[bot]` author, 3 lightweight + 1 annotated tag, `commit-graph write --reachable --changed-paths`), `secrets`, `hidden` and `octopus`.
+- The three interrupted-operation fixtures are left genuinely mid-flight: `rebase-conflict` stops at step 2 of 3 with both `rebase-merge/git-rebase-todo` and `rebase-merge/done` present and one `UU` + one `AA` path; `merge-conflict` keeps `MERGE_HEAD` with one `UU` + one `UD`; `cherry-pick-conflict` keeps `CHERRY_PICK_HEAD`. The builder asserts each state rather than trusting git's exit code.
+- `history` also carries `preflight/base` and `preflight/a` for T10.11: three commits off an older point — one that rewrites the same lines of `src/hot.txt` as a later `main` commit, one that edits the same file 45 lines away, one that adds a file nothing else touches. `fixtures/history/expected/preflight-outcome.txt` records the real `git rebase` result (conflict / clean / clean), replayed on throwaway clones under `fixtures/_tmp-preflight` so the fixture is never rebased.
+- `scripts/fixture-expectations.sh` gained `dump_v2`: 57 `expected/*.txt` recordings of git's own output (`tag -l`, `stash list`, `reflog`, `ls-files -u`, `ls-files -v`, `check-ignore -v`, `log --graph`/`--follow`/`-S`, `blame --porcelain` with and without `-w`, `rev-list --left-right --count`, `rev-list --bisect`, `rev-parse`, `shortlog -sn`, `status`), plus a guard that fails the run if any recorded `.txt` is empty. `src/test/fixtures.ts` exposes `loadExpectedText`/`loadExpectedLines`, `V2_FIXTURES`, `HISTORY_FIXTURE` and `HIDDEN_FIXTURE`.
+- **Decisions:** none of the new fixtures has a `feature` branch, so the two suites that enumerate `fixtures/` (`renames.test.ts`, `textDiff.test.ts`) skip them for lack of a `name-status-3dot` expectation — no existing test needed changing. `hidden` also plants an untracked `.DS_Store` that git reports and diffgit's built-in excludes do not, which T10.4's `builtinExcludes: false` test needs. Inside `set -o pipefail`, `cmd | grep -q` fails on SIGPIPE, so the builders' assertions read into a variable and match with a here-string.
+- Checks: `bun run fixtures` green end to end (37 fixtures, ~9 s build + ~8 s expectations, determinism check unchanged); `bun run check` green (Biome 216 files, 228 engine + 294 UI tests, guards).
+
+---
+
 ## T9.1 — Sidebar groups (2026-09-19)
 
 - Owner approved `docs/mockups/review-sidebar-groups.html` (decisions D1–D9, all recommendations taken). The sidebar no longer pins a layer chip to every row: files are grouped by layer under sticky headers, and the layer is said once, in the header. Design §3.3, §7.4 and §8 restated from it; `README.md` describes groups instead of chips.

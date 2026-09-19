@@ -433,6 +433,364 @@ build_perf_5k() {
 }
 
 # ----------------------------------------------------------------------------------------------
+# v2 fixtures (T10.0) — docs/v2-contracts.md § "Fixtures to add".
+# Everything below is built with the real git CLI and fixed identities/dates, so rebuilds are
+# byte-identical wherever git allows it.
+
+commit_as() { # commit_as <repo> <iso-date> <author-name> <author-email> <message>
+  local r="$1" d="$2" an="$3" ae="$4" m="$5"
+  G -C "$r" add -A >/dev/null
+  (
+    export GIT_AUTHOR_DATE="$d" GIT_COMMITTER_DATE="$d" \
+           GIT_AUTHOR_NAME="$an" GIT_AUTHOR_EMAIL="$ae" \
+           GIT_COMMITTER_NAME="$an" GIT_COMMITTER_EMAIL="$ae"
+    G -C "$r" commit -q --allow-empty -m "$m"
+  )
+}
+merge_as() { # merge_as <repo> <iso-date> <author-name> <author-email> <message> <rev...>
+  local r="$1" d="$2" an="$3" ae="$4" m="$5"; shift 5
+  (
+    export GIT_AUTHOR_DATE="$d" GIT_COMMITTER_DATE="$d" \
+           GIT_AUTHOR_NAME="$an" GIT_AUTHOR_EMAIL="$ae" \
+           GIT_COMMITTER_NAME="$an" GIT_COMMITTER_EMAIL="$ae"
+    G -C "$r" merge -q --no-ff -m "$m" "$@"
+  )
+}
+hday() { # hday <n> → deterministic ISO date; 28 days per month from 2024-01-01
+  printf '2024-%02d-%02dT%02d:00:00Z' "$(( ($1 / 28) + 1 ))" "$(( ($1 % 28) + 1 ))" "$(( $1 % 24 ))"
+}
+
+# tags: 2 lightweight + 2 annotated; v1.0.0 sits on `release`'s tip as well.
+build_tags() {
+  local r="$FIX/tags"; mkdir -p "$r"; G -C "$r" init -q
+  w "$r" file.txt "release one"$'\n'
+  w "$r" CHANGELOG.md "# changelog"$'\n'
+  commit "$r" "c1: first release"
+  G -C "$r" tag v0.1.0
+  w "$r" file.txt "release two"$'\n'
+  commit "$r" "c2: second release"
+  G -C "$r" tag v0.2.0
+  w "$r" file.txt "release three"$'\n'
+  commit "$r" "c3: third release"
+  G -C "$r" branch release
+  G -C "$r" tag -a v1.0.0 -m "annotated release 1.0.0"
+  w "$r" file.txt "release four"$'\n'
+  commit "$r" "c4: fourth release"
+  G -C "$r" tag -a v1.1.0 -m "annotated release 1.1.0"
+}
+
+# stash: two stashes, the newest pushed with -u (three parents), plus a dirty worktree.
+build_stash() {
+  local r="$FIX/stash"; mkdir -p "$r"; G -C "$r" init -q
+  w "$r" a.txt "$(lines alpha 1 6)"$'\n'
+  w "$r" b.txt "$(lines beta 1 6)"$'\n'
+  commit "$r" "c1: base"
+  w "$r" a.txt "$(lines alpha 1 5)"$'\n'"alpha 6 stashed first"$'\n'
+  G -C "$r" stash push -q -m "wip: tracked only"
+  w "$r" b.txt "$(lines beta 1 5)"$'\n'"beta 6 stashed second"$'\n'
+  w "$r" stashed-untracked.txt "untracked, captured by stash -u"$'\n'
+  G -C "$r" stash push -q -u -m "wip: with untracked"
+  w "$r" a.txt "$(lines alpha 1 6)"$'\n'"alpha 7 left dirty"$'\n'
+  w "$r" left-untracked.txt "still untracked"$'\n'
+  [ "$(G -C "$r" stash list | wc -l | tr -d ' ')" = 2 ] || { echo "stash: expected two stashes" >&2; exit 1; }
+  [ "$(G -C "$r" rev-list --parents -n 1 'stash@{0}' | wc -w | tr -d ' ')" = 4 ] ||
+    { echo "stash: stash@{0} is not a three-parent (-u) stash" >&2; exit 1; }
+}
+
+# rebase-conflict: `git rebase -i` stopped at step 2 of 3 with one UU and one AA path.
+build_rebase_conflict() {
+  local r="$FIX/rebase-conflict"; mkdir -p "$r"; G -C "$r" init -q
+  w "$r" file.txt "$(lines line 1 6)"$'\n'
+  w "$r" keep.txt "untouched by either side"$'\n'
+  commit "$r" "c1: base"
+  G -C "$r" checkout -q -b topic
+  w "$r" one.txt "first topic commit"$'\n'
+  commit "$r" "t1: clean commit (rebase step 1 of 3)"
+  { lines line 1 2; echo "line 3 from topic"; lines line 4 6; } > "$r/file.txt"
+  w "$r" both-added.txt "both-added, topic version"$'\n'
+  commit "$r" "t2: conflicting commit (rebase step 2 of 3)"
+  w "$r" three.txt "third topic commit"$'\n'
+  commit "$r" "t3: clean commit (rebase step 3 of 3)"
+  G -C "$r" checkout -q main
+  { lines line 1 2; echo "line 3 from main"; lines line 4 6; } > "$r/file.txt"
+  w "$r" both-added.txt "both-added, main version"$'\n'
+  commit "$r" "c2: main edits the same line and adds the same path"
+  G -C "$r" checkout -q topic
+  GIT_SEQUENCE_EDITOR=true GIT_EDITOR=true G -C "$r" rebase -q -i main >/dev/null 2>&1 || true
+  local d="$r/.git/rebase-merge"
+  [ -f "$d/git-rebase-todo" ] && [ -f "$d/done" ] ||
+    { echo "rebase-conflict: rebase-merge/{git-rebase-todo,done} missing" >&2; exit 1; }
+  [ "$(cat "$d/msgnum")" = 2 ] && [ "$(cat "$d/end")" = 3 ] ||
+    { echo "rebase-conflict: expected to stop at step 2 of 3" >&2; exit 1; }
+  local st; st=$(G -C "$r" status --porcelain=v1)
+  grep -qxF 'UU file.txt' <<< "$st" ||
+    { echo "rebase-conflict: file.txt is not UU" >&2; exit 1; }
+  grep -qxF 'AA both-added.txt' <<< "$st" ||
+    { echo "rebase-conflict: both-added.txt is not AA" >&2; exit 1; }
+}
+
+# merge-conflict: mid-merge with MERGE_HEAD, one UU and one modify/delete (deleted by them).
+build_merge_conflict() {
+  local r="$FIX/merge-conflict"; mkdir -p "$r"; G -C "$r" init -q
+  w "$r" file.txt "$(lines line 1 6)"$'\n'
+  w "$r" gone.txt "$(lines gone 1 4)"$'\n'
+  w "$r" keep.txt "untouched by either side"$'\n'
+  commit "$r" "c1: base"
+  G -C "$r" checkout -q -b topic
+  { lines line 1 2; echo "line 3 from topic"; lines line 4 6; } > "$r/file.txt"
+  G -C "$r" rm -q gone.txt
+  commit "$r" "t1: edit file.txt, delete gone.txt"
+  G -C "$r" checkout -q main
+  { lines line 1 2; echo "line 3 from main"; lines line 4 6; } > "$r/file.txt"
+  { lines gone 1 3; echo "gone 4 edited on main"; } > "$r/gone.txt"
+  commit "$r" "c2: edit file.txt and gone.txt"
+  if G -C "$r" merge -q -m "merge topic into main" topic >/dev/null 2>&1; then
+    echo "merge-conflict: merge unexpectedly succeeded" >&2; exit 1
+  fi
+  [ -f "$r/.git/MERGE_HEAD" ] || { echo "merge-conflict: MERGE_HEAD missing" >&2; exit 1; }
+  local st; st=$(G -C "$r" status --porcelain=v1)
+  grep -qxF 'UU file.txt' <<< "$st" ||
+    { echo "merge-conflict: file.txt is not UU" >&2; exit 1; }
+  grep -qxF 'UD gone.txt' <<< "$st" ||
+    { echo "merge-conflict: gone.txt is not UD (deleted by them)" >&2; exit 1; }
+}
+
+# cherry-pick-conflict: CHERRY_PICK_HEAD present (T10.2 operation detection).
+build_cherry_pick_conflict() {
+  local r="$FIX/cherry-pick-conflict"; mkdir -p "$r"; G -C "$r" init -q
+  w "$r" file.txt "$(lines line 1 6)"$'\n'
+  w "$r" keep.txt "untouched by either side"$'\n'
+  commit "$r" "c1: base"
+  G -C "$r" checkout -q -b topic
+  { lines line 1 3; echo "line 4 from topic"; lines line 5 6; } > "$r/file.txt"
+  commit "$r" "t1: the commit that gets cherry-picked"
+  G -C "$r" checkout -q main
+  { lines line 1 3; echo "line 4 from main"; lines line 5 6; } > "$r/file.txt"
+  commit "$r" "c2: main edits the same line"
+  if G -C "$r" cherry-pick topic >/dev/null 2>&1; then
+    echo "cherry-pick-conflict: cherry-pick unexpectedly succeeded" >&2; exit 1
+  fi
+  [ -f "$r/.git/CHERRY_PICK_HEAD" ] ||
+    { echo "cherry-pick-conflict: CHERRY_PICK_HEAD missing" >&2; exit 1; }
+}
+
+# reflog-orphan: `git reset --hard` leaves two commits reachable only from the reflog.
+build_reflog_orphan() {
+  local r="$FIX/reflog-orphan"; mkdir -p "$r"; G -C "$r" init -q
+  w "$r" a.txt "one"$'\n'
+  commit "$r" "c1: first"
+  w "$r" a.txt "two"$'\n'
+  commit "$r" "c2: second"
+  w "$r" a.txt "three"$'\n'
+  commit "$r" "c3: third (orphaned by the reset)"
+  w "$r" b.txt "orphan payload"$'\n'
+  commit "$r" "c4: fourth (orphaned by the reset)"
+  local orphan; orphan=$(G -C "$r" rev-parse HEAD)
+  G -C "$r" reset -q --hard HEAD~2
+  w "$r" c.txt "work after the reset"$'\n'
+  commit "$r" "c5: work after the reset"
+  G -C "$r" cat-file -e "$orphan^{commit}" ||
+    { echo "reflog-orphan: the orphaned commit was pruned" >&2; exit 1; }
+  local reflog; reflog=$(G -C "$r" reflog --format=%H)
+  grep -qxF "$orphan" <<< "$reflog" ||
+    { echo "reflog-orphan: the orphaned commit is not in the reflog" >&2; exit 1; }
+}
+
+# history: 60 commits on main (incl. a merge of `topic`), a rename, a whitespace-only commit,
+# a .mailmap, a [bot] author, three lightweight + one annotated tag, a commit-graph, and the
+# preflight/base + preflight/a pair T10.11 predicts a rebase for.
+build_history() {
+  local r="$FIX/history"; mkdir -p "$r/src" "$r/docs"; G -C "$r" init -q
+  local ADA="Ada Lovelace" ADA1="ada@example.com" ADA2="ada.lovelace@corp.example.com"
+  local GRACE="Grace Hopper" GRACE1="grace@example.com"
+  local BOT="renovate[bot]" BOT1="renovate[bot]@users.noreply.github.com"
+  local n=0 i ver=1 pfbase="" topicbase=""
+
+  w "$r" README.md "# history fixture"$'\n'"Long, many-author history for the v2 walker, blame, insights, search and preflight."$'\n'
+  printf '%s <%s> <%s>\n' "$ADA" "$ADA1" "$ADA2" > "$r/.mailmap"
+  lines hot 1 60 > "$r/src/hot.txt"
+  lines indent 1 12 > "$r/src/indent.txt"
+  lines moved 1 20 > "$r/src/renamed-from.txt"
+  w "$r" src/stable.txt "this file is never touched again"$'\n'
+  printf '{ "name": "history-fixture", "version": "0.0.%d" }\n' "$ver" > "$r/package.json"
+  commit_as "$r" "$(hday $n)" "$ADA" "$ADA1" "c00: root commit"; n=$((n + 1))
+
+  for ((i = 1; i <= 4; i++)); do
+    lines module 1 $((5 + i)) > "$r/src/mod$i.txt"
+    commit_as "$r" "$(hday $n)" "$GRACE" "$GRACE1" "$(printf 'c%02d: add module %d' "$n" "$i")"
+    n=$((n + 1))
+  done
+  pfbase=$(G -C "$r" rev-parse HEAD)
+  G -C "$r" branch preflight/base "$pfbase"
+  G -C "$r" tag v0.1.0 "$pfbase"
+
+  # The commit preflight/a's first commit collides with: the same three lines of src/hot.txt.
+  { lines hot-main 1 3; lines hot 4 60; } > "$r/src/hot.txt"
+  commit_as "$r" "$(hday $n)" "$ADA" "$ADA1" "$(printf 'c%02d: rework the top of hot.txt' "$n")"
+  n=$((n + 1))
+
+  w "$r" docs/guide.md "# Guide"$'\n'"Step one."$'\n'"Step two."$'\n'
+  commit_as "$r" "$(hday $n)" "$ADA" "$ADA2" "$(printf 'c%02d: add the guide (second email, mapped by .mailmap)' "$n")"
+  n=$((n + 1))
+
+  ver=$((ver + 1)); printf '{ "name": "history-fixture", "version": "0.0.%d" }\n' "$ver" > "$r/package.json"
+  commit_as "$r" "$(hday $n)" "$BOT" "$BOT1" "$(printf 'c%02d: chore(deps): bump manifest to 0.0.%d' "$n" "$ver")"
+  n=$((n + 1))
+
+  for ((i = 8; i <= 15; i++)); do
+    printf 'guide note %d\n' "$i" >> "$r/docs/guide.md"
+    lines module 1 $((5 + i)) > "$r/src/mod$((i % 4 + 1)).txt"
+    # one edit before the rename, so `git log --follow` has more to follow than the root commit
+    if [ "$i" = 12 ]; then printf 'moved 21 (edited before the rename)\n' >> "$r/src/renamed-from.txt"; fi
+    if [ $((i % 2)) = 0 ]; then
+      commit_as "$r" "$(hday $n)" "$GRACE" "$GRACE1" "$(printf 'c%02d: iterate on modules and the guide' "$n")"
+    else
+      commit_as "$r" "$(hday $n)" "$ADA" "$ADA1" "$(printf 'c%02d: iterate on modules and the guide' "$n")"
+    fi
+    n=$((n + 1))
+    if [ "$i" = 11 ]; then topicbase=$(G -C "$r" rev-parse HEAD); fi
+  done
+
+  G -C "$r" checkout -q -b topic "$topicbase"
+  for ((i = 16; i <= 27; i++)); do
+    printf 'topic work %d\n' "$i" >> "$r/src/topic.txt"
+    commit_as "$r" "$(hday $n)" "$GRACE" "$GRACE1" "$(printf 't%02d: topic step %d' "$n" $((i - 15)))"
+    n=$((n + 1))
+  done
+  G -C "$r" checkout -q main
+  merge_as "$r" "$(hday $n)" "$ADA" "$ADA1" "$(printf 'c%02d: merge topic into main' "$n")" topic
+  G -C "$r" tag v0.2.0
+  n=$((n + 1))
+
+  { lines hot-main 1 3; lines hot 4 24; lines hot-later 25 30; lines hot 31 60; } > "$r/src/hot.txt"
+  commit_as "$r" "$(hday $n)" "$GRACE" "$GRACE1" "$(printf 'c%02d: rework the middle of hot.txt' "$n")"
+  n=$((n + 1))
+
+  G -C "$r" mv src/renamed-from.txt src/renamed-to.txt
+  { lines moved 1 19; echo "renamed payload marker"; } > "$r/src/renamed-to.txt"
+  commit_as "$r" "$(hday $n)" "$ADA" "$ADA1" "$(printf 'c%02d: git mv renamed-from.txt and touch one line' "$n")"
+  G -C "$r" tag v0.3.0
+  n=$((n + 1))
+
+  sed 's/^/    /' "$r/src/indent.txt" > "$r/src/indent.next" && mv "$r/src/indent.next" "$r/src/indent.txt"
+  commit_as "$r" "$(hday $n)" "$GRACE" "$GRACE1" "$(printf 'c%02d: reindent indent.txt (whitespace only)' "$n")"
+  n=$((n + 1))
+
+  ver=$((ver + 1)); printf '{ "name": "history-fixture", "version": "0.0.%d" }\n' "$ver" > "$r/package.json"
+  commit_as "$r" "$(hday $n)" "$BOT" "$BOT1" "$(printf 'c%02d: chore(deps): bump manifest to 0.0.%d' "$n" "$ver")"
+  n=$((n + 1))
+
+  for ((i = 33; i <= 59; i++)); do
+    # one edit after the rename, so the no-follow history has more than the rename commit
+    if [ "$i" = 40 ]; then printf 'renamed tail line\n' >> "$r/src/renamed-to.txt"; fi
+    case $((i % 5)) in
+      0) lines module 1 $((5 + i)) > "$r/src/mod1.txt"
+         commit_as "$r" "$(hday $n)" "$ADA" "$ADA1" "$(printf 'c%02d: extend mod1' "$n")" ;;
+      1) lines module 1 $((5 + i)) > "$r/src/mod2.txt"
+         commit_as "$r" "$(hday $n)" "$ADA" "$ADA2" "$(printf 'c%02d: extend mod2' "$n")" ;;
+      2) lines module 1 $((5 + i)) > "$r/src/mod3.txt"
+         commit_as "$r" "$(hday $n)" "$GRACE" "$GRACE1" "$(printf 'c%02d: extend mod3' "$n")" ;;
+      3) ver=$((ver + 1)); printf '{ "name": "history-fixture", "version": "0.0.%d" }\n' "$ver" > "$r/package.json"
+         commit_as "$r" "$(hday $n)" "$BOT" "$BOT1" "$(printf 'c%02d: chore(deps): bump manifest to 0.0.%d' "$n" "$ver")" ;;
+      *) lines module 1 $((5 + i)) > "$r/src/mod4.txt"
+         commit_as "$r" "$(hday $n)" test test@example.com "$(printf 'c%02d: extend mod4' "$n")" ;;
+    esac
+    n=$((n + 1))
+  done
+  G -C "$r" tag -a v1.0.0 -m "annotated release 1.0.0"
+
+  # preflight/a: one commit that collides with main, one that touches the same file elsewhere,
+  # one that touches nothing else does. T10.11 predicts likely / possible / clean for these.
+  G -C "$r" checkout -q -b preflight/a "$pfbase"
+  { lines hot-preflight 1 3; lines hot 4 60; } > "$r/src/hot.txt"
+  commit_as "$r" "$(hday 70)" "$GRACE" "$GRACE1" "p1: rewrite the top of hot.txt (collides with main)"
+  { lines hot-preflight 1 3; lines hot 4 49; lines hot-preflight 50 52; lines hot 53 60; } > "$r/src/hot.txt"
+  commit_as "$r" "$(hday 71)" "$GRACE" "$GRACE1" "p2: edit hot.txt far from main's hunks (same file, disjoint)"
+  w "$r" src/pf-clean.txt "a file only preflight/a touches"$'\n'
+  commit_as "$r" "$(hday 72)" "$GRACE" "$GRACE1" "p3: add a file nothing else touches (clean)"
+  G -C "$r" checkout -q main
+
+  G -C "$r" commit-graph write --reachable --changed-paths
+  [ -f "$r/.git/objects/info/commit-graph" ] || { echo "history: commit-graph missing" >&2; exit 1; }
+  [ "$(G -C "$r" rev-list --count main)" -ge 60 ] ||
+    { echo "history: fewer than 60 commits on main" >&2; exit 1; }
+}
+
+# secrets: fake credentials planted in staged and unstaged hunks, one allowlisted, one hex sha.
+build_secrets() {
+  local r="$FIX/secrets"; mkdir -p "$r/config"; G -C "$r" init -q
+  w "$r" README.md "# secrets fixture"$'\n'"Fake, non-functional credentials for the T10.7 scanner."$'\n'
+  w "$r" config/settings.ini "[app]"$'\n'"name = diffgit"$'\n'"debug = false"$'\n'
+  w "$r" config/deploy.sh '#!/bin/sh'$'\n''echo deploying'$'\n'
+  w "$r" clean.txt "$(lines clean 1 5)"$'\n'
+  commit "$r" "c1: clean base"
+  # unstaged layer
+  cat >> "$r/config/settings.ini" <<'EOF'
+aws_access_key_id = AKIAIOSFODNN7EXAMPLE
+github_token = ghp_0oP3xQz7LmT4vB9kY2wR6sN1dF8hJ5cA3eG0
+release_commit = 9f2c0a1b7d4e6c8a3b5d7f9e1c2a4b6d8e0f2a4c
+legacy_token = ghp_1aB2cD3eF4gH5iJ6kL7mN8oP9qR0sT1uV2wX # diffgit:allow-secret
+EOF
+  # staged layer
+  cat >> "$r/config/deploy.sh" <<'EOF'
+export ANTHROPIC_API_KEY=sk-ant-api03-7hQ2vLp9XcR4mZ0tK6yB3nW1dS8fA5gJ2eU7iO4rT9qY6xC3vN0bM8kH5lP2zD7wG4jF1sR6tY3uI9oA-QwErTyB
+EOF
+  cat > "$r/config/id_rsa" <<'EOF'
+-----BEGIN RSA PRIVATE KEY-----
+MIIBOgIBAAJBAJ9y7hQ2vLp9XcR4mZ0tK6yB3nW1dS8fA5gJ2eU7iO4rT9qY6xC3
+vN0bM8kH5lP2zD7wG4jF1sR6tY3uI9oAQwErTyBhZ0kCAwEAAQJATl1vZmFrZWtl
+-----END RSA PRIVATE KEY-----
+EOF
+  G -C "$r" add config/deploy.sh config/id_rsa
+}
+
+# hidden: an ignored dir with three files, an ignored file, skip-worktree, assume-unchanged,
+# an 11 MB tracked file modified in the worktree, and a built-in-excluded .DS_Store.
+build_hidden() {
+  local r="$FIX/hidden"; mkdir -p "$r/src" "$r/dist"; G -C "$r" init -q
+  w "$r" .gitignore "dist/"$'\n'".env.local"$'\n'
+  w "$r" README.md "# hidden fixture"$'\n'
+  w "$r" src/app.txt "$(lines app 1 5)"$'\n'
+  w "$r" src/skipped.txt "$(lines skipped 1 5)"$'\n'
+  w "$r" src/assumed.txt "$(lines assumed 1 5)"$'\n'
+  awk 'BEGIN { for (i = 1; i <= 210000; i++) printf "huge tracked line %07d abcdefghijklmnopqrstuvwxyz\n", i }' > "$r/big.txt"
+  commit "$r" "c1: tracked files including an 11 MB one"
+  w "$r" dist/bundle.js "console.log(1)"$'\n'
+  w "$r" dist/bundle.js.map "{}"$'\n'
+  w "$r" dist/index.html "<html></html>"$'\n'
+  w "$r" .env.local "TOKEN=local-only"$'\n'
+  printf '\x00\x00\x00\x01Bud1' > "$r/.DS_Store"
+  G -C "$r" update-index --skip-worktree src/skipped.txt
+  G -C "$r" update-index --assume-unchanged src/assumed.txt
+  w "$r" src/skipped.txt "$(lines skipped 1 5)"$'\n'"edited, but skip-worktree hides it"$'\n'
+  w "$r" src/assumed.txt "$(lines assumed 1 5)"$'\n'"edited, but assume-unchanged hides it"$'\n'
+  printf 'huge tracked line 9999999 modified in the worktree\n' >> "$r/big.txt"
+  w "$r" notes.txt "untracked and visible"$'\n'
+  [ "$(wc -c < "$r/big.txt" | tr -d ' ')" -gt 11000000 ] ||
+    { echo "hidden: big.txt is under 11 MB" >&2; exit 1; }
+}
+
+# octopus: a three-parent merge.
+build_octopus() {
+  local r="$FIX/octopus"; mkdir -p "$r"; G -C "$r" init -q
+  w "$r" base.txt "base"$'\n'
+  commit "$r" "c1: root"
+  G -C "$r" checkout -q -b side-a
+  w "$r" a.txt "side a"$'\n'
+  commit "$r" "a1: side-a commit"
+  G -C "$r" checkout -q main
+  G -C "$r" checkout -q -b side-b
+  w "$r" b.txt "side b"$'\n'
+  commit "$r" "b1: side-b commit"
+  G -C "$r" checkout -q main
+  w "$r" main.txt "main"$'\n'
+  commit "$r" "c2: main moves on"
+  G -C "$r" merge -q --no-ff -m "c3: octopus merge of side-a and side-b" side-a side-b >/dev/null
+  [ "$(G -C "$r" rev-list --parents -n 1 HEAD | wc -w | tr -d ' ')" = 4 ] ||
+    { echo "octopus: HEAD is not a three-parent merge" >&2; exit 1; }
+}
+
+# ----------------------------------------------------------------------------------------------
 main() {
   local before="" t0; t0=$(date +%s)
   if [ -d "$FIX/basic/.git" ]; then before=$(G -C "$FIX/basic" rev-parse feature 2>/dev/null || true); fi
@@ -465,7 +823,17 @@ main() {
   build_alternates;           echo "  alternates"
   build_partial;              echo "  partial"
   if [ "${FIXTURES_PERF:-0}" = "1" ]; then build_perf_5k; echo "  perf-5k"; fi
+  build_tags;                 echo "  tags"
+  build_stash;                echo "  stash"
+  build_reflog_orphan;        echo "  reflog-orphan"
+  build_history;              echo "  history"
+  build_secrets;              echo "  secrets"
+  build_hidden;               echo "  hidden"
+  build_octopus;              echo "  octopus"
   build_conflict;             echo "  conflict (built last, never gc'd)"
+  build_merge_conflict;       echo "  merge-conflict (mid-merge, never gc'd)"
+  build_rebase_conflict;      echo "  rebase-conflict (mid-rebase, never gc'd)"
+  build_cherry_pick_conflict; echo "  cherry-pick-conflict (mid-cherry-pick, never gc'd)"
 
   cp "$ROOT/scripts/fixtures-README.md" "$FIX/README.md"
 
