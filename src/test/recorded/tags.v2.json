@@ -60,7 +60,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 1,
@@ -75,7 +75,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 2,
@@ -90,7 +90,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 3,
@@ -105,7 +105,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     }
   ],
   "operation": null,
@@ -331,5 +331,526 @@
         "warnings": []
       }
     }
-  ]
+  ],
+  "walks": {
+    "default": {
+      "commits": [
+        {
+          "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+          "parents": ["8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c4: fourth release",
+          "refs": ["HEAD", "main", "v1.1.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+          "parents": ["7f276549ffed610f8419f52e68edadb1348b883b"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c3: third release",
+          "refs": ["release", "v1.0.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "7f276549ffed610f8419f52e68edadb1348b883b",
+          "parents": ["1e919f3681161418fef2e272272c9cb707fa65f6"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: second release",
+          "refs": ["v0.2.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: first release",
+          "refs": ["v0.1.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    },
+    "first-parent": {
+      "commits": [
+        {
+          "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+          "parents": ["8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c4: fourth release",
+          "refs": ["HEAD", "main", "v1.1.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+          "parents": ["7f276549ffed610f8419f52e68edadb1348b883b"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c3: third release",
+          "refs": ["release", "v1.0.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "7f276549ffed610f8419f52e68edadb1348b883b",
+          "parents": ["1e919f3681161418fef2e272272c9cb707fa65f6"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: second release",
+          "refs": ["v0.2.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: first release",
+          "refs": ["v0.1.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    },
+    "all": {
+      "commits": [
+        {
+          "oid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: first release",
+          "refs": ["v0.1.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        },
+        {
+          "oid": "7f276549ffed610f8419f52e68edadb1348b883b",
+          "parents": ["1e919f3681161418fef2e272272c9cb707fa65f6"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: second release",
+          "refs": ["v0.2.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+          "parents": ["8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c4: fourth release",
+          "refs": ["HEAD", "main", "v1.1.0"],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+          "parents": ["7f276549ffed610f8419f52e68edadb1348b883b"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c3: third release",
+          "refs": ["release", "v1.0.0"],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        }
+      ],
+      "graphAvailable": false
+    }
+  },
+  "commits": {
+    "810e06da6b25e979289dcf8f0b44291a03cff0a7": {
+      "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+      "parents": ["8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c4: fourth release",
+      "refs": ["HEAD", "main", "v1.1.0"],
+      "body": "",
+      "tree": "b2195abe8aaab9b17d3d7abeda445d97b4432c5a",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8": {
+      "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "parents": ["7f276549ffed610f8419f52e68edadb1348b883b"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c3: third release",
+      "refs": ["release", "v1.0.0"],
+      "body": "",
+      "tree": "62355fd9e421acdc519cea57afa2ba167fbd61aa",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    "7f276549ffed610f8419f52e68edadb1348b883b": {
+      "oid": "7f276549ffed610f8419f52e68edadb1348b883b",
+      "parents": ["1e919f3681161418fef2e272272c9cb707fa65f6"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c2: second release",
+      "refs": ["v0.2.0"],
+      "body": "",
+      "tree": "4df498e4bf7efe83b3be5781ea76d36a57f8ab8e",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    "1e919f3681161418fef2e272272c9cb707fa65f6": {
+      "oid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+      "parents": [],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c1: first release",
+      "refs": ["v0.1.0"],
+      "body": "",
+      "tree": "0cd2784d9597da6adc56c4a25ad902b15e98ca7b",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 2,
+        "additions": 2,
+        "deletions": 0
+      }
+    }
+  },
+  "commitStats": {
+    "7f276549ffed610f8419f52e68edadb1348b883b": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "1e919f3681161418fef2e272272c9cb707fa65f6": {
+      "files": 2,
+      "additions": 2,
+      "deletions": 0
+    },
+    "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "810e06da6b25e979289dcf8f0b44291a03cff0a7": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    }
+  },
+  "branches": [
+    {
+      "ref": {
+        "name": "main",
+        "fullName": "refs/heads/main",
+        "kind": "local",
+        "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+        "isDefault": true,
+        "isCheckedOut": true
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+        "subject": "c4: fourth release",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": null,
+      "merged": true,
+      "tags": ["v1.1.0"]
+    },
+    {
+      "ref": {
+        "name": "release",
+        "fullName": "refs/heads/release",
+        "kind": "local",
+        "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+        "isDefault": false,
+        "isCheckedOut": false
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+        "subject": "c3: third release",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": {
+        "ahead": 0,
+        "behind": 1,
+        "mergeBase": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+        "capped": false
+      },
+      "merged": true,
+      "tags": ["v1.0.0"]
+    }
+  ],
+  "aheadBehind": {},
+  "reachable": {
+    "810e06da6b25e979289dcf8f0b44291a03cff0a7": true,
+    "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8": true,
+    "7f276549ffed610f8419f52e68edadb1348b883b": true,
+    "1e919f3681161418fef2e272272c9cb707fa65f6": true
+  }
 }

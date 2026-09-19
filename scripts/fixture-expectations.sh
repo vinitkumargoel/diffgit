@@ -270,13 +270,37 @@ record_preflight_outcome() {
   done
 }
 
+# T10.5: what the Branches table (Design §14.6) says per branch, in git's own words.
+branch_table() { # branch_table <repo> <expected-dir>
+  local r="$1" exp="$2" def=""
+  G -C "$r" for-each-ref --format='%(refname)|%(upstream:short)|%(upstream:track,nobracket)' \
+    refs/heads > "$exp/branch-upstream.txt"
+  if G -C "$r" rev-parse -q --verify refs/heads/main >/dev/null; then def=main
+  elif G -C "$r" rev-parse -q --verify refs/heads/master >/dev/null; then def=master; fi
+  [ -n "$def" ] && G -C "$r" branch --merged "$def" --format='%(refname)' > "$exp/branch-merged.txt"
+}
+
+# T10.5: the three orderings the commit walker must reproduce, from HEAD so every fixture answers.
+log_orders() { # log_orders <repo> <expected-dir>
+  local r="$1" exp="$2"
+  G -C "$r" log --date-order --format=%H --all > "$exp/log-all-date-order.txt"
+  G -C "$r" log --date-order --format=%H HEAD > "$exp/log-head-date-order.txt"
+  G -C "$r" log --date-order --first-parent --format=%H HEAD > "$exp/log-head-first-parent.txt"
+}
+
 dump_v2() { # dump_v2 <fixture-name>
   local name="$1" r="$FIX/$1" exp="$FIX/$1/expected" root
   case "$name" in
     tags|stash|reflog-orphan|history|secrets|hidden|octopus|merge-conflict|rebase-conflict|cherry-pick-conflict) ;;
+    # T10.5 walker parity only: a criss-cross merge, a detached HEAD and the 5,000-file perf repo.
+    crisscross|detached|perf-5k) log_orders "$r" "$exp"; return 0 ;;
+    # T10.5 Branches table only: the three fixtures that configure an upstream.
+    remote|remote-master|no-origin-head) branch_table "$r" "$exp"; return 0 ;;
     *) return 0 ;;
   esac
   G -C "$r" status --porcelain=v1 --branch --untracked-files=all > "$exp/status.txt"
+  log_orders "$r" "$exp"
+  branch_table "$r" "$exp"
 
   case "$name" in
     tags)
@@ -309,7 +333,6 @@ dump_v2() { # dump_v2 <fixture-name>
       root=$(G -C "$r" rev-list --max-parents=0 main)
       G -C "$r" reflog --format='%H %gs' > "$exp/reflog.txt"   # T10.2 parity oracle
       G -C "$r" log --graph --oneline --date-order --all > "$exp/log-graph.txt"
-      G -C "$r" log --date-order --format=%H --all > "$exp/log-all-date-order.txt"
       G -C "$r" log --date-order --format=%H main > "$exp/log-main-date-order.txt"
       G -C "$r" log --date-order --first-parent --format=%H main > "$exp/log-main-first-parent.txt"
       G -C "$r" log --format=%H main -- src/hot.txt > "$exp/log-path-hot.txt"
@@ -325,6 +348,12 @@ dump_v2() { # dump_v2 <fixture-name>
         printf 'main...preflight/a\t%s\n' "$(G -C "$r" rev-list --left-right --count main...preflight/a)"
         printf 'main...preflight/base\t%s\n' "$(G -C "$r" rev-list --left-right --count main...preflight/base)"
       } > "$exp/rev-list-left-right-count.txt"
+      # T10.5: numstat of every commit against its first parent, which is what `commitStats` computes
+      # (rename detection on, exactly as `git show` runs it by default).
+      { for c in $(G -C "$r" rev-list --all); do
+          printf 'commit %s\n' "$c"
+          G -C "$r" show --format= --numstat --first-parent "$c"
+        done; } | sed '/^$/d' > "$exp/commit-numstat.txt"
       G -C "$r" log -S'hot-main' --format=%H main > "$exp/log-S-hot-main.txt"
       G -C "$r" log -S'renamed payload marker' --format=%H main > "$exp/log-S-payload.txt"
       G -C "$r" shortlog -sn --no-merges main > "$exp/shortlog.txt"
@@ -359,6 +388,10 @@ dump_v2() { # dump_v2 <fixture-name>
     octopus)
       G -C "$r" log --graph --oneline --date-order --all > "$exp/log-graph.txt"
       G -C "$r" rev-list --parents -n 1 HEAD > "$exp/merge-parents.txt"
+      { for c in $(G -C "$r" rev-list --all); do
+          printf 'commit %s\n' "$c"
+          G -C "$r" show --format= --numstat --first-parent "$c"
+        done; } | sed '/^$/d' > "$exp/commit-numstat.txt"
       ;;
     merge-conflict)
       G -C "$r" ls-files -u > "$exp/ls-files-u.txt"

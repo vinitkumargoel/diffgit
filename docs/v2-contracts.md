@@ -136,6 +136,34 @@ count of its direct children and is never descended, and `too-large` comes from 
 current diff. `bun run record` records the `hidden` fixture and writes `hidden` (the whole group)
 and `explanations` (path → `PathExplanation`) into `<fixture>.v2.json`.
 
+<!-- T10.5 --> `walkCommits` reproduces `git log --date-order`, which is git's *topological* order with
+a commit-date tie-break (revision.c sets `topo_order` for `--date-order`): a commit is queued only
+once every discovered commit that names it as a parent has been emitted (git's indegree), and among
+those the newest wins, ties going to whichever became eligible first — `prio_queue`'s insertion
+counter. The walk streams, so the indegree is over the commits discovered so far rather than a whole
+pre-walk; the two agree whenever commit dates do not increase towards the parents, which is every
+history git itself writes. `WalkRequest.from` holds revision expressions (`resolveRevision`); `all`
+seeds from every ref, tag and stash sorted by ref name and then `HEAD`, the order `git log --all`
+seeds its own walk in. `path` applies git's default history simplification (a commit TREESAME to a
+parent is not shown and only that parent is followed); rename following is T10.6, and a path-filtered
+page carries no `lane`/`laneCount`/`edges` because a lane reserved for a commit the filter skips
+would never close. `WalkPage.cursor` is a JSON blob carrying the eligible queue, the indegree map,
+the oids discovered so far and the lane table, so a page is self-contained and survives a worker
+restart. `CommitSummary.refs` are display names, `HEAD` first, then branch and remote names in
+`RefSnapshot` order, then tags, then stash selectors. `CommitSummary.edges` describes the band
+**below** the node: `from` is a lane index at this row, `to` a lane index at the next, `straight` is
+a line that stays in its lane (a pass-through, or the commit continuing into its first parent),
+`merge` a line moving into a lane another commit already reserved for that parent, and `fork` a new
+lane opened for a second or later parent. A lane a `merge` edge lands in still carries its own
+`straight` pass-through, so the SVG never has to look at a third row. `commitStats` is the tree diff
+against the first parent (a root against the empty tree) with the repository's rename settings
+applied, so it equals `git show --numstat --first-parent`; a side over 10 MB is left out of the
+counts. `aheadBehind(a, b)` returns the left count as `ahead` and the right one as `behind`;
+`branchCells` marks a branch `merged` when `vsDefault.ahead === 0`, and the default branch itself
+`merged: true` with a null `vsDefault`. `bun run record` records `walks` (the whole history per
+variant — default, first-parent, all, per path — which the mock pages itself), `commits`,
+`commitStats`, `branches`, `aheadBehind` and `reachable`, and now records the `octopus` fixture too.
+
 ```ts
 export interface ResolvedRevision {
   expr: string; oid: Oid | null;                     // null only for "<root>^" → empty tree

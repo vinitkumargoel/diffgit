@@ -8,10 +8,15 @@
 import type { ConflictPayload, FileStats, ProgressSink } from "../engine/api";
 import { isWorktreeSource, sourceRefs } from "../engine/diffSource";
 import type {
+  AheadBehind,
+  BranchRow,
+  CommitDetails,
+  CommitSummary,
   DiffResult,
   DiffSource,
   FileDiff,
   HiddenEntry,
+  Oid,
   PathExplanation,
   ReflogEntry,
   RepoInfo,
@@ -19,6 +24,8 @@ import type {
   ResolvedRevision,
   StashInfo,
   TagInfo,
+  WalkPage,
+  WalkRequest,
 } from "../engine/types";
 import realBasicDiff from "../test/recorded/basic.diffresult.json";
 import realBasicInfo from "../test/recorded/basic.repoinfo.json";
@@ -34,6 +41,9 @@ import historyV2 from "../test/recorded/history.v2.json";
 import mergeDiff from "../test/recorded/merge-conflict.diffresult.json";
 import mergeInfo from "../test/recorded/merge-conflict.repoinfo.json";
 import mergeV2 from "../test/recorded/merge-conflict.v2.json";
+import octopusDiff from "../test/recorded/octopus.diffresult.json";
+import octopusInfo from "../test/recorded/octopus.repoinfo.json";
+import octopusV2 from "../test/recorded/octopus.v2.json";
 import rebaseDiff from "../test/recorded/rebase-conflict.diffresult.json";
 import rebaseInfo from "../test/recorded/rebase-conflict.repoinfo.json";
 import rebaseV2 from "../test/recorded/rebase-conflict.v2.json";
@@ -75,6 +85,23 @@ interface RecordedV2 {
   explanations: Record<string, PathExplanation>;
   revisions: Record<string, ResolvedRevision>;
   ranges: { source: DiffSource; result: DiffResult }[];
+  /** T10.5: the whole history per walk variant; the mock pages it with an index cursor. */
+  walks: Record<string, { commits: CommitSummary[]; graphAvailable: boolean }>;
+  commits: Record<Oid, CommitDetails>;
+  commitStats: Record<Oid, CommitDetails["stats"]>;
+  branches: BranchRow[];
+  aheadBehind: Record<string, AheadBehind>;
+  reachable: Record<Oid, boolean>;
+}
+
+/**
+ * Which recorded walk answers this request. Mirrors `walkVariants` in `scripts/record-fixtures.ts`:
+ * a path filter wins, then `--all`, then `--first-parent`, else the plain walk from HEAD.
+ */
+function walkKey(req: WalkRequest): string {
+  if (req.path) return `path:${req.path}`;
+  if (req.all === true) return "all";
+  return req.firstParent ? "first-parent" : "default";
 }
 
 export interface MockWorkerClient extends WorkerClient {
@@ -134,6 +161,12 @@ const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult; v2?: Recorded
     info: cherryInfo as RepoInfo,
     diff: cherryDiff as DiffResult,
     v2: cherryV2 as unknown as RecordedV2,
+  },
+  // T10.5: the three-parent merge, so the lane column has an octopus to draw (T11.5)
+  octopus: {
+    info: octopusInfo as RepoInfo,
+    diff: octopusDiff as DiffResult,
+    v2: octopusV2 as unknown as RecordedV2,
   },
   // T10.4: the ignored dir / ignored file / index flags / 11 MB file, for the Hidden group (T11.4)
   hidden: {
@@ -366,6 +399,68 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       await wait(client.latency);
       return v2.hidden;
     },
+    async walkCommits(req) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const recorded = v2.walks[walkKey(req)] ?? { commits: [], graphAvailable: false };
+      // The recording is the whole history; the cursor is just how far the UI has scrolled.
+      const from = req.cursor ? Number.parseInt(req.cursor, 10) : 0;
+      const start = Number.isFinite(from) && from > 0 ? from : 0;
+      const end = Math.min(start + Math.max(1, req.limit), recorded.commits.length);
+      const page: WalkPage = {
+        commits: recorded.commits.slice(start, end),
+        cursor: end < recorded.commits.length ? String(end) : null,
+        graphAvailable: recorded.graphAvailable,
+        capped: false,
+      };
+      sink?.onProgress({ phase: "history", done: page.commits.length, durationMs: 1 });
+      return page;
+    },
+    async commitDetails(oid) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const found = v2.commits[oid];
+      if (!found) throw err("REV_NOT_FOUND", `No recorded details for ${oid}.`);
+      return found;
+    },
+    async commitStats(oids) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const out: Record<Oid, CommitDetails["stats"]> = {};
+      for (const oid of oids) out[oid] = v2.commitStats[oid] ?? null;
+      return out;
+    },
+    async aheadBehind(a, b) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const found = v2.aheadBehind[`${a}...${b}`];
+      if (!found) throw err("REV_NOT_FOUND", `No recorded counts for ${a}...${b}.`);
+      return found;
+    },
+    async branchOverview() {
+      const v2 = requireV2();
+      await wait(client.latency);
+      // The recording has the cells filled; the overview hands them back empty, as the engine does.
+      return v2.branches.map((b) => ({ ...b, vsUpstream: null, vsDefault: null, merged: null }));
+    },
+    async branchCells(fullNames) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const out: Record<string, Pick<BranchRow, "vsUpstream" | "vsDefault" | "merged">> = {};
+      for (const name of fullNames) {
+        const row = v2.branches.find((b) => b.ref.fullName === name);
+        if (row)
+          out[name] = { vsUpstream: row.vsUpstream, vsDefault: row.vsDefault, merged: row.merged };
+      }
+      return out;
+    },
+    async markReachable(oids) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const out: Record<Oid, boolean> = {};
+      for (const oid of oids) out[oid] = v2.reachable[oid] ?? false;
+      return out;
+    },
     async fileBytes(gen, id, side) {
       const files = requireGen(gen);
       const f = files.find((x) => x.id === id);
@@ -443,6 +538,12 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         explanations: {},
         revisions: {},
         ranges: [],
+        walks: {},
+        commits: {},
+        commitStats: {},
+        branches: [],
+        aheadBehind: {},
+        reachable: {},
       }
     );
   }

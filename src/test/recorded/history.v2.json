@@ -52,7 +52,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 1,
@@ -67,7 +67,7 @@
         "timestamp": 1710633600000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 2,
@@ -82,7 +82,7 @@
         "timestamp": 1710630000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 3,
@@ -97,7 +97,7 @@
         "timestamp": 1710540000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 4,
@@ -112,7 +112,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 5,
@@ -127,7 +127,7 @@
         "timestamp": 1709550000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 6,
@@ -142,7 +142,7 @@
         "timestamp": 1709460000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 7,
@@ -157,7 +157,7 @@
         "timestamp": 1709370000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 8,
@@ -172,7 +172,7 @@
         "timestamp": 1709280000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 9,
@@ -187,7 +187,7 @@
         "timestamp": 1709103600000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 10,
@@ -202,7 +202,7 @@
         "timestamp": 1709013600000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 11,
@@ -217,7 +217,7 @@
         "timestamp": 1708923600000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 12,
@@ -232,7 +232,7 @@
         "timestamp": 1708833600000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 13,
@@ -247,7 +247,7 @@
         "timestamp": 1708743600000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 14,
@@ -262,7 +262,7 @@
         "timestamp": 1708653600000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 15,
@@ -277,7 +277,7 @@
         "timestamp": 1708563600000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 16,
@@ -292,7 +292,7 @@
         "timestamp": 1708473600000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 17,
@@ -307,7 +307,7 @@
         "timestamp": 1708470000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 18,
@@ -322,7 +322,7 @@
         "timestamp": 1708380000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 19,
@@ -337,7 +337,7 @@
         "timestamp": 1708290000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 20,
@@ -352,7 +352,7 @@
         "timestamp": 1708200000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 21,
@@ -367,7 +367,7 @@
         "timestamp": 1708110000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 22,
@@ -382,7 +382,7 @@
         "timestamp": 1708020000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 23,
@@ -397,7 +397,7 @@
         "timestamp": 1707930000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 24,
@@ -412,7 +412,7 @@
         "timestamp": 1707840000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 25,
@@ -427,7 +427,7 @@
         "timestamp": 1707750000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 26,
@@ -442,7 +442,7 @@
         "timestamp": 1707660000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 27,
@@ -457,7 +457,7 @@
         "timestamp": 1707570000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 28,
@@ -472,7 +472,7 @@
         "timestamp": 1707480000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 29,
@@ -487,7 +487,7 @@
         "timestamp": 1707390000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 30,
@@ -502,7 +502,7 @@
         "timestamp": 1707300000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 31,
@@ -517,7 +517,7 @@
         "timestamp": 1707210000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 32,
@@ -532,7 +532,7 @@
         "timestamp": 1707120000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 33,
@@ -547,7 +547,7 @@
         "timestamp": 1707030000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 34,
@@ -562,7 +562,7 @@
         "timestamp": 1706940000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 35,
@@ -577,7 +577,7 @@
         "timestamp": 1706850000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 36,
@@ -592,7 +592,7 @@
         "timestamp": 1706760000000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 37,
@@ -607,7 +607,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 38,
@@ -622,7 +622,7 @@
         "timestamp": 1706410800000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 39,
@@ -637,7 +637,7 @@
         "timestamp": 1706320800000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 40,
@@ -652,7 +652,7 @@
         "timestamp": 1706230800000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 41,
@@ -667,7 +667,7 @@
         "timestamp": 1706140800000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 42,
@@ -682,7 +682,7 @@
         "timestamp": 1706137200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 43,
@@ -697,7 +697,7 @@
         "timestamp": 1706047200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 44,
@@ -712,7 +712,7 @@
         "timestamp": 1705957200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 45,
@@ -727,7 +727,7 @@
         "timestamp": 1705867200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 46,
@@ -742,7 +742,7 @@
         "timestamp": 1705777200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 47,
@@ -757,7 +757,7 @@
         "timestamp": 1705687200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 48,
@@ -772,7 +772,7 @@
         "timestamp": 1705597200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 49,
@@ -787,7 +787,7 @@
         "timestamp": 1705507200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 50,
@@ -802,7 +802,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 51,
@@ -817,7 +817,7 @@
         "timestamp": 1705417200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 52,
@@ -832,7 +832,7 @@
         "timestamp": 1705327200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 53,
@@ -847,7 +847,7 @@
         "timestamp": 1705237200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 54,
@@ -862,7 +862,7 @@
         "timestamp": 1705147200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 55,
@@ -877,7 +877,7 @@
         "timestamp": 1705057200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 56,
@@ -892,7 +892,7 @@
         "timestamp": 1704967200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 57,
@@ -907,7 +907,7 @@
         "timestamp": 1704877200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 58,
@@ -922,7 +922,7 @@
         "timestamp": 1704787200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 59,
@@ -937,7 +937,7 @@
         "timestamp": 1704697200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 60,
@@ -952,7 +952,7 @@
         "timestamp": 1704607200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 61,
@@ -967,7 +967,7 @@
         "timestamp": 1704517200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 62,
@@ -982,7 +982,7 @@
         "timestamp": 1704427200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 63,
@@ -997,7 +997,7 @@
         "timestamp": 1704337200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 64,
@@ -1012,7 +1012,7 @@
         "timestamp": 1704247200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 65,
@@ -1027,7 +1027,7 @@
         "timestamp": 1704157200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 66,
@@ -1042,7 +1042,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     }
   ],
   "operation": null,
@@ -1368,5 +1368,5989 @@
         "warnings": []
       }
     }
-  ]
+  ],
+  "walks": {
+    "default": {
+      "commits": [
+        {
+          "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+          "parents": ["82bc6c6d1bc309b9e6463af370ec95aa4866a78c"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709550000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709550000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c59: extend mod4",
+          "refs": ["HEAD", "main", "v1.0.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+          "parents": ["fb9edcd9be63538ff6d425970ceaaaf27e1009ee"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1709460000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1709460000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c58: chore(deps): bump manifest to 0.0.9",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "fb9edcd9be63538ff6d425970ceaaaf27e1009ee",
+          "parents": ["8295928b1c222c2877dbcf442573effe40d97e5a"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1709370000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1709370000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c57: extend mod3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8295928b1c222c2877dbcf442573effe40d97e5a",
+          "parents": ["87a3a12b31ee4268cf84cfed8254425a12658c7a"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1709280000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1709280000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c56: extend mod2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "87a3a12b31ee4268cf84cfed8254425a12658c7a",
+          "parents": ["10f27d53c19de4ea66ac966ec37d30d9871abc64"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1709103600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1709103600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c55: extend mod1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+          "parents": ["155507f9515dc6d19d859bcaa7570cf884303719"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709013600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709013600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c54: extend mod4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "155507f9515dc6d19d859bcaa7570cf884303719",
+          "parents": ["2e318a86392b07c04747e14483e9b76e60a88775"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708923600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708923600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c53: chore(deps): bump manifest to 0.0.8",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2e318a86392b07c04747e14483e9b76e60a88775",
+          "parents": ["31891cde0399736142305af8b7fadea68c479e59"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708833600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708833600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c52: extend mod3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "31891cde0399736142305af8b7fadea68c479e59",
+          "parents": ["261e0b9d0d06bbc309a69590239e4a2efc139807"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708743600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708743600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c51: extend mod2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "261e0b9d0d06bbc309a69590239e4a2efc139807",
+          "parents": ["70703c5dfb94774c4c7b8f293b409a2fb02132c8"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708653600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708653600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c50: extend mod1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "70703c5dfb94774c4c7b8f293b409a2fb02132c8",
+          "parents": ["2c6f8fea4704db1f9a6665eaeffa1288b1230c3e"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708563600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708563600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c49: extend mod4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e",
+          "parents": ["6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708473600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708473600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c48: chore(deps): bump manifest to 0.0.7",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1",
+          "parents": ["931eea0f815b84e93b40772ca7b237f5b808c2ab"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708470000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708470000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c47: extend mod3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "931eea0f815b84e93b40772ca7b237f5b808c2ab",
+          "parents": ["b92c2756a82e15f54285d7c209da3ac886e1579b"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708380000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708380000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c46: extend mod2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "b92c2756a82e15f54285d7c209da3ac886e1579b",
+          "parents": ["0bea629635c4eaad5fe5f84fe29aba700a92a71a"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708290000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708290000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c45: extend mod1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "0bea629635c4eaad5fe5f84fe29aba700a92a71a",
+          "parents": ["69859eaeb61a4527e0c886cd669b5fc6cf4d39f9"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708200000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708200000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c44: extend mod4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "69859eaeb61a4527e0c886cd669b5fc6cf4d39f9",
+          "parents": ["472d458ef31d9f36fe8e65576019fd18c4b39c16"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708110000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708110000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c43: chore(deps): bump manifest to 0.0.6",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "472d458ef31d9f36fe8e65576019fd18c4b39c16",
+          "parents": ["d35a4cf95b7a15a449ee6d4d96a94008ac892e70"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708020000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708020000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c42: extend mod3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d35a4cf95b7a15a449ee6d4d96a94008ac892e70",
+          "parents": ["bfdc9b7c1250d0c28337a9521c69d8ed67a060eb"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707930000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707930000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c41: extend mod2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb",
+          "parents": ["8946f98688375397a15dda82801f07072ede8813"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707840000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707840000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c40: extend mod1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8946f98688375397a15dda82801f07072ede8813",
+          "parents": ["9ee57b46b805e7ec6462a3f188941f63c08821a2"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707750000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707750000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c39: extend mod4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "9ee57b46b805e7ec6462a3f188941f63c08821a2",
+          "parents": ["760c968a61db48a810deaef5c1269fb71028c560"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707660000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707660000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c38: chore(deps): bump manifest to 0.0.5",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "760c968a61db48a810deaef5c1269fb71028c560",
+          "parents": ["8d363ef7d323c8bb14e88374f1634419182050ed"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707570000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707570000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c37: extend mod3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8d363ef7d323c8bb14e88374f1634419182050ed",
+          "parents": ["82bed6085338e895515daf7061e4673c169013f8"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707480000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707480000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c36: extend mod2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "82bed6085338e895515daf7061e4673c169013f8",
+          "parents": ["e8e51a9f9cb74aedca494962f36f4c62ed11e4aa"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707390000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707390000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c35: extend mod1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "e8e51a9f9cb74aedca494962f36f4c62ed11e4aa",
+          "parents": ["d591508ac3ec5664601a26ca15a46723da472ebc"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707300000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707300000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c34: extend mod4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d591508ac3ec5664601a26ca15a46723da472ebc",
+          "parents": ["f2b242b4531fc6ac3862a72cb4dfdca84b276cf1"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707210000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707210000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c33: chore(deps): bump manifest to 0.0.4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "f2b242b4531fc6ac3862a72cb4dfdca84b276cf1",
+          "parents": ["e9f12c9567a93eb1b08ee6bda77d394d27255f3f"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707120000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707120000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c32: chore(deps): bump manifest to 0.0.3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "parents": ["5e1b4e4a113a32ba74d89164599dae0b17753511"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707030000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707030000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c31: reindent indent.txt (whitespace only)",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+          "parents": ["a73418042de715a7bef7e9bc59a8a2fadd8eb920"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706940000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706940000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c30: git mv renamed-from.txt and touch one line",
+          "refs": ["v0.3.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "parents": ["52052fc357c12a45a641e38d1d910fdec75f4241"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706850000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706850000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c29: rework the middle of hot.txt",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "52052fc357c12a45a641e38d1d910fdec75f4241",
+          "parents": [
+            "d9459d1a6e53815426c4992b3591dad1408a3e27",
+            "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81"
+          ],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706760000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706760000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c28: merge topic into main",
+          "refs": ["v0.2.0"],
+          "lane": 0,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 1,
+              "kind": "fork"
+            }
+          ]
+        },
+        {
+          "oid": "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81",
+          "parents": ["140a173073d8dabbb1e161bd77ca4b5856ae0994"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706410800000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706410800000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t27: topic step 12",
+          "refs": ["topic"],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "140a173073d8dabbb1e161bd77ca4b5856ae0994",
+          "parents": ["2abe1b494d3d24ebecf81201a27bc0bcc6c8cd04"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706320800000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706320800000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t26: topic step 11",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2abe1b494d3d24ebecf81201a27bc0bcc6c8cd04",
+          "parents": ["3bf1ccf595aafafd8d44503b9050f08ba6d05c6b"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706230800000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706230800000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t25: topic step 10",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "3bf1ccf595aafafd8d44503b9050f08ba6d05c6b",
+          "parents": ["cd5a8be34254f0597f6774523d9bd8d7e4a5acea"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706140800000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706140800000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t24: topic step 9",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "cd5a8be34254f0597f6774523d9bd8d7e4a5acea",
+          "parents": ["88627217351413ba56dd5a30493e4e089a044bbc"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706137200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706137200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t23: topic step 8",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "88627217351413ba56dd5a30493e4e089a044bbc",
+          "parents": ["9807480733153c750a21ae2e14cfc4504fd1dbea"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706047200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706047200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t22: topic step 7",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "9807480733153c750a21ae2e14cfc4504fd1dbea",
+          "parents": ["fba339099e3d24125c08ae25235e9c303aa7dd0a"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705957200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705957200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t21: topic step 6",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "fba339099e3d24125c08ae25235e9c303aa7dd0a",
+          "parents": ["e66b609e02b02ed9f25fe0e3a039d9060474638c"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705867200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705867200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t20: topic step 5",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "e66b609e02b02ed9f25fe0e3a039d9060474638c",
+          "parents": ["4c3adf69902138dd6e67c8fba441b24bb59f36d5"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705777200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705777200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t19: topic step 4",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "4c3adf69902138dd6e67c8fba441b24bb59f36d5",
+          "parents": ["d29703910e3581fa1987e540f5b48f5f45d73fe2"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705687200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705687200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t18: topic step 3",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d29703910e3581fa1987e540f5b48f5f45d73fe2",
+          "parents": ["2c4af75c3df7f2f713740f7086ed97d7283480ff"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705597200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705597200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t17: topic step 2",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2c4af75c3df7f2f713740f7086ed97d7283480ff",
+          "parents": ["a0a0c78717004cb71945e9cf659e16b81d062eb7"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705507200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705507200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t16: topic step 1",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d9459d1a6e53815426c4992b3591dad1408a3e27",
+          "parents": ["e93098bc65bfabd2c6beaecda4692b479dfd305f"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705417200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705417200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c15: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "e93098bc65bfabd2c6beaecda4692b479dfd305f",
+          "parents": ["9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705327200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705327200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c14: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7",
+          "parents": ["375ca4ebf9753133a1a89486cf4ee1305bf77fef"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705237200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705237200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c13: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "375ca4ebf9753133a1a89486cf4ee1305bf77fef",
+          "parents": ["a0a0c78717004cb71945e9cf659e16b81d062eb7"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705147200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705147200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c12: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 0,
+              "to": 1,
+              "kind": "merge"
+            }
+          ]
+        },
+        {
+          "oid": "a0a0c78717004cb71945e9cf659e16b81d062eb7",
+          "parents": ["c1b0f387ee5a621cb043e9e492443d65f310a947"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705057200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705057200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c11: iterate on modules and the guide",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "c1b0f387ee5a621cb043e9e492443d65f310a947",
+          "parents": ["0e378a89244273883b77045fa7bd450a9ed62a5a"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704967200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704967200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c10: iterate on modules and the guide",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "0e378a89244273883b77045fa7bd450a9ed62a5a",
+          "parents": ["6b9edc8d680b71f414fa56cc589f9f91c6d84860"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704877200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704877200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c09: iterate on modules and the guide",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "6b9edc8d680b71f414fa56cc589f9f91c6d84860",
+          "parents": ["c513f47f486d0b567c61b5b4db80b2c5e451193f"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704787200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704787200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c08: iterate on modules and the guide",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "c513f47f486d0b567c61b5b4db80b2c5e451193f",
+          "parents": ["ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1704697200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1704697200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c07: chore(deps): bump manifest to 0.0.2",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e",
+          "parents": ["ff4cd35f709efdf6d6de27099e01f72eb6bbb539"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1704607200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1704607200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c06: add the guide (second email, mapped by .mailmap)",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "parents": ["cc269cbc13f6b0b687d7e81ce26fae14f9787b3f"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704517200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704517200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c05: rework the top of hot.txt",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+          "parents": ["910020f5448cd147675c1ce71e2737ae0e1d3cf5"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704427200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704427200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c04: add module 4",
+          "refs": ["preflight/base", "v0.1.0"],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "910020f5448cd147675c1ce71e2737ae0e1d3cf5",
+          "parents": ["adb2ec86ec8b4d052cd42a6d85c5f6b1eda3a59a"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704337200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704337200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c03: add module 3",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "adb2ec86ec8b4d052cd42a6d85c5f6b1eda3a59a",
+          "parents": ["c86003e71f1ae4869664db372ac422b8c684818c"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704247200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704247200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c02: add module 2",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "c86003e71f1ae4869664db372ac422b8c684818c",
+          "parents": ["5772d43fe1036c123baac6d6792d31986659a515"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704157200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704157200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c01: add module 1",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "parents": [],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c00: root commit",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": []
+        }
+      ],
+      "graphAvailable": true
+    },
+    "first-parent": {
+      "commits": [
+        {
+          "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+          "parents": ["82bc6c6d1bc309b9e6463af370ec95aa4866a78c"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709550000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709550000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c59: extend mod4",
+          "refs": ["HEAD", "main", "v1.0.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+          "parents": ["fb9edcd9be63538ff6d425970ceaaaf27e1009ee"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1709460000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1709460000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c58: chore(deps): bump manifest to 0.0.9",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "fb9edcd9be63538ff6d425970ceaaaf27e1009ee",
+          "parents": ["8295928b1c222c2877dbcf442573effe40d97e5a"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1709370000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1709370000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c57: extend mod3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8295928b1c222c2877dbcf442573effe40d97e5a",
+          "parents": ["87a3a12b31ee4268cf84cfed8254425a12658c7a"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1709280000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1709280000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c56: extend mod2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "87a3a12b31ee4268cf84cfed8254425a12658c7a",
+          "parents": ["10f27d53c19de4ea66ac966ec37d30d9871abc64"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1709103600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1709103600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c55: extend mod1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+          "parents": ["155507f9515dc6d19d859bcaa7570cf884303719"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709013600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709013600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c54: extend mod4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "155507f9515dc6d19d859bcaa7570cf884303719",
+          "parents": ["2e318a86392b07c04747e14483e9b76e60a88775"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708923600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708923600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c53: chore(deps): bump manifest to 0.0.8",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2e318a86392b07c04747e14483e9b76e60a88775",
+          "parents": ["31891cde0399736142305af8b7fadea68c479e59"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708833600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708833600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c52: extend mod3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "31891cde0399736142305af8b7fadea68c479e59",
+          "parents": ["261e0b9d0d06bbc309a69590239e4a2efc139807"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708743600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708743600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c51: extend mod2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "261e0b9d0d06bbc309a69590239e4a2efc139807",
+          "parents": ["70703c5dfb94774c4c7b8f293b409a2fb02132c8"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708653600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708653600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c50: extend mod1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "70703c5dfb94774c4c7b8f293b409a2fb02132c8",
+          "parents": ["2c6f8fea4704db1f9a6665eaeffa1288b1230c3e"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708563600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708563600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c49: extend mod4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e",
+          "parents": ["6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708473600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708473600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c48: chore(deps): bump manifest to 0.0.7",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1",
+          "parents": ["931eea0f815b84e93b40772ca7b237f5b808c2ab"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708470000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708470000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c47: extend mod3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "931eea0f815b84e93b40772ca7b237f5b808c2ab",
+          "parents": ["b92c2756a82e15f54285d7c209da3ac886e1579b"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708380000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708380000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c46: extend mod2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "b92c2756a82e15f54285d7c209da3ac886e1579b",
+          "parents": ["0bea629635c4eaad5fe5f84fe29aba700a92a71a"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708290000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708290000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c45: extend mod1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "0bea629635c4eaad5fe5f84fe29aba700a92a71a",
+          "parents": ["69859eaeb61a4527e0c886cd669b5fc6cf4d39f9"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708200000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708200000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c44: extend mod4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "69859eaeb61a4527e0c886cd669b5fc6cf4d39f9",
+          "parents": ["472d458ef31d9f36fe8e65576019fd18c4b39c16"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708110000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708110000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c43: chore(deps): bump manifest to 0.0.6",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "472d458ef31d9f36fe8e65576019fd18c4b39c16",
+          "parents": ["d35a4cf95b7a15a449ee6d4d96a94008ac892e70"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708020000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708020000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c42: extend mod3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d35a4cf95b7a15a449ee6d4d96a94008ac892e70",
+          "parents": ["bfdc9b7c1250d0c28337a9521c69d8ed67a060eb"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707930000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707930000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c41: extend mod2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb",
+          "parents": ["8946f98688375397a15dda82801f07072ede8813"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707840000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707840000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c40: extend mod1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8946f98688375397a15dda82801f07072ede8813",
+          "parents": ["9ee57b46b805e7ec6462a3f188941f63c08821a2"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707750000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707750000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c39: extend mod4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "9ee57b46b805e7ec6462a3f188941f63c08821a2",
+          "parents": ["760c968a61db48a810deaef5c1269fb71028c560"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707660000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707660000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c38: chore(deps): bump manifest to 0.0.5",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "760c968a61db48a810deaef5c1269fb71028c560",
+          "parents": ["8d363ef7d323c8bb14e88374f1634419182050ed"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707570000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707570000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c37: extend mod3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8d363ef7d323c8bb14e88374f1634419182050ed",
+          "parents": ["82bed6085338e895515daf7061e4673c169013f8"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707480000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707480000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c36: extend mod2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "82bed6085338e895515daf7061e4673c169013f8",
+          "parents": ["e8e51a9f9cb74aedca494962f36f4c62ed11e4aa"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707390000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707390000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c35: extend mod1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "e8e51a9f9cb74aedca494962f36f4c62ed11e4aa",
+          "parents": ["d591508ac3ec5664601a26ca15a46723da472ebc"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707300000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707300000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c34: extend mod4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d591508ac3ec5664601a26ca15a46723da472ebc",
+          "parents": ["f2b242b4531fc6ac3862a72cb4dfdca84b276cf1"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707210000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707210000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c33: chore(deps): bump manifest to 0.0.4",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "f2b242b4531fc6ac3862a72cb4dfdca84b276cf1",
+          "parents": ["e9f12c9567a93eb1b08ee6bda77d394d27255f3f"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707120000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707120000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c32: chore(deps): bump manifest to 0.0.3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "parents": ["5e1b4e4a113a32ba74d89164599dae0b17753511"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707030000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707030000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c31: reindent indent.txt (whitespace only)",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+          "parents": ["a73418042de715a7bef7e9bc59a8a2fadd8eb920"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706940000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706940000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c30: git mv renamed-from.txt and touch one line",
+          "refs": ["v0.3.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "parents": ["52052fc357c12a45a641e38d1d910fdec75f4241"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706850000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706850000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c29: rework the middle of hot.txt",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "52052fc357c12a45a641e38d1d910fdec75f4241",
+          "parents": [
+            "d9459d1a6e53815426c4992b3591dad1408a3e27",
+            "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81"
+          ],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706760000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706760000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c28: merge topic into main",
+          "refs": ["v0.2.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d9459d1a6e53815426c4992b3591dad1408a3e27",
+          "parents": ["e93098bc65bfabd2c6beaecda4692b479dfd305f"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705417200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705417200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c15: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "e93098bc65bfabd2c6beaecda4692b479dfd305f",
+          "parents": ["9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705327200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705327200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c14: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7",
+          "parents": ["375ca4ebf9753133a1a89486cf4ee1305bf77fef"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705237200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705237200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c13: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "375ca4ebf9753133a1a89486cf4ee1305bf77fef",
+          "parents": ["a0a0c78717004cb71945e9cf659e16b81d062eb7"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705147200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705147200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c12: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "a0a0c78717004cb71945e9cf659e16b81d062eb7",
+          "parents": ["c1b0f387ee5a621cb043e9e492443d65f310a947"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705057200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705057200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c11: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "c1b0f387ee5a621cb043e9e492443d65f310a947",
+          "parents": ["0e378a89244273883b77045fa7bd450a9ed62a5a"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704967200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704967200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c10: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "0e378a89244273883b77045fa7bd450a9ed62a5a",
+          "parents": ["6b9edc8d680b71f414fa56cc589f9f91c6d84860"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704877200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704877200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c09: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "6b9edc8d680b71f414fa56cc589f9f91c6d84860",
+          "parents": ["c513f47f486d0b567c61b5b4db80b2c5e451193f"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704787200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704787200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c08: iterate on modules and the guide",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "c513f47f486d0b567c61b5b4db80b2c5e451193f",
+          "parents": ["ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1704697200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1704697200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c07: chore(deps): bump manifest to 0.0.2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e",
+          "parents": ["ff4cd35f709efdf6d6de27099e01f72eb6bbb539"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1704607200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1704607200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c06: add the guide (second email, mapped by .mailmap)",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "parents": ["cc269cbc13f6b0b687d7e81ce26fae14f9787b3f"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704517200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704517200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c05: rework the top of hot.txt",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+          "parents": ["910020f5448cd147675c1ce71e2737ae0e1d3cf5"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704427200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704427200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c04: add module 4",
+          "refs": ["preflight/base", "v0.1.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "910020f5448cd147675c1ce71e2737ae0e1d3cf5",
+          "parents": ["adb2ec86ec8b4d052cd42a6d85c5f6b1eda3a59a"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704337200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704337200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c03: add module 3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "adb2ec86ec8b4d052cd42a6d85c5f6b1eda3a59a",
+          "parents": ["c86003e71f1ae4869664db372ac422b8c684818c"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704247200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704247200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c02: add module 2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "c86003e71f1ae4869664db372ac422b8c684818c",
+          "parents": ["5772d43fe1036c123baac6d6792d31986659a515"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704157200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704157200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c01: add module 1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "parents": [],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c00: root commit",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": true
+    },
+    "all": {
+      "commits": [
+        {
+          "oid": "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a",
+          "parents": ["aefdbcf01a4ecdb7049699de6ae4e79b1551623b"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1710633600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1710633600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "p3: add a file nothing else touches (clean)",
+          "refs": ["preflight/a"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "aefdbcf01a4ecdb7049699de6ae4e79b1551623b",
+          "parents": ["1b64210831f4bd1984875c179e4e804cc91c33e2"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1710630000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1710630000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "p2: edit hot.txt far from main's hunks (same file, disjoint)",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "1b64210831f4bd1984875c179e4e804cc91c33e2",
+          "parents": ["cc269cbc13f6b0b687d7e81ce26fae14f9787b3f"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1710540000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1710540000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "p1: rewrite the top of hot.txt (collides with main)",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+          "parents": ["82bc6c6d1bc309b9e6463af370ec95aa4866a78c"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709550000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709550000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c59: extend mod4",
+          "refs": ["HEAD", "main", "v1.0.0"],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+          "parents": ["fb9edcd9be63538ff6d425970ceaaaf27e1009ee"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1709460000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1709460000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c58: chore(deps): bump manifest to 0.0.9",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "fb9edcd9be63538ff6d425970ceaaaf27e1009ee",
+          "parents": ["8295928b1c222c2877dbcf442573effe40d97e5a"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1709370000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1709370000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c57: extend mod3",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8295928b1c222c2877dbcf442573effe40d97e5a",
+          "parents": ["87a3a12b31ee4268cf84cfed8254425a12658c7a"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1709280000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1709280000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c56: extend mod2",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "87a3a12b31ee4268cf84cfed8254425a12658c7a",
+          "parents": ["10f27d53c19de4ea66ac966ec37d30d9871abc64"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1709103600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1709103600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c55: extend mod1",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+          "parents": ["155507f9515dc6d19d859bcaa7570cf884303719"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709013600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1709013600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c54: extend mod4",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "155507f9515dc6d19d859bcaa7570cf884303719",
+          "parents": ["2e318a86392b07c04747e14483e9b76e60a88775"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708923600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708923600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c53: chore(deps): bump manifest to 0.0.8",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2e318a86392b07c04747e14483e9b76e60a88775",
+          "parents": ["31891cde0399736142305af8b7fadea68c479e59"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708833600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708833600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c52: extend mod3",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "31891cde0399736142305af8b7fadea68c479e59",
+          "parents": ["261e0b9d0d06bbc309a69590239e4a2efc139807"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708743600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708743600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c51: extend mod2",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "261e0b9d0d06bbc309a69590239e4a2efc139807",
+          "parents": ["70703c5dfb94774c4c7b8f293b409a2fb02132c8"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708653600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708653600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c50: extend mod1",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "70703c5dfb94774c4c7b8f293b409a2fb02132c8",
+          "parents": ["2c6f8fea4704db1f9a6665eaeffa1288b1230c3e"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708563600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708563600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c49: extend mod4",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e",
+          "parents": ["6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708473600000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708473600000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c48: chore(deps): bump manifest to 0.0.7",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1",
+          "parents": ["931eea0f815b84e93b40772ca7b237f5b808c2ab"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708470000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708470000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c47: extend mod3",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "931eea0f815b84e93b40772ca7b237f5b808c2ab",
+          "parents": ["b92c2756a82e15f54285d7c209da3ac886e1579b"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708380000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1708380000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c46: extend mod2",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "b92c2756a82e15f54285d7c209da3ac886e1579b",
+          "parents": ["0bea629635c4eaad5fe5f84fe29aba700a92a71a"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708290000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1708290000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c45: extend mod1",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "0bea629635c4eaad5fe5f84fe29aba700a92a71a",
+          "parents": ["69859eaeb61a4527e0c886cd669b5fc6cf4d39f9"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708200000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1708200000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c44: extend mod4",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "69859eaeb61a4527e0c886cd669b5fc6cf4d39f9",
+          "parents": ["472d458ef31d9f36fe8e65576019fd18c4b39c16"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708110000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1708110000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c43: chore(deps): bump manifest to 0.0.6",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "472d458ef31d9f36fe8e65576019fd18c4b39c16",
+          "parents": ["d35a4cf95b7a15a449ee6d4d96a94008ac892e70"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708020000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1708020000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c42: extend mod3",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d35a4cf95b7a15a449ee6d4d96a94008ac892e70",
+          "parents": ["bfdc9b7c1250d0c28337a9521c69d8ed67a060eb"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707930000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707930000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c41: extend mod2",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb",
+          "parents": ["8946f98688375397a15dda82801f07072ede8813"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707840000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707840000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c40: extend mod1",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8946f98688375397a15dda82801f07072ede8813",
+          "parents": ["9ee57b46b805e7ec6462a3f188941f63c08821a2"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707750000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707750000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c39: extend mod4",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "9ee57b46b805e7ec6462a3f188941f63c08821a2",
+          "parents": ["760c968a61db48a810deaef5c1269fb71028c560"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707660000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707660000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c38: chore(deps): bump manifest to 0.0.5",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "760c968a61db48a810deaef5c1269fb71028c560",
+          "parents": ["8d363ef7d323c8bb14e88374f1634419182050ed"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707570000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707570000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c37: extend mod3",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8d363ef7d323c8bb14e88374f1634419182050ed",
+          "parents": ["82bed6085338e895515daf7061e4673c169013f8"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707480000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1707480000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c36: extend mod2",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "82bed6085338e895515daf7061e4673c169013f8",
+          "parents": ["e8e51a9f9cb74aedca494962f36f4c62ed11e4aa"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707390000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707390000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c35: extend mod1",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "e8e51a9f9cb74aedca494962f36f4c62ed11e4aa",
+          "parents": ["d591508ac3ec5664601a26ca15a46723da472ebc"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707300000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1707300000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c34: extend mod4",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d591508ac3ec5664601a26ca15a46723da472ebc",
+          "parents": ["f2b242b4531fc6ac3862a72cb4dfdca84b276cf1"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707210000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707210000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c33: chore(deps): bump manifest to 0.0.4",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "f2b242b4531fc6ac3862a72cb4dfdca84b276cf1",
+          "parents": ["e9f12c9567a93eb1b08ee6bda77d394d27255f3f"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707120000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1707120000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c32: chore(deps): bump manifest to 0.0.3",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "parents": ["5e1b4e4a113a32ba74d89164599dae0b17753511"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707030000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707030000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c31: reindent indent.txt (whitespace only)",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+          "parents": ["a73418042de715a7bef7e9bc59a8a2fadd8eb920"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706940000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706940000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c30: git mv renamed-from.txt and touch one line",
+          "refs": ["v0.3.0"],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "parents": ["52052fc357c12a45a641e38d1d910fdec75f4241"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706850000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706850000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c29: rework the middle of hot.txt",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "52052fc357c12a45a641e38d1d910fdec75f4241",
+          "parents": [
+            "d9459d1a6e53815426c4992b3591dad1408a3e27",
+            "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81"
+          ],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706760000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706760000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c28: merge topic into main",
+          "refs": ["v0.2.0"],
+          "lane": 1,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 2,
+              "kind": "fork"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81",
+          "parents": ["140a173073d8dabbb1e161bd77ca4b5856ae0994"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706410800000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706410800000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t27: topic step 12",
+          "refs": ["topic"],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "140a173073d8dabbb1e161bd77ca4b5856ae0994",
+          "parents": ["2abe1b494d3d24ebecf81201a27bc0bcc6c8cd04"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706320800000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706320800000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t26: topic step 11",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2abe1b494d3d24ebecf81201a27bc0bcc6c8cd04",
+          "parents": ["3bf1ccf595aafafd8d44503b9050f08ba6d05c6b"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706230800000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706230800000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t25: topic step 10",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "3bf1ccf595aafafd8d44503b9050f08ba6d05c6b",
+          "parents": ["cd5a8be34254f0597f6774523d9bd8d7e4a5acea"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706140800000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706140800000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t24: topic step 9",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "cd5a8be34254f0597f6774523d9bd8d7e4a5acea",
+          "parents": ["88627217351413ba56dd5a30493e4e089a044bbc"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706137200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706137200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t23: topic step 8",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "88627217351413ba56dd5a30493e4e089a044bbc",
+          "parents": ["9807480733153c750a21ae2e14cfc4504fd1dbea"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706047200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706047200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t22: topic step 7",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "9807480733153c750a21ae2e14cfc4504fd1dbea",
+          "parents": ["fba339099e3d24125c08ae25235e9c303aa7dd0a"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705957200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705957200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t21: topic step 6",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "fba339099e3d24125c08ae25235e9c303aa7dd0a",
+          "parents": ["e66b609e02b02ed9f25fe0e3a039d9060474638c"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705867200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705867200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t20: topic step 5",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "e66b609e02b02ed9f25fe0e3a039d9060474638c",
+          "parents": ["4c3adf69902138dd6e67c8fba441b24bb59f36d5"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705777200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705777200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t19: topic step 4",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "4c3adf69902138dd6e67c8fba441b24bb59f36d5",
+          "parents": ["d29703910e3581fa1987e540f5b48f5f45d73fe2"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705687200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705687200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t18: topic step 3",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d29703910e3581fa1987e540f5b48f5f45d73fe2",
+          "parents": ["2c4af75c3df7f2f713740f7086ed97d7283480ff"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705597200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705597200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t17: topic step 2",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2c4af75c3df7f2f713740f7086ed97d7283480ff",
+          "parents": ["a0a0c78717004cb71945e9cf659e16b81d062eb7"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705507200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705507200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t16: topic step 1",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "d9459d1a6e53815426c4992b3591dad1408a3e27",
+          "parents": ["e93098bc65bfabd2c6beaecda4692b479dfd305f"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705417200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705417200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c15: iterate on modules and the guide",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "e93098bc65bfabd2c6beaecda4692b479dfd305f",
+          "parents": ["9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705327200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705327200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c14: iterate on modules and the guide",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7",
+          "parents": ["375ca4ebf9753133a1a89486cf4ee1305bf77fef"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705237200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705237200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c13: iterate on modules and the guide",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "375ca4ebf9753133a1a89486cf4ee1305bf77fef",
+          "parents": ["a0a0c78717004cb71945e9cf659e16b81d062eb7"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705147200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1705147200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c12: iterate on modules and the guide",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 1,
+              "to": 2,
+              "kind": "merge"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "a0a0c78717004cb71945e9cf659e16b81d062eb7",
+          "parents": ["c1b0f387ee5a621cb043e9e492443d65f310a947"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705057200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1705057200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c11: iterate on modules and the guide",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "c1b0f387ee5a621cb043e9e492443d65f310a947",
+          "parents": ["0e378a89244273883b77045fa7bd450a9ed62a5a"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704967200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704967200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c10: iterate on modules and the guide",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "0e378a89244273883b77045fa7bd450a9ed62a5a",
+          "parents": ["6b9edc8d680b71f414fa56cc589f9f91c6d84860"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704877200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704877200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c09: iterate on modules and the guide",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "6b9edc8d680b71f414fa56cc589f9f91c6d84860",
+          "parents": ["c513f47f486d0b567c61b5b4db80b2c5e451193f"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704787200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704787200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c08: iterate on modules and the guide",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "c513f47f486d0b567c61b5b4db80b2c5e451193f",
+          "parents": ["ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e"],
+          "author": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1704697200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "renovate[bot]",
+            "email": "renovate[bot]@users.noreply.github.com",
+            "timestamp": 1704697200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c07: chore(deps): bump manifest to 0.0.2",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e",
+          "parents": ["ff4cd35f709efdf6d6de27099e01f72eb6bbb539"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1704607200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada.lovelace@corp.example.com",
+            "timestamp": 1704607200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c06: add the guide (second email, mapped by .mailmap)",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "parents": ["cc269cbc13f6b0b687d7e81ce26fae14f9787b3f"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704517200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704517200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c05: rework the top of hot.txt",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 2,
+              "to": 0,
+              "kind": "merge"
+            }
+          ]
+        },
+        {
+          "oid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+          "parents": ["910020f5448cd147675c1ce71e2737ae0e1d3cf5"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704427200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704427200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c04: add module 4",
+          "refs": ["preflight/base", "v0.1.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "910020f5448cd147675c1ce71e2737ae0e1d3cf5",
+          "parents": ["adb2ec86ec8b4d052cd42a6d85c5f6b1eda3a59a"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704337200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704337200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c03: add module 3",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "adb2ec86ec8b4d052cd42a6d85c5f6b1eda3a59a",
+          "parents": ["c86003e71f1ae4869664db372ac422b8c684818c"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704247200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704247200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c02: add module 2",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "c86003e71f1ae4869664db372ac422b8c684818c",
+          "parents": ["5772d43fe1036c123baac6d6792d31986659a515"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704157200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1704157200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c01: add module 1",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "parents": [],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c00: root commit",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": true
+    },
+    "path:src/hot.txt": {
+      "commits": [
+        {
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "parents": ["52052fc357c12a45a641e38d1d910fdec75f4241"],
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706850000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706850000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c29: rework the middle of hot.txt",
+          "refs": []
+        },
+        {
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "parents": ["cc269cbc13f6b0b687d7e81ce26fae14f9787b3f"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704517200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704517200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c05: rework the top of hot.txt",
+          "refs": []
+        },
+        {
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "parents": [],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c00: root commit",
+          "refs": []
+        }
+      ],
+      "graphAvailable": true
+    },
+    "path:src/renamed-to.txt": {
+      "commits": [
+        {
+          "oid": "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb",
+          "parents": ["8946f98688375397a15dda82801f07072ede8813"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707840000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707840000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c40: extend mod1",
+          "refs": []
+        },
+        {
+          "oid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+          "parents": ["a73418042de715a7bef7e9bc59a8a2fadd8eb920"],
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706940000000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706940000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c30: git mv renamed-from.txt and touch one line",
+          "refs": ["v0.3.0"]
+        }
+      ],
+      "graphAvailable": true
+    }
+  },
+  "commits": {
+    "822313f6746d7982943f0d59fc5e09b626769141": {
+      "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "parents": ["82bc6c6d1bc309b9e6463af370ec95aa4866a78c"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1709550000000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1709550000000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c59: extend mod4",
+      "refs": ["HEAD", "main", "v1.0.0"],
+      "body": "",
+      "tree": "7361c5768fc4e845f38053c56d4b54b79c879699",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 5,
+        "deletions": 0
+      }
+    },
+    "82bc6c6d1bc309b9e6463af370ec95aa4866a78c": {
+      "oid": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+      "parents": ["fb9edcd9be63538ff6d425970ceaaaf27e1009ee"],
+      "author": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1709460000000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1709460000000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c58: chore(deps): bump manifest to 0.0.9",
+      "refs": [],
+      "body": "",
+      "tree": "e91354c0f73b5f509ff1e3b2cd1f9b306064e759",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    "fb9edcd9be63538ff6d425970ceaaaf27e1009ee": {
+      "oid": "fb9edcd9be63538ff6d425970ceaaaf27e1009ee",
+      "parents": ["8295928b1c222c2877dbcf442573effe40d97e5a"],
+      "author": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1709370000000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1709370000000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c57: extend mod3",
+      "refs": [],
+      "body": "",
+      "tree": "3ba6421f05a137bdaf30336e82babc1a05be08f4",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 5,
+        "deletions": 0
+      }
+    },
+    "8295928b1c222c2877dbcf442573effe40d97e5a": {
+      "oid": "8295928b1c222c2877dbcf442573effe40d97e5a",
+      "parents": ["87a3a12b31ee4268cf84cfed8254425a12658c7a"],
+      "author": {
+        "name": "Ada Lovelace",
+        "email": "ada.lovelace@corp.example.com",
+        "timestamp": 1709280000000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "Ada Lovelace",
+        "email": "ada.lovelace@corp.example.com",
+        "timestamp": 1709280000000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c56: extend mod2",
+      "refs": [],
+      "body": "",
+      "tree": "cf9bd8496b20f58338acefb4f2000f53db1e655a",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 5,
+        "deletions": 0
+      }
+    },
+    "87a3a12b31ee4268cf84cfed8254425a12658c7a": {
+      "oid": "87a3a12b31ee4268cf84cfed8254425a12658c7a",
+      "parents": ["10f27d53c19de4ea66ac966ec37d30d9871abc64"],
+      "author": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1709103600000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1709103600000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c55: extend mod1",
+      "refs": [],
+      "body": "",
+      "tree": "88ee15da66b3881850d3bc01fa2e2ff052b1f3e0",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 5,
+        "deletions": 0
+      }
+    },
+    "10f27d53c19de4ea66ac966ec37d30d9871abc64": {
+      "oid": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+      "parents": ["155507f9515dc6d19d859bcaa7570cf884303719"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1709013600000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1709013600000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c54: extend mod4",
+      "refs": [],
+      "body": "",
+      "tree": "2a24bf39a8c853d84d1b03f7fb25999541ee172a",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 5,
+        "deletions": 0
+      }
+    },
+    "155507f9515dc6d19d859bcaa7570cf884303719": {
+      "oid": "155507f9515dc6d19d859bcaa7570cf884303719",
+      "parents": ["2e318a86392b07c04747e14483e9b76e60a88775"],
+      "author": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1708923600000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1708923600000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c53: chore(deps): bump manifest to 0.0.8",
+      "refs": [],
+      "body": "",
+      "tree": "0844b78852d34e8149df518d52ba3141917e77da",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    "2e318a86392b07c04747e14483e9b76e60a88775": {
+      "oid": "2e318a86392b07c04747e14483e9b76e60a88775",
+      "parents": ["31891cde0399736142305af8b7fadea68c479e59"],
+      "author": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1708833600000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1708833600000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c52: extend mod3",
+      "refs": [],
+      "body": "",
+      "tree": "0e022021b7e5bd20587b788d4c030e841c60b489",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 5,
+        "deletions": 0
+      }
+    },
+    "31891cde0399736142305af8b7fadea68c479e59": {
+      "oid": "31891cde0399736142305af8b7fadea68c479e59",
+      "parents": ["261e0b9d0d06bbc309a69590239e4a2efc139807"],
+      "author": {
+        "name": "Ada Lovelace",
+        "email": "ada.lovelace@corp.example.com",
+        "timestamp": 1708743600000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "Ada Lovelace",
+        "email": "ada.lovelace@corp.example.com",
+        "timestamp": 1708743600000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c51: extend mod2",
+      "refs": [],
+      "body": "",
+      "tree": "0753fe1837f73afdc5accd61af33a329b4a10fa5",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 5,
+        "deletions": 0
+      }
+    },
+    "261e0b9d0d06bbc309a69590239e4a2efc139807": {
+      "oid": "261e0b9d0d06bbc309a69590239e4a2efc139807",
+      "parents": ["70703c5dfb94774c4c7b8f293b409a2fb02132c8"],
+      "author": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1708653600000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1708653600000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c50: extend mod1",
+      "refs": [],
+      "body": "",
+      "tree": "6bac9c67857d2dc0892807571d9b5597a8f99795",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 5,
+        "deletions": 0
+      }
+    },
+    "70703c5dfb94774c4c7b8f293b409a2fb02132c8": {
+      "oid": "70703c5dfb94774c4c7b8f293b409a2fb02132c8",
+      "parents": ["2c6f8fea4704db1f9a6665eaeffa1288b1230c3e"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1708563600000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1708563600000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c49: extend mod4",
+      "refs": [],
+      "body": "",
+      "tree": "9beaa3dc4db55f0073560c3a121a2116b95f6ff8",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 5,
+        "deletions": 0
+      }
+    },
+    "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e": {
+      "oid": "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e",
+      "parents": ["6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1"],
+      "author": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1708473600000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1708473600000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c48: chore(deps): bump manifest to 0.0.7",
+      "refs": [],
+      "body": "",
+      "tree": "8afe55aa86f32e96218b2a06dacf7a1175724bb7",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    }
+  },
+  "commitStats": {
+    "82bc6c6d1bc309b9e6463af370ec95aa4866a78c": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "fb9edcd9be63538ff6d425970ceaaaf27e1009ee": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "8295928b1c222c2877dbcf442573effe40d97e5a": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "822313f6746d7982943f0d59fc5e09b626769141": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "87a3a12b31ee4268cf84cfed8254425a12658c7a": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "155507f9515dc6d19d859bcaa7570cf884303719": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "10f27d53c19de4ea66ac966ec37d30d9871abc64": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "2e318a86392b07c04747e14483e9b76e60a88775": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "31891cde0399736142305af8b7fadea68c479e59": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "261e0b9d0d06bbc309a69590239e4a2efc139807": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "70703c5dfb94774c4c7b8f293b409a2fb02132c8": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "931eea0f815b84e93b40772ca7b237f5b808c2ab": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "b92c2756a82e15f54285d7c209da3ac886e1579b": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "0bea629635c4eaad5fe5f84fe29aba700a92a71a": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "69859eaeb61a4527e0c886cd669b5fc6cf4d39f9": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "d35a4cf95b7a15a449ee6d4d96a94008ac892e70": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "472d458ef31d9f36fe8e65576019fd18c4b39c16": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "9ee57b46b805e7ec6462a3f188941f63c08821a2": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "8946f98688375397a15dda82801f07072ede8813": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "760c968a61db48a810deaef5c1269fb71028c560": {
+      "files": 1,
+      "additions": 23,
+      "deletions": 0
+    },
+    "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb": {
+      "files": 2,
+      "additions": 6,
+      "deletions": 0
+    },
+    "8d363ef7d323c8bb14e88374f1634419182050ed": {
+      "files": 1,
+      "additions": 23,
+      "deletions": 0
+    },
+    "82bed6085338e895515daf7061e4673c169013f8": {
+      "files": 1,
+      "additions": 23,
+      "deletions": 0
+    },
+    "d591508ac3ec5664601a26ca15a46723da472ebc": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "e8e51a9f9cb74aedca494962f36f4c62ed11e4aa": {
+      "files": 1,
+      "additions": 19,
+      "deletions": 0
+    },
+    "f2b242b4531fc6ac3862a72cb4dfdca84b276cf1": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "e9f12c9567a93eb1b08ee6bda77d394d27255f3f": {
+      "files": 1,
+      "additions": 12,
+      "deletions": 12
+    },
+    "5e1b4e4a113a32ba74d89164599dae0b17753511": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 2
+    },
+    "52052fc357c12a45a641e38d1d910fdec75f4241": {
+      "files": 1,
+      "additions": 12,
+      "deletions": 0
+    },
+    "a73418042de715a7bef7e9bc59a8a2fadd8eb920": {
+      "files": 1,
+      "additions": 6,
+      "deletions": 6
+    },
+    "2abe1b494d3d24ebecf81201a27bc0bcc6c8cd04": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "3bf1ccf595aafafd8d44503b9050f08ba6d05c6b": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "140a173073d8dabbb1e161bd77ca4b5856ae0994": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "9807480733153c750a21ae2e14cfc4504fd1dbea": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "88627217351413ba56dd5a30493e4e089a044bbc": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "cd5a8be34254f0597f6774523d9bd8d7e4a5acea": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "fba339099e3d24125c08ae25235e9c303aa7dd0a": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "2c4af75c3df7f2f713740f7086ed97d7283480ff": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "e66b609e02b02ed9f25fe0e3a039d9060474638c": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "d29703910e3581fa1987e540f5b48f5f45d73fe2": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "4c3adf69902138dd6e67c8fba441b24bb59f36d5": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "d9459d1a6e53815426c4992b3591dad1408a3e27": {
+      "files": 2,
+      "additions": 5,
+      "deletions": 0
+    },
+    "e93098bc65bfabd2c6beaecda4692b479dfd305f": {
+      "files": 2,
+      "additions": 5,
+      "deletions": 0
+    },
+    "9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7": {
+      "files": 2,
+      "additions": 5,
+      "deletions": 0
+    },
+    "375ca4ebf9753133a1a89486cf4ee1305bf77fef": {
+      "files": 3,
+      "additions": 6,
+      "deletions": 0
+    },
+    "c1b0f387ee5a621cb043e9e492443d65f310a947": {
+      "files": 2,
+      "additions": 8,
+      "deletions": 0
+    },
+    "0e378a89244273883b77045fa7bd450a9ed62a5a": {
+      "files": 2,
+      "additions": 8,
+      "deletions": 0
+    },
+    "ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e": {
+      "files": 1,
+      "additions": 3,
+      "deletions": 0
+    },
+    "a0a0c78717004cb71945e9cf659e16b81d062eb7": {
+      "files": 2,
+      "additions": 8,
+      "deletions": 0
+    },
+    "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f": {
+      "files": 1,
+      "additions": 9,
+      "deletions": 0
+    },
+    "910020f5448cd147675c1ce71e2737ae0e1d3cf5": {
+      "files": 1,
+      "additions": 8,
+      "deletions": 0
+    },
+    "adb2ec86ec8b4d052cd42a6d85c5f6b1eda3a59a": {
+      "files": 1,
+      "additions": 7,
+      "deletions": 0
+    },
+    "c86003e71f1ae4869664db372ac422b8c684818c": {
+      "files": 1,
+      "additions": 6,
+      "deletions": 0
+    },
+    "6b9edc8d680b71f414fa56cc589f9f91c6d84860": {
+      "files": 2,
+      "additions": 8,
+      "deletions": 0
+    },
+    "ff4cd35f709efdf6d6de27099e01f72eb6bbb539": {
+      "files": 1,
+      "additions": 3,
+      "deletions": 3
+    },
+    "c513f47f486d0b567c61b5b4db80b2c5e451193f": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "1b64210831f4bd1984875c179e4e804cc91c33e2": {
+      "files": 1,
+      "additions": 3,
+      "deletions": 3
+    },
+    "5772d43fe1036c123baac6d6792d31986659a515": {
+      "files": 7,
+      "additions": 97,
+      "deletions": 0
+    },
+    "aefdbcf01a4ecdb7049699de6ae4e79b1551623b": {
+      "files": 1,
+      "additions": 3,
+      "deletions": 3
+    },
+    "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    }
+  },
+  "branches": [
+    {
+      "ref": {
+        "name": "main",
+        "fullName": "refs/heads/main",
+        "kind": "local",
+        "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+        "isDefault": true,
+        "isCheckedOut": true
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+        "subject": "c59: extend mod4",
+        "author": "test",
+        "timestamp": 1709550000000
+      },
+      "vsUpstream": null,
+      "vsDefault": null,
+      "merged": true,
+      "tags": ["v1.0.0"]
+    },
+    {
+      "ref": {
+        "name": "preflight/a",
+        "fullName": "refs/heads/preflight/a",
+        "kind": "local",
+        "oid": "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a",
+        "isDefault": false,
+        "isCheckedOut": false
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a",
+        "subject": "p3: add a file nothing else touches (clean)",
+        "author": "Grace Hopper",
+        "timestamp": 1710633600000
+      },
+      "vsUpstream": null,
+      "vsDefault": {
+        "ahead": 3,
+        "behind": 55,
+        "mergeBase": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+        "capped": false
+      },
+      "merged": false,
+      "tags": []
+    },
+    {
+      "ref": {
+        "name": "preflight/base",
+        "fullName": "refs/heads/preflight/base",
+        "kind": "local",
+        "oid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+        "isDefault": false,
+        "isCheckedOut": false
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+        "subject": "c04: add module 4",
+        "author": "Grace Hopper",
+        "timestamp": 1704427200000
+      },
+      "vsUpstream": null,
+      "vsDefault": {
+        "ahead": 0,
+        "behind": 55,
+        "mergeBase": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+        "capped": false
+      },
+      "merged": true,
+      "tags": ["v0.1.0"]
+    },
+    {
+      "ref": {
+        "name": "topic",
+        "fullName": "refs/heads/topic",
+        "kind": "local",
+        "oid": "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81",
+        "isDefault": false,
+        "isCheckedOut": false
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81",
+        "subject": "t27: topic step 12",
+        "author": "Grace Hopper",
+        "timestamp": 1706410800000
+      },
+      "vsUpstream": null,
+      "vsDefault": {
+        "ahead": 0,
+        "behind": 36,
+        "mergeBase": "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81",
+        "capped": false
+      },
+      "merged": true,
+      "tags": []
+    }
+  ],
+  "aheadBehind": {
+    "main...topic": {
+      "ahead": 36,
+      "behind": 0,
+      "mergeBase": "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81",
+      "capped": false
+    },
+    "main...preflight/a": {
+      "ahead": 55,
+      "behind": 3,
+      "mergeBase": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "capped": false
+    },
+    "preflight/a...main": {
+      "ahead": 3,
+      "behind": 55,
+      "mergeBase": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "capped": false
+    }
+  },
+  "reachable": {
+    "822313f6746d7982943f0d59fc5e09b626769141": true,
+    "82bc6c6d1bc309b9e6463af370ec95aa4866a78c": true,
+    "fb9edcd9be63538ff6d425970ceaaaf27e1009ee": true,
+    "8295928b1c222c2877dbcf442573effe40d97e5a": true,
+    "87a3a12b31ee4268cf84cfed8254425a12658c7a": true,
+    "10f27d53c19de4ea66ac966ec37d30d9871abc64": true,
+    "155507f9515dc6d19d859bcaa7570cf884303719": true,
+    "2e318a86392b07c04747e14483e9b76e60a88775": true,
+    "31891cde0399736142305af8b7fadea68c479e59": true,
+    "261e0b9d0d06bbc309a69590239e4a2efc139807": true,
+    "70703c5dfb94774c4c7b8f293b409a2fb02132c8": true,
+    "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e": true,
+    "6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1": true,
+    "931eea0f815b84e93b40772ca7b237f5b808c2ab": true,
+    "b92c2756a82e15f54285d7c209da3ac886e1579b": true,
+    "0bea629635c4eaad5fe5f84fe29aba700a92a71a": true,
+    "69859eaeb61a4527e0c886cd669b5fc6cf4d39f9": true,
+    "472d458ef31d9f36fe8e65576019fd18c4b39c16": true,
+    "d35a4cf95b7a15a449ee6d4d96a94008ac892e70": true,
+    "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb": true,
+    "8946f98688375397a15dda82801f07072ede8813": true,
+    "9ee57b46b805e7ec6462a3f188941f63c08821a2": true,
+    "760c968a61db48a810deaef5c1269fb71028c560": true,
+    "8d363ef7d323c8bb14e88374f1634419182050ed": true,
+    "82bed6085338e895515daf7061e4673c169013f8": true,
+    "e8e51a9f9cb74aedca494962f36f4c62ed11e4aa": true,
+    "d591508ac3ec5664601a26ca15a46723da472ebc": true,
+    "f2b242b4531fc6ac3862a72cb4dfdca84b276cf1": true,
+    "e9f12c9567a93eb1b08ee6bda77d394d27255f3f": true,
+    "5e1b4e4a113a32ba74d89164599dae0b17753511": true,
+    "a73418042de715a7bef7e9bc59a8a2fadd8eb920": true,
+    "52052fc357c12a45a641e38d1d910fdec75f4241": true,
+    "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81": true,
+    "140a173073d8dabbb1e161bd77ca4b5856ae0994": true,
+    "2abe1b494d3d24ebecf81201a27bc0bcc6c8cd04": true,
+    "3bf1ccf595aafafd8d44503b9050f08ba6d05c6b": true,
+    "cd5a8be34254f0597f6774523d9bd8d7e4a5acea": true,
+    "88627217351413ba56dd5a30493e4e089a044bbc": true,
+    "9807480733153c750a21ae2e14cfc4504fd1dbea": true,
+    "fba339099e3d24125c08ae25235e9c303aa7dd0a": true,
+    "e66b609e02b02ed9f25fe0e3a039d9060474638c": true,
+    "4c3adf69902138dd6e67c8fba441b24bb59f36d5": true,
+    "d29703910e3581fa1987e540f5b48f5f45d73fe2": true,
+    "2c4af75c3df7f2f713740f7086ed97d7283480ff": true,
+    "d9459d1a6e53815426c4992b3591dad1408a3e27": true,
+    "e93098bc65bfabd2c6beaecda4692b479dfd305f": true,
+    "9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7": true,
+    "375ca4ebf9753133a1a89486cf4ee1305bf77fef": true,
+    "a0a0c78717004cb71945e9cf659e16b81d062eb7": true,
+    "c1b0f387ee5a621cb043e9e492443d65f310a947": true,
+    "0e378a89244273883b77045fa7bd450a9ed62a5a": true,
+    "6b9edc8d680b71f414fa56cc589f9f91c6d84860": true,
+    "c513f47f486d0b567c61b5b4db80b2c5e451193f": true,
+    "ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e": true,
+    "ff4cd35f709efdf6d6de27099e01f72eb6bbb539": true,
+    "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f": true,
+    "910020f5448cd147675c1ce71e2737ae0e1d3cf5": true,
+    "adb2ec86ec8b4d052cd42a6d85c5f6b1eda3a59a": true,
+    "c86003e71f1ae4869664db372ac422b8c684818c": true,
+    "5772d43fe1036c123baac6d6792d31986659a515": true,
+    "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a": true,
+    "aefdbcf01a4ecdb7049699de6ae4e79b1551623b": true,
+    "1b64210831f4bd1984875c179e4e804cc91c33e2": true
+  }
 }

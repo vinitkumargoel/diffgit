@@ -30,6 +30,9 @@ import { EngineError, type EngineErrorJSON, errorCode, isPublicCode } from "./er
 import type { DirHandleLike } from "./fs/dirHandleLike";
 import { createFsaFs, type FsaFs } from "./fs/fsaFs";
 import { GitAttributes } from "./git/attributes";
+import { branchCells, branchOverview } from "./git/branches";
+import { CommitGraph } from "./git/commitGraph";
+import { commitDetails, commitStats } from "./git/commits";
 import { type GitConfig, loadGitConfig } from "./git/config";
 import { explainPath } from "./git/explain";
 import { sha1, toHex } from "./git/hash";
@@ -43,12 +46,24 @@ import { loadRefs } from "./git/refStore";
 import { resolveRevision } from "./git/revisions";
 import { countStashFiles, listStashes } from "./git/stash";
 import { listTags } from "./git/tags";
+import {
+  CommitReader,
+  aheadBehind as computeAheadBehind,
+  MAX_WALK,
+  type ReachableResult,
+  reachableFrom,
+  walkCommits as runWalk,
+} from "./git/walk";
 import { type ScannerOptions, WorktreeScanner } from "./git/worktree";
 import type {
+  AheadBehind,
+  BranchRow,
+  CommitDetails,
   DiffResult,
   DiffSource,
   FileDiff,
   HiddenEntry,
+  Oid,
   PathExplanation,
   ReflogEntry,
   RefSnapshot,
@@ -59,6 +74,8 @@ import type {
   ResolvedRevision,
   StashInfo,
   TagInfo,
+  WalkPage,
+  WalkRequest,
 } from "./types";
 import { CancelledError, pLimit, throwIfAborted } from "./util/concurrency";
 
@@ -158,8 +175,14 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   private operationState: RepoOperation | null = null;
   /** T10.2: `.jj/` beside `.git/` (a colocated jujutsu repository). */
   private jj = false;
-  /** T10.2: a commit-graph file or chain exists (T10.5 will read it). */
+  /** T10.2: a commit-graph file or chain exists; T10.5's `CommitReader` decides whether it is used. */
   private hasCommitGraph = false;
+  /** T10.5: parents + commit time, from the commit-graph when there is a usable one. */
+  private reader: CommitReader | null = null;
+  /** T10.5: oid → ref/tag/stash labels for the history badges; rebuilt when refs move. */
+  private refsIndex: Promise<Map<Oid, string[]>> | null = null;
+  /** T10.5: "reachable from any ref", cached per refs snapshot (`markReachable`). */
+  private reachable: { key: string; result: ReachableResult } | null = null;
   /** method name → token of the newest call (one in-flight per method, T10.1). */
   private readonly singleFlight = new Map<string, symbol>();
   private readonly statsLimit: <T>(fn: () => Promise<T>) => Promise<T>;
@@ -313,6 +336,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     this.fs.invalidatePath("/.git");
     this.refs = await this.withRootCheck(() => loadRefs(this.db, this.cfg));
     this.engine.updateRefs(this.refs);
+    this.dropHistoryCaches();
     await this.refreshOperation();
     this.progress({ phase: "refs", durationMs: performance.now() - t0 });
     return this.buildInfo();
@@ -421,6 +445,12 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     return this.single("reflog", async () => {
       const out = await readReflog(this.fs, expr, { limit });
       for (const w of out.warnings) RepoSession.emitWarning(this.sink, w);
+      // T10.5: one batched reachability walk fills every `reachable`, which is what marks the
+      // commit a `git reset` orphaned (Design §14.5: the `unreachable` badge).
+      if (out.entries.length > 0) {
+        const set = await this.reachableSet();
+        for (const e of out.entries) e.reachable = set.oids.has(e.newOid);
+      }
       return out.entries;
     });
   }
@@ -445,6 +475,200 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       RepoSession.emitWarning(this.sink, w);
     }
     return op;
+  }
+
+  // ---- history, lanes, branches (T10.5) --------------------------------------------------------
+
+  /**
+   * The commit reader, built once per session. A usable commit-graph makes the walk read one static
+   * file instead of inflating every commit object (atlas tab 20); anything wrong with the file is a
+   * `COMMIT_GRAPH_STALE` warning and an object-read fallback, never an error.
+   */
+  private async commitReader(): Promise<CommitReader> {
+    if (this.reader) return this.reader;
+    const load = await this.withRootCheck(() => CommitGraph.load(this.fs));
+    for (const w of load.warnings) {
+      if (!this.repoWarnings.some((x) => x.code === w.code)) this.repoWarnings.push(w);
+      RepoSession.emitWarning(this.sink, w);
+    }
+    this.reader = new CommitReader(this.db, load.graph);
+    return this.reader;
+  }
+
+  /** Everything cached off the refs snapshot; dropped whenever refs or objects may have moved. */
+  private dropHistoryCaches(): void {
+    this.reader = null;
+    this.refsIndex = null;
+    this.reachable = null;
+  }
+
+  /**
+   * oid → the labels the history rows wear, in badge order: `HEAD`, then branch and remote names in
+   * RefStore's order, then tags, then stash selectors (Design §14.5).
+   */
+  private refsByCommit(): Promise<Map<Oid, string[]>> {
+    this.refsIndex ??= (async () => {
+      const map = new Map<Oid, string[]>();
+      const add = (oid: Oid | null | undefined, label: string) => {
+        if (!oid) return;
+        const list = map.get(oid) ?? [];
+        if (!list.includes(label)) list.push(label);
+        map.set(oid, list);
+      };
+      add(this.refs.headOid, "HEAD");
+      for (const r of this.refs.refs) if (!r.synthetic) add(r.oid, r.name);
+      for (const t of await listTags(this.db)) add(t.targetOid, t.name);
+      for (const s of await listStashes(this.fs, this.db)) add(s.oid, s.expr);
+      return map;
+    })().catch((e) => {
+      this.refsIndex = null;
+      throw e;
+    });
+    return this.refsIndex;
+  }
+
+  /**
+   * The commits `walkCommits` starts from: the request's expressions, then — for `all` — every ref
+   * in the repository followed by HEAD, which is the order `git log --all` seeds its walk in
+   * (`for_each_ref` is ref-name sorted, and `handle_refs(head_ref)` comes after it). The order only
+   * decides ties between commits of the same date, but a fixture built with a fixed
+   * `GIT_COMMITTER_DATE` is nothing but ties.
+   */
+  private async walkSeeds(req: WalkRequest): Promise<Oid[]> {
+    const seeds: Oid[] = [];
+    const add = (oid: Oid | null | undefined) => {
+      if (oid && !seeds.includes(oid)) seeds.push(oid);
+    };
+    for (const expr of req.from) add((await resolveRevision(this.db, this.refs, expr)).oid);
+    if (req.all === true) {
+      const named: { fullName: string; oid: Oid }[] = [];
+      for (const r of this.refs.refs) if (!r.synthetic) named.push(r);
+      for (const t of await listTags(this.db))
+        named.push({ fullName: t.fullName, oid: t.targetOid });
+      for (const s of await listStashes(this.fs, this.db)) {
+        named.push({ fullName: `refs/stash@{${s.index}}`, oid: s.oid });
+      }
+      named.sort((a, b) => (a.fullName < b.fullName ? -1 : a.fullName > b.fullName ? 1 : 0));
+      for (const r of named) add(r.oid);
+      add(this.refs.headOid);
+    }
+    if (seeds.length === 0) add(this.refs.headOid); // an unborn branch simply has no history
+    return seeds;
+  }
+
+  async walkCommits(req: WalkRequest): Promise<WalkPage> {
+    this.assertOpen();
+    return this.single("walkCommits", async () => {
+      const t0 = performance.now();
+      const reader = await this.commitReader();
+      const seeds = await this.walkSeeds(req);
+      const refsByCommit = await this.refsByCommit();
+      const out = await runWalk({ db: this.db, reader, refsByCommit }, req, seeds);
+      for (const w of out.warnings) RepoSession.emitWarning(this.sink, w);
+      this.progress({
+        phase: "history",
+        done: out.page.commits.length,
+        durationMs: performance.now() - t0,
+      });
+      return out.page;
+    });
+  }
+
+  /** Shared by `commitStats`, `commitDetails` and the history rows' `+n −m`. */
+  private async statsDeps() {
+    return {
+      db: this.db,
+      reader: await this.commitReader(),
+      limit: this.statsLimit,
+      ...(this.cfg.diff.renames !== undefined ? { renames: this.cfg.diff.renames } : {}),
+      ...(this.cfg.diff.renameLimit !== undefined
+        ? { renameLimit: this.cfg.diff.renameLimit }
+        : {}),
+    };
+  }
+
+  async commitDetails(oid: Oid): Promise<CommitDetails> {
+    this.assertOpen();
+    return this.single("commitDetails", async () =>
+      commitDetails(
+        { ...(await this.statsDeps()), refsByCommit: await this.refsByCommit() },
+        (await resolveRevision(this.db, this.refs, oid)).oid ?? oid,
+      ),
+    );
+  }
+
+  async commitStats(oids: Oid[]): Promise<Record<Oid, CommitDetails["stats"]>> {
+    this.assertOpen();
+    return this.single("commitStats", async () => commitStats(await this.statsDeps(), oids));
+  }
+
+  async aheadBehind(a: string, b: string): Promise<AheadBehind> {
+    this.assertOpen();
+    return this.single("aheadBehind", async () => {
+      const left = await resolveRevision(this.db, this.refs, a);
+      const right = await resolveRevision(this.db, this.refs, b);
+      if (left.oid === null || right.oid === null)
+        throw new EngineError("REV_NOT_FOUND", `Cannot compare "${a}" with "${b}".`, {
+          hint: "Both sides must be commits.",
+        });
+      return computeAheadBehind(this.db, await this.commitReader(), left.oid, right.oid);
+    });
+  }
+
+  async branchOverview(): Promise<BranchRow[]> {
+    this.assertOpen();
+    return this.single("branchOverview", async () =>
+      branchOverview(
+        { db: this.db, reader: await this.commitReader(), cfg: this.cfg, refs: this.refs },
+        await listTags(this.db),
+      ),
+    );
+  }
+
+  async branchCells(
+    fullNames: string[],
+  ): Promise<Record<string, Pick<BranchRow, "vsUpstream" | "vsDefault" | "merged">>> {
+    this.assertOpen();
+    return this.single("branchCells", async () =>
+      branchCells(
+        { db: this.db, reader: await this.commitReader(), cfg: this.cfg, refs: this.refs },
+        fullNames,
+      ),
+    );
+  }
+
+  async markReachable(oids: Oid[]): Promise<Record<Oid, boolean>> {
+    this.assertOpen();
+    return this.single("markReachable", async () => {
+      const set = await this.reachableSet();
+      const out: Record<Oid, boolean> = {};
+      for (const oid of oids) out[oid] = set.oids.has(oid);
+      return out;
+    });
+  }
+
+  /** One walk from every ref (`git rev-list --all`), cached until the refs snapshot changes. */
+  private async reachableSet(): Promise<ReachableResult> {
+    const key = `${this.refs.headOid ?? "-"}|${this.refs.refs.map((r) => `${r.fullName}=${r.oid}`).join(",")}`;
+    if (this.reachable?.key === key) return this.reachable.result;
+    const reader = await this.commitReader();
+    const tips: Oid[] = [];
+    const add = (oid: Oid | null | undefined) => {
+      if (oid && !tips.includes(oid)) tips.push(oid);
+    };
+    add(this.refs.headOid);
+    for (const r of this.refs.refs) if (!r.synthetic) add(r.oid);
+    for (const t of await listTags(this.db)) add(t.targetOid);
+    for (const s of await listStashes(this.fs, this.db)) add(s.oid);
+    const result = await reachableFrom(reader, tips, MAX_WALK);
+    if (result.capped) {
+      RepoSession.emitWarning(this.sink, {
+        code: "HISTORY_CAPPED",
+        message: `Reachability was computed from the newest ${MAX_WALK.toLocaleString("en")} commits only; older entries may be marked unreachable.`,
+      });
+    }
+    this.reachable = { key, result };
+    return result;
   }
 
   private async applyRenames(comp: DiffComputation, signal: AbortSignal): Promise<FileDiff[]> {
@@ -990,6 +1214,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     if (scope === "refs") {
       this.db.dropCaches(true);
       this.fs.invalidatePath("/.git");
+      this.dropHistoryCaches();
       return;
     }
     if (scope === "worktree") {
@@ -1009,6 +1234,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     this.db.dropCaches(true);
     this.ignore.invalidate();
     this.attrs.invalidate();
+    this.dropHistoryCaches();
   }
 
   async forceRehash(): Promise<void> {
@@ -1018,6 +1244,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     this.db.dropCaches(true);
     this.ignore.invalidate();
     this.attrs.invalidate();
+    this.dropHistoryCaches();
   }
 
   async close(): Promise<void> {
@@ -1033,6 +1260,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     this.current = null;
     this.db.dropCaches(true);
     this.fs.invalidateAll();
+    this.dropHistoryCaches();
   }
 
   get isClosed(): boolean {

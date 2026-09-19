@@ -277,3 +277,100 @@ export interface HiddenEntry {
   kind: "ignored-dir" | "ignored" | "skip-worktree" | "assume-unchanged" | "too-large" | "sparse";
   count?: number;
 }
+
+// ---- v2 history: commits, lanes, ahead/behind, branches (T10.5, docs/v2-contracts.md) ----------
+
+/** One lane-to-lane line in a row's band of the history graph (see `CommitSummary.edges`). */
+export interface CommitEdge {
+  /** Lane index at this row. */
+  from: number;
+  /** Lane index at the next row. */
+  to: number;
+  /**
+   * `straight` — the line stays in its lane (a pass-through, or the commit continuing into its
+   * first parent); `merge` — the line moves to a lane another commit already reserved for that
+   * parent, which is what two branches converging looks like; `fork` — a new lane opened for a
+   * second or later parent of a merge.
+   */
+  kind: "straight" | "merge" | "fork";
+}
+
+/**
+ * One row of the history list (`walkCommits`). `lane`, `laneCount` and `edges` are everything the
+ * SVG column needs: the node sits at `lane`, the row is `laneCount` lanes wide, and `edges`
+ * describes the band **below** the node, so drawing rows `i` and `i+1` never needs a third row.
+ *
+ * `refs` are display names — `HEAD` first when this is HEAD, then branch (`main`), remote
+ * (`origin/main`), tag (`v1.0.0`) and stash (`stash@{0}`) names, in that order; the UI matches them
+ * against `RepoInfo.refs` / `listTags()` to pick a badge palette (Design §14.5).
+ */
+export interface CommitSummary {
+  oid: Oid;
+  parents: Oid[];
+  author: Signature;
+  committer: Signature;
+  /** First line of the commit message. */
+  subject: string;
+  refs: string[];
+  lane?: number;
+  laneCount?: number;
+  edges?: CommitEdge[];
+}
+
+/** The CommitCard payload (Design §14.5): a summary plus everything the header shows. */
+export interface CommitDetails extends CommitSummary {
+  /** The message after the subject line, with the blank separator removed. */
+  body: string;
+  tree: Oid;
+  /** A `gpgsig` header is present (the signature itself is not verified in the browser). */
+  signed: boolean;
+  /** `refs/notes/commits` for this commit, or null. */
+  note: string | null;
+  /** Against the first parent (a root commit against the empty tree); null when unavailable. */
+  stats: { files: number; additions: number; deletions: number } | null;
+}
+
+/** One page of `walkCommits`. `from` holds revision expressions; `cursor` continues a walk. */
+export interface WalkRequest {
+  from: string[];
+  firstParent: boolean;
+  cursor?: string;
+  limit: number;
+  /** Repo-relative path; only commits that change it are returned (git's default simplification). */
+  path?: string;
+  /** Seed from every ref, tag and stash as well as `from` (git's `--all`). */
+  all?: boolean;
+}
+
+export interface WalkPage {
+  commits: CommitSummary[];
+  /** Opaque continuation token; null when the history is exhausted or capped. */
+  cursor: string | null;
+  /** The commit-graph file was parsed and used for this walk. */
+  graphAvailable: boolean;
+  /** The 50,000-commit cap was reached (`HISTORY_CAPPED`). */
+  capped: boolean;
+}
+
+/** `git rev-list --left-right --count a...b`: `ahead` is the left count, `behind` the right one. */
+export interface AheadBehind {
+  ahead: number;
+  behind: number;
+  mergeBase: Oid | null;
+  /** One side hit the 10,000-commit cap, so the counts are lower bounds. */
+  capped: boolean;
+}
+
+/** One row of the Branches table (Design §14.6). The three cells are null until `branchCells`. */
+export interface BranchRow {
+  ref: RepoRef;
+  /** `origin/main` from `branch.<name>.remote` + `.merge`; null when the branch tracks nothing. */
+  upstream: string | null;
+  lastCommit: { oid: Oid; subject: string; author: string; timestamp: number } | null;
+  vsUpstream: AheadBehind | null;
+  vsDefault: AheadBehind | null;
+  /** Fully contained in the default branch (`vsDefault.ahead === 0`). */
+  merged: boolean | null;
+  /** Tags pointing at the tip. */
+  tags: string[];
+}

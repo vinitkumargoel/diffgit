@@ -38,7 +38,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 1,
@@ -53,7 +53,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 2,
@@ -68,7 +68,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     }
   ],
   "operation": null,
@@ -218,5 +218,427 @@
         "warnings": []
       }
     }
-  ]
+  ],
+  "walks": {
+    "default": {
+      "commits": [
+        {
+          "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: base",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    },
+    "first-parent": {
+      "commits": [
+        {
+          "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: base",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    },
+    "all": {
+      "commits": [
+        {
+          "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: base",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        },
+        {
+          "oid": "632bf968606294738eb86e929596f787f04098e8",
+          "parents": [
+            "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+            "a079515024800fc009a37bbef87b3c01fda475f6",
+            "1fb4409438c7e18a489aaac417327333a2b70f1f"
+          ],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "On main: wip: with untracked",
+          "refs": ["stash@{0}"],
+          "lane": 0,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 1,
+              "kind": "fork"
+            },
+            {
+              "from": 0,
+              "to": 2,
+              "kind": "fork"
+            }
+          ]
+        },
+        {
+          "oid": "6622462c5b8d28bc3773f3716bb08042cab077ba",
+          "parents": [
+            "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+            "a079515024800fc009a37bbef87b3c01fda475f6"
+          ],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "On main: wip: tracked only",
+          "refs": ["stash@{1}"],
+          "lane": 3,
+          "laneCount": 4,
+          "edges": [
+            {
+              "from": 3,
+              "to": 0,
+              "kind": "merge"
+            },
+            {
+              "from": 3,
+              "to": 1,
+              "kind": "merge"
+            },
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "a079515024800fc009a37bbef87b3c01fda475f6",
+          "parents": ["2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "index on main: 2f85b4d c1: base",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 1,
+              "to": 0,
+              "kind": "merge"
+            },
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "1fb4409438c7e18a489aaac417327333a2b70f1f",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "untracked files on main: 2f85b4d c1: base",
+          "refs": [],
+          "lane": 2,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        }
+      ],
+      "graphAvailable": false
+    }
+  },
+  "commits": {
+    "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa": {
+      "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "parents": [],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c1: base",
+      "refs": ["HEAD", "main"],
+      "body": "",
+      "tree": "855b361a49656ad8cce32b0100426f2deadb3f6d",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 2,
+        "additions": 12,
+        "deletions": 0
+      }
+    },
+    "632bf968606294738eb86e929596f787f04098e8": {
+      "oid": "632bf968606294738eb86e929596f787f04098e8",
+      "parents": [
+        "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+        "a079515024800fc009a37bbef87b3c01fda475f6",
+        "1fb4409438c7e18a489aaac417327333a2b70f1f"
+      ],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "On main: wip: with untracked",
+      "refs": ["stash@{0}"],
+      "body": "",
+      "tree": "e6150b66673341c9d1b763fcd1bae735fa0f7126",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    "6622462c5b8d28bc3773f3716bb08042cab077ba": {
+      "oid": "6622462c5b8d28bc3773f3716bb08042cab077ba",
+      "parents": [
+        "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+        "a079515024800fc009a37bbef87b3c01fda475f6"
+      ],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "On main: wip: tracked only",
+      "refs": ["stash@{1}"],
+      "body": "",
+      "tree": "0f51c42d4ee82bc1555682b2f76be970cbafdb9f",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    "a079515024800fc009a37bbef87b3c01fda475f6": {
+      "oid": "a079515024800fc009a37bbef87b3c01fda475f6",
+      "parents": ["2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "index on main: 2f85b4d c1: base",
+      "refs": [],
+      "body": "",
+      "tree": "855b361a49656ad8cce32b0100426f2deadb3f6d",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 0,
+        "additions": 0,
+        "deletions": 0
+      }
+    },
+    "1fb4409438c7e18a489aaac417327333a2b70f1f": {
+      "oid": "1fb4409438c7e18a489aaac417327333a2b70f1f",
+      "parents": [],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "untracked files on main: 2f85b4d c1: base",
+      "refs": [],
+      "body": "",
+      "tree": "41cfc35cabb443566b84fe247732a160f9632027",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 0
+      }
+    }
+  },
+  "commitStats": {
+    "a079515024800fc009a37bbef87b3c01fda475f6": {
+      "files": 0,
+      "additions": 0,
+      "deletions": 0
+    },
+    "1fb4409438c7e18a489aaac417327333a2b70f1f": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
+    "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa": {
+      "files": 2,
+      "additions": 12,
+      "deletions": 0
+    },
+    "632bf968606294738eb86e929596f787f04098e8": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "6622462c5b8d28bc3773f3716bb08042cab077ba": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    }
+  },
+  "branches": [
+    {
+      "ref": {
+        "name": "main",
+        "fullName": "refs/heads/main",
+        "kind": "local",
+        "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+        "isDefault": true,
+        "isCheckedOut": true
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+        "subject": "c1: base",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": null,
+      "merged": true,
+      "tags": []
+    }
+  ],
+  "aheadBehind": {},
+  "reachable": {
+    "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa": true,
+    "632bf968606294738eb86e929596f787f04098e8": true,
+    "6622462c5b8d28bc3773f3716bb08042cab077ba": true,
+    "a079515024800fc009a37bbef87b3c01fda475f6": true,
+    "1fb4409438c7e18a489aaac417327333a2b70f1f": true
+  }
 }

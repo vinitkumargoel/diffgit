@@ -15,7 +15,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 1,
@@ -30,7 +30,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 2,
@@ -45,7 +45,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 3,
@@ -60,7 +60,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     },
     {
       "index": 4,
@@ -75,7 +75,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     }
   ],
   "operation": {
@@ -241,5 +241,348 @@
   ],
   "explanations": {},
   "revisions": {},
-  "ranges": []
+  "ranges": [],
+  "walks": {
+    "default": {
+      "commits": [
+        {
+          "oid": "95ec07d57af52aec6119ee26472419a17689b490",
+          "parents": ["51752472fde780630d63e468ef1a1653e3bb4fc4"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: main edits the same line",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "51752472fde780630d63e468ef1a1653e3bb4fc4",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: base",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    },
+    "first-parent": {
+      "commits": [
+        {
+          "oid": "95ec07d57af52aec6119ee26472419a17689b490",
+          "parents": ["51752472fde780630d63e468ef1a1653e3bb4fc4"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: main edits the same line",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "51752472fde780630d63e468ef1a1653e3bb4fc4",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: base",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    },
+    "all": {
+      "commits": [
+        {
+          "oid": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
+          "parents": ["51752472fde780630d63e468ef1a1653e3bb4fc4"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t1: the commit that gets cherry-picked",
+          "refs": ["topic"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "95ec07d57af52aec6119ee26472419a17689b490",
+          "parents": ["51752472fde780630d63e468ef1a1653e3bb4fc4"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: main edits the same line",
+          "refs": ["HEAD", "main"],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 0,
+              "kind": "merge"
+            }
+          ]
+        },
+        {
+          "oid": "51752472fde780630d63e468ef1a1653e3bb4fc4",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: base",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    }
+  },
+  "commits": {
+    "95ec07d57af52aec6119ee26472419a17689b490": {
+      "oid": "95ec07d57af52aec6119ee26472419a17689b490",
+      "parents": ["51752472fde780630d63e468ef1a1653e3bb4fc4"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c2: main edits the same line",
+      "refs": ["HEAD", "main"],
+      "body": "",
+      "tree": "48dbef77f25f10afb4d4b302d1bd9e6813fadba5",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    "51752472fde780630d63e468ef1a1653e3bb4fc4": {
+      "oid": "51752472fde780630d63e468ef1a1653e3bb4fc4",
+      "parents": [],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c1: base",
+      "refs": [],
+      "body": "",
+      "tree": "1bb5e139b855714dda1cffede86692a6691941a2",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 2,
+        "additions": 7,
+        "deletions": 0
+      }
+    },
+    "77be65c35b440f0da7050c6b67f1fe1380d5676d": {
+      "oid": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
+      "parents": ["51752472fde780630d63e468ef1a1653e3bb4fc4"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "t1: the commit that gets cherry-picked",
+      "refs": ["topic"],
+      "body": "",
+      "tree": "0b5c147a5df007553b780f2e1bc897f9031e24be",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    }
+  },
+  "commitStats": {
+    "51752472fde780630d63e468ef1a1653e3bb4fc4": {
+      "files": 2,
+      "additions": 7,
+      "deletions": 0
+    },
+    "95ec07d57af52aec6119ee26472419a17689b490": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "77be65c35b440f0da7050c6b67f1fe1380d5676d": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    }
+  },
+  "branches": [
+    {
+      "ref": {
+        "name": "main",
+        "fullName": "refs/heads/main",
+        "kind": "local",
+        "oid": "95ec07d57af52aec6119ee26472419a17689b490",
+        "isDefault": true,
+        "isCheckedOut": true
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "95ec07d57af52aec6119ee26472419a17689b490",
+        "subject": "c2: main edits the same line",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": null,
+      "merged": true,
+      "tags": []
+    },
+    {
+      "ref": {
+        "name": "topic",
+        "fullName": "refs/heads/topic",
+        "kind": "local",
+        "oid": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
+        "isDefault": false,
+        "isCheckedOut": false
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
+        "subject": "t1: the commit that gets cherry-picked",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": {
+        "ahead": 1,
+        "behind": 1,
+        "mergeBase": "51752472fde780630d63e468ef1a1653e3bb4fc4",
+        "capped": false
+      },
+      "merged": false,
+      "tags": []
+    }
+  ],
+  "aheadBehind": {},
+  "reachable": {
+    "95ec07d57af52aec6119ee26472419a17689b490": true,
+    "51752472fde780630d63e468ef1a1653e3bb4fc4": true,
+    "77be65c35b440f0da7050c6b67f1fe1380d5676d": true
+  }
 }

@@ -3,8 +3,8 @@
  * `cache` object per session, memoised flattened trees, stale-pack retry.
  *
  * Allowed isomorphic-git calls: resolveRef, listBranches, listTags, readCommit, readTree, readBlob,
- * readTag, expandOid, findMergeBase (and walk(TREE) / listRemotes if ever needed). Nothing here may
- * write.
+ * readTag, readNote, expandOid, findMergeBase (and walk(TREE) / listRemotes if ever needed).
+ * Nothing here may write.
  */
 import git from "isomorphic-git";
 import { EngineError, errorCode } from "../errors";
@@ -13,11 +13,24 @@ import type { Oid, RepoWarning } from "../types";
 
 export type FlatTree = Record<string, { oid: Oid; mode: number }>;
 
+/** A git identity line as isomorphic-git reports it: `timestamp` is epoch **seconds**. */
+export interface RawSignature {
+  name: string;
+  email: string;
+  timestamp: number;
+  timezoneOffset: number;
+}
+
 export interface CommitInfo {
   oid: Oid;
   tree: Oid;
   parents: Oid[];
   message: string;
+  /** T10.5: the identity lines and the signature header, for `CommitSummary`/`CommitDetails`. */
+  author: RawSignature;
+  committer: RawSignature;
+  /** The `gpgsig` header, when the commit is signed. */
+  gpgsig?: string;
 }
 
 export interface MergeBaseResult {
@@ -214,12 +227,35 @@ export class ObjectDb {
   async readCommit(oid: Oid): Promise<CommitInfo> {
     return this.withStalePackRetry(async () => {
       const r = await git.readCommit({ fs: this.fs, dir: DIR, oid, cache: this.cache });
-      return {
+      const out: CommitInfo = {
         oid: r.oid,
         tree: r.commit.tree,
         parents: r.commit.parent,
         message: r.commit.message,
+        author: r.commit.author,
+        committer: r.commit.committer,
       };
+      if (r.commit.gpgsig !== undefined) out.gpgsig = r.commit.gpgsig;
+      return out;
+    });
+  }
+
+  /**
+   * The note `refs/notes/commits` attaches to `oid`, or null when there is none (T10.5). git's
+   * notes trees are fanned out (`ab/cdef…`), which is why this goes through isomorphic-git rather
+   * than a flat tree lookup.
+   */
+  async readNote(oid: Oid, ref = "refs/notes/commits"): Promise<string | null> {
+    return this.withStalePackRetry(async () => {
+      try {
+        const bytes = await git.readNote({ fs: this.fs, dir: DIR, ref, oid, cache: this.cache });
+        return new TextDecoder().decode(bytes);
+      } catch (e) {
+        const code = errorCode(e);
+        // No notes ref at all, or no note for this commit: both are "there is no note".
+        if (code === "NotFoundError" || code === "ENOENT") return null;
+        throw e;
+      }
     });
   }
 
