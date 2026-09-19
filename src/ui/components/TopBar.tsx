@@ -41,6 +41,38 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
   const stashes = useStore((s) => s.stashes);
   // T11.15 / Design §14.6: snapshot mode cannot refresh itself, so the Live dot is not drawn.
   const snapshotMode = useStore((s) => s.snapshotMode);
+  const patchOnly = useStore((s) => s.patchOnly);
+
+  // T11.14 / Design §14.6: a patch file has no refs, no working tree and nothing to refresh, so
+  // row 1 keeps only what still means something — the ModeSwitch (with three modes disabled), the
+  // help, the palette and the theme. What is open is named by the StatsRow's `Patch · <name>` tag,
+  // in place of the pickers.
+  if (patchOnly) {
+    return (
+      <header className="shrink-0 border-b border-line text-[13px] leading-5 text-ink">
+        <div className="flex min-h-11 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface-raised px-3 py-1">
+          <span className="flex items-center gap-1.5 text-sm font-semibold">
+            <Logo size={20} className="rounded-[5px]" />
+            diffgit
+          </span>
+          <ModeSwitch />
+          <span className="flex-1" />
+          <button
+            type="button"
+            className="btn btn-icon"
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
+            onClick={() => onHelp?.()}
+          >
+            <CircleHelp size={16} aria-hidden />
+          </button>
+          <PaletteButton />
+          <ThemeToggle />
+        </div>
+        <StatsRow />
+      </header>
+    );
+  }
 
   if (!repo || !diffSource) return null;
 

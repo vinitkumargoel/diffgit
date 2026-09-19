@@ -14,6 +14,15 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 - **T11.10 (snapshot fidelity)**: the review snapshot renders the unified patch, not the app's `DiffBody` — no Shiki colours and no split view. A second Vite entry that reuses the renderer needs a two-pass build (the page's bundle inlined into the app's), which the task text asked for but cannot express with `?raw`; decide whether the fidelity is worth that build shape.
 - **Engine (T10.10 / T11.11)**: `RepoSummary` carries `vsUpstream` but not the upstream's *name*, so a dashboard card prints `4 ↑ 0 ↓` with a title instead of the atlas's `4 ↑ 0 ↓ main`. Adding `RepoSummary.upstream: string | null` (the same `upstreamOf(headBranch)` the counts already come from) would let the card name it.
 - **Engine (T3.x)**: `RepoWarning` carries `message` + optional `detail`; the UI shows its own copy and appends `detail`. If the engine wants to steer the banner text, add `RepoWarning.userMessage?: string` to `src/engine/types.ts` — the UI would prefer it over the registry copy.
+- **T11.14 (deferred, belongs to the Home/dashboard owner)**: the task file's `Check against working
+  tree` (with a repository open, compare each patch row's `oldOid` with the current blob and report
+  whether the patch applies) and the Home hint "Install diffgit to skip the permission prompt on
+  every visit" when ≥ 2 recents exist and the app is not installed. Both need the RepoCard grid
+  T11.11 owns; the plumbing they need is in place (`patchSession.text`, `useInstallPrompt()`).
+- **T11.14 (Design §14.6 vs §14.1)**: §14.6 asks for an `Install` button in TopBar row 1, §14.1 ends
+  with "Nothing else is added to the bars" and the phase-11 anti-clutter rule forbids a row-1 button
+  not named in §14.1. Built in the palette and Home's CTA row instead; the owner should settle which
+  of the two sections wins and amend Design.md.
 - **Engine (T3.4, found by T10.12's `lfs` fixture)**: `GitAttributes.isBinary` returns true for `a.get("text") === false`, but git's `diff_filespec_is_binary` reads the **`diff`** attribute only — `-text` governs eol conversion, not binariness. Evidence: a file marked `*.psd filter=lfs diff=lfs merge=lfs -text` is reported `2\t2\tassets/hero.psd` by `git diff --numstat`, while the engine answers `null` (binary). The `lfs` fixture uses the `binary` macro instead so the existing numstat parity sweep stays honest; dropping the `text` clause from `isBinary` is a one-line change that belongs to whoever owns T3.4's classification.
 
 ---
@@ -28,6 +37,72 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 - **Owner step:** verify on Firefox and Safari (a real folder through the gate's button; check the counter, the tag, the missing Live dot and that a big `node_modules` folder is refused rather than freezing the tab). Safari 18+ is the one to watch — WebKit's relative paths for deep trees are the atlas's third risk.
 
 ---
+## T11.14 — Install, file handler, patch-only mode (2026-09-19)
+
+- **Patch-only mode** (Design §14.6, atlas tab 17): a `.patch` / `.diff` **dropped anywhere**, chosen
+  from Home's CTA row or the palette's `Open a patch file…`, or handed over by the OS through the
+  manifest's `file_handlers` + `launchQueue`, is parsed by T10.12's `parsePatch` and rendered as the
+  ordinary FileCards with **no repository**: no handle, no File System Access call, no refresh, no
+  recompute. The store's `patchOnly` flag is finally written and one field joins it,
+  `patchSession: { name, text, loading, error }`; the parsed hunks are written straight into
+  `fileDiffs` under both whitespace keys, so `loadFileDiff` never calls an engine that has nothing
+  open. `secrets` is set to `[]` — every patch row is `["committed"]`, which is the diff the scanner
+  skips without being asked — so the export gate is clear rather than "not scanned yet".
+- **The chrome says what it is and nothing more.** Row 1 keeps the ModeSwitch (History, Branches and
+  Insights `disabled` with a `title` saying why; `setMode` refuses them, so the `1`–`4` keys and the
+  palette obey the same rule), help, palette and theme; the pickers, swap, worktree toggle and
+  refresh are gone, and the StatsRow carries one `Patch · <name>` tag in their place plus the single
+  `PATCH_ONLY` info banner. `Diff | Blame | History`, "Why is this file shown like this", the
+  per-file `.patch` row and the sidebar's hidden-files toggle all need a repository, so they are not
+  offered. `NOT_A_PATCH` is an inline `role="alert"` naming the engine's `line <n>: …` detail with a
+  Dismiss — never a crash and never a toast that scrolls away — and a file over 10 MiB is refused
+  with both sizes before it is read.
+- **Export keeps working**: one helper in the store answers `patchText()` with the opened bytes, so
+  `Save as .patch` writes back exactly the file that was opened (byte-for-byte, asserted) and the
+  review snapshot is built from the same lines, named after `patchBaseName(file)`.
+- **Installable**: `public/manifest.webmanifest` (standalone, `launch_handler: navigate-existing`,
+  `.patch`/`.diff` handlers, icons rendered from `favicon.svg`'s own geometry by the new
+  dependency-free `scripts/icons.ts`) and `public/sw.js`, stamped at build time by the
+  `diffgit-sw-precache` plugin. `beforeinstallprompt` is held and the Install affordance appears
+  **only while it is pending**, in Home's CTA row and the palette; an update is one toast with a
+  Reload, never a nag (the worker deliberately does not `skipWaiting()`).
+- **The CSP finding, and the deviation the task file predicted differently.** The task text and atlas
+  tab 17 say the site-wide header must become `connect-src 'self'`, and that a worker-scoped policy
+  "is not possible". Both halves are wrong in the browser: a service worker's policy comes from the
+  headers of **its own script**, and a Chromium run proved that under `connect-src 'none'` the
+  worker cannot even pass the page its own chunks (every lazy import fails: the app breaks). So the
+  **page keeps `connect-src 'none'`** — the privacy claim is untouched — and `public/_headers` gains
+  a `/sw.js` block that detaches that value (`! Content-Security-Policy`, Cloudflare's documented
+  form, because duplicate headers there are *joined*, not replaced) and repeats the policy with
+  `connect-src 'self'`. Verified in Chromium on `vite preview`: page `'none'`, worker `'self'`,
+  11 assets cached, an offline reload renders the app, **zero cross-origin requests**. If that header
+  ever fails to arrive, the worker's install probe fails and it **unregisters itself** — also
+  verified — so the worst case is no offline support, never a broken app. `check-dist.sh` asserts
+  both blocks and the precache list against `dist/`; `check-prod.sh` asserts the served `/sw.js`
+  policy, which only the real host can answer.
+- **Not built, reported instead**: Design §14.6's `Install` **button in TopBar row 1**. §14.1 ends
+  with "Nothing else is added to the bars" and the phase-11 anti-clutter rule says a task that wants
+  a new row-1 button not named there must stop and report — so Install lives in the palette and in
+  Home's existing CTA row. The task file's `Check against working tree` (comparing a patch's `oldOid`
+  against the open repository) and its "Install diffgit to skip the permission prompt" hint on Home
+  are also **not** built: both belong to a Home screen and a dashboard T11.11 owns, and neither is in
+  this brief's scope. Follow-ups below.
+- New: `src/ui/patch.ts`, `src/ui/pwa.ts`, `components/PatchDrop.tsx`, `components/patchOnly.test.tsx`
+  (15 cases: the `basic` and `showcase` recordings' own patch text round-tripped through
+  `parsePatch`, the contract's zero sizes and committed-only layers, the tag, the disabled modes, the
+  banner, `NOT_A_PATCH` with its line, the size cap, drop / input / palette / Home entries, the
+  install button's visibility, the export bytes, axe in both themes, and the manifest, worker and
+  header files), `scripts/icons.ts`, `public/manifest.webmanifest`, `public/sw.js`,
+  `public/icons/*.png`. Changed: `index.html`, `vite.config.ts`, `public/_headers`, `main.tsx`,
+  `App.tsx`, `store.ts`, `TopBar`, `StatsRow`, `ModeSwitch`, `Sidebar`, `FileCard`, `FileHeader`,
+  `CommandPalette`, `check-dist.sh`, `check-prod.sh`, `docs/privacy.md`, `docs/v2-contracts.md`
+  (`<!-- T11.14 -->`).
+- **Owner steps**: run the Lighthouse **PWA / installability** audit against the deployed site once
+  (this repository has no headless Lighthouse), and run `bash scripts/check-prod.sh <url>` after the
+  first deploy — it now fails if Cloudflare serves `/sw.js` with the page's `connect-src 'none'`,
+  which is the one thing that cannot be verified from here.
+- Checks: `bun run check` green — tsc, Biome (383 files), 815 engine tests, 708 UI tests (47 files),
+  guards; `bun run build && bash scripts/check-dist.sh` green (14 checks).
 
 ## T10.12 — Submodules, worktrees, LFS pointers, jj display, parsePatch (2026-09-19)
 

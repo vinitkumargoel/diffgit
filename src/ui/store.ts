@@ -13,11 +13,14 @@ import type {
   EngineMetrics,
   FileDiffPayload,
   FileStats,
+  HunkModel,
+  PatchResult,
   Progress,
   ProgressPhase,
   ProgressSink,
   StatsBatch,
 } from "../engine/api";
+import { languageFor } from "../engine/diff/language";
 import {
   defaultDiffSource,
   isWorktreeSource,
@@ -26,6 +29,7 @@ import {
 } from "../engine/diffSource";
 import type { WarningCode } from "../engine/errors";
 import { isFileSnapshot } from "../engine/fs/fileSnapshot";
+import { EMPTY_TREE_OID } from "../engine/git/hash";
 import type {
   BisectState,
   BlamePayload,
@@ -100,6 +104,7 @@ import {
 } from "./history";
 import { EMPTY_RESULT, INSIGHTS_LIMIT, sinceMsFor } from "./insights";
 import { Lru } from "./lru";
+import { MAX_PATCH_BYTES, patchBaseName, tooLargeMessage } from "./patch";
 import { clearDerived, derivedKey, getDerived, setDerived } from "./persistence/derived";
 import { revisionOfRef } from "./refGroups";
 import { nextWiden, PICKAXE_COMMITS, SEARCH_HIT_LIMIT, type SearchScope } from "./search";
@@ -605,6 +610,30 @@ export const INITIAL_PREFLIGHT: PreflightState = {
 };
 
 /**
+ * T11.14: the open `.patch` / `.diff` file (Design §14.6, atlas tab 17). `patchOnly` above stays
+ * the flag every surface branches on; this is what that session is made of. There is no repository
+ * behind it: no handle, no refresh, no File System Access API — the text arrived through a drop, a
+ * file input or the manifest's file handler, and `parsePatch` turned it into ordinary diff rows.
+ */
+export interface PatchSessionState {
+  /** The file's name, for the StatsRow's `Patch · <name>` tag. */
+  name: string;
+  /** The text exactly as it was opened; the Export menu re-emits these bytes. */
+  text: string;
+  /** A file is being read or parsed. */
+  loading: boolean;
+  /** `NOT_A_PATCH` (with its `line <n>:` detail) or a size refusal, printed inline where it came from. */
+  error: UiError | null;
+}
+
+export const INITIAL_PATCH_SESSION: PatchSessionState = {
+  name: "",
+  text: "",
+  loading: false,
+  error: null,
+};
+
+/**
  * T11.13: one `bisectStep(state)` for the marks the strip currently holds, then the answer.
  *
  * Module-level rather than a closure helper so the whole slice stays one contiguous block. It is
@@ -833,6 +862,8 @@ export interface StoreState {
   snapshotReadAt: number | null;
   /** A `.patch` / `.diff` file is open, not a repository (T11.14). */
   patchOnly: boolean;
+  /** What that patch file is: its name, its text, and why it could not be opened (T11.14). */
+  patchSession: PatchSessionState;
   /** Tags for the picker's `Tags` group; null = not listed yet (T11.2, lazy on first open). */
   tags: TagInfo[] | null;
   /** Stashes for the picker's `Stashes` group; null = not listed yet (T11.2). */
@@ -1101,6 +1132,23 @@ export interface StoreState {
   loadSummaries(repos: DashboardRepo[], opts?: { force?: boolean }): Promise<void>;
   /** Stops the sweep and clears the spinners it left behind. Idempotent. */
   cancelSummaries(): void;
+
+  // ---- Patch-only mode (T11.14, Design §14.6, atlas tab 17) ----
+  /**
+   * Reads a dropped / picked / OS-handed `.patch` or `.diff` file and opens it. Refuses anything
+   * over `MAX_PATCH_BYTES` with a message naming both sizes; everything else is handed to
+   * `openPatchText`, so a drop, the file input and `launchQueue` share one path.
+   */
+  openPatchFile(file: File): Promise<void>;
+  /**
+   * `parsePatch(text)` → a patch-only session: the repo screen with the parsed FileCards, the
+   * `PATCH_ONLY` banner and no repository. Closes whatever was open first, so a patch never
+   * inherits a repository's refs, warnings or refresh. `NOT_A_PATCH` lands in `patchSession.error`
+   * — with its `line <n>: …` detail — and leaves the current screen exactly as it was.
+   */
+  openPatchText(text: string, name: string): Promise<void>;
+  /** Clears `patchSession.error` (the inline message's Dismiss). */
+  dismissPatchError(): void;
 }
 
 let toastSeq = 0;
@@ -1438,6 +1486,23 @@ export const useStore = create<StoreState>()((set, get) => {
    * a commit has turned the source into a range — a list that truncated itself at the row you just
    * clicked would be unusable.
    */
+  /**
+   * The bytes the Export menu works from. In a patch-only session (T11.14) there is no repository
+   * to render, and the honest answer is the file the user opened: `Save as .patch` writes back what
+   * it read, byte for byte, and the review snapshot is built from those same lines.
+   */
+  async function renderPatch(generation: number, ids: string[] | null): Promise<string> {
+    const s = get();
+    if (s.patchOnly) return s.patchSession.text;
+    return client().patchText(generation, ids);
+  }
+
+  /** What an export names itself after: the repository, or the patch file that stands in for it. */
+  function exportName(s: StoreState): string {
+    if (s.patchOnly) return patchBaseName(s.patchSession.name);
+    return s.repo?.name ?? "repository";
+  }
+
   function walkTip(): string {
     const src = get().diffSource;
     if (!src) return "HEAD";
@@ -1492,6 +1557,7 @@ export const useStore = create<StoreState>()((set, get) => {
     snapshotMode: false,
     snapshotReadAt: null,
     patchOnly: false,
+    patchSession: INITIAL_PATCH_SESSION,
     tags: null,
     stashes: null,
     branches: INITIAL_BRANCHES,
@@ -1678,6 +1744,7 @@ export const useStore = create<StoreState>()((set, get) => {
         snapshotMode: false,
         snapshotReadAt: null,
         patchOnly: false,
+        patchSession: INITIAL_PATCH_SESSION,
         tags: null,
         stashes: null,
         branches: INITIAL_BRANCHES,
@@ -2201,7 +2268,11 @@ export const useStore = create<StoreState>()((set, get) => {
     },
 
     setMode(mode) {
-      if (get().mode === mode) return;
+      const s = get();
+      // T11.14: History, Branches and Insights all walk a repository; a patch file has none, so
+      // the keys and the palette rows are as inert as the disabled ModeSwitch buttons.
+      if (s.patchOnly && mode !== "files") return;
+      if (s.mode === mode) return;
       set({ mode, palette: false });
     },
 
@@ -2989,12 +3060,12 @@ export const useStore = create<StoreState>()((set, get) => {
       });
       void (async () => {
         try {
-          const patch = await client().patchText(generation, ids);
+          const patch = await renderPatch(generation, ids);
           const cur = get();
           if (cur.diff?.generation !== generation || cur.export.generation !== generation) return;
           const files = ids === null ? cur.diff.files : selectVisibleFiles(cur);
           const snapshot = snapshotFor({
-            repo: cur.repo?.name ?? "repository",
+            repo: exportName(cur),
             label: cur.diffSource ? labelOf(cur.diffSource) : "",
             at: Date.now(),
             patch,
@@ -3027,7 +3098,7 @@ export const useStore = create<StoreState>()((set, get) => {
         set({ export: { ...s.export, open: true, pending: req } });
         return;
       }
-      const repo = s.repo?.name ?? "repository";
+      const repo = exportName(s);
       const label = s.diffSource ? labelOf(s.diffSource) : "";
       const at = Date.now();
       const scopeIds = s.filter.trim() === "" ? null : selectVisibleFiles(s).map((f) => f.id);
@@ -3044,7 +3115,7 @@ export const useStore = create<StoreState>()((set, get) => {
           (s.export.ids as string[]).join("\u0000") === (ids as string[]).join("\u0000"));
       /** The prepared bytes when they cover exactly this request, a fresh render otherwise. */
       const patchFor = async (): Promise<string> =>
-        prepared ? s.export.patch : await client().patchText(generation, ids);
+        prepared ? s.export.patch : await renderPatch(generation, ids);
       const tell = (ok: boolean, note: string) =>
         get().addToast(
           ok ? { level: "info", message: note } : { level: "warning", message: COPY_FAILED },
@@ -3220,8 +3291,145 @@ export const useStore = create<StoreState>()((set, get) => {
         },
       });
     },
+    // ---- Patch-only mode (T11.14, Design §14.6, atlas tab 17) ----
+
+    async openPatchFile(file) {
+      if (file.size > MAX_PATCH_BYTES) {
+        set({
+          patchSession: {
+            ...get().patchSession,
+            loading: false,
+            error: { code: "TOO_LARGE", message: tooLargeMessage(file.name, file.size) },
+          },
+        });
+        return;
+      }
+      set({ patchSession: { ...get().patchSession, loading: true, error: null } });
+      let text: string;
+      try {
+        text = await file.text();
+      } catch (e) {
+        const err = toUiError(e);
+        set({ patchSession: { ...get().patchSession, loading: false, error: err } });
+        return;
+      }
+      await get().openPatchText(text, file.name);
+    },
+
+    async openPatchText(text, name) {
+      set({ patchSession: { ...get().patchSession, loading: true, error: null } });
+      let parsed: PatchResult;
+      try {
+        parsed = await client().parsePatch(text);
+      } catch (e) {
+        const err = toUiError(e);
+        ignoreStale(e);
+        // A superseded parse is not an error the user asked about; anything else is printed inline
+        // where the file was offered, with the engine's `line <n>: …` detail (T10.12).
+        if (err.code === "STALE" || err.code === "CANCELLED") return;
+        set({ patchSession: { ...get().patchSession, loading: false, error: err } });
+        return;
+      }
+      // A patch never inherits a repository: close first, then build the session from the answer.
+      await get().closeRepo();
+      const now = Date.now();
+      const diff: DiffResult = {
+        source: patchSourceOf(name),
+        mergeBase: null,
+        files: parsed.files,
+        totals: parsed.stats,
+        computedAt: now,
+        durationMs: 0,
+        generation: PATCH_GENERATION,
+        warnings: parsed.warnings,
+      };
+      // The hunks came with the answer, so every card is already loaded: `loadFileDiff` finds a
+      // ready entry and never calls an engine that has no repository open. Both whitespace keys are
+      // filled — a patch carries what it carries, and `-w` cannot be recomputed from it.
+      const fileDiffs = new Lru<string, FileDiffEntry>(200);
+      for (const f of parsed.files) {
+        const entry: FileDiffEntry = { status: "ready", data: payloadOfPatchRow(f, parsed.hunks) };
+        fileDiffs.set(cacheKey(f.id, false), entry);
+        fileDiffs.set(cacheKey(f.id, true), entry);
+      }
+      set({
+        screen: "repo",
+        patchOnly: true,
+        patchSession: { name, text, loading: false, error: null },
+        diff,
+        fileDiffs,
+        warnings: parsed.warnings,
+        // Every patch row is `["committed"]` (T10.12), which is exactly the diff the scanner skips
+        // without being asked: `[]` is the real answer, and the export gate is clear because of it.
+        secrets: [],
+        stats: {},
+        statsLastAt: null,
+        mode: "files",
+        activeFileId: parsed.files[0]?.id ?? null,
+      });
+    },
+
+    dismissPatchError() {
+      set({ patchSession: { ...get().patchSession, error: null } });
+    },
   };
 });
+
+/**
+ * The `DiffSource` of a patch-only session. Both sides are the file's own name, so the sidebar's
+ * committed group reads `Committed on <name>` and the viewed keys are the patch's; the two oids are
+ * the empty tree because a patch names no objects and nothing in this mode resolves them (there is
+ * no repository to resolve them against).
+ */
+function patchSourceOf(name: string): DiffSource {
+  return {
+    kind: "range",
+    from: name,
+    to: name,
+    fromRef: name,
+    toRef: name,
+    fromOid: null,
+    toOid: EMPTY_TREE_OID,
+    threeDot: false,
+    includeWorktree: false,
+  };
+}
+
+/** Patch rows belong to no repository generation; one constant keeps `STALE` checks honest. */
+const PATCH_GENERATION = 0;
+
+/**
+ * One parsed row as the `FileDiffPayload` the card expects. The sides' full text is not in a patch,
+ * so `oldText`/`newText` stay null — the card renders the hunks and simply offers no context
+ * expansion — and the sizes are the 0 the contract fixes (`<!-- T10.12 -->`).
+ */
+function payloadOfPatchRow(file: FileDiff, hunks: Record<string, HunkModel>): FileDiffPayload {
+  const path = file.newPath ?? file.oldPath ?? file.id;
+  return {
+    id: file.id,
+    generation: PATCH_GENERATION,
+    classification: {
+      binary: file.binary,
+      image: file.image,
+      tooLarge: false,
+      huge: false,
+      typechange: file.status === "typechange",
+      submodule: false,
+      generated: file.generated === true,
+      whitespaceOnly: false,
+      oldSize: file.oldSize,
+      newSize: file.newSize,
+      changedLines: file.stats ? file.stats.additions + file.stats.deletions : null,
+    },
+    hunks: hunks[file.id] ?? null,
+    oldText: null,
+    newText: null,
+    language: languageFor(path),
+    stats: file.stats ?? { additions: 0, deletions: 0 },
+    oldMode: file.oldMode,
+    newMode: file.newMode,
+  };
+}
 
 /**
  * The instant the period chips count back from (T11.12): the newest commit date the store already

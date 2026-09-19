@@ -1,9 +1,10 @@
-import { LoaderCircle, TriangleAlert } from "lucide-react";
+import { LoaderCircle, FileDiff as PatchGlyph, TriangleAlert } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
 import { useShallow } from "zustand/react/shallow";
 import type { FileDiff, FileStatus } from "../../engine/types";
 import { useNow } from "../hooks/useNow";
 import { openRepoOnce } from "../openRepo";
+import { patchTagLabel } from "../patch";
 import { requestScrollTo } from "../scrollBus";
 import {
   breakdownOf,
@@ -152,6 +153,9 @@ export function StatsRow() {
   // T11.2: printed only for a range — a branch pair is already spelled out by the two pickers, and
   // Design §14 rule 1 keeps the bars looking like v1 until something unusual is being compared.
   const rangeLabel = useStore((s) => (s.diffSource?.kind === "range" ? selectSourceLabel(s) : ""));
+  // T11.14 / Design §14.6: in a patch-only session the pickers are gone from row 1, so this tag is
+  // what names the thing on screen — one `--attention` tag, like snapshot mode's, never a banner.
+  const patchName = useStore((s) => (s.patchOnly ? s.patchSession.name : ""));
 
   const allFiles: readonly FileDiff[] = diff?.files ?? [];
   const filtering = filter.trim() !== "";
@@ -244,6 +248,16 @@ export function StatsRow() {
           : `${files.length === 1 ? "file" : "files"} changed`}
       </span>
       {totalsNode}
+      {patchName !== "" && (
+        <span
+          data-testid="patch-tag"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-[4px] border border-attention/40 px-1.5 text-[11.5px] text-attention"
+          title="A patch file is open; there is no repository behind these changes"
+        >
+          <PatchGlyph size={12} aria-hidden />
+          {patchTagLabel(patchName)}
+        </span>
+      )}
       {rangeLabel !== "" && (
         <span
           data-testid="compare-label"

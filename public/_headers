@@ -4,3 +4,15 @@
   Referrer-Policy: no-referrer
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Cross-Origin-Opener-Policy: same-origin
+
+# T11.14: the service worker gets its own policy. A worker's CSP comes from the headers of *its own*
+# script response, and `connect-src 'none'` blocks every fetch it makes — including the pass-through
+# of the page's own chunks — so with the `/*` policy the worker cannot work at all (verified in
+# Chromium). `connect-src 'self'` here changes nothing for the page, which keeps `'none'`: this
+# policy applies only inside sw.js, which never touches an origin other than this one
+# (`scripts/check-dist.sh` greps it). `!` detaches the `/*` value; without the detach the two
+# policies would both apply and the stricter one would win.
+/sw.js
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+  Cache-Control: no-cache

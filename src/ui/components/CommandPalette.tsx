@@ -6,7 +6,9 @@ import type { FileDiff, SearchHit } from "../../engine/types";
 import { formatBytes } from "../format";
 import { shortOid } from "../history";
 import { openRepoOnce, pickAndOpenRepo } from "../openRepo";
+import { CLOSE_PATCH_LABEL } from "../patch";
 import { clearDerived, type DerivedSize, derivedSize } from "../persistence/derived";
+import { INSTALL_LABEL, promptInstall, useInstallPrompt } from "../pwa";
 import { requestScrollTo } from "../scrollBus";
 import {
   ADVERTISED_PREFIXES,
@@ -28,6 +30,7 @@ import {
 import { selectPreflightPair, selectVisibleFiles, useStore } from "../store";
 import { filePathOf } from "../treeModel";
 import { MODES } from "./ModeSwitch";
+import { openPatchPicker } from "./PatchDrop";
 
 /** How many "Go to file" rows are handed to cmdk; it scores and orders what it gets. */
 export const MAX_FILE_ROWS = 50;
@@ -99,6 +102,9 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
   const bisecting = useStore((s) => s.bisect !== null);
   const runPreflight = useStore((s) => s.runPreflight);
   const preflightPair = useStore(useShallow(selectPreflightPair));
+  // T11.14: both rows are conditional, so the palette never advertises what cannot happen.
+  const patchOnly = useStore((s) => s.patchOnly);
+  const installable = useInstallPrompt();
   const ref = useRef<HTMLDialogElement>(null);
   const returnTo = useRef<HTMLElement | null>(null);
   const [search, setSearch] = useState("");
@@ -257,6 +263,35 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
         hint: "e",
         run: () => setExportOpen(true),
       },
+      // T11.14 (Design §14.6): the three patch-only / install rows. The Install row exists only
+      // while `beforeinstallprompt` is pending, and "Close the patch" only inside a patch session —
+      // the palette is where both live, so neither becomes a button in the bars (§14.1).
+      {
+        id: "open-patch",
+        label: "Open a patch file…",
+        keywords: ["patch", "diff", "unified", "apply", "file", "drop"],
+        run: () => openPatchPicker(),
+      },
+      ...(patchOnly
+        ? [
+            {
+              id: "close-patch",
+              label: CLOSE_PATCH_LABEL,
+              keywords: ["patch", "back", "home"],
+              run: () => void useStore.getState().closeRepo(),
+            },
+          ]
+        : []),
+      ...(installable
+        ? [
+            {
+              id: "install",
+              label: `${INSTALL_LABEL}…`,
+              keywords: ["pwa", "app", "offline", "desktop", "window"],
+              run: () => void promptInstall(),
+            },
+          ]
+        : []),
       {
         id: "help",
         label: "Show keyboard shortcuts",
@@ -293,6 +328,8 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
     ];
     return list;
   }, [
+    patchOnly,
+    installable,
     prefs,
     cache,
     setMode,

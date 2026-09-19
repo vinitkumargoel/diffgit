@@ -1,0 +1,39 @@
+{
+  "name": "diffgit — see what a branch changes",
+  "short_name": "diffgit",
+  "description": "Read-only git diff viewer that runs entirely in your browser: nothing is uploaded, nothing is written.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "theme_color": "#0d1117",
+  "background_color": "#0d1117",
+  "categories": ["developertools", "productivity", "utilities"],
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "launch_handler": { "client_mode": "navigate-existing" },
+  "file_handlers": [
+    {
+      "action": "/",
+      "name": "Patch file",
+      "accept": {
+        "text/x-patch": [".patch", ".diff"],
+        "text/x-diff": [".patch", ".diff"],
+        "text/plain": [".patch", ".diff"]
+      },
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }],
+      "launch_type": "single-client"
+    }
+  ]
+}

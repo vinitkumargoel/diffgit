@@ -10,6 +10,11 @@
     />
     <meta name="application-name" content="diffgit" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- T11.14: installable as an app (Design §14.6). The manifest names the `.patch` / `.diff`
+         file handler; the service worker is registered from src/ui/pwa.ts, production builds only. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <meta name="theme-color" content="#0d1117" />
     <title>diffgit</title>
   </head>
   <body>

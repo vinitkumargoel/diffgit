@@ -225,7 +225,11 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
   const setPref = useStore((s) => s.setPref);
   /** T11.9: findings of this file (Design §14.3); empty until the scan answers. */
   const secrets = useStore((s) => selectFileSecrets(s, id));
-  const committed = hasCommittedSide(file);
+  // T11.14: blame and file history walk commits, and a patch file has none — so its cards are
+  // Diff-only and the mini `Diff | Blame | History` control is not rendered at all (Design §14.1
+  // already renders it only for a file with a committed side).
+  const patchOnly = useStore((s) => s.patchOnly);
+  const committed = hasCommittedSide(file) && !patchOnly;
   const cardMode: CardMode = useStore((s) => (committed ? (s.cardModes[id] ?? "diff") : "diff"));
   const setCardMode = useStore((s) => s.setCardMode);
 
