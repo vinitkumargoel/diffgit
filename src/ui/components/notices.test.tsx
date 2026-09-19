@@ -13,7 +13,7 @@ import { CardErrorBoundary, FileCard } from "./FileCard";
 import { ImageDiff, mimeFor } from "./ImageDiff";
 import { LargeFileGate } from "./LargeFileGate";
 import { Notice } from "./Notice";
-import { SubmoduleNotice } from "./SubmoduleNotice";
+import { SubmoduleCard } from "./SubmoduleCard";
 import { TypechangeNotice } from "./TypechangeNotice";
 
 if (!Element.prototype.scrollIntoView) Element.prototype.scrollIntoView = () => {};
@@ -127,7 +127,10 @@ describe("notice snapshots (light + dark)", () => {
         onLoad={() => {}}
       />,
     );
-    snapshotBothThemes("SubmoduleNotice", <SubmoduleNotice oldOid="339e41b0" newOid="a1b2c3d4" />);
+    snapshotBothThemes(
+      "SubmoduleCard",
+      <SubmoduleCard path="vendor/shared-ui" oldOid="339e41b0" newOid="a1b2c3d4" />,
+    );
     snapshotBothThemes(
       "TypechangeNotice",
       <TypechangeNotice oldMode={0o120000} newMode={0o100644} />,
@@ -175,11 +178,8 @@ describe("LargeFileGate", () => {
   });
 });
 
-describe("SubmoduleNotice / TypechangeNotice", () => {
-  it("render the §7.7 copy", () => {
-    render(<SubmoduleNotice oldOid="339e41b0ffff" newOid={null} />);
-    expect(screen.getByText("Subproject commit 339e41b → (none)")).toBeTruthy();
-    cleanup();
+describe("TypechangeNotice", () => {
+  it("renders the §7.7 copy", () => {
     render(<TypechangeNotice oldMode={0o120000} newMode={0o100644} />);
     expect(screen.getByRole("note").textContent).toBe("Symlink to regular file");
   });

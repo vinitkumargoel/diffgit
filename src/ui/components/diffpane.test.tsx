@@ -191,7 +191,8 @@ describe("FileCard body states", () => {
     const sub = byId("vendor/sub");
     seed({ fileDiffs: entries([["vendor/sub|x", ready(sub)]]) });
     render(card(sub));
-    expect(screen.getByText("Subproject commit 339e41b → a1b2c3d")).toBeTruthy();
+    // T11.16: the gitlink body is the submodule card, whose first row is the recorded pointer.
+    expect(screen.getByText("339e41b → a1b2c3d")).toBeTruthy();
   });
 
   it("generated cards start collapsed and open on click", () => {

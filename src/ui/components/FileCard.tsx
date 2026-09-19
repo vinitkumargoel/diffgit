@@ -4,6 +4,7 @@ import type { FileDiffPayload } from "../../engine/api";
 import type { FileDiff } from "../../engine/types";
 import { hasCollapsedContext } from "../diff/toHunkData";
 import { describeError, errorReport, type UiError } from "../errors";
+import { LFS_TAG, lfsSubtitle } from "../lfs";
 import { redactFindings } from "../secrets";
 import {
   type CardMode,
@@ -13,6 +14,7 @@ import {
   selectFileSecrets,
   useStore,
 } from "../store";
+import { pointerSubtitle, SUBMODULE_TAG } from "../submodules";
 import { filePathOf } from "../treeModel";
 import { BinaryNotice, RawTextView, rawSideFor, useRawText } from "./BinaryNotice";
 import { BlameBody } from "./BlameBody";
@@ -23,10 +25,12 @@ import { FileHeader } from "./FileHeader";
 import { FileHistoryBody } from "./FileHistoryBody";
 import { ImageDiff } from "./ImageDiff";
 import { renderInline } from "./InlineText";
+import { KindTag } from "./KindTag";
 import { LargeFileGate } from "./LargeFileGate";
+import { LfsCard } from "./LfsCard";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { Notice } from "./Notice";
-import { SubmoduleNotice } from "./SubmoduleNotice";
+import { SubmoduleCard } from "./SubmoduleCard";
 import { TypechangeNotice } from "./TypechangeNotice";
 
 export interface FileCardProps {
@@ -283,8 +287,18 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
       );
     }
     if (c.submodule) {
-      return wrap(<SubmoduleNotice oldOid={p.submodule?.oldOid} newOid={p.submodule?.newOid} />);
+      return wrap(
+        <SubmoduleCard
+          path={filePathOf(file)}
+          oldOid={p.submodule?.oldOid}
+          newOid={p.submodule?.newOid}
+        />,
+      );
     }
+    // T11.16 / atlas tab 19: before the image and binary gates, because a real `git lfs track`
+    // line marks the file binary and the pointer would otherwise disappear behind that notice —
+    // the same order `describeFile` sniffs it in.
+    if (c.lfs) return wrap(<LfsCard file={file} payload={p} />);
     if (c.image) return wrap(<ImageDiff key={p.generation} file={file} payload={p} />);
     if (c.binary) return wrap(<BinaryNotice file={file} payload={p} />);
     if (ignoreWhitespace && c.whitespaceOnly) {
@@ -377,7 +391,21 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
         onToggleCollapse={() => setCollapsed(id, !collapsed)}
         onToggleViewed={() => toggleViewed(id)}
         onExpandAll={canExpandAll ? () => setExpandAllToken((t) => t + 1) : undefined}
-        tag={conflict ? <ConflictTag kind={conflictKind} /> : undefined}
+        tag={
+          conflict ? (
+            <ConflictTag kind={conflictKind} />
+          ) : ready?.classification.lfs ? (
+            <KindTag label={LFS_TAG} title={lfsSubtitle(file.status)} />
+          ) : ready?.classification.submodule ? (
+            <KindTag
+              label={SUBMODULE_TAG}
+              title={pointerSubtitle(
+                ready.submodule?.oldOid ?? null,
+                ready.submodule?.newOid ?? null,
+              )}
+            />
+          ) : undefined
+        }
         {...(committed ? { mode: cardMode, onMode: (m: CardMode) => setCardMode(id, m) } : {})}
       />
       {body}

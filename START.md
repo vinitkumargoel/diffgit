@@ -29,6 +29,16 @@ Nothing else is required to start a task.
 
 - **Before T0.2**: run `bunx wrangler login` once (interactive).
 - **Before T1.6 and T8.2**: pick three real local repos (one small, one with `node_modules`, one after `git gc`) and write their paths into `docs/engine-notes.md` under "S2 repos".
+- **After v2 (T11.16)**, four steps nothing in this repository can do for you:
+  1. Run the Lighthouse **PWA / installability** audit against the deployed site once (no headless
+     Lighthouse here).
+  2. Verify **snapshot mode** on Firefox and Safari with a real folder: the counter, the
+     `Snapshot mode · read at …` tag, the missing Live dot, and that a big `node_modules` folder is
+     refused instead of freezing the tab. Safari 18+ is the one to watch.
+  3. Run `bash scripts/check-prod.sh <url>` after the first v2 deploy — it fails if Cloudflare
+     serves `/sw.js` with the page's `connect-src 'none'`, which cannot be checked from here.
+  4. Smoke the v2 surfaces on three **real** repositories (history, blame, branches, insights,
+     search, export) and record the browser-side numbers `docs/perf.md` still lists as pending.
 
 ## 5. Run order
 
@@ -112,35 +122,36 @@ Keep this board updated (edit this file; one line per task):
 | T8.2 | blocked | agent / 2026-09-17 | deployed 76c5ce0 on pages.dev; owner: CNAMEs, §13 smoke on 3 repos, tag v1.0.0 |
 | T8.3 | done | agent / 2026-09-17 | V1–V10 + B1–B10 in docs/backlog.md |
 | T9.1 | done | agent / 2026-09-19 | sidebar groups; mockup docs/mockups/review-sidebar-groups.html |
-| T10.0 | todo | | |
-| T10.1 | todo | | |
-| T10.2 | todo | | |
-| T10.3 | todo | | |
-| T10.4 | todo | | |
-| T10.5 | todo | | |
-| T10.6 | todo | | |
-| T10.7 | todo | | |
-| T10.8 | todo | | |
-| T10.9 | todo | | |
-| T10.10 | todo | | |
-| T10.11 | todo | | |
-| T10.12 | todo | | |
-| T11.1 | todo | | |
-| T11.2 | todo | | |
-| T11.3 | todo | | |
-| T11.4 | todo | | |
-| T11.5 | todo | | |
-| T11.6 | todo | | |
-| T11.7 | todo | | |
-| T11.8 | todo | | |
-| T11.9 | todo | | |
-| T11.10 | todo | | |
-| T11.11 | todo | | |
-| T11.12 | todo | | |
-| T11.13 | todo | | |
-| T11.14 | todo | | |
-| T11.15 | todo | | |
-| T11.16 | todo | | |
+| T10.0 | done | agent / 2026-09-19 | 8589e88 — v2 fixtures + `fixture-expectations.sh` oracles |
+| T10.1 | done | agent / 2026-09-19 | 3059cfd — RangeSource, resolveRevision, tags, stashes |
+| T10.2 | done | agent / 2026-09-19 | 1d55c63 — reflog reader, operation detector |
+| T10.3 | done | agent / 2026-09-19 | 883811b — ConflictPayload from index stages 1/2/3 |
+| T10.4 | done | agent / 2026-09-19 | 98962bf — rule attribution, listHidden, index flags |
+| T10.5 | done | agent / 2026-09-19 | 59d121a — walker, commit-graph, lanes, ahead/behind, branches |
+| T10.5b | done | agent / 2026-09-19 | 60765cb — walker review fixes (brief 979c2da): ordering window, opaque cursor, laneOverflow, exact ahead/behind, cancellation |
+| T10.6 | done | agent / 2026-09-19 | 9c4500e — path history with rename follow, blame |
+| T10.7 | done | agent / 2026-09-19 | da11960 — secret scanner, 74 rules, allowlists |
+| T10.8 | done | agent / 2026-09-19 | 892cb44 — search: commits, worktree, pickaxe |
+| T10.9 | done | agent / 2026-09-19 | 9195a1b — insights, .mailmap, activity, hotspots |
+| T10.10 | done | agent / 2026-09-19 | a05838e — patchText (git apply parity), summarise() |
+| T10.11 | done | agent / 2026-09-19 | 09cdfb9 — bisectStep, rebasePreflight |
+| T10.12 | done | agent / 2026-09-19 | 3f5f4c1 — submodules, worktrees, LFS, jj, parsePatch |
+| T11.1 | done | ui-agent / 2026-09-19 | c2bc38c — store, prefs, derived cache, ModeSwitch, palette, help |
+| T11.2 | done | ui-agent / 2026-09-19 | 4153275 — compare anything, two-dot, `#compare=` hash |
+| T11.3 | done | ui-agent / 2026-09-19 | ccf3bef — operation banner, conflict card, reflog list |
+| T11.4 | done | ui-agent / 2026-09-19 | 92049dc — Hidden group, why-hidden popover, excludes setting |
+| T11.5 | done | ui-agent / 2026-09-19 | 9eaa4dd — history mode: list, lanes, details, ranges, stack, reflog |
+| T11.6 | done | ui-agent / 2026-09-19 | 70c5ad1 — blame and file history in the card |
+| T11.7 | done | ui-agent / 2026-09-19 | 09dcd30 — branches mode, ahead/behind, tags |
+| T11.8 | done | ui-agent / 2026-09-19 | 672c306 — search scopes in the palette |
+| T11.9 | done | ui-agent / 2026-09-19 | dd0c101 — secret banner, in-card markers, reveal |
+| T11.10 | done | ui-agent / 2026-09-19 | 4033d88 — export: patch, snapshot, secrets gate |
+| T11.11 | done | ui-agent / 2026-09-19 | 840d737 — home dashboard, summary cards |
+| T11.12 | done | ui-agent / 2026-09-19 | a94b7aa — insights mode |
+| T11.13 | done | ui-agent / 2026-09-19 | 812bd2f — bisect strip, rebase preflight panel |
+| T11.14 | done | ui-agent / 2026-09-19 | a9ff360 — PWA install, file handler, patch-only mode |
+| T11.15 | done | ui-agent / 2026-09-19 | f97ca30 — Firefox/Safari read-once snapshot mode |
+| T11.16 | done | ui-agent / 2026-09-19 | this commit, tip of `v2-ui` (a row cannot carry its own hash) — small wins (submodule card, worktrees, LFS, jj), docs, board, final pass |
 
 Statuses: `todo` → `in-progress` → `review` → `done` (or `blocked: <reason>`).
 

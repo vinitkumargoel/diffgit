@@ -141,6 +141,41 @@ At the 50,000-commit cap that extrapolates to ≈ 14 s, which is why the result 
 in `diffgit-derived` under `insights:<repoId>:<tipOid>:<period>` (T11.1) and why the walk reports
 `{ phase: "insights", done }` every 500 commits.
 
+## v2 re-measurement (T11.16, same machine, 2026-09-19, whole `bun run perf` run)
+
+The final pass re-ran every budget above on the complete v2 engine. Nothing regressed; the numbers
+below are that run, and they are what `bun run perf` prints today.
+
+| Metric | Budget | Measured |
+|---|---|---|
+| Open (`perf-5k`) | – | 14 ms (config 2 · layout 2 · refs 3 · index 5) |
+| Open → file list, cold (`perf-5k`, 50 changed of 5,000) | < 3 s | **121 ms** |
+| Recompute after one edit | < 500 ms | 28 ms (1 handle-cache eviction for 1 path) |
+| Stats for every changed file | < 4 s | 26 ms in 2 batches |
+| 3,000-changed-line hunk model | < 300 ms | 120 ms (payload 345 kB) |
+| `DiffResult` payload per file | ≤ 400 B | 376.5 B |
+| **History first page of 50** (`perf-log`, 2,000 commits) | < 100 ms | **10.2 ms** (open a further 100 ms) |
+| `--all` first page of 50 | < 100 ms | 7.4 ms |
+| `--all` second page of 50 (resumed from the token) | < 50 ms | 5.4 ms |
+| Full `--all` walk of `perf-log` (2,000 rows) | – | 189 ms |
+| Commit-graph speed-up on the `history` walk | – | 12 ms with it, 27 ms without — **2.3×** |
+| **Blame** `src/hot.txt` (60 lines, 3 revisions), cold session | < 200 ms | **20.2 ms** (1.9 ms warm, `-w`) |
+| Blame `src/indent.txt` / `src/renamed-to.txt` | < 200 ms | 1.5 / 2.8 ms |
+| `pathHistory --follow src/renamed-to.txt` | – | 2.0 ms |
+| **Insights** `history` (48 first-parent commits), cold | < 2 ms/commit | **25 ms** (0.52 ms/commit); 5 ms warm |
+| Insights `perf-log` (2,000 commits), cold | < 2 ms/commit | **511 ms** (0.26 ms/commit); 181 ms warm |
+| **Search** `commits` (`perf-log`, 2,000 scanned) | < 2,000 ms | **356 ms** |
+| Search `worktree` (`perf-log`) | < 3,000 ms | 1.2 ms |
+| Search `pickaxe` (`perf-log`, 200 commits) | < 5,000 ms | 65 ms |
+| Pack bytes held after the whole run | warn > 300 MB | 479 kB |
+
+The one number worth reading twice is `search commits` at 356 ms for 2,000 commits: it is the only
+scope that walks the whole range and then reads the body of every commit whose subject and author
+did not already match, which is why the UI debounces it (200 ms) and prints `scanned` under the
+results. Everything else on this list is under 200 ms, and the two that are not (`insights` on
+`perf-log`, the full walk) are cached — insights in `diffgit-derived` keyed by tip, the walk by the
+session's own walk state.
+
 ## Browser-side (Chromium, production build)
 
 | Metric | Budget | Status |

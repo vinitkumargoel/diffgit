@@ -9,6 +9,7 @@ import { HistoryView } from "./HistoryView";
 import { InsightsView } from "./InsightsView";
 import { TopBar } from "./TopBar";
 import { WarningBanners } from "./WarningBanners";
+import { WorktreesDialog } from "./WorktreesDialog";
 
 /**
  * Repo view shell (Design §6, §14.1): skip link, TopBar (T5.1), WarningBanners (T5.5), then the
@@ -54,6 +55,8 @@ export default function RepoScreen() {
       {mode === "insights" && <InsightsView />}
       <CommandPalette onHelp={() => setHelpOpen(true)} />
       <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+      {/* T11.16: `git worktree list` (atlas tab 19), opened from the palette or the repo name. */}
+      <WorktreesDialog />
     </main>
   );
 }

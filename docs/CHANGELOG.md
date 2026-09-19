@@ -23,7 +23,121 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
   with "Nothing else is added to the bars" and the phase-11 anti-clutter rule forbids a row-1 button
   not named in §14.1. Built in the palette and Home's CTA row instead; the owner should settle which
   of the two sections wins and amend Design.md.
+- **Engine (T11.16, atlas tab 19's risk row)**: `checkLayout` still refuses any folder whose `.git`
+  is a `gitdir:` file with `WORKTREE_GITDIR`, which is every submodule git has created since 1.7.8.
+  The atlas's mitigation is to *follow* that pointer when it resolves inside the picked folder
+  (`../.git/modules/x`) and refuse only when it escapes — the UI already computes exactly that
+  answer (`probeSubmodule`, with the engine's own `resolveGitdirLine`), so the change is one branch
+  in `checkLayout` plus a `SessionOptions.gitdir` for `FsaFs`. Until then the submodule card offers
+  `Open submodule as its own repository` only for a `.git` **directory** and explains the pointer
+  case in place, instead of sending the user to a "Linked worktree" error screen.
+- **Engine (T11.16)**: `FileClassification.lfs` carries **one** pointer (the new side wins), so the
+  LFS card reads the other side itself through `fileBytes` — cheap and correct (a pointer is at most
+  1 KiB and the card only reads a side that small), but it is one extra worker round trip per card.
+  `lfs?: { old, new }` on the classification would remove it; it is an engine-side shape change and
+  was out of a phase-11 task's scope.
+- **UI (T11.16)**: a file marked with git's `binary` **macro** expands to `-diff`, which
+  `GitAttributes.isGenerated` reads as `linguist-generated`, so such a row arrives behind the
+  "Generated file, click to expand" gate — including an LFS pointer. A canonical `git lfs track`
+  line (`diff=lfs … -text`) is unaffected. The fix belongs with the `isBinary`/`isGenerated`
+  follow-up below, not in the card.
 - **Engine (T3.4, found by T10.12's `lfs` fixture)**: `GitAttributes.isBinary` returns true for `a.get("text") === false`, but git's `diff_filespec_is_binary` reads the **`diff`** attribute only — `-text` governs eol conversion, not binariness. Evidence: a file marked `*.psd filter=lfs diff=lfs merge=lfs -text` is reported `2\t2\tassets/hero.psd` by `git diff --numstat`, while the engine answers `null` (binary). The `lfs` fixture uses the `binary` macro instead so the existing numstat parity sweep stays honest; dropping the `text` clause from `isBinary` is a one-line change that belongs to whoever owns T3.4's classification.
+
+---
+
+## T11.16 — Small wins, docs, board, final review pass (2026-09-19)
+
+- **The four small wins of atlas tab 19, all on methods T10.12 already ships — no engine change.**
+  (1) `SubmoduleNotice` → **`SubmoduleCard`**, in place in `FileCard`: the recorded pointer
+  (`a → b`, all v1 had), the checked-out commit with an `in sync` / `drifted` / `not checked out`
+  tag, the `.gitmodules` url, and `Open submodule as its own repository`. `dirty` is never rendered
+  — the contract records it as "not computed" and the card says so in one footnote.
+  (2) **`WorktreesDialog`**, `git worktree list` as far as a browser can see it: path, branch or
+  `detached`, `prunable`, `this folder` / `open it to view`. The two columns that are honest gaps
+  rather than facts carry their reason in a `title`.
+  (3) **`LfsCard`**, the file card body for a pointer: the object, the size it claims on both
+  sides, and `Not fetched. diffgit reads the pointer git stores and never contacts an LFS server.`
+  (4) **`jj colocated`**, one tag inside the existing repo-name element.
+  Plus git **notes** on `CommitCard`, which T11.5 already rendered and this task pinned with a test
+  (no fixture has a note, so the row is asserted by handing the recorded commit one).
+- **Nothing was added to TopBar row 1 or the StatsRow** (Design §14.1, the phase-11 anti-clutter
+  rule). `Worktrees` is a palette action, and the **repo name itself** became its second opener —
+  the same element, now a button, with the jj tag inside it exactly where §14 puts it. The T11.14
+  patch-only branch and the T11.15 snapshot tag both still work (`patchOnly.test.tsx`,
+  `snapshot.test.tsx` unchanged and green).
+- **Opening a submodule is honest about what the engine allows.** `openRepo.ts` gained
+  `probeSubmodule(path)` / `openSubmodule(path)`: they walk down to `<path>` inside the folder the
+  user already granted (no second prompt, `getDirectoryHandle` with no options — read mode) and
+  look at its `.git`. A **directory** is handed to `store.openRepo`; a `gitdir:` **file** is not,
+  because `checkLayout` refuses it with `WORKTREE_GITDIR` — the pointer is still resolved with the
+  engine's own `resolveGitdirLine`, so the card says whether the git directory is inside the picked
+  folder (where `checkedOut` came from) or outside it. Teaching `checkLayout` to follow a contained
+  gitdir is engine work T10.12 deliberately did not do; filed above.
+- **Order matters in `FileCard`**: the LFS branch sits **before** the image and binary gates, the
+  same order `describeFile` sniffs the pointer in — which is what makes an LFS row that
+  `.gitattributes` marks binary show the card instead of "Binary file not shown".
+- **Store**: `submodules` / `worktrees` (`null` = not listed, `[]` a real answer) and
+  `worktreesOpen`, with `loadSubmodules()` / `loadWorktrees()` / `setWorktreesOpen()` — both
+  listings once per repository, lazily, because a submodule set changes with a commit and not with
+  a refresh. Selector `selectSubmodule`. `closeRepo` resets all three.
+- **Recordings**: `bun run record` gained the `lfs` fixture (with a `main…feature` range in both dot
+  modes — `build_lfs` leaves HEAD on `main`, where nothing differs) and `jj`. `mockContents.ts`
+  serves the `lfs` fixture's pointer text verbatim and classifies it with the **engine's own**
+  `parseLfsPointerText`, so the mock's `FileClassification.lfs` comes from the same rule the engine
+  uses. Two consecutive `bun run record` runs are byte-identical.
+- **Docs.** README gained a *What it does* table, a fourth usage step, a rewritten *Supported
+  browsers* (Chromium for live mode, Firefox/Safari snapshot mode) and four limitation rows
+  (worktree listing, submodules, colocated jj, LFS — plus one saying every v2 surface is read-only).
+  `docs/privacy.md` gained the derived-cache row, an **Exports** section (blob download, never into
+  the repository, `showSaveFilePicker` impossible under D16, the snapshot's zero-network proof, the
+  secret gate) and a **Snapshot mode** section, beside the `/sw.js` `connect-src 'self'` block
+  T11.14 wrote. `docs/errors.md` gained a *Warnings that are deliberately not banners* table (the
+  five codes whose surface prints the fact instead) and three sharper "emitted by" cells;
+  `errors.docs.test.ts` stays green. `docs/perf.md` gained the whole-run v2 table. `START.md`:
+  every T10.x / T11.x row is `done` with its commit hash (T10.5b has its own row, as does
+  `tasks/README.md` now), and §4 lists the owner steps below. `docs/v2-contracts.md` gained
+  `<!-- T11.16 -->`.
+- **Unused-export sweep** of the v2 modules (`src/ui/*.ts`, `src/ui/export/*`, the v2 components):
+  three genuinely dead exports removed — `PRIVACY_LINE` (`BrowserGate.tsx`), `GATE_CONFIRMED`
+  (`export/exportModel.ts`) and this task's own `ERROR_LINE` (`worktrees.ts`); none was referenced
+  by a test, a doc or the contracts. Everything else the sweep flagged is either used inside its own
+  module or named in `docs/v2-contracts.md` as that module's vocabulary, and was left exported.
+  `HelpDialog` lost its `pending` / "when available" machinery: every key in `V2_SHORTCUTS` now has
+  a live handler (`1`–`4` and `g`/`x` in `RepoScreen`, `b`/`h` in `DiffPane`, `e` in `ExportMenu`,
+  `Shift+H` in `FilesView`), checked one by one.
+- **The informational `history.test.tsx` "< 100 ms" assertion is now log-only.** It measured
+  happy-dom on whatever machine ran the suite; what it asserts instead is the thing the budget
+  protects — all 50 rows render in one pass — and the number is printed with a `SLOW` note above
+  100 ms. `bun run perf` owns the real timing (10.2 ms for the engine's first page of 50 on
+  `perf-log`).
+- **New**: `src/ui/submodules.ts`, `src/ui/worktrees.ts`, `src/ui/lfs.ts`, `src/ui/jj.ts`,
+  `components/SubmoduleCard.tsx`, `components/WorktreesDialog.tsx`, `components/LfsCard.tsx`,
+  `components/KeyValue.tsx`, `components/KindTag.tsx`, `components/smallWins.test.tsx` (14 cases:
+  the three sync states, the three open verdicts, the recorded worktree list, prunable + detached,
+  both openers, the LFS card on a binary and on an added row, an ordinary file left alone, the
+  pointer-size guard, the jj tag present and absent, and axe in light and dark), plus
+  `src/test/recorded/{lfs,jj}.*`. **Deleted**: `components/SubmoduleNotice.tsx`.
+- **Gates, all from the `v2-ui` worktree.** `bun run check` exit 0 (tsc, Biome 412 files, 815
+  engine tests / 51 files, **822** UI tests / 55 files, guards). `bun run build` +
+  `bash scripts/check-dist.sh` exit 0 (14 checks); `dist/` deleted afterwards. `bun run perf`
+  exit 0 — every budget ok, numbers in `docs/perf.md`. `bun run e2e` exit 0 — 3 Chromium specs in
+  13.5 s (browsers were already installed; no `playwright install` was needed).
+- **Owner steps left for v2** (consolidated from every v2 entry; also in `START.md` §4):
+  1. Run the Lighthouse **PWA / installability** audit against the deployed site once — this
+     repository has no headless Lighthouse (T11.14).
+  2. **Verify snapshot mode on Firefox and Safari** with a real folder: the counter, the
+     `Snapshot mode · read at …` tag, the missing Live dot, and that a large `node_modules` folder
+     is refused rather than freezing the tab. Safari 18+ is the one to watch — WebKit's relative
+     paths for deep trees are atlas tab 18's third risk (T11.15).
+  3. Run `bash scripts/check-prod.sh <url>` after the first v2 deploy — it fails if Cloudflare
+     serves `/sw.js` with the page's `connect-src 'none'`, the one thing that cannot be checked
+     from here (T11.14).
+  4. **Real-repository smoke** on three repositories (the T8.2 set): history, blame, branches,
+     insights, search and export, plus the browser-side numbers `docs/perf.md` still lists as
+     pending (main-thread long tasks, idle CPU in polling mode, open → file list on a 5k-file repo)
+     and the `mtime` read-only proof (T7.4 / T8.2).
+  Still open from v1: T0.2's DNS (`diffgit.com` → `diffgit.pages.dev`), T6.0's observer spike page
+  in a real Chrome, and tagging `v1.0.0` after the §13 smoke.
 
 ---
 

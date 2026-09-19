@@ -136,6 +136,7 @@ Playwright is limited to the **three smoke specs in T7.1**. Every other behaviou
 | T10.3 | Conflict payload | M | T10.2 |
 | T10.4 | Why hidden: rule attribution, hidden listing | M | T10.3 |
 | T10.5 | Commit walker, commit-graph reader, lanes, ahead/behind, branch overview | L | T10.4 |
+| T10.5b | Walker review fixes (ordering window, opaque cursor, laneOverflow, exact ahead/behind, cancellation) | M | T10.5 |
 | T10.6 | Path history with rename follow, blame | L | T10.5 |
 | T10.7 | Secret scanner | M | T10.6 |
 | T10.8 | Search: commits, worktree, pickaxe | M | T10.7 |

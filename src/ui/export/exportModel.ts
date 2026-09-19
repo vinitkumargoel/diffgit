@@ -88,9 +88,6 @@ export function gateSummary(gate: { scanned: boolean; count: number; total: numb
   return `${n} possible ${gate.total === 1 ? "secret" : "secrets"} in this diff`;
 }
 
-/** Said once the user has confirmed: the next export of this diff goes straight through. */
-export const GATE_CONFIRMED = "Secret gate overridden for this comparison.";
-
 /**
  * Printed inside a snapshot that was written past the gate. The snapshot is a document that leaves
  * the machine, so the finding count travels with it instead of staying in the window that made it.

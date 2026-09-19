@@ -300,42 +300,76 @@ exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Sub
 </div>
 `;
 
-exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > SubmoduleNotice (dark) 1`] = `
-<div
-  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > SubmoduleCard (dark) 1`] = `
+<dl
+  class="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1.5 p-3 text-[12px] leading-5"
+  data-card="submodule"
 >
-  <b
-    class="font-medium text-ink"
+  <dt
+    class="text-muted"
+  >
+    Recorded
+  </dt>
+  <dd
+    class="min-w-0 text-ink"
   >
     <span
       class="font-mono"
     >
-      Subproject commit 
-      339e41b
-       → 
-      a1b2c3d
+      339e41b → a1b2c3d
     </span>
-  </b>
-</div>
+  </dd>
+  <dt
+    class="text-muted"
+  >
+    Inside
+  </dt>
+  <dd
+    class="min-w-0 text-ink"
+  >
+    <span
+      class="text-muted"
+    >
+      …
+    </span>
+  </dd>
+</dl>
 `;
 
-exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > SubmoduleNotice (light) 1`] = `
-<div
-  class="flex flex-col items-center justify-center gap-2.5 p-7 text-center text-[13px] leading-5 text-muted"
+exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > SubmoduleCard (light) 1`] = `
+<dl
+  class="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1.5 p-3 text-[12px] leading-5"
+  data-card="submodule"
 >
-  <b
-    class="font-medium text-ink"
+  <dt
+    class="text-muted"
+  >
+    Recorded
+  </dt>
+  <dd
+    class="min-w-0 text-ink"
   >
     <span
       class="font-mono"
     >
-      Subproject commit 
-      339e41b
-       → 
-      a1b2c3d
+      339e41b → a1b2c3d
     </span>
-  </b>
-</div>
+  </dd>
+  <dt
+    class="text-muted"
+  >
+    Inside
+  </dt>
+  <dd
+    class="min-w-0 text-ink"
+  >
+    <span
+      class="text-muted"
+    >
+      …
+    </span>
+  </dd>
+</dl>
 `;
 
 exports[`notice snapshots (light + dark) > Notice / Binary / LargeFileGate / Submodule / Typechange > TypechangeNotice (dark) 1`] = `

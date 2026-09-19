@@ -1,0 +1,579 @@
+{
+  "tags": [],
+  "stashes": [],
+  "reflog": [
+    {
+      "index": 0,
+      "expr": "HEAD@{0}",
+      "oldOid": "49305593a72361d7afddcc319168fc8ac66b0370",
+      "newOid": "52bbe710234999a0264cdd2eba3711befacd3163",
+      "action": "checkout",
+      "message": "checkout: moving from feature to main",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    },
+    {
+      "index": 1,
+      "expr": "HEAD@{1}",
+      "oldOid": "52bbe710234999a0264cdd2eba3711befacd3163",
+      "newOid": "49305593a72361d7afddcc319168fc8ac66b0370",
+      "action": "commit",
+      "message": "commit: f1: new hero revision, add table.dat",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    },
+    {
+      "index": 2,
+      "expr": "HEAD@{2}",
+      "oldOid": "52bbe710234999a0264cdd2eba3711befacd3163",
+      "newOid": "52bbe710234999a0264cdd2eba3711befacd3163",
+      "action": "checkout",
+      "message": "checkout: moving from main to feature",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    },
+    {
+      "index": 3,
+      "expr": "HEAD@{3}",
+      "oldOid": null,
+      "newOid": "52bbe710234999a0264cdd2eba3711befacd3163",
+      "action": "commit (initial)",
+      "message": "commit (initial): c1: hero.psd as an LFS pointer",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    }
+  ],
+  "operation": null,
+  "conflicts": {},
+  "hidden": [
+    {
+      "path": "expected",
+      "kind": "ignored-dir",
+      "count": 15
+    }
+  ],
+  "explanations": {},
+  "revisions": {},
+  "ranges": [
+    {
+      "source": {
+        "kind": "range",
+        "from": "main",
+        "to": "feature",
+        "fromRef": "main",
+        "toRef": "feature",
+        "fromOid": "52bbe710234999a0264cdd2eba3711befacd3163",
+        "toOid": "49305593a72361d7afddcc319168fc8ac66b0370",
+        "threeDot": true,
+        "includeWorktree": false
+      },
+      "result": {
+        "source": {
+          "kind": "range",
+          "from": "main",
+          "to": "feature",
+          "fromRef": "main",
+          "toRef": "feature",
+          "fromOid": "52bbe710234999a0264cdd2eba3711befacd3163",
+          "toOid": "49305593a72361d7afddcc319168fc8ac66b0370",
+          "threeDot": true,
+          "includeWorktree": false
+        },
+        "mergeBase": "52bbe710234999a0264cdd2eba3711befacd3163",
+        "files": [
+          {
+            "id": "assets/hero.psd",
+            "oldPath": "assets/hero.psd",
+            "newPath": "assets/hero.psd",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "67f178370b0e957a3ff620597a050646b2f1b1cd",
+            "newOid": "47335aa341155b463a3aef69f475552137a7cafc",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": true,
+            "image": false,
+            "oldSize": 133,
+            "newSize": 133,
+            "stats": null,
+            "tooLarge": false,
+            "generated": true
+          },
+          {
+            "id": "data/table.dat",
+            "oldPath": null,
+            "newPath": "data/table.dat",
+            "status": "added",
+            "layers": ["committed"],
+            "oldOid": null,
+            "newOid": "371e4bc58af2219db78a93b211daae7e9b1f6859",
+            "oldMode": null,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 0,
+            "newSize": 132,
+            "stats": {
+              "additions": 3,
+              "deletions": 0
+            },
+            "tooLarge": false
+          },
+          {
+            "id": "notes.txt",
+            "oldPath": "notes.txt",
+            "newPath": "notes.txt",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "dff8a0e3b46faa6c255365483fa137ede7ae57e0",
+            "newOid": "e5cb4c652b1953ac371f39bbd3f9779b7c766373",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 24,
+            "newSize": 24,
+            "stats": {
+              "additions": 1,
+              "deletions": 1
+            },
+            "tooLarge": false
+          }
+        ],
+        "totals": {
+          "files": 3,
+          "additions": 4,
+          "deletions": 1
+        },
+        "computedAt": 1704067200000,
+        "durationMs": 0,
+        "generation": 2,
+        "warnings": []
+      }
+    },
+    {
+      "source": {
+        "kind": "range",
+        "from": "main",
+        "to": "feature",
+        "fromRef": "main",
+        "toRef": "feature",
+        "fromOid": "52bbe710234999a0264cdd2eba3711befacd3163",
+        "toOid": "49305593a72361d7afddcc319168fc8ac66b0370",
+        "threeDot": false,
+        "includeWorktree": false
+      },
+      "result": {
+        "source": {
+          "kind": "range",
+          "from": "main",
+          "to": "feature",
+          "fromRef": "main",
+          "toRef": "feature",
+          "fromOid": "52bbe710234999a0264cdd2eba3711befacd3163",
+          "toOid": "49305593a72361d7afddcc319168fc8ac66b0370",
+          "threeDot": false,
+          "includeWorktree": false
+        },
+        "mergeBase": null,
+        "files": [
+          {
+            "id": "assets/hero.psd",
+            "oldPath": "assets/hero.psd",
+            "newPath": "assets/hero.psd",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "67f178370b0e957a3ff620597a050646b2f1b1cd",
+            "newOid": "47335aa341155b463a3aef69f475552137a7cafc",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": true,
+            "image": false,
+            "oldSize": 133,
+            "newSize": 133,
+            "stats": null,
+            "tooLarge": false,
+            "generated": true
+          },
+          {
+            "id": "data/table.dat",
+            "oldPath": null,
+            "newPath": "data/table.dat",
+            "status": "added",
+            "layers": ["committed"],
+            "oldOid": null,
+            "newOid": "371e4bc58af2219db78a93b211daae7e9b1f6859",
+            "oldMode": null,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 0,
+            "newSize": 132,
+            "stats": {
+              "additions": 3,
+              "deletions": 0
+            },
+            "tooLarge": false
+          },
+          {
+            "id": "notes.txt",
+            "oldPath": "notes.txt",
+            "newPath": "notes.txt",
+            "status": "modified",
+            "layers": ["committed"],
+            "oldOid": "dff8a0e3b46faa6c255365483fa137ede7ae57e0",
+            "newOid": "e5cb4c652b1953ac371f39bbd3f9779b7c766373",
+            "oldMode": 33188,
+            "newMode": 33188,
+            "binary": false,
+            "image": false,
+            "oldSize": 24,
+            "newSize": 24,
+            "stats": {
+              "additions": 1,
+              "deletions": 1
+            },
+            "tooLarge": false
+          }
+        ],
+        "totals": {
+          "files": 3,
+          "additions": 4,
+          "deletions": 1
+        },
+        "computedAt": 1704067200000,
+        "durationMs": 0,
+        "generation": 3,
+        "warnings": []
+      }
+    }
+  ],
+  "walks": {
+    "default": {
+      "commits": [
+        {
+          "oid": "52bbe710234999a0264cdd2eba3711befacd3163",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: hero.psd as an LFS pointer",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false,
+      "laneOverflow": false
+    },
+    "first-parent": {
+      "commits": [
+        {
+          "oid": "52bbe710234999a0264cdd2eba3711befacd3163",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: hero.psd as an LFS pointer",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false,
+      "laneOverflow": false
+    },
+    "all": {
+      "commits": [
+        {
+          "oid": "49305593a72361d7afddcc319168fc8ac66b0370",
+          "parents": ["52bbe710234999a0264cdd2eba3711befacd3163"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "f1: new hero revision, add table.dat",
+          "refs": ["feature"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "52bbe710234999a0264cdd2eba3711befacd3163",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: hero.psd as an LFS pointer",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false,
+      "laneOverflow": false
+    }
+  },
+  "commits": {
+    "52bbe710234999a0264cdd2eba3711befacd3163": {
+      "oid": "52bbe710234999a0264cdd2eba3711befacd3163",
+      "parents": [],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c1: hero.psd as an LFS pointer",
+      "refs": ["HEAD", "main"],
+      "body": "",
+      "tree": "def69117fa62d16582cf9f6f394772121be79110",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 3,
+        "additions": 7,
+        "deletions": 0
+      }
+    },
+    "49305593a72361d7afddcc319168fc8ac66b0370": {
+      "oid": "49305593a72361d7afddcc319168fc8ac66b0370",
+      "parents": ["52bbe710234999a0264cdd2eba3711befacd3163"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "f1: new hero revision, add table.dat",
+      "refs": ["feature"],
+      "body": "",
+      "tree": "1b8cba6e6f4609ad529c34408bb5bc350ae0fcff",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 3,
+        "additions": 6,
+        "deletions": 3
+      }
+    }
+  },
+  "commitStats": {
+    "49305593a72361d7afddcc319168fc8ac66b0370": {
+      "files": 3,
+      "additions": 6,
+      "deletions": 3
+    },
+    "52bbe710234999a0264cdd2eba3711befacd3163": {
+      "files": 3,
+      "additions": 7,
+      "deletions": 0
+    }
+  },
+  "branches": [
+    {
+      "ref": {
+        "name": "main",
+        "fullName": "refs/heads/main",
+        "kind": "local",
+        "oid": "52bbe710234999a0264cdd2eba3711befacd3163",
+        "isDefault": true,
+        "isCheckedOut": true
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "52bbe710234999a0264cdd2eba3711befacd3163",
+        "subject": "c1: hero.psd as an LFS pointer",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": null,
+      "merged": true,
+      "tags": []
+    },
+    {
+      "ref": {
+        "name": "feature",
+        "fullName": "refs/heads/feature",
+        "kind": "local",
+        "oid": "49305593a72361d7afddcc319168fc8ac66b0370",
+        "isDefault": false,
+        "isCheckedOut": false
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "49305593a72361d7afddcc319168fc8ac66b0370",
+        "subject": "f1: new hero revision, add table.dat",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": {
+        "ahead": 1,
+        "behind": 0,
+        "mergeBase": "52bbe710234999a0264cdd2eba3711befacd3163",
+        "capped": false
+      },
+      "merged": false,
+      "tags": []
+    }
+  ],
+  "aheadBehind": {},
+  "reachable": {
+    "52bbe710234999a0264cdd2eba3711befacd3163": true,
+    "49305593a72361d7afddcc319168fc8ac66b0370": true
+  },
+  "pathHistories": {},
+  "blames": {},
+  "secrets": [],
+  "searches": {},
+  "insights": {
+    "commits": 1,
+    "authors": [
+      {
+        "name": "test",
+        "commits": 1
+      }
+    ],
+    "hotspots": [
+      {
+        "path": "assets/hero.psd",
+        "commits": 1,
+        "size": 133,
+        "score": 7.055,
+        "manifest": false
+      },
+      {
+        "path": ".gitattributes",
+        "commits": 1,
+        "size": 51,
+        "score": 5.672,
+        "manifest": false
+      },
+      {
+        "path": "notes.txt",
+        "commits": 1,
+        "size": 24,
+        "score": 4.585,
+        "manifest": false
+      }
+    ],
+    "activity": [
+      {
+        "weekStart": 1703980800000,
+        "days": [0, 1, 0, 0, 0, 0, 0]
+      }
+    ],
+    "walked": 1,
+    "capped": false,
+    "bots": 0
+  },
+  "summary": {
+    "headBranch": "main",
+    "headDisplay": "main",
+    "counts": {
+      "staged": 0,
+      "unstaged": 0,
+      "untracked": 0,
+      "conflict": 0
+    },
+    "vsUpstream": null,
+    "lastCommit": {
+      "oid": "52bbe710234999a0264cdd2eba3711befacd3163",
+      "subject": "c1: hero.psd as an LFS pointer",
+      "timestamp": 1704067200000
+    },
+    "operation": null,
+    "indexMtimeMs": 0
+  },
+  "bisect": [],
+  "preflights": {},
+  "submodules": [],
+  "worktrees": [
+    {
+      "name": "lfs",
+      "path": null,
+      "head": "52bbe710234999a0264cdd2eba3711befacd3163",
+      "branch": "refs/heads/main",
+      "prunable": false,
+      "isThis": true
+    }
+  ]
+}

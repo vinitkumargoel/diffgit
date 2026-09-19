@@ -11,8 +11,22 @@ import type {
   HunkModel,
 } from "../../engine/api";
 import { languageFor } from "../../engine/diff/language";
+import { LFS_VERSION_LINE, parseLfsPointerText } from "../../engine/diff/lfs";
 
 import type { FileDiff } from "../../engine/types";
+
+/**
+ * T11.16: the `lfs` fixture's pointer text, verbatim (`scripts/make-fixtures.sh` `build_lfs`), so
+ * the mock's LFS card describes the same objects the recorded rows point at. `assets/hero.psd` is
+ * also marked `binary` in that fixture's `.gitattributes`, which is exactly the case
+ * `FileDiffPayload.oldText`/`newText` cannot carry — the card reads both sides through
+ * `fileBytes`, and these are the bytes it gets.
+ */
+const LFS_OID_A = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08";
+const LFS_OID_B = "4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393";
+const LFS_OID_C = "60303ae22b998861bce3b28f33eec1be758a213c86c93c076dbe9f558c11c752";
+const lfsPointer = (oid: string, size: number): string =>
+  `${LFS_VERSION_LINE}\noid sha256:${oid}\nsize ${size}\n`;
 
 function lines(prefix: string, from: number, to: number): string[] {
   const out: string[] = [];
@@ -122,6 +136,13 @@ export function mockTexts(file: FileDiff): [string | null, string | null] {
         "[app]\nname = diffgit\ndebug = false\n",
         "[app]\nname = diffgit\ndebug = false\naws_access_key_id = AKIAIOSFODNN7EXAMPLE\ngithub_token = ghp_0oP3xQz7LmT4vB9kY2wR6sN1dF8hJ5cA3eG0\nrelease_commit = 9f2c0a1b7d4e6c8a3b5d7f9e1c2a4b6d8e0f2a4c\nlegacy_token = ghp_1aB2cD3eF4gH5iJ6kL7mN8oP9qR0sT1uV2wX # diffgit:allow-secret\n",
       ];
+    // T11.16: the `lfs` fixture (`main…feature`): a pointer that moved, and one that was added.
+    case "assets/hero.psd":
+      return [lfsPointer(LFS_OID_A, 12_400_000), lfsPointer(LFS_OID_B, 12_900_000)];
+    case "data/table.dat":
+      return [null, lfsPointer(LFS_OID_C, 5_242_880)];
+    case "notes.txt":
+      return ["not a pointer\nversion 2\n", "not a pointer\nversion 3\n"];
     case "file.txt":
       return [
         "line1\nline2\nline3\n",
@@ -244,6 +265,9 @@ export function mockPayload(
       whitespaceOnly = (adds > 0 || dels > 0) && norm(oldText) === norm(newText);
     }
   }
+  // T10.12's sniff order: before the binary gate, both sides, the new one winning. The mock runs
+  // the engine's own parser on the same bytes `fileBytes` serves, so nothing here is hand-made.
+  const lfs = parseLfsPointerText(newText ?? "") ?? parseLfsPointerText(oldText ?? "");
   const classification: FileClassification = {
     binary: file.binary,
     image: file.image,
@@ -256,6 +280,7 @@ export function mockPayload(
     oldSize: file.oldSize,
     newSize: file.newSize,
     changedLines: stats ? stats.additions + stats.deletions : null,
+    ...(lfs !== null ? { lfs } : {}),
   };
   const payload: FileDiffPayload = {
     id: file.id,
