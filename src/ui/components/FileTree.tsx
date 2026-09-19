@@ -1,25 +1,8 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import {
-  CheckCheck,
-  ChevronDown,
-  ChevronRight,
-  Folder,
-  ListCollapse,
-  RotateCcw,
-} from "lucide-react";
-import {
-  type CSSProperties,
-  type KeyboardEvent as ReactKeyboardEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { sourceLabels } from "../../engine/diffSource";
-import type { FileDiff, HiddenEntry } from "../../engine/types";
-import { useShortcuts } from "../hooks/useShortcuts";
+import type { FileDiff } from "../../engine/types";
 import { requestScrollTo } from "../scrollBus";
 import {
   isViewed,
@@ -36,53 +19,20 @@ import {
   useStore,
 } from "../store";
 import {
-  dirSummary,
   type FileGroup,
   filePathOf,
   flattenTree,
   type LayerCodeInfo,
   layerCode,
-  type SidebarGroupId,
   type SidebarSectionId,
-  type TreeDir,
 } from "../treeModel";
 import { FileRow } from "./FileRow";
+import { FileTreeDirRow } from "./FileTreeDirRow";
+import { FileTreeGroupHeader, FileTreeHiddenGroupHeader } from "./FileTreeGroupHeader";
+import { DIR_ROW, FILE_ROW, GROUP_ROW, type Row, VIRTUALISE_ABOVE } from "./fileTree.styles";
 import { HiddenRow } from "./HiddenRow";
+import { useFileTreeNavigation } from "./useFileTreeNavigation";
 import { type PopoverAnchor, WhyHiddenPopover } from "./WhyHiddenPopover";
-
-/** Rows above this count are virtualised (T5.2; Plan §6.7). */
-const VIRTUALISE_ABOVE = 300;
-const DIR_ROW = 24;
-const FILE_ROW = 26;
-const GROUP_ROW = 28;
-
-/** D1 labels; `committed` gains the compare branch ("Committed on feature"). */
-const GROUP_LABELS: Record<SidebarGroupId, string> = {
-  conflict: "Conflicts",
-  staged: "Staged",
-  unstaged: "Unstaged",
-  untracked: "Untracked",
-  committed: "Committed",
-};
-/** D6 item 2: the 7 px dot, one token per layer. */
-const GROUP_DOT: Record<SidebarGroupId, string> = {
-  conflict: "bg-chip-conflict-fg",
-  staged: "bg-chip-staged-fg",
-  unstaged: "bg-chip-unstaged-fg",
-  untracked: "bg-chip-untracked-fg",
-  committed: "bg-muted",
-};
-const ACTION_CLASS =
-  "hidden size-5 shrink-0 items-center justify-center rounded-[4px] text-muted hover:bg-line group-hover:inline-flex group-focus-within:inline-flex";
-
-type Row =
-  | { key: string; kind: "group"; group: FileGroup; depth: 0 }
-  | { key: string; kind: "dir"; node: TreeDir; depth: number; dirKey: string }
-  | { key: string; kind: "file"; file: FileDiff; depth: number }
-  /** T11.4: the Hidden section header and its rows (Design §14.4). */
-  | { key: string; kind: "hidden-group"; entries: HiddenEntry[]; total: number; depth: 0 }
-  | { key: string; kind: "hidden"; entry: HiddenEntry; depth: 0 }
-  | { key: string; kind: "hidden-empty"; depth: 0 };
 
 export interface FileTreeProps {
   layout: SidebarLayout;
@@ -202,7 +152,6 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
     hiddenEntries,
     hiddenTotal,
   ]);
-  const fileRows = useMemo(() => rows.filter((r) => r.kind === "file"), [rows]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const virtual = rows.length > VIRTUALISE_ABOVE;
@@ -218,32 +167,6 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
     ...(initialRect ? { initialRect } : {}),
   });
   const virtualItems = virtualizer.getVirtualItems();
-
-  // roving tabindex
-  const [focusIndex, setFocusIndex] = useState(0);
-  const pendingFocus = useRef<number | null>(null);
-  const focusRow = useCallback(
-    (i: number) => {
-      const idx = Math.max(0, Math.min(rows.length - 1, i));
-      setFocusIndex(idx);
-      pendingFocus.current = idx;
-      if (virtual) virtualizer.scrollToIndex(idx);
-    },
-    [rows.length, virtual, virtualizer],
-  );
-  useEffect(() => {
-    if (pendingFocus.current === null) return;
-    const el = scrollRef.current?.querySelector<HTMLElement>(
-      `[data-index="${pendingFocus.current}"]`,
-    );
-    if (el) {
-      el.focus();
-      pendingFocus.current = null;
-    }
-  });
-  useEffect(() => {
-    if (focusIndex >= rows.length) setFocusIndex(Math.max(0, rows.length - 1));
-  }, [rows.length, focusIndex]);
 
   const toggleDir = useCallback((key: string) => {
     setCollapsedDirs((prev) => {
@@ -261,18 +184,6 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
    * buttons already focuses them).
    */
   const pendingGroupFocus = useRef<SidebarSectionId | null>(null);
-  useEffect(() => {
-    const id = pendingGroupFocus.current;
-    if (id === null) return;
-    pendingGroupFocus.current = null;
-    const container = scrollRef.current;
-    const active = document.activeElement;
-    if (!container || (active && active !== document.body && container.contains(active))) return;
-    const idx = rows.findIndex((r) =>
-      r.kind === "hidden-group" ? id === "hidden" : r.kind === "group" && r.group.id === id,
-    );
-    if (idx !== -1) focusRow(idx);
-  }, [rows, focusRow]);
 
   const toggleGroup = useCallback((id: SidebarSectionId) => {
     pendingGroupFocus.current = id;
@@ -316,15 +227,6 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
       anchor: { left: box ? box.left : 0, bottom: box ? box.bottom : 0 },
     });
   }, []);
-  const closeExplain = useCallback(
-    (refocus: boolean) => {
-      setExplain(null);
-      if (refocus) focusRow(focusIndex);
-    },
-    [focusRow, focusIndex],
-  );
-  const pathOfRow = (row: Row | undefined): string | null =>
-    row?.kind === "hidden" ? row.entry.path : row?.kind === "file" ? filePathOf(row.file) : null;
 
   const statsOf = useCallback(
     (f: FileDiff): FileDiff["stats"] => statsMap[f.id] ?? f.stats,
@@ -352,36 +254,44 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
     [viewedOf],
   );
 
-  // j / k / v (Plan §6.1)
-  const step = useCallback(
-    (delta: 1 | -1) => {
-      if (fileRows.length === 0) return;
-      const at = fileRows.findIndex((r) => r.kind === "file" && r.file.id === activeFileId);
-      const next =
-        at === -1
-          ? delta === 1
-            ? 0
-            : fileRows.length - 1
-          : Math.max(0, Math.min(fileRows.length - 1, at + delta));
-      const row = fileRows[next];
-      if (row?.kind !== "file") return;
-      activate(row.file);
-      const idx = rows.indexOf(row);
-      if (virtual) virtualizer.scrollToIndex(idx, { align: "auto" });
-      else
-        scrollRef.current
-          ?.querySelector(`[data-index="${idx}"]`)
-          ?.scrollIntoView?.({ block: "nearest" });
-    },
-    [fileRows, rows, activeFileId, activate, virtual, virtualizer],
-  );
-  useShortcuts({
-    j: () => step(1),
-    k: () => step(-1),
-    v: () => {
-      if (activeFileId) toggleViewed(activeFileId);
-    },
+  const { focusIndex, setFocusIndex, focusRow, onKeyDown } = useFileTreeNavigation({
+    rows,
+    scrollRef,
+    virtual,
+    virtualizer,
+    activeFileId,
+    activate,
+    toggleViewed,
+    setViewed,
+    allViewedIn,
+    toggleGroup,
+    toggleDir,
+    collapsedGroups,
+    collapsedDirs,
+    grouped,
+    openExplain,
   });
+
+  const closeExplain = useCallback(
+    (refocus: boolean) => {
+      setExplain(null);
+      if (refocus) focusRow(focusIndex);
+    },
+    [focusRow, focusIndex],
+  );
+
+  useEffect(() => {
+    const id = pendingGroupFocus.current;
+    if (id === null) return;
+    pendingGroupFocus.current = null;
+    const container = scrollRef.current;
+    const active = document.activeElement;
+    if (!container || (active && active !== document.body && container.contains(active))) return;
+    const idx = rows.findIndex((r) =>
+      r.kind === "hidden-group" ? id === "hidden" : r.kind === "group" && r.group.id === id,
+    );
+    if (idx !== -1) focusRow(idx);
+  }, [rows, focusRow]);
 
   // prioritise stats for the visible window (debounced 100 ms)
   const visibleIds = useMemo(() => {
@@ -395,266 +305,49 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
     return () => clearTimeout(t);
   }, [visibleKey, prioritise]);
 
-  /** Keyboard model (WAI-ARIA tree / listbox): attached to every row, reads the focused index. */
-  const onKeyDown = (e: ReactKeyboardEvent) => {
-    const row = rows[focusIndex];
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        focusRow(focusIndex + 1);
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        focusRow(focusIndex - 1);
-        break;
-      case "Home":
-        e.preventDefault();
-        focusRow(0);
-        break;
-      case "End":
-        e.preventDefault();
-        focusRow(rows.length - 1);
-        break;
-      case "ArrowRight":
-        if (row?.kind === "hidden-group") {
-          e.preventDefault();
-          if (collapsedGroups.has("hidden")) toggleGroup("hidden");
-          else focusRow(focusIndex + 1);
-        } else if (row?.kind === "group") {
-          e.preventDefault();
-          if (collapsedGroups.has(row.group.id)) toggleGroup(row.group.id);
-          else focusRow(focusIndex + 1);
-        } else if (row?.kind === "dir") {
-          e.preventDefault();
-          if (collapsedDirs.has(row.dirKey)) toggleDir(row.dirKey);
-          else focusRow(focusIndex + 1);
-        }
-        break;
-      case "ArrowLeft":
-        if (row?.kind === "hidden-group") {
-          if (!collapsedGroups.has("hidden")) {
-            e.preventDefault();
-            toggleGroup("hidden");
-          }
-        } else if (row?.kind === "group") {
-          if (!collapsedGroups.has(row.group.id)) {
-            e.preventDefault();
-            toggleGroup(row.group.id);
-          }
-        } else if (row?.kind === "dir" && !collapsedDirs.has(row.dirKey)) {
-          e.preventDefault();
-          toggleDir(row.dirKey);
-        } else if (row && row.depth > 0) {
-          e.preventDefault();
-          for (let i = focusIndex - 1; i >= 0; i--) {
-            if (rows[i]?.depth === row.depth - 1) {
-              focusRow(i);
-              break;
-            }
-          }
-        } else if ((grouped || row?.kind === "hidden" || row?.kind === "hidden-empty") && row) {
-          // a depth-0 row inside a group: its parent is the group header (P5)
-          e.preventDefault();
-          for (let i = focusIndex - 1; i >= 0; i--) {
-            const above = rows[i];
-            if (above?.kind === "group" || above?.kind === "hidden-group") {
-              focusRow(i);
-              break;
-            }
-          }
-        }
-        break;
-      case "Enter":
-      case " ":
-        if (!row) break;
-        e.preventDefault();
-        if (row.kind === "group") toggleGroup(row.group.id);
-        else if (row.kind === "hidden-group") toggleGroup("hidden");
-        else if (row.kind === "dir") toggleDir(row.dirKey);
-        else if (row.kind === "hidden") openExplain(row.entry.path, focusIndex);
-        else if (row.kind === "file") activate(row.file);
-        break;
-      case "?": {
-        // T11.4: "why is this not in the diff" for the focused row — a Hidden row or any file.
-        // preventDefault also stops the global `?` from opening the shortcuts dialog instead.
-        const path = pathOfRow(row);
-        if (path === null) break;
-        e.preventDefault();
-        openExplain(path, focusIndex);
-        break;
-      }
-      case "v":
-        // the group's own "mark all viewed"; preventDefault stops the global `v` as well
-        if (row?.kind === "group") {
-          e.preventDefault();
-          setViewed(
-            row.group.files.map((f) => f.id),
-            !allViewedIn(row.group),
-          );
-        }
-        break;
-      default:
-    }
-  };
-
-  const renderGroup = (group: FileGroup, index: number, style?: CSSProperties) => {
-    const label =
-      group.id === "committed" && compare ? `Committed on ${compare}` : GROUP_LABELS[group.id];
-    const open = !collapsedGroups.has(group.id);
-    const shown = group.files.length;
-    const total = groupTotals[group.id];
-    let additions = 0;
-    let deletions = 0;
-    let counted = 0;
-    let seen = 0;
-    for (const f of group.files) {
-      const st = statsOf(f);
-      if (st) {
-        additions += st.additions;
-        deletions += st.deletions;
-        counted++;
-      }
-      if (viewedOf(f)) seen++;
-    }
-    const allViewed = shown > 0 && seen === shown;
-    const markLabel = allViewed ? `Clear viewed in ${label}` : `Mark all in ${label} viewed`;
-    return (
-      <div
-        key={`g:${group.id}`}
-        role="treeitem"
-        aria-level={1}
-        aria-expanded={open}
-        aria-selected={false}
-        aria-label={`${label}, ${shown} ${shown === 1 ? "file" : "files"}`}
-        data-index={index}
-        tabIndex={index === focusIndex ? 0 : -1}
-        className={`group sticky top-0 z-[1] flex h-7 cursor-pointer items-center gap-[6px] border-b border-line bg-surface-sunken pr-2 select-none ${
-          allViewed ? "opacity-55" : ""
-        }`}
-        style={{ ...style, paddingLeft: 10 }}
-        onFocus={() => setFocusIndex(index)}
-        onKeyDown={onKeyDown}
-        onClick={() => toggleGroup(group.id)}
-      >
-        {open ? (
-          <ChevronDown size={9} aria-hidden className="shrink-0 text-muted" />
-        ) : (
-          <ChevronRight size={9} aria-hidden className="shrink-0 text-muted" />
-        )}
-        <span aria-hidden className={`size-[7px] shrink-0 rounded-full ${GROUP_DOT[group.id]}`} />
-        <span className="truncate text-xs font-semibold">{label}</span>
-        <span className="shrink-0 rounded-full border border-line bg-surface-raised px-[5px] font-mono text-[10px] leading-[15px] font-semibold">
-          {filtering ? `${shown} of ${total}` : shown}
-        </span>
-        <span className="flex-1" />
-        {counted > 0 && (
-          <span className="shrink-0 font-mono text-[11px] tabular-nums whitespace-nowrap">
-            <span className="text-success">+{additions}</span>{" "}
-            <span className="text-danger">−{deletions}</span>
-          </span>
-        )}
-        <span
-          className={`shrink-0 font-mono text-[11px] whitespace-nowrap ${
-            allViewed ? "text-success" : "text-muted"
-          }`}
-        >
-          {allViewed ? "✓ " : ""}
-          {seen}/{shown}
-        </span>
-        <button
-          type="button"
-          tabIndex={-1}
-          aria-label={markLabel}
-          title={markLabel}
-          className={ACTION_CLASS}
-          onClick={(e) => {
-            e.stopPropagation();
-            setViewed(
-              group.files.map((f) => f.id),
-              !allViewed,
-            );
-          }}
-        >
-          {allViewed ? <RotateCcw size={12} aria-hidden /> : <CheckCheck size={12} aria-hidden />}
-        </button>
-        <button
-          type="button"
-          tabIndex={-1}
-          aria-label="Collapse other groups"
-          title="Collapse other groups"
-          className={ACTION_CLASS}
-          onClick={(e) => {
-            e.stopPropagation();
-            collapseOthers(group.id);
-          }}
-        >
-          <ListCollapse size={12} aria-hidden />
-        </button>
-      </div>
-    );
-  };
-
-  /**
-   * Design §14.4: the Hidden header. No `+n −m` and no viewed count — a hidden path has no stats
-   * and cannot be reviewed — and no "mark all viewed" action for the same reason.
-   */
-  const renderHiddenGroup = (
-    entries: HiddenEntry[],
-    total: number,
-    index: number,
-    style?: CSSProperties,
-  ) => {
-    const open = !collapsedGroups.has("hidden");
-    return (
-      <div
-        key="g:hidden"
-        role="treeitem"
-        aria-level={1}
-        aria-expanded={open}
-        aria-selected={false}
-        aria-label={`Hidden, ${entries.length} ${entries.length === 1 ? "path" : "paths"}`}
-        data-index={index}
-        data-group="hidden"
-        tabIndex={index === focusIndex ? 0 : -1}
-        className="group sticky top-0 z-[1] flex h-7 cursor-pointer items-center gap-[6px] border-b border-line bg-surface-sunken pr-2 select-none"
-        style={{ ...style, paddingLeft: 10 }}
-        onFocus={() => setFocusIndex(index)}
-        onKeyDown={onKeyDown}
-        onClick={() => toggleGroup("hidden")}
-      >
-        {open ? (
-          <ChevronDown size={9} aria-hidden className="shrink-0 text-muted" />
-        ) : (
-          <ChevronRight size={9} aria-hidden className="shrink-0 text-muted" />
-        )}
-        <span aria-hidden className="size-[7px] shrink-0 rounded-full bg-muted" />
-        <span className="truncate text-xs font-semibold text-muted">Hidden</span>
-        <span className="shrink-0 rounded-full border border-line bg-surface-raised px-[5px] font-mono text-[10px] leading-[15px] font-semibold text-muted">
-          {filtering && entries.length !== total ? `${entries.length} of ${total}` : entries.length}
-        </span>
-        <span className="flex-1" />
-        <button
-          type="button"
-          tabIndex={-1}
-          aria-label="Collapse other groups"
-          title="Collapse other groups"
-          className={ACTION_CLASS}
-          onClick={(e) => {
-            e.stopPropagation();
-            collapseOthers("hidden");
-          }}
-        >
-          <ListCollapse size={12} aria-hidden />
-        </button>
-      </div>
-    );
-  };
-
   const renderRow = (row: Row, index: number, style?: CSSProperties) => {
     const tabIndex = index === focusIndex ? 0 : -1;
     const onFocus = () => setFocusIndex(index);
-    if (row.kind === "group") return renderGroup(row.group, index, style);
-    if (row.kind === "hidden-group") return renderHiddenGroup(row.entries, row.total, index, style);
+    if (row.kind === "group") {
+      return (
+        <FileTreeGroupHeader
+          key={row.key}
+          group={row.group}
+          index={index}
+          open={!collapsedGroups.has(row.group.id)}
+          compare={compare}
+          total={groupTotals[row.group.id]}
+          filtering={filtering}
+          tabIndex={tabIndex}
+          statsOf={statsOf}
+          viewedOf={viewedOf}
+          onFocus={onFocus}
+          onKeyDown={onKeyDown}
+          onToggle={() => toggleGroup(row.group.id)}
+          onSetViewed={setViewed}
+          onCollapseOthers={() => collapseOthers(row.group.id)}
+          style={style}
+        />
+      );
+    }
+    if (row.kind === "hidden-group") {
+      return (
+        <FileTreeHiddenGroupHeader
+          key={row.key}
+          entries={row.entries}
+          total={row.total}
+          index={index}
+          open={!collapsedGroups.has("hidden")}
+          filtering={filtering}
+          tabIndex={tabIndex}
+          onFocus={onFocus}
+          onKeyDown={onKeyDown}
+          onToggle={() => toggleGroup("hidden")}
+          onCollapseOthers={() => collapseOthers("hidden")}
+          style={style}
+        />
+      );
+    }
     if (row.kind === "hidden-empty") {
       return (
         <p
@@ -683,45 +376,22 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
       );
     }
     if (row.kind === "dir") {
-      const open = !collapsedDirs.has(row.dirKey);
-      const summary = open ? null : dirSummary(row.node, statsOf);
       return (
-        <div
+        <FileTreeDirRow
           key={row.key}
-          role="treeitem"
-          aria-level={row.depth + (grouped ? 2 : 1)}
-          aria-expanded={open}
-          aria-selected={false}
-          data-index={index}
+          node={row.node}
+          depth={row.depth}
+          dirKey={row.dirKey}
+          index={index}
+          open={!collapsedDirs.has(row.dirKey)}
+          grouped={grouped}
           tabIndex={tabIndex}
-          className={`flex h-6 cursor-pointer items-center gap-1 text-xs text-muted select-none hover:bg-surface-raised${
-            summary ? " pr-2" : ""
-          }`}
-          style={{ ...style, paddingLeft: 12 + row.depth * 14 }}
+          statsOf={statsOf}
+          onToggle={() => toggleDir(row.dirKey)}
           onFocus={onFocus}
           onKeyDown={onKeyDown}
-          onClick={() => toggleDir(row.dirKey)}
-        >
-          {open ? (
-            <ChevronDown size={9} aria-hidden className="shrink-0" />
-          ) : (
-            <ChevronRight size={9} aria-hidden className="shrink-0" />
-          )}
-          <Folder size={14} aria-hidden className="shrink-0" />
-          <span className="truncate">{row.node.name}</span>
-          {summary && (
-            <>
-              <span className="flex-1" />
-              <span className="shrink-0 font-mono text-[11px] text-muted">{summary.files}</span>
-              {summary.complete && (
-                <span className="shrink-0 font-mono text-[11px] tabular-nums whitespace-nowrap">
-                  <span className="text-success">+{summary.additions}</span>{" "}
-                  <span className="text-danger">−{summary.deletions}</span>
-                </span>
-              )}
-            </>
-          )}
-        </div>
+          style={style}
+        />
       );
     }
     const f = row.file;

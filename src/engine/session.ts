@@ -20,19 +20,13 @@ import type {
   ProbeTier,
   Progress,
   ProgressSink,
-  PublicError,
 } from "./api";
-import { isImagePath } from "./diff/binary";
 import { blame as runBlame } from "./diff/blame";
-import { buildConflictPayload } from "./diff/conflict";
-import { loadSide, loadSides } from "./diff/contentLoader";
-import { type DiffComputation, DiffEngine } from "./diff/diffEngine";
+import { loadSides } from "./diff/contentLoader";
+import { DiffEngine } from "./diff/diffEngine";
 import { parsePatch } from "./diff/parsePatch";
-import { type PatchRow, patchText as renderPatch } from "./diff/patchText";
-import { detectRenames } from "./diff/renames";
-import { describeFile, HUGE_FILE_BYTES, LARGE_FILE_BYTES, toPayload } from "./diff/textDiff";
-import { sourceRefs } from "./diffSource";
-import { EngineError, type EngineErrorJSON, errorCode, isPublicCode } from "./errors";
+import { describeFile, HUGE_FILE_BYTES } from "./diff/textDiff";
+import { EngineError, errorCode } from "./errors";
 import type { DirHandleLike } from "./fs/dirHandleLike";
 import { createFsaFs, type FsaFs } from "./fs/fsaFs";
 import { GitAttributes } from "./git/attributes";
@@ -42,13 +36,12 @@ import { CommitGraph } from "./git/commitGraph";
 import { commitDetails, commitStats } from "./git/commits";
 import { type GitConfig, loadGitConfig } from "./git/config";
 import { explainPath } from "./git/explain";
-import { hashBlob, sha1, toHex } from "./git/hash";
 import { IgnoreRules } from "./git/ignoreRules";
 import { emptySnapshot, type IndexSnapshot, readIndex } from "./git/indexReader";
 import { checkLayout } from "./git/layoutChecks";
 import { MAILMAP_FILE, Mailmap } from "./git/mailmap";
 import { ObjectDb } from "./git/objectDb";
-import { detectOperation, OPERATION_FILES } from "./git/operation";
+import { detectOperation } from "./git/operation";
 import { pathHistory as runPathHistory } from "./git/pathHistory";
 import { rebasePreflight as computePreflight } from "./git/preflight";
 import { readReflog } from "./git/reflog";
@@ -68,7 +61,7 @@ import {
   type WalkState,
   walkRequestKey,
 } from "./git/walk";
-import { type ScannerOptions, WorktreeScanner } from "./git/worktree";
+import { WorktreeScanner } from "./git/worktree";
 import { listWorktrees } from "./git/worktrees";
 import { computeInsights } from "./insights/insights";
 import { SECRET_ALLOWLIST_FILE } from "./scan/secretRules";
@@ -81,138 +74,68 @@ import {
   secretsWarning,
   sortFindings,
 } from "./scan/secrets";
-import { type CommitSource, searchCommits } from "./search/commits";
-import { type PickaxeWorktree, pathScope, searchPickaxe } from "./search/pickaxe";
-import type { SearchOutcome } from "./search/query";
-import { searchWorktree } from "./search/worktree";
+import { DiffRunner } from "./session/diffRunner";
+import { toPublicError } from "./session/errorTranslation";
+import { SearchRunner } from "./session/searchRunner";
+import { StatsQueue } from "./session/statsQueue";
 import {
-  type AheadBehind,
-  type BisectState,
-  type BisectStep,
-  type BlamePayload,
-  type BranchRow,
-  type CommitDetails,
-  type DiffResult,
-  type DiffSource,
-  type FileDiff,
-  type HiddenEntry,
-  type InsightsRequest,
-  type InsightsResult,
-  MODE_GITLINK,
-  type Oid,
-  type PathExplanation,
-  type PathHistoryEntry,
-  type PreflightResult,
-  type ReflogEntry,
-  type RefSnapshot,
-  type RepoCapabilities,
-  type RepoInfo,
-  type RepoOperation,
-  type RepoSummary,
-  type RepoWarning,
-  type ResolvedRevision,
-  type SearchRequest,
-  type SearchResult,
-  type SecretFinding,
-  type StashInfo,
-  type SubmoduleInfo,
-  type TagInfo,
-  type WalkPage,
-  type WalkRequest,
-  type WorktreeInfo,
+  type Current,
+  dedupe,
+  MEMORY_WARN_BYTES,
+  NO_SESSION,
+  operationWarning,
+  requireGeneration,
+  type SessionOptions,
+  STASH_FILE_COUNT_LIMIT,
+} from "./session/types";
+import { WatchOrchestrator } from "./session/watchOrchestrator";
+import type {
+  AheadBehind,
+  BisectState,
+  BisectStep,
+  BlamePayload,
+  BranchRow,
+  CommitDetails,
+  DiffResult,
+  DiffSource,
+  FileDiff,
+  HiddenEntry,
+  InsightsRequest,
+  InsightsResult,
+  Oid,
+  PathExplanation,
+  PathHistoryEntry,
+  PreflightResult,
+  ReflogEntry,
+  RefSnapshot,
+  RepoCapabilities,
+  RepoInfo,
+  RepoOperation,
+  RepoSummary,
+  RepoWarning,
+  ResolvedRevision,
+  SearchRequest,
+  SearchResult,
+  SecretFinding,
+  StashInfo,
+  SubmoduleInfo,
+  TagInfo,
+  WalkPage,
+  WalkRequest,
+  WorktreeInfo,
 } from "./types";
 import { CancelledError, pLimit, throwIfAborted } from "./util/concurrency";
 
-export interface SessionOptions {
-  scanner?: ScannerOptions;
-  /** Background stats concurrency (default 4). */
-  statsConcurrency?: number;
-  /** Flush a stats batch after this many files or this many ms, whichever first. */
-  statsBatchSize?: number;
-  statsBatchMs?: number;
-  /** Fixed repo id (tests/recordings); default `crypto.randomUUID()`. */
-  id?: string;
-  /**
-   * T10.4: apply the built-in excludes (`.DS_Store`, `._*`, `Thumbs.db`, `desktop.ini`) in
-   * `IgnoreRules`. Default true; `OpenOptions.builtinExcludes` is how the page sets it (B10).
-   */
-  builtinExcludes?: boolean;
-}
-
-interface Current {
-  generation: number;
-  source: DiffSource;
-  comp: DiffComputation;
-  result: DiffResult;
-  byId: Map<string, FileDiff>;
-  stats: Map<string, FileStats>;
-}
-
-const NO_SESSION = () => new EngineError("INTERNAL", "No repository is open.");
-/** Plan §11 R3: warn when the packs read so far exceed this. */
-const MEMORY_WARN_BYTES = 300 * 1024 * 1024;
-/** How many stashes get a file count eagerly (T10.1); the rest keep `files: null`. */
-const STASH_FILE_COUNT_LIMIT = 50;
-
-/** Translate anything thrown inside the engine into the plain object that crosses the worker boundary. */
-export function toPublicError(e: unknown): PublicError {
-  const code = errorCode(e);
-  const message =
-    e instanceof Error ? e.message : typeof e === "string" ? e : "Unknown engine error";
-  const hint = (e as { hint?: unknown } | null)?.hint;
-  const out = (c: PublicError["code"], msg = message, h?: string): PublicError => {
-    const json: PublicError = { name: "EngineError", code: c, message: msg };
-    const finalHint = h ?? (typeof hint === "string" ? hint : undefined);
-    if (finalHint !== undefined) json.hint = finalHint;
-    const path = (e as { path?: unknown } | null)?.path;
-    if (typeof path === "string") (json as EngineErrorJSON).path = path;
-    const detail = (e as { detail?: unknown } | null)?.detail;
-    if (typeof detail === "string") (json as EngineErrorJSON).detail = detail;
-    return json;
-  };
-  if (code !== undefined && isPublicCode(code)) return out(code);
-  switch (code) {
-    case "EACCES":
-      return out("PERMISSION", message, "Grant read access to the folder and try again.");
-    case "ENOENT":
-      return out("IO_ERROR"); // a vanished root is detected earlier by RepoSession.withRootCheck
-    case "EIO":
-    case "EISDIR":
-    case "ENOTDIR":
-    case "EINVAL":
-      return out("IO_ERROR");
-    default:
-      break;
-  }
-  if (e instanceof DOMException || (e as { name?: string } | null)?.name?.endsWith("Error")) {
-    const name = (e as { name: string }).name;
-    if (name === "NotAllowedError" || name === "SecurityError")
-      return out("PERMISSION", message, "Grant read access to the folder and try again.");
-    if (name === "NotFoundError")
-      return out(
-        "HANDLE_GONE",
-        "The repository folder is no longer reachable.",
-        "Re-open the folder.",
-      );
-  }
-  return out("INTERNAL");
-}
+export type { SessionOptions };
+export { toPublicError };
 
 export class RepoSession implements Omit<EngineApi, "open"> {
   private gen = 0;
   private current: Current | null = null;
-  private inflight: AbortController | null = null;
-  private readonly fileDiffAborts = new Map<string, AbortController>();
-  /** T10.3: one in-flight `conflict()` per file id; a newer call cancels the older. */
-  private readonly conflictAborts = new Map<string, AbortController>();
-  private statsQueue: string[] = []; // LIFO: pop() serves the most recently prioritised id
-  private statsGen = 0;
-  private statsActive = 0;
   private lastSource: DiffSource | null = null;
   private closed = false;
   private computes = 0;
   private lastCompute: EngineMetrics["lastCompute"] = null;
-  private statsStartedAt = 0;
   private memoryWarned = false;
   private readonly repoWarnings: RepoWarning[] = [];
   /** T10.2: what git is in the middle of; refreshed on open and `reloadRefs()`. */
@@ -246,6 +169,11 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   private readonly singleAborts = new Map<string, AbortController>();
   private readonly statsLimit: <T>(fn: () => Promise<T>) => Promise<T>;
 
+  private readonly statsQueue: StatsQueue;
+  private readonly diffRunner: DiffRunner;
+  private readonly searchRunner: SearchRunner;
+  private readonly watchOrchestrator: WatchOrchestrator;
+
   private constructor(
     readonly root: DirHandleLike,
     readonly fs: FsaFs,
@@ -262,6 +190,94 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     private readonly opts: SessionOptions,
   ) {
     this.statsLimit = pLimit(opts.statsConcurrency ?? 4);
+
+    this.statsQueue = new StatsQueue({
+      db: this.db,
+      fs: this.fs,
+      attrs: this.attrs,
+      sink: this.sink,
+      statsLimit: this.statsLimit,
+      opts: this.opts,
+      getCurrent: () => this.current,
+      isClosed: () => this.closed,
+      emitWarning: (w) => RepoSession.emitWarning(this.sink, w),
+      progress: (p) => this.progress(p),
+      onStatsComplete: (statsMs) => {
+        if (this.lastCompute) this.lastCompute.statsMs = statsMs;
+      },
+      statsFor: (cur, f, signal) => this.statsFor(cur, f, signal),
+    });
+
+    this.diffRunner = new DiffRunner({
+      fs: this.fs,
+      db: this.db,
+      cfg: this.cfg,
+      attrs: this.attrs,
+      ignore: this.ignore,
+      engine: this.engine,
+      getCurrent: () => this.current,
+      setCurrent: (cur) => {
+        this.current = cur;
+      },
+      nextGeneration: () => ++this.gen,
+      setLastSource: (src) => {
+        this.lastSource = src;
+      },
+      assertOpen: () => this.assertOpen(),
+      progress: (p) => this.progress(p),
+      emitWarning: (w) => RepoSession.emitWarning(this.sink, w),
+      withRootCheck: (fn) => this.withRootCheck(fn),
+      single: (method, fn) => this.single(method, fn),
+      stopStats: () => this.statsQueue.stop(),
+      startStats: (gen) => {
+        this.checkMemory();
+        this.statsQueue.start(gen);
+      },
+      checkMemory: () => this.checkMemory(),
+      onComputeSuccess: (result) => {
+        this.computes++;
+        this.lastCompute = {
+          files: result.files.length,
+          durationMs: result.durationMs,
+          statsMs: null,
+        };
+      },
+      getOperationState: () => this.operationState,
+      refreshOperation: () => this.refreshOperation(),
+      getRefs: () => this.refs,
+    });
+
+    this.searchRunner = new SearchRunner({
+      db: this.db,
+      attrs: this.attrs,
+      scanner: this.scanner,
+      statsLimit: this.statsLimit,
+      commitReader: () => this.commitReader(),
+      refsByCommit: () => this.refsByCommit(),
+      walkSeeds: (req, reader) => this.walkSeeds(req, reader),
+      currentIndex: () => this.currentIndex(),
+      readWorktreeBytes: (path) => this.readWorktreeBytes(path),
+      getHeadOid: () => this.refs.headOid,
+      progress: (p) => this.progress(p),
+      emitWarning: (w) => RepoSession.emitWarning(this.sink, w),
+      withRootCheck: (fn) => this.withRootCheck(fn),
+      assertOpen: () => this.assertOpen(),
+      single: (method, fn) => this.single(method, fn),
+    });
+
+    this.watchOrchestrator = new WatchOrchestrator({
+      root: this.root,
+      fs: this.fs,
+      db: this.db,
+      ignore: this.ignore,
+      attrs: this.attrs,
+      scanner: this.scanner,
+      getHeadBranch: () => this.refs.headBranch,
+      getLastSource: () => this.lastSource,
+      progress: (p) => this.progress(p),
+      dropHistoryCaches: () => this.dropHistoryCaches(),
+      assertOpen: () => this.assertOpen(),
+    });
   }
 
   // ---- lifecycle ------------------------------------------------------------------------------
@@ -310,6 +326,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
         });
     } catch (e) {
       if (errorCode(e) !== "ENOENT") throw e; // unborn repos have no index yet
+      /* unborn repos have no index yet */
     }
     RepoSession.emit(sink, { phase: "index", durationMs: performance.now() - t3 });
     const ignore = await IgnoreRules.load(fs, {
@@ -406,54 +423,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   // ---- diff -----------------------------------------------------------------------------------
 
   async computeDiff(src: DiffSource): Promise<DiffResult> {
-    this.assertOpen();
-    this.inflight?.abort();
-    const ac = new AbortController();
-    this.inflight = ac;
-    const generation = ++this.gen;
-    this.stopStats();
-    this.lastSource = src;
-    const started = performance.now();
-    try {
-      const comp = await this.withStaleRetry(() => this.engine.compute(src, ac.signal), ac.signal);
-      throwIfAborted(ac.signal, "diff");
-      this.progress({
-        phase: "diff",
-        durationMs: performance.now() - started,
-        total: comp.files.length,
-      });
-      const files = await this.applyRenames(comp, ac.signal);
-      throwIfAborted(ac.signal, "diff");
-      const result: DiffResult = {
-        source: { ...src, includeWorktree: comp.includeWorktree },
-        mergeBase: comp.mergeBase,
-        files,
-        totals: { files: files.length, additions: 0, deletions: 0 },
-        computedAt: Date.now(),
-        durationMs: performance.now() - started,
-        generation,
-        warnings: comp.warnings,
-      };
-      this.current = {
-        generation,
-        source: src,
-        comp,
-        result,
-        byId: new Map(files.map((f) => [f.id, f])),
-        stats: new Map(),
-      };
-      this.computes++;
-      this.lastCompute = { files: files.length, durationMs: result.durationMs, statsMs: null };
-      this.statsStartedAt = performance.now();
-      this.checkMemory();
-      this.startStats(generation);
-      return result;
-    } catch (e) {
-      if (ac.signal.aborted && !(e instanceof CancelledError)) throw new CancelledError("diff");
-      throw e;
-    } finally {
-      if (this.inflight === ac) this.inflight = null;
-    }
+    return this.diffRunner.computeDiff(src);
   }
 
   // ---- revisions, tags, stashes (T10.1) --------------------------------------------------------
@@ -998,152 +968,8 @@ export class RepoSession implements Omit<EngineApi, "open"> {
 
   // ---- search (T10.8, atlas tab 05) ------------------------------------------------------------
 
-  /**
-   * One capped page of `git log --date-order`, for the two commit-shaped scopes. T10.5's walker is
-   * used exactly as it is exported: one call, one page, `limit` commits — no cursor, so the search
-   * never has to know how the walker carries its state.
-   */
-  private async commitSource(signal: AbortSignal, from: string[]): Promise<CommitSource> {
-    const reader = await this.commitReader();
-    const refsByCommit = await this.refsByCommit();
-    return {
-      walk: async (limit, firstParent) => {
-        const req: WalkRequest = { from, firstParent, limit };
-        const seeds = await this.walkSeeds(req, reader);
-        const out = await runWalk({ db: this.db, reader, refsByCommit, signal }, req, seeds);
-        for (const w of out.warnings) RepoSession.emitWarning(this.sink, w);
-        return {
-          commits: out.page.commits,
-          // T10.5b: the page's cursor is a session token issued by `walkCommits`, not by this seam;
-          // a non-null walk state is what says history continued past `limit`.
-          more: out.state !== null || out.page.capped,
-        };
-      },
-    };
-  }
-
-  /** The index and the HEAD tree the two working-tree scopes both start from. */
-  private async worktreeState(signal: AbortSignal) {
-    const index = await this.currentIndex();
-    const headTree = this.refs.headOid ? await this.db.flattenTree(this.refs.headOid) : null;
-    const status = await this.withRootCheck(() => this.scanner.scan(index, headTree, signal));
-    for (const w of status.warnings) RepoSession.emitWarning(this.sink, w);
-    return { index, headTree, status };
-  }
-
-  /**
-   * What `git grep` would look at: the stage-0 index entries that exist in the working tree, plus
-   * the untracked files the scanner's ignore rules let through. Symlinks and gitlinks have no
-   * text to grep, a `skip-worktree` entry is not on disk, and a sparse directory is opaque.
-   */
-  private async searchPaths(signal: AbortSignal, scope: string | undefined): Promise<string[]> {
-    const { status, index } = await this.worktreeState(signal);
-    const inScope = pathScope(scope);
-    const paths = new Set<string>();
-    for (const [path, e] of Object.entries(index.byPath)) {
-      if (e.skipWorktree || e.isSparseDir) continue;
-      if (e.mode === MODE_GITLINK || (e.mode & 0o170000) === 0o120000) continue;
-      if (inScope(path)) paths.add(path);
-    }
-    for (const path of status.untracked) if (inScope(path)) paths.add(path);
-    return [...paths].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-  }
-
-  /** The uncommitted row of the pickaxe: HEAD versus what is on disk right now. */
-  private async pickaxeWorktree(signal: AbortSignal): Promise<PickaxeWorktree> {
-    const { status, headTree } = await this.worktreeState(signal);
-    const changed = new Set<string>([
-      ...Object.keys(status.staged),
-      ...Object.keys(status.unstaged),
-      ...status.untracked,
-    ]);
-    return {
-      changed: [...changed].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
-      head: async (path) => {
-        const e = headTree?.[path];
-        if (!e || e.mode === MODE_GITLINK) return null;
-        return this.db.readBlob(e.oid);
-      },
-      work: (path) => this.readWorktreeBytes(path),
-    };
-  }
-
-  /**
-   * One search in one of the palette's three scopes (T10.8). Single in-flight like every phase-10
-   * method: typing in the palette supersedes the previous query, which stops reading objects and
-   * rejects with `CANCELLED`.
-   */
   async search(req: SearchRequest): Promise<SearchResult> {
-    this.assertOpen();
-    return this.single("search", async (signal) => {
-      const t0 = performance.now();
-      this.progress({ phase: "search", done: 0, total: 0 });
-      const onProgress = (done: number, total: number) =>
-        this.progress({ phase: "search", done, total });
-      const outcome = await this.runSearch(req, signal, onProgress);
-      const durationMs = performance.now() - t0;
-      if (outcome.capped) {
-        RepoSession.emitWarning(this.sink, {
-          code: "SEARCH_CAPPED",
-          message: "The search stopped at its limit; there may be more matches.",
-          ...(outcome.note !== undefined ? { detail: outcome.note } : {}),
-        });
-      }
-      this.progress({ phase: "search", done: outcome.scanned, total: outcome.scanned, durationMs });
-      return {
-        hits: outcome.hits,
-        scanned: outcome.scanned,
-        capped: outcome.capped,
-        durationMs,
-      };
-    });
-  }
-
-  private async runSearch(
-    req: SearchRequest,
-    signal: AbortSignal,
-    onProgress: (done: number, total: number) => void,
-  ): Promise<SearchOutcome> {
-    switch (req.scope) {
-      case "commits":
-        return searchCommits(
-          {
-            source: await this.commitSource(signal, ["HEAD"]),
-            message: async (oid) => (await this.db.readCommit(oid)).message,
-            signal,
-            onProgress,
-          },
-          req,
-        );
-      case "worktree":
-        return searchWorktree(
-          {
-            paths: await this.searchPaths(signal, req.path),
-            read: (path) => this.readWorktreeBytes(path),
-            isGenerated: (path) => this.attrs.isGenerated(path),
-            limit: this.statsLimit,
-            signal,
-            onProgress,
-          },
-          req,
-        );
-      case "pickaxe":
-        return searchPickaxe(
-          {
-            source: await this.commitSource(signal, ["HEAD"]),
-            tree: (oid) => this.db.flattenTree(oid),
-            blob: (oid) => this.db.readBlob(oid),
-            worktree: await this.pickaxeWorktree(signal),
-            signal,
-            onProgress,
-          },
-          req,
-        );
-      default:
-        throw new EngineError("INTERNAL", `Unknown search scope ${String(req.scope)}.`, {
-          hint: "Pick commits, worktree or pickaxe",
-        });
-    }
+    return this.searchRunner.search(req);
   }
 
   // ---- insights (T10.9, atlas tab 13) ----------------------------------------------------------
@@ -1189,46 +1015,8 @@ export class RepoSession implements Omit<EngineApi, "open"> {
 
   // ---- patch text and repository summary (T10.10, atlas tabs 12 and 11) -----------------------
 
-  /**
-   * The current diff as one git-format unified patch (atlas tab 12). `ids` picks a subset; null is
-   * every row. Output is deterministic: rows always come out in `DiffResult` order, never in the
-   * order the caller listed them, so two exports of the same generation are byte-identical.
-   *
-   * Content is loaded the same way `fileDiff` loads it, and `describeFile` runs with
-   * `loadLarge: true`, so a row the UI gates as `tooLarge` still carries real hunks. A file over
-   * 10 MB (`huge`) has no hunks to carry and is written as a binary row plus a `#` note; git
-   * reconstructs it from the object database when the blob is there. Worktree-layer rows take the
-   * working-tree bytes as the new side, and their blob name is hashed here when the scanner had no
-   * reason to hash it.
-   */
   async patchText(generation: number, ids: string[] | null): Promise<string> {
-    this.requireGeneration(generation);
-    return this.single("patchText", async (signal) => {
-      const cur = this.requireGeneration(generation);
-      const wanted = new Set(ids ?? []);
-      if (ids !== null) for (const id of ids) this.requireFile(cur, id);
-      const files =
-        ids === null ? cur.result.files : cur.result.files.filter((f) => wanted.has(f.id));
-      const rows: PatchRow[] = [];
-      for (const f of files) {
-        throwIfAborted(signal, "patch");
-        const path = (f.newPath ?? f.oldPath) as string;
-        const loaded = await loadSides(f, cur.comp.sides, { db: this.db, fs: this.fs }, signal);
-        const description = describeFile(f, loaded, {
-          ignoreWhitespace: false,
-          loadLarge: true,
-          attrBinary: await this.attrs.isBinary(path),
-          attrGenerated: await this.attrs.isGenerated(path),
-        });
-        rows.push({
-          file: f,
-          description,
-          oldOid: f.oldOid,
-          newOid: f.newOid ?? (loaded.new ? await hashBlob(loaded.new) : null),
-        });
-      }
-      return renderPatch(rows);
-    });
+    return this.diffRunner.patchText(generation, ids);
   }
 
   /**
@@ -1404,49 +1192,6 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     }
   }
 
-  private async applyRenames(comp: DiffComputation, signal: AbortSignal): Promise<FileDiff[]> {
-    const t0 = performance.now();
-    let files = comp.files;
-    if (this.cfg.diff.renames !== false) {
-      const src = { db: this.db, fs: this.fs };
-      const res = await detectRenames(
-        files,
-        async (f, side) => (await loadSide(f, side, comp.sides, src, signal)) ?? new Uint8Array(),
-        { limit: this.cfg.diff.renameLimit, signal },
-      );
-      files = res.files;
-      for (const w of res.warnings) comp.warnings.push(w);
-    }
-    for (const f of files) {
-      f.image = isImagePath(f.id);
-      if (f.oldSize > LARGE_FILE_BYTES || f.newSize > LARGE_FILE_BYTES) f.tooLarge = true;
-    }
-    this.progress({ phase: "renames", durationMs: performance.now() - t0 });
-    return files;
-  }
-
-  /** Object reads that hit a pack renamed by `git gc` → drop caches and retry once (amendment). */
-  private async withStaleRetry<T>(fn: () => Promise<T>, signal: AbortSignal): Promise<T> {
-    try {
-      return await this.withRootCheck(fn);
-    } catch (e) {
-      const code = errorCode(e);
-      if (signal.aborted || (code !== "ENOENT" && code !== "IO_ERROR")) throw e;
-      this.db.dropCaches(true);
-      this.fs.invalidateAll();
-      this.ignore.invalidate();
-      this.attrs.invalidate();
-      const w: RepoWarning = {
-        code: "STALE_PACK_RETRIED",
-        message: "Repository files changed while reading; the computation was retried.",
-      };
-      const out = await this.withRootCheck(fn);
-      if (isDiffComputation(out) && !out.warnings.some((x) => x.code === w.code))
-        out.warnings.push(w);
-      return out;
-    }
-  }
-
   /** Any failure while the root itself is unreachable → HANDLE_GONE (a missing ref file or object
    *  would otherwise surface as REF_NOT_FOUND / IO_ERROR). */
   private async withRootCheck<T>(fn: () => Promise<T>): Promise<T> {
@@ -1469,10 +1214,12 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       await this.root.getDirectoryHandle(".git");
       return true;
     } catch {
+      /* try file handle */
       try {
         await this.root.getFileHandle(".git"); // worktree-gitdir layout
         return true;
       } catch {
+        /* root unreachable */
         return false;
       }
     }
@@ -1480,168 +1227,29 @@ export class RepoSession implements Omit<EngineApi, "open"> {
 
   private requireGeneration(generation: number): Current {
     this.assertOpen();
-    const cur = this.current;
-    if (!cur || cur.generation !== generation) {
-      throw new EngineError(
-        "STALE",
-        `Diff generation ${generation} is no longer current${cur ? ` (now ${cur.generation})` : ""}.`,
-      );
-    }
-    return cur;
-  }
-
-  private requireFile(cur: Current, id: string): FileDiff {
-    const f = cur.byId.get(id);
-    if (!f)
-      throw new EngineError("INTERNAL", `Unknown file id "${id}" in generation ${cur.generation}.`);
-    return f;
+    return requireGeneration(this.current, generation);
   }
 
   // ---- per-file -------------------------------------------------------------------------------
 
   private async statsFor(cur: Current, f: FileDiff, signal?: AbortSignal): Promise<FileStats> {
-    const cached = cur.stats.get(f.id);
-    if (cached !== undefined) return cached;
-    const loaded = await loadSides(f, cur.comp.sides, { db: this.db, fs: this.fs }, signal);
-    const path = (f.newPath ?? f.oldPath) as string;
-    const d = describeFile(f, loaded, {
-      ignoreWhitespace: false,
-      statsOnly: true,
-      attrBinary: await this.attrs.isBinary(path),
-      attrGenerated: await this.attrs.isGenerated(path),
-    });
-    this.applyDescription(f, d);
-    cur.stats.set(f.id, d.stats);
-    return d.stats;
-  }
-
-  /**
-   * Refines the shared FileDiff row in place. `fileDiff()` and the stats pump may both describe the
-   * same file; both run under the same `Current`, so whichever finishes last wins — the fields they
-   * write (sizes, binary/image/tooLarge, stats) do not depend on `ignoreWhitespace` except `stats`,
-   * which the pump computes with the default and the UI reads from the payload, not the row.
-   */
-  private applyDescription(f: FileDiff, d: ReturnType<typeof describeFile>): void {
-    f.stats = d.stats;
-    f.binary = d.classification.binary;
-    f.image = d.classification.image;
-    f.tooLarge = d.classification.tooLarge;
-    f.oldSize = d.classification.oldSize;
-    f.newSize = d.classification.newSize;
-    if (d.classification.generated) f.generated = true;
+    return this.statsQueue.statsFor(cur, f, signal);
   }
 
   async fileStats(generation: number, ids: string[]): Promise<Record<string, FileStats>> {
-    const cur = this.requireGeneration(generation);
-    const out: Record<string, FileStats> = {};
-    await Promise.all(
-      ids.map((id) =>
-        this.statsLimit(async () => {
-          const f = this.requireFile(cur, id);
-          try {
-            out[id] = await this.statsFor(cur, f);
-          } catch (e) {
-            // one unreadable file must not blank the whole batch (T7.5 review); same as pumpStats
-            if (errorCode(e) === "CANCELLED" || errorCode(e) === "STALE") throw e;
-            out[id] = null;
-            cur.stats.set(id, null);
-            RepoSession.emitWarning(this.sink, {
-              code: "FILE_TOO_LARGE",
-              message: `Could not compute stats for ${id}: ${(e as Error)?.message ?? String(e)}`,
-              detail: id,
-            });
-          }
-        }),
-      ),
-    );
-    return out;
+    return this.statsQueue.fileStats(generation, ids);
   }
 
   async fileDiff(generation: number, id: string, opts: FileDiffOptions): Promise<FileDiffPayload> {
-    const cur = this.requireGeneration(generation);
-    const f = this.requireFile(cur, id);
-    this.fileDiffAborts.get(id)?.abort();
-    const ac = new AbortController();
-    this.fileDiffAborts.set(id, ac);
-    try {
-      const loaded = await loadSides(f, cur.comp.sides, { db: this.db, fs: this.fs }, ac.signal);
-      throwIfAborted(ac.signal, "file diff");
-      const path = (f.newPath ?? f.oldPath) as string;
-      const d = describeFile(f, loaded, {
-        ignoreWhitespace: opts.ignoreWhitespace,
-        loadLarge: opts.loadLarge,
-        attrBinary: await this.attrs.isBinary(path),
-        attrGenerated: await this.attrs.isGenerated(path),
-      });
-      if (this.current === cur) {
-        this.applyDescription(f, d);
-        if (!cur.stats.has(f.id)) cur.stats.set(f.id, d.stats);
-      }
-      if (d.warning) RepoSession.emitWarning(this.sink, d.warning);
-      return toPayload(f, d, generation);
-    } catch (e) {
-      if (ac.signal.aborted && !(e instanceof CancelledError))
-        throw new CancelledError("file diff");
-      throw e;
-    } finally {
-      if (this.fileDiffAborts.get(id) === ac) this.fileDiffAborts.delete(id);
-    }
+    return this.diffRunner.fileDiff(generation, id, opts);
   }
 
   async cancelFileDiff(id: string): Promise<void> {
-    this.fileDiffAborts.get(id)?.abort();
-    this.fileDiffAborts.delete(id);
+    return this.diffRunner.cancelFileDiff(id);
   }
 
-  /**
-   * The three-way view of one conflicted file (T10.3): index stages 1/2/3, the base→ours and
-   * base→theirs hunks, and the working-tree file with its conflict markers located. `STALE` and
-   * `CANCELLED` behave exactly as for `fileDiff` — the generation must be current, and a newer
-   * `conflict()` for the same id supersedes this one.
-   *
-   * The index is re-read on every call rather than reused from the diff computation: the point of
-   * the card is to follow the file while the user resolves it in their editor.
-   */
   async conflict(generation: number, id: string): Promise<ConflictPayload> {
-    const cur = this.requireGeneration(generation);
-    const f = this.requireFile(cur, id);
-    this.conflictAborts.get(id)?.abort();
-    const ac = new AbortController();
-    this.conflictAborts.set(id, ac);
-    try {
-      const path = (f.newPath ?? f.oldPath ?? id) as string;
-      const index = await this.withRootCheck(() => readIndex(this.fs));
-      throwIfAborted(ac.signal, "conflict");
-      const stages = index.conflicts[path];
-      if (!stages || stages.length === 0) {
-        throw new EngineError(
-          "INTERNAL",
-          `"${id}" has no conflict stages in the index (nothing to compare three ways).`,
-          { path },
-        );
-      }
-      const operation = this.operationState ?? (await this.refreshOperation());
-      throwIfAborted(ac.signal, "conflict");
-      return await this.withRootCheck(() =>
-        buildConflictPayload(
-          { db: this.db, fs: this.fs },
-          {
-            id,
-            path,
-            generation,
-            stages,
-            refs: this.refs,
-            operation,
-            signal: ac.signal,
-          },
-        ),
-      );
-    } catch (e) {
-      if (ac.signal.aborted && !(e instanceof CancelledError)) throw new CancelledError("conflict");
-      throw e;
-    } finally {
-      if (this.conflictAborts.get(id) === ac) this.conflictAborts.delete(id);
-    }
+    return this.diffRunner.conflict(generation, id);
   }
 
   // ---- why hidden (T10.4) ---------------------------------------------------------------------
@@ -1701,122 +1309,13 @@ export class RepoSession implements Omit<EngineApi, "open"> {
 
   /** Raw bytes of one side (image viewer, "View as text"). Sides over 10 MB are refused with TOO_LARGE. */
   async fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null> {
-    const cur = this.requireGeneration(generation);
-    const f = this.requireFile(cur, id);
-    const bytes = await loadSide(f, side, cur.comp.sides, { db: this.db, fs: this.fs });
-    if (bytes && bytes.byteLength > HUGE_FILE_BYTES) {
-      throw new EngineError("TOO_LARGE", `${id} (${side}) is ${bytes.byteLength} bytes.`, {
-        hint: "Files over 10 MB are never transferred to the page.",
-        path: f.newPath ?? f.oldPath ?? id,
-      });
-    }
-    return bytes;
+    return this.diffRunner.fileBytes(generation, id, side);
   }
 
   // ---- background stats -----------------------------------------------------------------------
 
-  private startStats(generation: number): void {
-    const cur = this.current;
-    if (!cur) return;
-    this.statsGen = generation;
-    // LIFO: push in path order so the top of the list (first rows) is served first.
-    this.statsQueue = cur.result.files.map((f) => f.id).reverse();
-    void this.pumpStats(cur);
-  }
-
-  private stopStats(): void {
-    this.statsQueue = [];
-    this.statsGen = -1;
-  }
-
   async prioritise(ids: string[]): Promise<void> {
-    if (!this.current || this.statsGen !== this.current.generation) return;
-    const wanted = new Set(ids);
-    this.statsQueue = this.statsQueue.filter((id) => !wanted.has(id));
-    for (let i = ids.length - 1; i >= 0; i--) {
-      const id = ids[i] as string;
-      if (this.current.byId.has(id) && !this.current.stats.has(id)) this.statsQueue.push(id);
-    }
-  }
-
-  private async pumpStats(cur: Current): Promise<void> {
-    // A running pump belongs to an older generation once `this.current` moves on; its workers exit
-    // after their in-flight read and the `finally` below re-launches for the new generation
-    // (T7.5 review: previously the new generation's stats never started in that window).
-    if (this.statsActive > 0) return;
-    this.statsActive++;
-    const batchSize = this.opts.statsBatchSize ?? 32;
-    const batchMs = this.opts.statsBatchMs ?? 100;
-    let batch: Record<string, FileStats> = {};
-    let batchCount = 0;
-    let batchStarted = performance.now();
-    let done = 0;
-    const total = cur.result.files.length;
-    const flush = () => {
-      if (batchCount === 0) return;
-      try {
-        void this.sink.onStats({ generation: cur.generation, stats: batch });
-      } catch {
-        /* dead sink */
-      }
-      batch = {};
-      batchCount = 0;
-      batchStarted = performance.now();
-      this.progress({ phase: "stats", done, total });
-    };
-    try {
-      const workers: Promise<void>[] = [];
-      const concurrency = this.opts.statsConcurrency ?? 4;
-      for (let w = 0; w < concurrency; w++) {
-        workers.push(
-          (async () => {
-            while (this.statsGen === cur.generation && this.current === cur && !this.closed) {
-              const id = this.statsQueue.pop();
-              if (id === undefined) return;
-              const f = cur.byId.get(id);
-              if (!f || cur.stats.has(id)) continue;
-              try {
-                const s = await this.statsFor(cur, f);
-                if (this.current !== cur) return;
-                batch[id] = s;
-                batchCount++;
-                done++;
-                if (batchCount >= batchSize || performance.now() - batchStarted > batchMs) flush();
-              } catch (e) {
-                if (this.current !== cur) return;
-                cur.stats.set(id, null);
-                batch[id] = null;
-                batchCount++;
-                done++;
-                RepoSession.emitWarning(this.sink, {
-                  code: "FILE_TOO_LARGE",
-                  message: `Could not compute stats for ${id}: ${(e as Error).message}`,
-                  detail: id,
-                });
-              }
-            }
-          })(),
-        );
-      }
-      await Promise.all(workers);
-      if (this.current === cur) {
-        flush();
-        if (this.lastCompute) this.lastCompute.statsMs = performance.now() - this.statsStartedAt;
-      }
-    } finally {
-      this.statsActive--;
-      const now = this.current;
-      if (
-        this.statsActive === 0 &&
-        now &&
-        now !== cur &&
-        !this.closed &&
-        this.statsGen === now.generation &&
-        this.statsQueue.length > 0
-      ) {
-        void this.pumpStats(now);
-      }
-    }
+    return this.statsQueue.prioritise(ids);
   }
 
   // ---- metrics (T7.2) -------------------------------------------------------------------------
@@ -1850,148 +1349,27 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   // ---- probes (polling fallback, T6.3) --------------------------------------------------------
 
   async probe(tier: ProbeTier): Promise<string> {
-    this.assertOpen();
-    const t0 = performance.now();
-    let sig: string;
-    if (tier === "git") sig = await this.probeGit();
-    else if (tier === "index") sig = await this.probeIndex();
-    else sig = await this.probeUntracked();
-    this.progress({ phase: "probe", tier, durationMs: performance.now() - t0 });
-    return sig;
-  }
-
-  private async statSig(path: string): Promise<string> {
-    try {
-      const s = await this.fs.stat(path);
-      return `${path}=${s.mtimeMs}:${s.size}`;
-    } catch (e) {
-      if (errorCode(e) === "ENOENT" || errorCode(e) === "ENOTDIR") return `${path}=-`;
-      throw e;
-    }
-  }
-
-  private async probeGit(): Promise<string> {
-    const paths = new Set<string>([
-      "/.git/HEAD",
-      "/.git/index",
-      "/.git/packed-refs",
-      "/.git/config",
-      "/.git/info/exclude",
-      "/.git/ORIG_HEAD",
-      // T10.2: the banner must follow git live, so every operation state file is in the signature
-      ...OPERATION_FILES.map((f) => `/.git/${f}`),
-    ]);
-    if (this.refs.headBranch) paths.add(`/.git/refs/heads/${this.refs.headBranch}`);
-    const last = this.lastSource ? sourceRefs(this.lastSource) : null;
-    for (const ref of [last?.sourceRef, last?.targetRef]) {
-      // only full ref names are files under .git; a range may name a SHA or `stash@{0}`
-      if (ref?.startsWith("refs/")) paths.add(`/.git/${ref}`);
-    }
-    try {
-      for (const remote of await this.fs.readdirWithKinds("/.git/refs/remotes")) {
-        if (remote.kind === "directory") paths.add(`/.git/refs/remotes/${remote.name}/HEAD`);
-      }
-    } catch (e) {
-      if (errorCode(e) !== "ENOENT" && errorCode(e) !== "ENOTDIR") throw e;
-    }
-    const parts = await Promise.all([...paths].sort().map((p) => this.statSig(p)));
-    return `git:${await digest(parts.join("\n"))}`;
-  }
-
-  private async probeIndex(): Promise<string> {
-    let index: IndexSnapshot;
-    try {
-      index = await readIndex(this.fs);
-    } catch (e) {
-      if (errorCode(e) === "ENOENT") return "index:none";
-      throw e;
-    }
-    const parts: string[] = [];
-    for (const e of index.entries) {
-      if (e.stage !== 0) continue;
-      parts.push(`${e.path}\t${e.size}\t${e.mtimeSec}.${e.mtimeNsec}\t${e.oid}`);
-    }
-    return `index:${index.entries.length}:${await digest(parts.join("\n"))}`;
-  }
-
-  /** Ignore-pruned walk of untracked paths straight off the handles (no FsaFs cache), count + hash. */
-  private async probeUntracked(): Promise<string> {
-    let tracked = new Set<string>();
-    try {
-      const index = await readIndex(this.fs);
-      tracked = new Set(index.entries.map((e) => e.path));
-    } catch (e) {
-      if (errorCode(e) !== "ENOENT") throw e;
-    }
-    const found: string[] = [];
-    const walk = async (dir: DirHandleLike, prefix: string): Promise<void> => {
-      if (prefix) await this.ignore.enterDir(prefix);
-      for await (const [name, h] of dir.entries()) {
-        const path = prefix ? `${prefix}/${name}` : name;
-        if (h.kind === "directory") {
-          if (path === ".git" || this.ignore.isDirIgnored(path)) continue;
-          await walk(h, path);
-        } else if (!tracked.has(path) && !this.ignore.isFileIgnored(path)) found.push(path);
-      }
-    };
-    await this.ignore.enterDir("");
-    await walk(this.root, "");
-    found.sort();
-    return `untracked:${found.length}:${await digest(found.join("\n"))}`;
+    return this.watchOrchestrator.probe(tier);
   }
 
   // ---- invalidation ---------------------------------------------------------------------------
 
   async invalidate(scope: InvalidateScope, paths?: string[]): Promise<void> {
-    this.assertOpen();
-    if (scope === "refs") {
-      this.db.dropCaches(true);
-      this.fs.invalidatePath("/.git");
-      this.dropHistoryCaches();
-      return;
-    }
-    if (scope === "worktree") {
-      if (paths && paths.length > 0) {
-        for (const p of paths) this.fs.invalidatePath(`/${p.replace(/^\/+/, "")}`);
-        this.scanner.forgetPaths(paths);
-        if (paths.some((p) => /(^|\/)\.gitignore$/.test(p))) this.ignore.invalidate();
-        if (paths.some((p) => /(^|\/)\.gitattributes$/.test(p))) this.attrs.invalidate();
-      } else {
-        this.fs.invalidateAll();
-        this.ignore.invalidate();
-        this.attrs.invalidate();
-      }
-      return;
-    }
-    this.fs.invalidateAll();
-    this.db.dropCaches(true);
-    this.ignore.invalidate();
-    this.attrs.invalidate();
-    this.dropHistoryCaches();
+    return this.watchOrchestrator.invalidate(scope, paths);
   }
 
   async forceRehash(): Promise<void> {
-    this.assertOpen();
-    this.scanner.forgetStatCache();
-    this.fs.invalidateAll();
-    this.db.dropCaches(true);
-    this.ignore.invalidate();
-    this.attrs.invalidate();
-    this.dropHistoryCaches();
+    return this.watchOrchestrator.forceRehash();
   }
 
   async close(): Promise<void> {
     if (this.closed) return;
     this.closed = true;
-    this.inflight?.abort();
-    for (const ac of this.fileDiffAborts.values()) ac.abort();
-    this.fileDiffAborts.clear();
-    for (const ac of this.conflictAborts.values()) ac.abort();
-    this.conflictAborts.clear();
+    this.diffRunner.abortAll();
     this.singleFlight.clear();
     for (const ac of this.singleAborts.values()) ac.abort();
     this.singleAborts.clear();
-    this.stopStats();
+    this.statsQueue.stop();
     this.current = null;
     this.db.dropCaches(true);
     this.fs.invalidateAll();
@@ -2005,34 +1383,4 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   private assertOpen(): void {
     if (this.closed) throw NO_SESSION();
   }
-}
-
-function isDiffComputation(v: unknown): v is DiffComputation {
-  return typeof v === "object" && v !== null && Array.isArray((v as DiffComputation).warnings);
-}
-
-/** The one `OPERATION_IN_PROGRESS` warning a session records (docs/errors.md owns the UI copy). */
-function operationWarning(op: RepoOperation): RepoWarning {
-  const where = op.step && op.total ? ` (step ${op.step} of ${op.total})` : "";
-  return {
-    code: "OPERATION_IN_PROGRESS",
-    message: `A ${op.kind} is in progress in this repository${where}.`,
-    ...(op.conflicts > 0
-      ? { detail: `${op.conflicts} path${op.conflicts === 1 ? "" : "s"} still conflict.` }
-      : {}),
-  };
-}
-
-function dedupe(ws: RepoWarning[]): RepoWarning[] {
-  const seen = new Set<string>();
-  return ws.filter((w) => {
-    const k = `${w.code}:${w.detail ?? ""}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-}
-
-async function digest(s: string): Promise<string> {
-  return toHex(await sha1(new TextEncoder().encode(s))).slice(0, 16);
 }

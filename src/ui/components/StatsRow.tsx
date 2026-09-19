@@ -1,9 +1,7 @@
-import { LoaderCircle, FileDiff as PatchGlyph, TriangleAlert } from "lucide-react";
-import { Fragment, type ReactNode } from "react";
+import { LoaderCircle, FileDiff as PatchGlyph } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
-import type { FileDiff, FileStatus } from "../../engine/types";
+import type { FileDiff } from "../../engine/types";
 import { useNow } from "../hooks/useNow";
-import { openRepoOnce } from "../openRepo";
 import { patchTagLabel } from "../patch";
 import { requestScrollTo } from "../scrollBus";
 import {
@@ -15,117 +13,28 @@ import {
   statsProgressOf,
   useStore,
 } from "../store";
-import { parseFilter } from "../treeModel";
 import { ExportMenu } from "./ExportMenu";
 import { FileFilter } from "./FileFilter";
-import { LayerChip } from "./LayerChip";
+import { notCountedTitle, StatsBreakdown, StatsNotCounted } from "./StatsBreakdown";
+import {
+  Divider,
+  layerTitleOf,
+  StatsLayerFilters,
+  statusTitleOf,
+  toggleFilterToken,
+} from "./StatsLayerFilters";
+import {
+  readAtLabel,
+  STALL_MS,
+  StatsProgressIndicator,
+  StatsSnapshotMeta,
+  StatsStalledIndicator,
+} from "./StatsSnapshotMeta";
+import { formatNumber, INDICATOR_ACCENT, PATCH_TAG, STATS_ROW_CONTAINER } from "./statsRow.styles";
 import { ViewControls } from "./ViewControls";
 import { ViewedCounter } from "./ViewedCounter";
 
-/** No stats batch for this long while incomplete ⇒ S8 "stats stalled". */
-export const STALL_MS = 10_000;
-
-const n = (x: number) => x.toLocaleString("en-US");
-
-/** T11.15: "14:02" — the clock time the snapshot was read, 24 h so the tag stays one short line. */
-export function readAtLabel(at: number): string {
-  return new Date(at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-}
-
-function Divider() {
-  return <span aria-hidden className="h-[18px] w-px shrink-0 bg-line" />;
-}
-
-const STATUS_KEYS = ["M", "A", "D", "R", "T"] as const;
-type StatusKey = (typeof STATUS_KEYS)[number];
-
-const STATUS_META: Record<
-  StatusKey,
-  { status: FileStatus; word: string; token: string; cls: string }
-> = {
-  M: {
-    status: "modified",
-    word: "modified",
-    token: "status:M",
-    cls: "bg-status-m-bg text-status-m-fg",
-  },
-  A: { status: "added", word: "added", token: "status:A", cls: "bg-status-a-bg text-status-a-fg" },
-  D: {
-    status: "deleted",
-    word: "deleted",
-    token: "status:D",
-    cls: "bg-status-d-bg text-status-d-fg",
-  },
-  R: {
-    status: "renamed",
-    word: "renamed",
-    token: "status:R",
-    cls: "bg-status-r-bg text-status-r-fg",
-  },
-  T: {
-    status: "typechange",
-    word: "type changed",
-    token: "status:T",
-    cls: "bg-status-t-bg text-status-t-fg",
-  },
-};
-
-const LAYER_KEYS = ["staged", "unstaged", "untracked", "conflict"] as const;
-
-/** Adds the token when absent, removes it when already there; every other word survives. */
-export function toggleFilterToken(filter: string, token: string): string {
-  const words = filter.trim().split(/\s+/).filter(Boolean);
-  const at = words.findIndex((w) => w.toLowerCase() === token.toLowerCase());
-  if (at >= 0) words.splice(at, 1);
-  else words.push(token);
-  return words.join(" ");
-}
-
-/** "2 files over 1 MB, 3 binary, 1 read error" — zero parts are left out. */
-export function notCountedTitle(p: { tooLarge: number; binary: number; failed: number }): string {
-  const parts: string[] = [];
-  if (p.tooLarge > 0)
-    parts.push(`${n(p.tooLarge)} ${p.tooLarge === 1 ? "file" : "files"} over 1 MB`);
-  if (p.binary > 0) parts.push(`${n(p.binary)} binary`);
-  if (p.failed > 0) parts.push(`${n(p.failed)} read ${p.failed === 1 ? "error" : "errors"}`);
-  return parts.join(", ");
-}
-
-function listTitle(pairs: [number, string][]): string {
-  return pairs
-    .filter(([count]) => count > 0)
-    .map(([count, word]) => `${n(count)} ${word}`)
-    .join(", ");
-}
-
-/** The 15 px status square of the breakdown — a toggle for its `status:` filter token. */
-function StatusToggle({
-  letter,
-  pressed,
-  onToggle,
-  count,
-}: {
-  letter: StatusKey;
-  pressed: boolean;
-  onToggle: () => void;
-  count: number;
-}) {
-  const m = STATUS_META[letter];
-  return (
-    <button
-      type="button"
-      aria-pressed={pressed}
-      aria-label={`Filter: ${m.word} (${n(count)})`}
-      title={`Filter: ${m.token}`}
-      onClick={onToggle}
-      className={`inline-flex size-[15px] shrink-0 items-center justify-center rounded-[4px] font-mono text-[9.5px] leading-none font-bold ${m.cls} ${
-        pressed ? "outline-2 outline-offset-1 outline-accent" : ""
-      }`}
-    >
-      {letter}
-    </button>
-  );
-}
+export { notCountedTitle, readAtLabel, STALL_MS, toggleFilterToken };
 
 /**
  * Row 2 of the top bar (mockup §3 `.stats`, S1–S8): file count, `+/−`, the status and layer
@@ -147,9 +56,6 @@ export function StatsRow() {
   const setPref = useStore((s) => s.setPref);
   const setActiveFile = useStore((s) => s.setActiveFile);
   const requestRefresh = useStore((s) => s.requestRefresh);
-  // T11.15: null unless the folder was read once (Firefox/Safari, or the palette's snapshot action).
-  const snapshotReadAt = useStore((s) => s.snapshotReadAt);
-  const addToast = useStore((s) => s.addToast);
   // T11.2: printed only for a range — a branch pair is already spelled out by the two pickers, and
   // Design §14 rule 1 keeps the bars looking like v1 until something unusual is being compared.
   const rangeLabel = useStore((s) => (s.diffSource?.kind === "range" ? selectSourceLabel(s) : ""));
@@ -180,7 +86,6 @@ export function StatsRow() {
   };
   const totals = sum(files);
   const breakdown = breakdownOf(files);
-  const parsed = parseFilter(filter);
 
   // S6: a filter that matches nothing keeps the whole-diff viewed counter (12 / 118, not 0 / 0)
   const viewedOver = filtering && files.length === 0 ? allFiles : files;
@@ -192,14 +97,14 @@ export function StatsRow() {
   const notCounted =
     progress.notCounted.tooLarge + progress.notCounted.binary + progress.notCounted.failed;
 
-  const statusTitle = listTitle(
-    STATUS_KEYS.map((k) => [breakdown.status[k], STATUS_META[k].word] as [number, string]),
-  );
-  const layerTitle = listTitle(LAYER_KEYS.map((k) => [breakdown.layers[k], k] as [number, string]));
+  const statusTitle = statusTitleOf(breakdown);
+  const layerTitle = layerTitleOf(breakdown);
   const titleParts: string[] = [];
   if (filtering) {
     const t = sum(allFiles);
-    titleParts.push(`${n(allFiles.length)} files · +${n(t.additions)} −${n(t.deletions)} in total`);
+    titleParts.push(
+      `${formatNumber(allFiles.length)} files · +${formatNumber(t.additions)} −${formatNumber(t.deletions)} in total`,
+    );
   }
   // Below 1100 px the two breakdown groups are hidden, so their text lives in this tooltip.
   if (statusTitle) titleParts.push(statusTitle);
@@ -216,42 +121,23 @@ export function StatsRow() {
     requestScrollTo(firstNotCounted.id);
   };
 
-  let totalsNode: ReactNode;
-  if (progress.complete || stalled) {
-    totalsNode = (
-      <span
-        className={`font-mono font-semibold tabular-nums ${dim || stalled ? "opacity-55" : ""}`}
-      >
-        <span className="text-success">+{n(totals.additions)}</span>{" "}
-        <span className="text-danger">−{n(totals.deletions)}</span>
-      </span>
-    );
-  } else {
-    totalsNode = (
-      <span
-        role="img"
-        aria-label="Counting changes"
-        className="inline-flex shrink-0 items-center gap-1.5"
-      >
-        <span className="inline-block h-2.5 w-9 rounded-[3px] bg-surface-raised" />
-        <span className="inline-block h-2.5 w-9 rounded-[3px] bg-surface-raised" />
-      </span>
-    );
-  }
-
   return (
-    <div className="flex min-h-10 flex-wrap items-center gap-3 bg-surface px-3 py-1 text-[12.5px] leading-5 text-muted">
-      <span className={`shrink-0 tabular-nums ${dimCls}`} title={countTitle}>
-        <b className="font-semibold text-ink">{n(files.length)}</b>{" "}
-        {filtering
-          ? `of ${n(allFiles.length)} match`
-          : `${files.length === 1 ? "file" : "files"} changed`}
-      </span>
-      {totalsNode}
+    <div className={STATS_ROW_CONTAINER}>
+      <StatsBreakdown
+        filesCount={files.length}
+        totalFilesCount={allFiles.length}
+        filtering={filtering}
+        dimCls={dimCls}
+        countTitle={countTitle}
+        totals={totals}
+        complete={progress.complete}
+        stalled={stalled}
+        dim={dim}
+      />
       {patchName !== "" && (
         <span
           data-testid="patch-tag"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-[4px] border border-attention/40 px-1.5 text-[11.5px] text-attention"
+          className={PATCH_TAG}
           title="A patch file is open; there is no repository behind these changes"
         >
           <PatchGlyph size={12} aria-hidden />
@@ -268,42 +154,25 @@ export function StatsRow() {
         </span>
       )}
 
-      {!progress.complete && !stalled && (
-        <span className="inline-flex shrink-0 items-center gap-1.5 text-accent">
-          <LoaderCircle size={13} aria-hidden className="spin" />
-          <span className="tabular-nums">
-            stats {n(progress.counted)} / {n(progress.total)}
-          </span>
-        </span>
-      )}
-      {stalled && (
-        <span className="inline-flex shrink-0 items-center gap-1.5 text-attention">
-          <TriangleAlert size={13} aria-hidden />
-          <span className="tabular-nums">
-            stats stopped at {n(progress.counted)} / {n(progress.total)} ·{" "}
-          </span>
-          <button
-            type="button"
-            className="text-accent hover:underline"
-            onClick={() => requestRefresh("force")}
-          >
-            re-count
-          </button>
-        </span>
-      )}
-      {notCounted > 0 && (
-        <span
-          className="inline-flex shrink-0 items-center gap-1.5 text-attention"
-          title={notCountedTitle(progress.notCounted)}
-        >
-          <TriangleAlert size={13} aria-hidden />
-          <button type="button" className="text-accent hover:underline" onClick={jumpToNotCounted}>
-            {n(notCounted)} not counted
-          </button>
-        </span>
-      )}
+      <StatsProgressIndicator
+        complete={progress.complete}
+        stalled={stalled}
+        counted={progress.counted}
+        total={progress.total}
+      />
+      <StatsStalledIndicator
+        stalled={stalled}
+        counted={progress.counted}
+        total={progress.total}
+        onRecount={() => requestRefresh("force")}
+      />
+      <StatsNotCounted
+        notCounted={notCounted}
+        progressNotCounted={progress.notCounted}
+        onJump={jumpToNotCounted}
+      />
       {dim && (
-        <span className="inline-flex shrink-0 items-center gap-1.5 text-accent">
+        <span className={INDICATOR_ACCENT}>
           <LoaderCircle size={13} aria-hidden className="spin" />
           updating
         </span>
@@ -311,60 +180,12 @@ export function StatsRow() {
 
       {!noFiles && (
         <>
-          {statusTitle !== "" && (
-            <>
-              <Divider />
-              <span
-                title={statusTitle}
-                className={`hidden shrink-0 items-center gap-1.5 min-[1100px]:inline-flex ${dimCls}`}
-              >
-                {STATUS_KEYS.filter((k) => breakdown.status[k] > 0).map((k) => (
-                  <Fragment key={k}>
-                    <StatusToggle
-                      letter={k}
-                      count={breakdown.status[k]}
-                      pressed={parsed.statuses?.includes(STATUS_META[k].status) ?? false}
-                      onToggle={() => setFilter(toggleFilterToken(filter, STATUS_META[k].token))}
-                    />
-                    <span className="font-mono text-[12px] tabular-nums text-ink/80">
-                      {n(breakdown.status[k])}
-                    </span>
-                  </Fragment>
-                ))}
-              </span>
-            </>
-          )}
-          {layerTitle !== "" && (
-            <>
-              <Divider />
-              <span
-                title={layerTitle}
-                className={`hidden shrink-0 items-center gap-1.5 min-[1100px]:inline-flex ${dimCls}`}
-              >
-                {LAYER_KEYS.filter((k) => breakdown.layers[k] > 0).map((k) => (
-                  <Fragment key={k}>
-                    <button
-                      type="button"
-                      aria-pressed={parsed.layers?.includes(k) ?? false}
-                      aria-label={`Filter: ${k} (${n(breakdown.layers[k])})`}
-                      title={`Filter: layer:${k}`}
-                      className={
-                        parsed.layers?.includes(k)
-                          ? "rounded-full outline-2 outline-offset-1 outline-accent"
-                          : "rounded-full"
-                      }
-                      onClick={() => setFilter(toggleFilterToken(filter, `layer:${k}`))}
-                    >
-                      <LayerChip kind={k} />
-                    </button>
-                    <span className="-ml-px font-mono text-[11.5px] tabular-nums">
-                      {n(breakdown.layers[k])}
-                    </span>
-                  </Fragment>
-                ))}
-              </span>
-            </>
-          )}
+          <StatsLayerFilters
+            breakdown={breakdown}
+            filter={filter}
+            dimCls={dimCls}
+            onFilterChange={setFilter}
+          />
           <Divider />
           <div className={`shrink-0 ${dimCls}`}>
             <ViewedCounter viewed={viewedCount} total={viewedOver.length} />
@@ -379,28 +200,7 @@ export function StatsRow() {
       )}
 
       {/* T11.15 / Design §14.6: snapshot mode says so in row 2, and re-opening is its refresh. */}
-      {snapshotReadAt !== null && (
-        <span className="inline-flex shrink-0 items-center gap-1.5" data-testid="snapshot-tag">
-          <span className="inline-flex h-4 items-center rounded-full border border-attention/40 bg-banner-warning-bg px-1.5 font-sans text-[11px] font-semibold leading-4 text-attention">
-            Snapshot mode
-          </span>
-          <span className="tabular-nums">{`read at ${readAtLabel(snapshotReadAt)} · `}</span>
-          <button
-            type="button"
-            className="text-accent hover:underline"
-            onClick={() =>
-              void openRepoOnce().catch((e: unknown) =>
-                addToast({
-                  level: "error",
-                  message: e instanceof Error ? e.message : "Couldn't read the folder.",
-                }),
-              )
-            }
-          >
-            Re-open to refresh
-          </button>
-        </span>
-      )}
+      <StatsSnapshotMeta />
 
       <span className="flex-1" />
       <FileFilter value={filter} onChange={setFilter} disabled={noFiles} />
