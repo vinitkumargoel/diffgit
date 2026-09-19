@@ -46,6 +46,7 @@ import type {
   RepoInfo,
   RepoOperation,
   RepoRef,
+  RepoSummary,
   RepoWarning,
   ResolvedRevision,
   SearchResult,
@@ -68,7 +69,8 @@ import { BLAME_REVISIONS, blameCacheKey, PATH_HISTORY_PAGE, pathHistoryCacheKey 
 import { BRANCH_CELL_BATCH, type BranchCells, type BranchFilter } from "./branches";
 import type { CompareSpec } from "./compareHash";
 import { buildSource, isRefExpr, labelOf, revToSide, type SideRev, sideOf } from "./compareSource";
-import { getWorkerClient } from "./engineClient";
+import { type DashboardRepo, indexMtimeOf, SUMMARY_CONCURRENCY } from "./dashboard";
+import { getWorkerClient, summaryClient } from "./engineClient";
 import { LOADING_INLINE_CODES, toUiError, type UiError } from "./errors";
 import { copyText, downloadText, HTML_MIME, PATCH_MIME } from "./export/download";
 import {
@@ -574,6 +576,25 @@ export interface PreflightState {
   error: UiError | null;
 }
 
+/**
+ * Home dashboard state (T11.11, Design §14.6). One entry per **stored** repository, keyed by its
+ * `StoredRepo.id` — this slice belongs to Home, not to an open repository, which is why nothing
+ * here is cleared by `closeRepo` (only the sweep is stopped: a summary read a minute ago is still
+ * the right thing to show while the next one is being read).
+ *
+ * `summary` is whatever the card can show right now — the value from `diffgit-derived`, then the
+ * fresh one — and `mtime` is what the last cheap stat of `.git/index` saw, so `isStale(entry)` can
+ * say the working tree has moved on since. `error` is the last failure of *this card's* summary
+ * (`PERMISSION`, `HANDLE_GONE`, …) and never a screen or a toast: one repository the dashboard
+ * cannot read must not take the page down with it.
+ */
+export interface DashboardEntry {
+  summary: RepoSummary | null;
+  mtime: number | null;
+  loading: boolean;
+  error: UiError | null;
+}
+
 export const INITIAL_PREFLIGHT: PreflightState = {
   branch: null,
   onto: null,
@@ -670,6 +691,41 @@ export const INITIAL_EXPORT: ExportState = {
   confirmed: null,
   busy: null,
 };
+
+export interface DashboardState {
+  summaries: Record<string, DashboardEntry>;
+}
+
+export const EMPTY_DASHBOARD_ENTRY: DashboardEntry = {
+  summary: null,
+  mtime: null,
+  loading: false,
+  error: null,
+};
+export const INITIAL_DASHBOARD: DashboardState = { summaries: {} };
+
+/** Nothing on the dashboard's sessions is worth a progress bar; the cards say "Reading…" instead. */
+const SILENT_SINK: ProgressSink = {
+  onProgress() {},
+  onStats() {},
+  onWarning() {},
+};
+
+/**
+ * The ticket of the newest dashboard sweep. Leaving Home, opening a repository and starting a new
+ * sweep all bump it, and every step of the walk checks it, so a summary that was already in flight
+ * lands nowhere instead of writing into a screen the user has left (the task: "cancel on
+ * navigation", the atlas: "only while the dashboard is visible").
+ */
+let summaryTicket = 0;
+/** Test hook (T11.11): where the throw-away summary sessions come from. */
+let summaryClientFactory: (() => WorkerClient) | null = null;
+export function setSummaryClientFactory(factory: (() => WorkerClient) | null): void {
+  summaryClientFactory = factory;
+}
+function newSummaryClient(): WorkerClient {
+  return summaryClientFactory ? summaryClientFactory() : summaryClient();
+}
 
 export interface StoreState {
   screen: Screen;
@@ -777,6 +833,8 @@ export interface StoreState {
   preflight: PreflightState;
   /** The Export menu (T11.10, Design §14.6): what it has prepared and what the gate is holding. */
   export: ExportState;
+  /** Home's repository cards (T11.11): one summary per stored repository, keyed by `StoredRepo.id`. */
+  dashboard: DashboardState;
 
   // actions
   openRepo(handle: unknown, opts?: OpenOptions): Promise<void>;
@@ -1012,6 +1070,23 @@ export interface StoreState {
   confirmExport(): Promise<void>;
   /** `Cancel`: drops the parked request; nothing is written. */
   cancelExport(): void;
+  // ---- Home dashboard (T11.11, Design §14.6, atlas tab 11) ----
+  /**
+   * Fills the repository cards, and never blocks one from being opened: it shows what
+   * `diffgit-derived` already holds for every card first, and only then reads the repositories
+   * themselves — `SUMMARY_CONCURRENCY` at a time, through a throw-away engine session each
+   * (`summaryClient()`), for handles whose permission is already `granted`. A `prompt` or `denied`
+   * card is never summarised, because `requestPermission()` needs a user gesture and a dashboard
+   * that prompts twenty times on load is the atlas's first risk.
+   *
+   * A repository is re-read only when the cheap stat of its `.git/index` disagrees with the cached
+   * summary's `indexMtimeMs` (`force` skips that check — the `Refresh all` button). Every step
+   * checks the sweep's ticket, so `cancelSummaries()` — leaving Home, or opening a repository —
+   * stops it wherever it is.
+   */
+  loadSummaries(repos: DashboardRepo[], opts?: { force?: boolean }): Promise<void>;
+  /** Stops the sweep and clears the spinners it left behind. Idempotent. */
+  cancelSummaries(): void;
 }
 
 let toastSeq = 0;
@@ -1409,6 +1484,7 @@ export const useStore = create<StoreState>()((set, get) => {
     insights: INITIAL_INSIGHTS,
     preflight: INITIAL_PREFLIGHT,
     export: INITIAL_EXPORT,
+    dashboard: INITIAL_DASHBOARD,
 
     async openRepo(handle, opts = {}) {
       await get().closeRepo();
@@ -1585,6 +1661,7 @@ export const useStore = create<StoreState>()((set, get) => {
       branchCellQueue.clear();
       secretsAfterStats = null;
       searchTicket++;
+      summaryTicket++; // T11.11: a sweep started on Home must not write into the next visit
     },
 
     setSource(refOrName) {
@@ -3018,6 +3095,96 @@ export const useStore = create<StoreState>()((set, get) => {
 
     cancelExport() {
       set({ export: { ...get().export, pending: null } });
+    },
+
+    // ---- Home dashboard (T11.11, Design §14.6) --------------------------------------------------
+
+    async loadSummaries(repos, opts = {}) {
+      summaryTicket++;
+      const ticket = summaryTicket;
+      const alive = () => summaryTicket === ticket;
+      const patch = (id: string, next: Partial<DashboardEntry>) => {
+        set((s) => ({
+          dashboard: {
+            summaries: {
+              ...s.dashboard.summaries,
+              [id]: { ...(s.dashboard.summaries[id] ?? EMPTY_DASHBOARD_ENTRY), ...next },
+            },
+          },
+        }));
+      };
+
+      // 1. Every card shows what is already known before anything is computed (the atlas's first
+      //    mitigation: "show cards from cache immediately"). The derived store is only asked for
+      //    the cards this session has not filled yet.
+      for (const repo of repos) {
+        if (!alive()) return;
+        if (get().dashboard.summaries[repo.id]?.summary) continue;
+        const hit = await getDerived<RepoSummary>(derivedKey.summary(repo.id));
+        if (!alive()) return;
+        if (hit) patch(repo.id, { summary: hit, mtime: hit.indexMtimeMs });
+      }
+
+      // 2. …then the repositories themselves, one session at a time, granted handles only.
+      const runOne = async (repo: DashboardRepo) => {
+        const mtime = await indexMtimeOf(repo.handle);
+        if (!alive()) return;
+        if (mtime !== null) patch(repo.id, { mtime });
+        const cached = get().dashboard.summaries[repo.id]?.summary ?? null;
+        // Design §14.6 / atlas tab 11: revalidate only when the index moved under the cache.
+        if (!opts.force && cached && mtime !== null && cached.indexMtimeMs === mtime) return;
+        patch(repo.id, { loading: true, error: null });
+        let session: WorkerClient | null = null;
+        try {
+          session = newSummaryClient();
+          await session.open(repo.handle, SILENT_SINK);
+          const summary = await session.summarise();
+          if (!alive()) return;
+          // The engine's own reading of `.git/index` is the authority on how fresh this card is.
+          patch(repo.id, { summary, mtime: summary.indexMtimeMs, loading: false, error: null });
+          void setDerived(derivedKey.summary(repo.id), summary);
+        } catch (e) {
+          const err = toUiError(e);
+          const stale = err.code === "STALE" || err.code === "CANCELLED";
+          if (stale) ignoreStale(e);
+          if (!alive()) return;
+          patch(repo.id, { loading: false, error: stale ? null : err });
+        } finally {
+          try {
+            await session?.close();
+          } catch (e) {
+            // the session is being discarded anyway; a failed close is not the user's problem
+            console.warn("loadSummaries: closing the summary session failed", e);
+          }
+          session?.terminate();
+        }
+      };
+
+      const queue = repos.filter((r) => r.access === "granted");
+      const lanes = Math.max(1, Math.min(SUMMARY_CONCURRENCY, queue.length));
+      await Promise.all(
+        Array.from({ length: lanes }, async () => {
+          while (alive()) {
+            const next = queue.shift();
+            if (!next) return;
+            await runOne(next);
+          }
+        }),
+      );
+    },
+
+    cancelSummaries() {
+      summaryTicket++;
+      const { summaries } = get().dashboard;
+      const entries = Object.entries(summaries);
+      if (!entries.some(([, e]) => e.loading)) return;
+      set({
+        dashboard: {
+          summaries: Object.fromEntries(
+            entries.map(([id, e]) => [id, e.loading ? { ...e, loading: false } : e]),
+          ),
+        },
+      });
     },
   };
 });

@@ -672,8 +672,11 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       const v2 = requireV2();
       await wait(client.latency);
       if (v2.summary) return v2.summary;
+      // A fixture `bun run record` has no `summary` for (the hand-written showcase sets, `basic`,
+      // `worktree`): derive one from the recording itself, so a dashboard card (T11.11) reads the
+      // same layers the diff pane would show for that handle rather than an empty repository.
       const info = current?.info;
-      const files = lastResult?.files ?? [];
+      const files = lastResult?.files ?? current?.diff.files ?? [];
       const count = (layer: string) =>
         files.filter((f) => f.layers.includes(layer as never)).length;
       return {

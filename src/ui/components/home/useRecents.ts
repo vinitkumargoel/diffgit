@@ -30,6 +30,12 @@ export interface Recents {
   access: Record<string, PermissionAnswer>;
   state: Record<string, RowState>;
   open(repo: StoredRepo): void;
+  /**
+   * T11.11: asks the browser for read access **without** opening the repository, so a card whose
+   * handle is still on `prompt` can be summarised. Must stay inside the click — `requestPermission`
+   * is gated on user activation, which is the whole reason the dashboard never prompts on load.
+   */
+  grant(repo: StoredRepo): void;
   forget(repo: StoredRepo): void;
   undo(repo: StoredRepo): void;
   clearAll(): void;
@@ -128,9 +134,20 @@ export function useRecents(): Recents {
 
   const dismiss = useCallback((repo: StoredRepo) => mark(repo.id, "idle"), [mark]);
 
+  const grant = useCallback((repo: StoredRepo) => {
+    void (async () => {
+      const answer = await ensurePermission(repo.handle);
+      setAccess((a) => ({ ...a, [repo.id]: answer }));
+      // A refused grant is the same inline message a refused open gets (H4); nothing else changes.
+      setState((s) => ({ ...s, [repo.id]: answer === "denied" ? "denied" : "idle" }));
+    })();
+  }, []);
+
   const open = useCallback(
     (repo: StoredRepo) => {
       mark(repo.id, "opening");
+      // T11.11: opening wins over the dashboard; the background sweep stops before the gesture.
+      useStore.getState().cancelSummaries();
       void (async () => {
         // The gesture is still live here: requestPermission() has to run inside the click.
         const answer = await ensurePermission(repo.handle);
@@ -161,5 +178,5 @@ export function useRecents(): Recents {
     [mark],
   );
 
-  return { repos, loaded, access, state, open, forget, undo, clearAll, dismiss };
+  return { repos, loaded, access, state, open, grant, forget, undo, clearAll, dismiss };
 }

@@ -956,6 +956,47 @@ warning the next recompute replaces — T11.7's rule for `HISTORY_DEGRADED` agai
 (`PREDICTION_LABEL`/`PREDICTION_TITLE`, `countPredictions`, `panelTitle`, `summaryLine`,
 `touchesLabel`, `overlapLabel`, `todoLines`, `mergeNote`, `signedNote`, `isCapped` and the notes).
 
+<!-- T11.11 --> `StoreState` gained `dashboard: DashboardState` (`summaries: Record<string,
+DashboardEntry>`, keyed by `StoredRepo.id`, each `{ summary: RepoSummary | null; mtime: number |
+null; loading: boolean; error: UiError | null }`) with `loadSummaries(repos, { force })` and
+`cancelSummaries()`. It is **Home's** slice, not an open repository's: `closeRepo` only bumps the
+sweep's ticket (`summaryTicket++`) and leaves the cards standing, because a summary read a minute
+ago is still the right thing to show while the next one is read. `HomeScreen` starts the sweep from
+an effect and cancels it on unmount, `pickAndOpenRepo` and `useRecents.open` cancel it before the
+gesture, and every step of the walk checks the ticket — so the dashboard can never be in the way of
+opening a repository.
+
+`loadSummaries` fills every card from `diffgit-derived` (`summary:<repoId>`, the `RepoSummary`
+verbatim) **before** it reads anything, then walks the repositories `SUMMARY_CONCURRENCY` (1) at a
+time through `engineClient.summaryClient()` — a second, short-lived `WorkerClient` per repository,
+`open` → `summarise` → `close` → `terminate`, so the open repository keeps its generation, its
+caches and its packs (`<!-- T10.10 -->`: `summarise()` never disturbs an open diff). Only handles
+whose `queryPermission()` already answers `granted` are read; a `prompt` or `denied` card shows what
+was last known plus a `Re-authorise` button, which calls `ensurePermission` **inside the click** and
+nothing else — granting is not opening. `STALE` / `CANCELLED` go through `ignoreStale`; any other
+rejection is kept on that one card (`describeError(code).title`, e.g. `HANDLE_GONE` → "Folder not
+found") and never becomes a screen or a toast. Test hook: `setSummaryClientFactory(factory | null)`,
+the `setStoreClient` of the dashboard.
+
+**The cheap stat is the UI's, not the engine's.** `indexMtimeOf(handle)` in the new pure module
+`src/ui/dashboard.ts` reads `<repo>/.git/index`'s `lastModified` straight off the directory handle —
+the same number `IndexReader` keys `RepoSummary.indexMtimeMs` on — and a repository is re-read only
+when it disagrees with the cached summary (`force` skips the check: the `Refresh all` button). No
+`EngineApi.statIndex` was added, although T11.11's brief allows one: every engine entry point opens
+a session first, which is exactly the cost this check exists to avoid, and the answer is one file
+handle in the UI. A handle that cannot be stat-ed (an E2E marker, a lapsed permission, a
+worktree-gitdir `.git` file) answers `null`, which means "cannot tell" and re-summarises.
+`isStale(entry)` — the atlas's stale marker — is exactly `mtime !== summary.indexMtimeMs`, so it
+shows while a card is behind the working tree and cannot be refreshed.
+
+`src/ui/dashboard.ts` (`SUMMARY_CONCURRENCY`, `DashboardRepo`, `COUNT_ORDER`, `countChips`,
+`operationTag`, `lastCommitLine`, `lastSeenLine`, `isStale`, `indexMtimeOf` and every string) owns
+the maths and the copy; `LayerChip` gained an optional `count` (`2 staged`, `2 conflicts`, via the
+exported `layerCountLabel`) and `RecentRow.Highlight` is now exported for the card's name.
+`RecentPanel`'s rows became the `RepoCard` grid; `RecentRow` itself is untouched and still serves
+the nav popover (H5), and the Continue card (H1, exactly one repository) shows the same summary
+strip.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).
