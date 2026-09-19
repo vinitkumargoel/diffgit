@@ -73,6 +73,43 @@ that `probe("git")` stats so the banner follows git live. `bun run record` write
 `operation` into `src/test/recorded/<fixture>.v2.json` and now records `rebase-conflict` and
 `merge-conflict` as well.
 
+<!-- T10.3 --> `src/engine/api.ts` gains the conflict shapes (they are payloads, not domain types,
+so they live beside `FileDiffPayload`):
+
+```ts
+export interface SideBlob { oid: Oid; text: string | null; size: number; binary: boolean }
+export type ConflictKind = "both-modified" | "both-added" | "deleted-by-us" | "deleted-by-them" | "both-deleted";
+export interface ConflictMarker { start: number; end: number; oursEnd: number; baseEnd?: number }
+export interface ConflictPayload {
+  id: string; generation: number;
+  base: SideBlob | null; ours: SideBlob | null; theirs: SideBlob | null;
+  oursHunks: HunkModel | null; theirsHunks: HunkModel | null;
+  worktree: { text: string; markers: ConflictMarker[] } | null;
+  resolvedInWorktree: boolean; kind: ConflictKind; labels: { ours: string; theirs: string };
+}
+```
+
+`ConflictKind` is derived structurally from which of the index stages 1/2/3 exist, so git's rarer
+`AU` (stage 2 only) reads as `deleted-by-them` and `UA` (stage 3 only) as `deleted-by-us` — in both
+the side with no blob is the deleted one. `FileDiff.status` for a row in the `conflict` layer follows
+the kind (`both-added` → `added`, `deleted-by-*` → `deleted`, otherwise `modified`); its
+`oldPath`/`newPath` still describe where content can be loaded from, so a `both-added` row keeps an
+old side and a `deleted-by-them` row keeps the marked-up working-tree file. `ConflictMarker` numbers
+are **1-based line numbers of the marker lines themselves**: `oursEnd` is the `|||||||` line in
+`diff3`/`zdiff3` style and the `=======` line otherwise, and `baseEnd` (the `=======` line) is only
+set when a `|||||||` was found — so ours is `(start, oursEnd)`, base is `(oursEnd, baseEnd)` and
+theirs is `(baseEnd ?? oursEnd, end)`. `SideBlob.text` and `ConflictPayload.worktree` are null for a
+binary side or one over 1 MB (`LARGE_FILE_BYTES`), and the corresponding `*Hunks` are null too;
+`resolvedInWorktree` is only true when the file was actually read and decoded and holds no markers,
+so an absent, binary or > 10 MB file is never called resolved. `labels.ours` is the checked-out
+branch, or what a rebase is replaying onto while HEAD is detached; `labels.theirs` is
+`RepoOperation.current` (`MERGE_HEAD` / `CHERRY_PICK_HEAD` / `REVERT_HEAD` / the rebase's
+`stopped-sha`) shown as a ref name when one points at it and as a short oid otherwise — git's own two
+spellings for the `>>>>>>>` marker. `conflict()` re-reads `.git/index` on every call so the card
+follows the file while the user resolves it elsewhere. `bun run record` also records
+`cherry-pick-conflict` and writes `conflicts` (file id → `ConflictPayload`) into
+`<fixture>.v2.json`; the mock rewrites `generation` on serve.
+
 ```ts
 export interface ResolvedRevision {
   expr: string; oid: Oid | null;                     // null only for "<root>^" → empty tree

@@ -6,8 +6,13 @@
  * revision expression `expected/rev-parse.txt` asks about, and a few range diffs (two-dot, three-dot,
  * a single commit, a stash). `workerClient.mock.ts` serves `resolveRevision` / `listTags` /
  * `listStashes` / range `computeDiff` straight out of it.
+ *
+ * T10.3 adds `conflicts`: the `ConflictPayload` of every file in the `conflict` layer, so the mock
+ * can serve a real three-way card for `rebase-conflict`, `merge-conflict` and
+ * `cherry-pick-conflict` without a repository on disk.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
+import type { ConflictPayload } from "../src/engine/api";
 import { defaultDiffSource } from "../src/engine/diffSource";
 import { NodeDirHandle } from "../src/engine/fs/nodeDirHandle";
 import { RepoSession } from "../src/engine/session";
@@ -65,6 +70,12 @@ async function record(name: string, v2: boolean): Promise<void> {
   console.log(`${name}: ${result.files.length} files, +${additions} -${deletions}`);
 
   if (v2) {
+    // Recorded before any further computeDiff, while `result.generation` is still the current one.
+    const conflicts: Record<string, ConflictPayload> = {};
+    for (const f of result.files) {
+      if (!f.layers.includes("conflict")) continue;
+      conflicts[f.id] = await session.conflict(result.generation, f.id);
+    }
     const revisions: Record<string, ResolvedRevision> = {};
     for (const line of hasExpected(name, "rev-parse") ? loadExpectedLines(name, "rev-parse") : []) {
       const expr = line.split("\t")[0] as string;
@@ -114,6 +125,8 @@ async function record(name: string, v2: boolean): Promise<void> {
       // the state file's mtime, so it is pinned here to keep the recording byte-stable.
       reflog: await session.reflog("HEAD", 200),
       operation: pinStartedAt(await session.operation()),
+      // T10.3: the conflict card replays these; `generation` is rewritten by the mock on serve.
+      conflicts,
       revisions,
       ranges,
     };
@@ -121,13 +134,22 @@ async function record(name: string, v2: boolean): Promise<void> {
     console.log(
       `${name}: ${payload.tags.length} tags, ${payload.stashes.length} stashes, ` +
         `${payload.reflog.length} reflog entries, operation ${payload.operation?.kind ?? "none"}, ` +
-        `${Object.keys(revisions).length} revisions, ${ranges.length} ranges`,
+        `${Object.keys(revisions).length} revisions, ${ranges.length} ranges, ` +
+        `${Object.keys(conflicts).length} conflicts`,
     );
   }
   await session.close();
 }
 
 for (const name of ["basic", "worktree"]) await record(name, false);
-// T10.2 adds the two interrupted-operation fixtures so the mock can serve a real banner + reflog.
-for (const name of ["tags", "stash", "history", "rebase-conflict", "merge-conflict"])
+// T10.2 adds the interrupted-operation fixtures so the mock can serve a real banner + reflog;
+// T10.3 adds `cherry-pick-conflict` and the conflict payloads for all three.
+for (const name of [
+  "tags",
+  "stash",
+  "history",
+  "rebase-conflict",
+  "merge-conflict",
+  "cherry-pick-conflict",
+])
   await record(name, true);

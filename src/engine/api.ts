@@ -10,6 +10,7 @@ import type {
   DiffResult,
   DiffSource,
   FileDiff,
+  Oid,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -113,6 +114,74 @@ export interface FileDiffOptions {
   loadLarge?: boolean;
 }
 
+// ---- conflicts (T10.3, atlas tab 06, Design §14.3) --------------------------------------------
+
+/** One of the three index stages of a conflicted path, as far as the UI needs it. */
+export interface SideBlob {
+  oid: Oid;
+  /** null when the blob is binary or larger than 1 MB (the UI gates it, like a large file). */
+  text: string | null;
+  size: number;
+  binary: boolean;
+}
+
+/**
+ * Which stages the index kept for the path, named the way `git status` names them.
+ * Derived structurally from the presence of stages 1/2/3 (see `conflictKindOf`), so git's rarer
+ * `AU` (added by us) folds into `deleted-by-them` and `UA` into `deleted-by-us` — in both the side
+ * without a blob is the one the payload renders as absent.
+ */
+export type ConflictKind =
+  | "both-modified"
+  | "both-added"
+  | "deleted-by-us"
+  | "deleted-by-them"
+  | "both-deleted";
+
+/**
+ * One `<<<<<<< / ======= / >>>>>>>` block in the working-tree file, as **1-based line numbers of
+ * the marker lines themselves**:
+ *
+ * ```
+ *   <<<<<<< HEAD          start
+ *   ours…
+ *   ||||||| base          oursEnd   (diff3 style only; otherwise oursEnd is the ======= line)
+ *   base…
+ *   =======               baseEnd   (diff3 style only)
+ *   theirs…
+ *   >>>>>>> theirs        end
+ * ```
+ *
+ * So "ours" is `(start, oursEnd)` exclusive, "base" is `(oursEnd, baseEnd)` and "theirs" is
+ * `(baseEnd ?? oursEnd, end)`.
+ */
+export interface ConflictMarker {
+  start: number;
+  end: number;
+  oursEnd: number;
+  baseEnd?: number;
+}
+
+/** The three-way view of one conflicted file (`EngineApi.conflict`). Nothing here is written back. */
+export interface ConflictPayload {
+  id: string;
+  generation: number;
+  /** Stage 1 / 2 / 3; null when the index kept no such stage (a deleted side). */
+  base: SideBlob | null;
+  ours: SideBlob | null;
+  theirs: SideBlob | null;
+  /** base→ours and base→theirs; null when a side is binary, gated, or both sides are absent. */
+  oursHunks: HunkModel | null;
+  theirsHunks: HunkModel | null;
+  /** The file as the editor sees it; null when it is absent, binary or over 1 MB. */
+  worktree: { text: string; markers: ConflictMarker[] } | null;
+  /** The file exists in the working tree and carries no conflict markers (Design §14.3 notice). */
+  resolvedInWorktree: boolean;
+  kind: ConflictKind;
+  /** What the two sides are called, for the column headers: e.g. `{ ours: "main", theirs: "topic" }`. */
+  labels: { ours: string; theirs: string };
+}
+
 /** Engine-side counters for the hidden debug panel and `scripts/perf.ts` (T7.2). */
 export interface EngineMetrics {
   generation: number;
@@ -165,6 +234,12 @@ export interface EngineApi {
   fileStats(generation: number, ids: string[]): Promise<Record<string, FileStats>>;
   fileDiff(generation: number, id: string, opts: FileDiffOptions): Promise<FileDiffPayload>;
   cancelFileDiff(id: string): Promise<void>;
+  /**
+   * The three-way view of one conflicted file (T10.3): the index stages, base→ours and base→theirs
+   * hunks, and the working-tree file with its conflict markers located. `STALE` when `generation`
+   * is not current, `CANCELLED` when a newer `conflict()` for the same id supersedes this one.
+   */
+  conflict(generation: number, id: string): Promise<ConflictPayload>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
   /** Move these files to the front of the background stats queue (visible sidebar rows). */
   prioritise(ids: string[]): Promise<void>;

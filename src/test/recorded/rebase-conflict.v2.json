@@ -167,6 +167,225 @@
     "remaining": ["83e12b7fa78ea58beb3434d25276f41fd1584444"],
     "done": ["e3c40a407beaf6e4a5105e4895545c7ff952672c", "d424326b468f78a175aa69ff38d2e81cde985913"]
   },
+  "conflicts": {
+    "both-added.txt": {
+      "id": "both-added.txt",
+      "generation": 1,
+      "base": null,
+      "ours": {
+        "oid": "f8dd506c72847878c12496fa5e761a8f7a3ee601",
+        "text": "both-added, main version\n",
+        "size": 25,
+        "binary": false
+      },
+      "theirs": {
+        "oid": "0db4548f665c6722b8291bf344798609b90c3564",
+        "text": "both-added, topic version\n",
+        "size": 26,
+        "binary": false
+      },
+      "oursHunks": {
+        "oldLines": 0,
+        "newLines": 1,
+        "hunks": [
+          {
+            "oldStart": 0,
+            "oldCount": 0,
+            "newStart": 1,
+            "newCount": 1,
+            "lines": [
+              {
+                "type": "add",
+                "new": 1,
+                "text": "both-added, main version"
+              }
+            ]
+          }
+        ]
+      },
+      "theirsHunks": {
+        "oldLines": 0,
+        "newLines": 1,
+        "hunks": [
+          {
+            "oldStart": 0,
+            "oldCount": 0,
+            "newStart": 1,
+            "newCount": 1,
+            "lines": [
+              {
+                "type": "add",
+                "new": 1,
+                "text": "both-added, topic version"
+              }
+            ]
+          }
+        ]
+      },
+      "worktree": {
+        "text": "<<<<<<< HEAD\nboth-added, main version\n=======\nboth-added, topic version\n>>>>>>> d424326 (t2: conflicting commit (rebase step 2 of 3))\n",
+        "markers": [
+          {
+            "start": 1,
+            "end": 5,
+            "oursEnd": 3
+          }
+        ]
+      },
+      "resolvedInWorktree": false,
+      "kind": "both-added",
+      "labels": {
+        "ours": "main",
+        "theirs": "d424326"
+      }
+    },
+    "file.txt": {
+      "id": "file.txt",
+      "generation": 1,
+      "base": {
+        "oid": "f98585722413e2775399bf49fd987a837d5aad5a",
+        "text": "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\n",
+        "size": 42,
+        "binary": false
+      },
+      "ours": {
+        "oid": "d941f5e5752df0ae61ccc7a23d6c576b9d86ec62",
+        "text": "line 1\nline 2\nline 3 from main\nline 4\nline 5\nline 6\n",
+        "size": 52,
+        "binary": false
+      },
+      "theirs": {
+        "oid": "52fb50c425d12a5d4111ba2e15e03075f2a19bbc",
+        "text": "line 1\nline 2\nline 3 from topic\nline 4\nline 5\nline 6\n",
+        "size": 53,
+        "binary": false
+      },
+      "oursHunks": {
+        "oldLines": 6,
+        "newLines": 6,
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldCount": 6,
+            "newStart": 1,
+            "newCount": 6,
+            "lines": [
+              {
+                "type": "ctx",
+                "old": 1,
+                "new": 1,
+                "text": "line 1"
+              },
+              {
+                "type": "ctx",
+                "old": 2,
+                "new": 2,
+                "text": "line 2"
+              },
+              {
+                "type": "del",
+                "old": 3,
+                "text": "line 3"
+              },
+              {
+                "type": "add",
+                "new": 3,
+                "text": "line 3 from main"
+              },
+              {
+                "type": "ctx",
+                "old": 4,
+                "new": 4,
+                "text": "line 4"
+              },
+              {
+                "type": "ctx",
+                "old": 5,
+                "new": 5,
+                "text": "line 5"
+              },
+              {
+                "type": "ctx",
+                "old": 6,
+                "new": 6,
+                "text": "line 6"
+              }
+            ]
+          }
+        ]
+      },
+      "theirsHunks": {
+        "oldLines": 6,
+        "newLines": 6,
+        "hunks": [
+          {
+            "oldStart": 1,
+            "oldCount": 6,
+            "newStart": 1,
+            "newCount": 6,
+            "lines": [
+              {
+                "type": "ctx",
+                "old": 1,
+                "new": 1,
+                "text": "line 1"
+              },
+              {
+                "type": "ctx",
+                "old": 2,
+                "new": 2,
+                "text": "line 2"
+              },
+              {
+                "type": "del",
+                "old": 3,
+                "text": "line 3"
+              },
+              {
+                "type": "add",
+                "new": 3,
+                "text": "line 3 from topic"
+              },
+              {
+                "type": "ctx",
+                "old": 4,
+                "new": 4,
+                "text": "line 4"
+              },
+              {
+                "type": "ctx",
+                "old": 5,
+                "new": 5,
+                "text": "line 5"
+              },
+              {
+                "type": "ctx",
+                "old": 6,
+                "new": 6,
+                "text": "line 6"
+              }
+            ]
+          }
+        ]
+      },
+      "worktree": {
+        "text": "line 1\nline 2\n<<<<<<< HEAD\nline 3 from main\n=======\nline 3 from topic\n>>>>>>> d424326 (t2: conflicting commit (rebase step 2 of 3))\nline 4\nline 5\nline 6\n",
+        "markers": [
+          {
+            "start": 3,
+            "end": 7,
+            "oursEnd": 5
+          }
+        ]
+      },
+      "resolvedInWorktree": false,
+      "kind": "both-modified",
+      "labels": {
+        "ours": "main",
+        "theirs": "d424326"
+      }
+    }
+  },
   "revisions": {},
   "ranges": []
 }

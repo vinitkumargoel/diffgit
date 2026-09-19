@@ -13,7 +13,7 @@
       "id": "both-added.txt",
       "oldPath": "both-added.txt",
       "newPath": "both-added.txt",
-      "status": "modified",
+      "status": "added",
       "layers": ["conflict"],
       "oldOid": "f8dd506c72847878c12496fa5e761a8f7a3ee601",
       "newOid": null,

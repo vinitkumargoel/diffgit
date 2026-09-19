@@ -7,6 +7,7 @@
  * public code by `toPublicError` (used by the worker boundary).
  */
 import type {
+  ConflictPayload,
   EngineApi,
   EngineMetrics,
   FileDiffOptions,
@@ -19,6 +20,7 @@ import type {
   PublicError,
 } from "./api";
 import { isImagePath } from "./diff/binary";
+import { buildConflictPayload } from "./diff/conflict";
 import { loadSide, loadSides } from "./diff/contentLoader";
 import { type DiffComputation, DiffEngine } from "./diff/diffEngine";
 import { detectRenames } from "./diff/renames";
@@ -132,6 +134,8 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   private current: Current | null = null;
   private inflight: AbortController | null = null;
   private readonly fileDiffAborts = new Map<string, AbortController>();
+  /** T10.3: one in-flight `conflict()` per file id; a newer call cancels the older. */
+  private readonly conflictAborts = new Map<string, AbortController>();
   private statsQueue: string[] = []; // LIFO: pop() serves the most recently prioritised id
   private statsGen = 0;
   private statsActive = 0;
@@ -621,6 +625,57 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     this.fileDiffAborts.delete(id);
   }
 
+  /**
+   * The three-way view of one conflicted file (T10.3): index stages 1/2/3, the base→ours and
+   * base→theirs hunks, and the working-tree file with its conflict markers located. `STALE` and
+   * `CANCELLED` behave exactly as for `fileDiff` — the generation must be current, and a newer
+   * `conflict()` for the same id supersedes this one.
+   *
+   * The index is re-read on every call rather than reused from the diff computation: the point of
+   * the card is to follow the file while the user resolves it in their editor.
+   */
+  async conflict(generation: number, id: string): Promise<ConflictPayload> {
+    const cur = this.requireGeneration(generation);
+    const f = this.requireFile(cur, id);
+    this.conflictAborts.get(id)?.abort();
+    const ac = new AbortController();
+    this.conflictAborts.set(id, ac);
+    try {
+      const path = (f.newPath ?? f.oldPath ?? id) as string;
+      const index = await this.withRootCheck(() => readIndex(this.fs));
+      throwIfAborted(ac.signal, "conflict");
+      const stages = index.conflicts[path];
+      if (!stages || stages.length === 0) {
+        throw new EngineError(
+          "INTERNAL",
+          `"${id}" has no conflict stages in the index (nothing to compare three ways).`,
+          { path },
+        );
+      }
+      const operation = this.operationState ?? (await this.refreshOperation());
+      throwIfAborted(ac.signal, "conflict");
+      return await this.withRootCheck(() =>
+        buildConflictPayload(
+          { db: this.db, fs: this.fs },
+          {
+            id,
+            path,
+            generation,
+            stages,
+            refs: this.refs,
+            operation,
+            signal: ac.signal,
+          },
+        ),
+      );
+    } catch (e) {
+      if (ac.signal.aborted && !(e instanceof CancelledError)) throw new CancelledError("conflict");
+      throw e;
+    } finally {
+      if (this.conflictAborts.get(id) === ac) this.conflictAborts.delete(id);
+    }
+  }
+
   /** Raw bytes of one side (image viewer, "View as text"). Sides over 10 MB are refused with TOO_LARGE. */
   async fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null> {
     const cur = this.requireGeneration(generation);
@@ -905,6 +960,8 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     this.inflight?.abort();
     for (const ac of this.fileDiffAborts.values()) ac.abort();
     this.fileDiffAborts.clear();
+    for (const ac of this.conflictAborts.values()) ac.abort();
+    this.conflictAborts.clear();
     this.singleFlight.clear();
     this.stopStats();
     this.current = null;

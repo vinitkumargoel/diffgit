@@ -53,6 +53,7 @@ export function createEngineApi(
     fileStats: (generation, ids) => guard(() => need().fileStats(generation, ids)),
     fileDiff: (generation, id, o) => guard(() => need().fileDiff(generation, id, o)),
     cancelFileDiff: (id) => guard(() => need().cancelFileDiff(id)),
+    conflict: (generation, id) => guard(() => need().conflict(generation, id)),
     fileBytes: (generation, id, side) => guard(() => need().fileBytes(generation, id, side)),
     prioritise: (ids) => guard(() => need().prioritise(ids)),
     probe: (tier) => guard(() => need().probe(tier)),

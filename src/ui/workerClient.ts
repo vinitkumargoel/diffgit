@@ -8,6 +8,7 @@
  */
 import * as Comlink from "comlink";
 import type {
+  ConflictPayload,
   EngineApi,
   EngineMetrics,
   FileDiffOptions,
@@ -83,6 +84,8 @@ export interface WorkerClient {
   fileStats(generation: number, ids: string[]): Promise<Record<string, FileStats>>;
   fileDiff(generation: number, id: string, opts: FileDiffOptions): Promise<FileDiffPayload>;
   cancelFileDiff(id: string): Promise<void>;
+  /** Three-way view of one conflicted file (T10.3); `STALE`/`CANCELLED` as `fileDiff`. */
+  conflict(generation: number, id: string): Promise<ConflictPayload>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
   prioritise(ids: string[]): Promise<void>;
   probe(tier: ProbeTier): Promise<string>;
@@ -215,6 +218,7 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     fileStats: (generation, ids) => call((r) => r.fileStats(generation, ids), "fileStats"),
     fileDiff: (generation, id, opts) => call((r) => r.fileDiff(generation, id, opts), "fileDiff"),
     cancelFileDiff: (id) => call((r) => r.cancelFileDiff(id), "cancelFileDiff"),
+    conflict: (generation, id) => call((r) => r.conflict(generation, id), "conflict"),
     fileBytes: (generation, id, side) =>
       call((r) => r.fileBytes(generation, id, side), "fileBytes"),
     prioritise: (ids) => call((r) => r.prioritise(ids), "prioritise"),

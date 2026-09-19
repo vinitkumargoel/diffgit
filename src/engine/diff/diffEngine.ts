@@ -9,6 +9,7 @@
  * as `unstaged`, the third parent's tree as `untracked`.
  */
 
+import type { ConflictKind } from "../api";
 import { isWorktreeSource } from "../diffSource";
 import type { WarningCode } from "../errors";
 import { EMPTY_TREE_OID } from "../git/hash";
@@ -26,6 +27,7 @@ import type {
   RepoWarning,
 } from "../types";
 import { throwIfAborted } from "../util/concurrency";
+import { conflictKindOf, conflictStatus } from "./conflict";
 import { comparePaths, treeDiff } from "./treeDiff";
 
 /** Where the new side's content lives (private side-table; not part of FileDiff). */
@@ -76,6 +78,8 @@ interface Working {
   old: OldSide | null;
   new: NewSide | null;
   layers: Set<ChangeLayer>;
+  /** T10.3: which index stages the path kept, when it is in the `conflict` layer. */
+  conflictKind?: ConflictKind;
 }
 
 /** The three trees a stash entry carries, once its parents have been read. */
@@ -232,6 +236,10 @@ export class DiffEngine {
           const w = get(path);
           w.new = { oid: null, mode: w.new?.mode ?? 0o100644, kind: "worktree" };
           w.layers.add("conflict");
+          // T10.3: the stage bits say which side deleted the path, which the tree/worktree
+          // comparison alone cannot ("deleted by them" still leaves our version on disk).
+          const stages = index.conflicts[path];
+          if (stages && stages.length > 0) w.conflictKind = conflictKindOf(stages);
         }
       }
     }
@@ -270,7 +278,14 @@ export class DiffEngine {
       ) {
         continue; // e.g. changed on the branch, reverted in the worktree to the base content
       }
-      const status = w.old === null ? "added" : w.new === null ? "deleted" : "modified";
+      const status =
+        w.conflictKind !== undefined
+          ? conflictStatus(w.conflictKind)
+          : w.old === null
+            ? "added"
+            : w.new === null
+              ? "deleted"
+              : "modified";
       files.push({
         id: path,
         oldPath: w.old ? path : null,

@@ -1046,6 +1046,7 @@
     }
   ],
   "operation": null,
+  "conflicts": {},
   "revisions": {
     "HEAD": {
       "expr": "HEAD",

@@ -1,0 +1,57 @@
+{
+  "id": "recorded-cherry-pick-conflict",
+  "name": "cherry-pick-conflict",
+  "headBranch": "main",
+  "headOid": "95ec07d57af52aec6119ee26472419a17689b490",
+  "detached": false,
+  "unborn": false,
+  "headDisplay": "main",
+  "refs": [
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "95ec07d57af52aec6119ee26472419a17689b490",
+      "isDefault": true,
+      "isCheckedOut": true
+    },
+    {
+      "name": "topic",
+      "fullName": "refs/heads/topic",
+      "kind": "local",
+      "oid": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
+      "isDefault": false,
+      "isCheckedOut": false
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "95ec07d57af52aec6119ee26472419a17689b490",
+    "isDefault": true,
+    "isCheckedOut": true
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": [
+    {
+      "code": "OPERATION_IN_PROGRESS",
+      "message": "A cherry-pick is in progress in this repository.",
+      "detail": "1 path still conflict."
+    }
+  ],
+  "operation": {
+    "kind": "cherry-pick",
+    "conflicts": 1,
+    "current": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
+    "startedAt": 1704067200000
+  },
+  "jj": false,
+  "hasCommitGraph": false
+}
