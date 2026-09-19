@@ -219,7 +219,9 @@ export function createScheduler(deps: SchedulerDeps): Scheduler {
     }
     if (src.includeWorktree && !isWorktreeSource(src, info))
       src = { ...src, includeWorktree: false };
-    store.setState({ repo: info, diffSource: src });
+    // T11.3: `operation` mirrors `repo.operation` so Design §14.3's banner follows git live —
+    // `OPERATION_FILES` are stat-ed by `probe("git")`, so a rebase step lands on this path.
+    store.setState({ repo: info, diffSource: src, operation: info.operation });
     // E5.4: the selected branch was deleted; the fallback is silent otherwise.
     if (gone !== null) {
       const labels = sourceLabels(src);

@@ -7,6 +7,13 @@ import { isWarningCode, type WarningCode } from "../engine/errors";
 
 export type BannerLevel = "info" | "warning" | "error";
 
+/** Design §3.4 background + border per level; shared by every banner row so the two cannot drift. */
+export const BANNER_LEVEL_CLASS: Record<BannerLevel, string> = {
+  warning: "bg-banner-warning-bg border-banner-warning-border",
+  info: "bg-banner-info-bg border-banner-info-border",
+  error: "bg-banner-error-bg border-banner-error-border",
+};
+
 /** The one-word action link a banner may offer (review E7); resolved by `WarningBanners`. */
 export interface WarningAction {
   label: string;

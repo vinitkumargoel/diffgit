@@ -143,16 +143,40 @@ describe("groupFiles", () => {
 
 describe("layerCode (D4: git status --short XY)", () => {
   it("conflict and untracked colour both columns", () => {
+    // T11.3: the exact code needs `ConflictPayload.kind`; without it the row says so and nothing more.
     expect(layerCode({ layers: ["unstaged", "conflict"], status: "modified" })).toEqual({
       x: "U",
       y: "U",
-      label: "Merge conflict (UU)",
+      label: "Unmerged path",
     });
     expect(layerCode({ layers: ["untracked"], status: "added" })).toEqual({
       x: "?",
       y: "?",
       label: "Untracked file (??)",
     });
+  });
+
+  it("T11.3: a conflicted row prints git's real XY once the kind is known", () => {
+    const file: Pick<FileDiff, "layers" | "status"> = { layers: ["conflict"], status: "modified" };
+    expect(layerCode(file, "both-modified")).toEqual({
+      x: "U",
+      y: "U",
+      label: "Both modified (UU)",
+    });
+    expect(layerCode(file, "both-added")).toEqual({ x: "A", y: "A", label: "Both added (AA)" });
+    expect(layerCode(file, "deleted-by-us")).toEqual({
+      x: "D",
+      y: "U",
+      label: "Deleted by us (DU)",
+    });
+    expect(layerCode(file, "deleted-by-them")).toEqual({
+      x: "U",
+      y: "D",
+      label: "Deleted by them (UD)",
+    });
+    expect(layerCode(file, "both-deleted")).toEqual({ x: "D", y: "D", label: "Both deleted (DD)" });
+    // the kind wins over the row's own status, which cannot tell UD from DU
+    expect(layerCode({ layers: ["conflict"], status: "deleted" }, "deleted-by-them")?.x).toBe("U");
   });
 
   it("staged and unstaged: the status letter, then M — or MD for a delete", () => {

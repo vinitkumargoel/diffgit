@@ -24,6 +24,7 @@ import { requestScrollTo } from "../scrollBus";
 import {
   isViewed,
   type SidebarLayout,
+  selectConflictKinds,
   selectFailedFiles,
   selectGroupedModel,
   selectGroupTotals,
@@ -103,6 +104,7 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
   const setViewed = useStore((s) => s.setViewed);
   const prioritise = useStore((s) => s.prioritise);
   const failedFiles = useStore(useShallow(selectFailedFiles));
+  const conflictKinds = useStore(useShallow(selectConflictKinds));
   const loadFileDiff = useStore((s) => s.loadFileDiff);
 
   /** D2: layout-independent — grouping needs a second layer *and* the pref. */
@@ -253,13 +255,18 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
     (f: FileDiff): boolean => (diff ? isViewed({ diff, viewed: viewedSet, repoId }, f) : false),
     [diff, viewedSet, repoId],
   );
-  /** D4: grouped, the header says the layer — only a staged-*and*-unstaged file needs the code. */
+  /**
+   * D4: grouped, the header says the layer — only a staged-*and*-unstaged file needs the code.
+   * T11.3 adds the conflicted rows: `UU` / `AA` / `UD` are the whole point of the Conflicts group
+   * (Design §14.3, atlas tab 06), and one "Conflicts" header cannot say which of the five it is.
+   */
   const codeOf = useCallback(
     (f: FileDiff): LayerCodeInfo | null => {
-      if (!grouped) return layerCode(f);
+      const conflict = f.layers.includes("conflict");
+      if (!grouped || conflict) return layerCode(f, conflictKinds[f.id]);
       return f.layers.includes("staged") && f.layers.includes("unstaged") ? layerCode(f) : null;
     },
-    [grouped],
+    [grouped, conflictKinds],
   );
   const allViewedIn = useCallback(
     (group: FileGroup): boolean => group.files.length > 0 && group.files.every(viewedOf),

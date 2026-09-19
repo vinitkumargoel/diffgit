@@ -525,6 +525,10 @@
   .dg-diff .diff-gutter-omit {
     background: var(--diff-empty);
   }
+  /* §14.3 conflict card: the side the index kept no blob for (split-view placeholder token) */
+  .dg-hatch {
+    background: var(--diff-empty);
+  }
   .dg-diff .diff-split td:nth-child(3) {
     border-left: 1px solid var(--line);
   }

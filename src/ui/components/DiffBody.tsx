@@ -121,13 +121,15 @@ export interface DiffBodyProps {
   viewType: ViewType;
   /** Increment to expand every collapsed gap (FileHeader "⇕ Expand all"). */
   expandAllToken: number;
+  /** Overrides the region's accessible name (T11.3: one card holds three of these). */
+  label?: string;
 }
 
 /**
  * The diff table (ADR-001): react-diff-view over our `HunkModel`, expand context from the full
  * old text, tokens (syntax + word-level marks) from the highlight worker.
  */
-export function DiffBody({ file, payload, viewType, expandAllToken }: DiffBodyProps) {
+export function DiffBody({ file, payload, viewType, expandAllToken, label }: DiffBodyProps) {
   const initial = useMemo(() => toHunkData(payload.hunks), [payload.hunks]);
   // Expanded hunks are keyed to the payload they came from: a new payload (e.g. whitespace toggle)
   // renders its own hunks in the same frame, with no effect-driven re-sync (T7.5 review).
@@ -207,7 +209,7 @@ export function DiffBody({ file, payload, viewType, expandAllToken }: DiffBodyPr
 
   const path = filePathOf(file);
   return (
-    <section className="dg-diff overflow-x-auto" aria-label={`Diff of ${path}`}>
+    <section className="dg-diff overflow-x-auto" aria-label={label ?? `Diff of ${path}`}>
       <Diff
         viewType={viewType}
         diffType={diffTypeFor(file.status)}

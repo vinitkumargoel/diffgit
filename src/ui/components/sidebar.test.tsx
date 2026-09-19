@@ -315,7 +315,9 @@ describe("Sidebar groups (T9.1, D1–D9)", () => {
       .filter((r) => r.hasAttribute("aria-label"))
       .map((r) => r.getAttribute("aria-label"));
 
-  const codeIn = (row: HTMLElement) => row.querySelector('[role="img"][aria-label$=")"]');
+  // T11.3: the label no longer always ends in "(XY)" — an unmerged row whose ConflictPayload has
+  // not arrived says "Unmerged path" — so the code is found by its own hook.
+  const codeIn = (row: HTMLElement) => row.querySelector("[data-layer-code]");
 
   /** happy-dom's `.focus()` does not reach React's `onFocus` (a `focusin` listener). */
   const focusRow = (el: HTMLElement) => {
@@ -391,9 +393,8 @@ describe("Sidebar groups (T9.1, D1–D9)", () => {
     expect(codeIn(screen.getByTitle("untracked.txt"))?.getAttribute("aria-label")).toBe(
       "Untracked file (??)",
     );
-    expect(codeIn(screen.getByTitle("file.txt"))?.getAttribute("aria-label")).toBe(
-      "Merge conflict (UU)",
-    );
+    // T11.3: no ConflictPayload is loaded here, so the row says it is unmerged and no more.
+    expect(codeIn(screen.getByTitle("file.txt"))?.getAttribute("aria-label")).toBe("Unmerged path");
     expect(codeIn(screen.getByTitle("deleted-staged.txt"))?.getAttribute("aria-label")).toBe(
       "Staged only (D·)",
     );

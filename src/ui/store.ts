@@ -8,6 +8,8 @@
  */
 import { create } from "zustand";
 import type {
+  ConflictKind,
+  ConflictPayload,
   EngineMetrics,
   FileDiffPayload,
   FileStats,
@@ -24,7 +26,9 @@ import type {
   DiffSource,
   FileDiff,
   Oid,
+  ReflogEntry,
   RepoInfo,
+  RepoOperation,
   RepoRef,
   RepoWarning,
   ResolvedRevision,
@@ -210,6 +214,27 @@ export type FileDiffEntry =
   | { status: "ready"; data: FileDiffPayload }
   | { status: "error"; error: UiError };
 
+/** T11.3: the three-way payload of one conflicted file, keyed by file id in `conflicts`. */
+export type ConflictEntry =
+  | { status: "loading" }
+  | { status: "ready"; data: ConflictPayload }
+  | { status: "error"; error: UiError };
+
+/** How many conflicted files are pre-loaded after a compute (the sidebar needs their XY code). */
+export const CONFLICT_PRELOAD_LIMIT = 100;
+/** Rows `loadReflog` asks the engine for (Design §14.5; T11.5 will page beyond this). */
+export const REFLOG_LIMIT = 200;
+/** `markReachable` is called in batches of this size (task T11.3), once T10.5 ships it. */
+export const REACHABLE_BATCH = 50;
+
+/**
+ * T10.5 ships `markReachable`; until then the client simply does not have it, so the reflog's
+ * `unreachable` badge stays unrendered instead of guessing. Feature check, not a contract change.
+ */
+type MaybeReachable = {
+  markReachable?(oids: Oid[]): Promise<Record<Oid, boolean>>;
+};
+
 export interface Toast {
   id: number;
   level: "error" | "warning" | "info";
@@ -275,8 +300,8 @@ export interface OpenOptions {
 
 /**
  * Stands in for an engine type that `docs/v2-contracts.md` names but a later phase-10 task still
- * has to add to `src/engine/types.ts` (`RepoOperation` T10.2, `SecretFinding` T10.7,
- * `HiddenEntry` T10.4, `CommitSummary` T10.5, `BisectState & BisectStep` T10.11). `never` keeps the
+ * has to add to `src/engine/types.ts` (`SecretFinding` T10.7, `HiddenEntry` T10.4, `CommitSummary`
+ * T10.5, `BisectState & BisectStep` T10.11 — `RepoOperation` was widened by T11.3). `never` keeps the
  * field honest: it exists and the shell can switch on it, but nothing can put data in it until the
  * task that owns the type widens this one annotation.
  */
@@ -347,8 +372,16 @@ export interface StoreState {
   historyTab: HistoryTab;
   /** `Diff | Blame | History` per file id (T11.6). */
   cardModes: Record<string, CardMode>;
-  /** The merge / rebase / cherry-pick / revert / bisect in progress (T11.3). */
-  operation: PendingEngineType | null;
+  /**
+   * The merge / rebase / cherry-pick / revert / bisect in progress (T11.3, Design §14.3). Mirrors
+   * `repo.operation`, which `reloadRefs()` refreshes on every git-side refresh tick, so the banner
+   * follows git live.
+   */
+  operation: RepoOperation | null;
+  /** `HEAD`'s reflog for the Reflog list (T11.3); null = not read yet. */
+  reflog: ReflogEntry[] | null;
+  /** Three-way payloads of the conflicted files of the current diff, keyed by file id (T11.3). */
+  conflicts: Record<string, ConflictEntry>;
   /** Secret-scan findings for the current diff; null = not scanned (T11.9). */
   secrets: PendingEngineType[] | null;
   /** Hidden paths behind the "Show hidden files" toggle; null = not listed (T11.4). */
@@ -404,6 +437,10 @@ export interface StoreState {
     client: ClientMetrics;
   }>;
   loadFileDiff(id: string, opts?: { loadLarge?: boolean }): Promise<void>;
+  /** T11.3: the three-way payload of one conflicted file; `STALE`/`CANCELLED` drop silently. */
+  loadConflict(id: string): Promise<void>;
+  /** T11.3: reads `HEAD`'s reflog once per open and fills `reachable` when the engine can. */
+  loadReflog(): Promise<void>;
   cancelFileDiff(id: string): void;
   toggleViewed(id: string): void;
   /** Batch form of `toggleViewed` (T9.1: the group header's "mark all viewed"). */
@@ -487,7 +524,7 @@ function client(): WorkerClient {
         });
         return;
       }
-      if (info) useStore.setState({ repo: info });
+      if (info) useStore.setState({ repo: info, operation: info.operation });
       useStore.setState({ refresh: { ...s.refresh, restarted: true, restarts } });
       s.addToast({
         level: "warning",
@@ -666,6 +703,8 @@ export const useStore = create<StoreState>()((set, get) => {
     historyTab: "commits",
     cardModes: {},
     operation: null,
+    reflog: null,
+    conflicts: {},
     secrets: null,
     hidden: null,
     history: INITIAL_HISTORY,
@@ -738,6 +777,9 @@ export const useStore = create<StoreState>()((set, get) => {
           set((s) => ({
             repo: info,
             diffSource: src,
+            // Design §14.3: the operation banner is driven by `RepoInfo.operation`, which the
+            // scheduler refreshes through `reloadRefs()` on every git-side tick.
+            operation: info.operation,
             warnings: [...info.warnings],
             loading: {
               ...s.loading,
@@ -815,6 +857,8 @@ export const useStore = create<StoreState>()((set, get) => {
         historyTab: "commits",
         cardModes: {},
         operation: null,
+        reflog: null,
+        conflicts: {},
         secrets: null,
         hidden: null,
         history: INITIAL_HISTORY,
@@ -1001,6 +1045,7 @@ export const useStore = create<StoreState>()((set, get) => {
           collapsed,
           warnings: merged,
           fileDiffs: new Lru(200),
+          conflicts: {},
           screen: s.screen === "loading" || s.screen === "repo" ? "repo" : s.screen,
           refresh: {
             ...s.refresh,
@@ -1015,6 +1060,12 @@ export const useStore = create<StoreState>()((set, get) => {
           perf: { ...s.perf, lastComputeMs: performance.now() - startedAt, computeStartedAt: null },
         }));
         performance.mark?.("diffgit:compute-committed");
+        // T11.3: the sidebar prints git's real XY (UU / AA / UD / DU / DD), which only the payload
+        // knows, so the conflicted rows — never many — are fetched as soon as the diff lands.
+        const conflicted = result.files
+          .filter((f) => f.layers.includes("conflict"))
+          .slice(0, CONFLICT_PRELOAD_LIMIT);
+        for (const f of conflicted) void get().loadConflict(f.id);
       } catch (e) {
         const err = toUiError(e);
         if (err.code === "CANCELLED" || err.code === "STALE" || err.code === "WORKER_CRASHED") {
@@ -1096,6 +1147,61 @@ export const useStore = create<StoreState>()((set, get) => {
         const updated = cur.fileDiffs.clone();
         updated.set(key, { status: "error", error: err });
         set({ fileDiffs: updated });
+      }
+    },
+
+    async loadConflict(id) {
+      const s = get();
+      if (!s.diff) return;
+      const existing = s.conflicts[id];
+      if (existing && existing.status !== "error") return;
+      const generation = s.diff.generation;
+      set((cur) => ({ conflicts: { ...cur.conflicts, [id]: { status: "loading" } } }));
+      try {
+        const data = await client().conflict(generation, id);
+        const cur = get();
+        if (!cur.diff || cur.diff.generation !== generation) return;
+        set((c) => ({ conflicts: { ...c.conflicts, [id]: { status: "ready", data } } }));
+      } catch (e) {
+        const err = toUiError(e);
+        const cur = get();
+        if (err.code === "STALE" || err.code === "CANCELLED" || err.code === "WORKER_CRASHED") {
+          if (cur.conflicts[id]?.status === "loading") {
+            const { [id]: _dropped, ...rest } = cur.conflicts;
+            set({ conflicts: rest });
+          }
+          return;
+        }
+        set((c) => ({ conflicts: { ...c.conflicts, [id]: { status: "error", error: err } } }));
+      }
+    },
+
+    async loadReflog() {
+      if (!get().repo) return;
+      try {
+        const entries = await client().reflog("HEAD", REFLOG_LIMIT);
+        if (!get().repo) return;
+        set({ reflog: entries });
+        // T10.5 ships `markReachable`; until then every row's `reachable` stays null and the
+        // `unreachable` badge is simply not rendered (feature check, never a guess).
+        const withReach = client() as WorkerClient & MaybeReachable;
+        if (typeof withReach.markReachable !== "function") return;
+        for (let i = 0; i < entries.length; i += REACHABLE_BATCH) {
+          const batch = entries.slice(i, i + REACHABLE_BATCH);
+          const map = await withReach.markReachable(batch.map((e) => e.newOid));
+          const cur = get().reflog;
+          if (cur === null) return;
+          set({
+            reflog: cur.map((e) =>
+              map[e.newOid] === undefined ? e : { ...e, reachable: map[e.newOid] as boolean },
+            ),
+          });
+        }
+      } catch (e) {
+        // A repository that keeps no reflog answers `[]` plus a NO_REFLOG warning (T10.2); a real
+        // failure leaves the list empty and says so through the usual warning banner.
+        ignoreStale(e);
+        if (get().reflog === null) set({ reflog: [] });
       }
     },
 
@@ -1423,4 +1529,23 @@ export function selectFileDiff(
   id: string,
 ): FileDiffEntry | undefined {
   return s.fileDiffs.peek(cacheKey(id, s.prefs.ignoreWhitespace));
+}
+
+/** T11.3: the kind of a conflicted file once its payload is in, so `layerCode` can print git's XY. */
+export function selectConflictKind(
+  s: Pick<StoreState, "conflicts">,
+  id: string,
+): ConflictKind | undefined {
+  const entry = s.conflicts[id];
+  return entry?.status === "ready" ? entry.data.kind : undefined;
+}
+
+/** File id → conflict kind for every payload that has arrived (shallow-compared by the sidebar). */
+export function selectConflictKinds(
+  s: Pick<StoreState, "conflicts">,
+): Record<string, ConflictKind> {
+  const out: Record<string, ConflictKind> = {};
+  for (const [id, entry] of Object.entries(s.conflicts))
+    if (entry.status === "ready") out[id] = entry.data.kind;
+  return out;
 }

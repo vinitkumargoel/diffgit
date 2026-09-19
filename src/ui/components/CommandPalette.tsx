@@ -45,7 +45,13 @@ interface Action {
  * Built on cmdk, like the BranchPicker, so the keyboard behaviour and the list styling are shared.
  * Search scopes (§14.5) are added by T11.8.
  */
-export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
+export function CommandPalette({
+  onHelp,
+  onReflog,
+}: {
+  onHelp?: () => void;
+  onReflog?: () => void;
+} = {}) {
   const open = useStore((s) => s.palette);
   const setPalette = useStore((s) => s.setPalette);
   const mode = useStore((s) => s.mode);
@@ -150,6 +156,13 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
         run: () => setPref("showHidden", !prefs.showHidden),
       },
       {
+        // T11.3: the Reflog list ships now; T11.5 gives it the History sidebar sub-tab of §14.5.
+        id: "reflog",
+        label: "Show reflog",
+        keywords: ["HEAD", "history", "lost commit", "orphan", "undo"],
+        run: () => onReflog?.(),
+      },
+      {
         id: "help",
         label: "Show keyboard shortcuts",
         keywords: ["help", "keys"],
@@ -170,7 +183,7 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
       },
     ];
     return list;
-  }, [prefs, cache, setMode, setPref, requestRefresh, addToast, onHelp]);
+  }, [prefs, cache, setMode, setPref, requestRefresh, addToast, onHelp, onReflog]);
 
   // Pre-narrowed so a 5,000-file diff never renders 5,000 rows; cmdk ranks the survivors.
   const fileRows = useMemo(

@@ -6,6 +6,8 @@ import {
   configurePersistence,
   isViewed,
   selectCanIncludeWorktree,
+  selectConflictKind,
+  selectConflictKinds,
   selectGroupTotals,
   selectHasLayers,
   selectSourceLabel,
@@ -549,5 +551,71 @@ describe("store: compare anything (T11.2)", () => {
     await vi.waitFor(() => expect(useStore.getState().diff?.source.kind).toBe("range"));
     const file = useStore.getState().diff?.files[0];
     if (file) expect(viewedKey("stash", src() as DiffSource, file)).toContain("|stash@{0}|HEAD|");
+  });
+});
+
+describe("store: operation, conflicts and reflog (T11.3)", () => {
+  it("openRepo mirrors RepoInfo.operation, and closeRepo clears every T11.3 field", async () => {
+    await useStore.getState().openRepo({ name: "rebase-conflict" }, { id: "rc" });
+    const op = useStore.getState().operation;
+    expect(op?.kind).toBe("rebase");
+    expect(op).toEqual(useStore.getState().repo?.operation);
+    await useStore.getState().closeRepo();
+    expect(useStore.getState().operation).toBeNull();
+    expect(useStore.getState().reflog).toBeNull();
+    expect(useStore.getState().conflicts).toEqual({});
+  });
+
+  it("pre-loads the payload of every conflicted file so the sidebar can print git's XY", async () => {
+    await useStore.getState().openRepo({ name: "rebase-conflict" }, { id: "rc" });
+    await vi.waitFor(() => {
+      const c = useStore.getState().conflicts;
+      expect(Object.keys(c).sort()).toEqual(["both-added.txt", "file.txt"]);
+      expect(selectConflictKinds(useStore.getState())).toEqual({
+        "both-added.txt": "both-added",
+        "file.txt": "both-modified",
+      });
+    });
+    expect(selectConflictKind(useStore.getState(), "file.txt")).toBe("both-modified");
+    // one three-way payload per conflicted file, with the markers the recording holds
+    const entry = useStore.getState().conflicts["file.txt"];
+    expect(entry?.status).toBe("ready");
+    if (entry?.status === "ready") {
+      expect(entry.data.worktree?.markers).toEqual([{ start: 3, end: 7, oursEnd: 5 }]);
+      expect(entry.data.labels).toEqual({ ours: "main", theirs: "d424326" });
+    }
+  });
+
+  it("loadReflog reads HEAD's log once; `unreachable` stays unknown until T10.5 ships markReachable", async () => {
+    await useStore.getState().openRepo({ name: "rebase-conflict" }, { id: "rc" });
+    expect("markReachable" in mock).toBe(false);
+    await useStore.getState().loadReflog();
+    const log = useStore.getState().reflog ?? [];
+    expect(log[0]?.expr).toBe("HEAD@{0}");
+    expect(log[0]?.action).toBe("rebase (pick)");
+    expect(log.every((e) => e.reachable === null)).toBe(true);
+  });
+
+  it("loadReflog fills `reachable` in batches once the client exposes markReachable", async () => {
+    const calls: string[][] = [];
+    setStoreClient({
+      ...mock,
+      markReachable: async (oids: string[]) => {
+        calls.push(oids);
+        return Object.fromEntries(oids.map((o, i) => [o, i > 0]));
+      },
+    } as unknown as MockWorkerClient);
+    await useStore.getState().openRepo({ name: "rebase-conflict" }, { id: "rc" });
+    await useStore.getState().loadReflog();
+    expect(calls).toHaveLength(1); // 10 recorded entries, one batch of 50
+    const log = useStore.getState().reflog ?? [];
+    expect(log[0]?.reachable).toBe(false);
+    expect(log[1]?.reachable).toBe(true);
+  });
+
+  it("a repository with no reflog answers an empty list instead of throwing", async () => {
+    await openBasic();
+    await useStore.getState().loadReflog();
+    expect(useStore.getState().reflog).toEqual([]);
   });
 });

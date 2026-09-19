@@ -151,11 +151,22 @@ describe("CommandPalette (Design §14.1)", () => {
       "Use split view",
       "Ignore whitespace changes",
       "Show hidden files",
+      "Show reflog",
       "Show keyboard shortcuts",
       "Clear cached data",
     ]) {
       expect(inPalette().getByText(label), label).toBeTruthy();
     }
+  });
+
+  it("T11.3: `Show reflog` opens the reflog dialog (T11.5 moves it to the History sidebar)", () => {
+    seed({ reflog: [] });
+    render(<RepoScreen />);
+    fireEvent.click(paletteButton());
+    fireEvent.click(inPalette().getByText("Show reflog"));
+    expect(useStore.getState().palette).toBe(false);
+    const dialog = screen.getByRole("dialog", { name: "Reflog · HEAD" });
+    expect(dialog.textContent).toContain("What moved HEAD, newest first");
   });
 
   it("running an action closes the palette and does the thing", () => {

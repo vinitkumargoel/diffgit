@@ -279,6 +279,35 @@ describe("scheduler", () => {
     expect(s.mode).toBe("manual");
   });
 
+  it("T11.3: a git-side tick refreshes `operation`, so the §14.3 banner follows git live", async () => {
+    const s = make();
+    await useStore.getState().openRepo({ name: "rebase-conflict" });
+    expect(useStore.getState().operation?.kind).toBe("rebase");
+    expect(useStore.getState().operation?.step).toBe(2);
+
+    // git moved on: step 3 of 3, nothing conflicts any more (the banner drops to info level)
+    const before = useStore.getState().repo as RepoInfo;
+    const moved: RepoInfo = {
+      ...before,
+      operation: {
+        ...(before.operation ?? { kind: "rebase", conflicts: 0 }),
+        step: 3,
+        conflicts: 0,
+      },
+    };
+    client.reloadRefs.mockResolvedValueOnce(moved);
+    s.request("poll:git");
+    await s.flush();
+    expect(useStore.getState().operation?.step).toBe(3);
+    expect(useStore.getState().operation?.conflicts).toBe(0);
+
+    // and when the rebase finishes, the banner disappears with it
+    client.reloadRefs.mockResolvedValueOnce({ ...before, operation: null });
+    s.request("poll:git");
+    await s.flush();
+    expect(useStore.getState().operation).toBeNull();
+  });
+
   it("store lifecycle: openRepo starts detection, closeRepo stops it; branch changes route through the scheduler", async () => {
     const stopObserver = vi.fn();
     const startObserver = vi.fn(() => stopObserver);

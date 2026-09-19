@@ -255,6 +255,22 @@ remembered pair; `src/ui/compareHash.ts` (`compareSpecOf`, `formatCompareHash`, 
 `history.replaceState` on every source change and read once per page load, then applied to the first
 repository opened afterwards.
 
+<!-- T11.3 --> `StoreState.operation` is now the real `RepoOperation | null` (the `PendingEngineType`
+annotation T11.1 left is gone) and is a **mirror of `RepoInfo.operation`**: it is written wherever
+`repo` is, i.e. `openRepo`, the worker-restart listener and the scheduler's `reloadRefs()`, which a
+git-side refresh tick always runs (`OPERATION_FILES` is stat-ed by `probe("git")`), so the Design
+§14.3 banner follows git live and disappears with the operation. `StoreState` also gained
+`reflog: ReflogEntry[] | null` (null = not read; `loadReflog()` fills it and then calls
+`markReachable` in batches of 50 **only if the client exposes it** — T10.5 owns that method, so until
+it ships every row keeps `reachable: null` and the `unreachable` badge is not rendered) and
+`conflicts: Record<string, ConflictEntry>` (`loading | ready | error`, keyed by file id, cleared on
+every compute). `recompute()` pre-loads `conflict(generation, id)` for every file in the `conflict`
+layer, capped at `CONFLICT_PRELOAD_LIMIT` (100), because only `ConflictPayload.kind` can tell git's
+`UD` from `DU` and the sidebar prints that code. Selectors: `selectConflictKind(s, id)` and
+`selectConflictKinds(s)`. New pure module `src/ui/operation.ts` (`describeOperation`,
+`operationSteps`, `describeConflictKind`, `conflictCommand`, `short`) owns every string the banner
+and the conflict card show.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).

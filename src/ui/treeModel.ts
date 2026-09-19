@@ -2,6 +2,7 @@
  * Sidebar tree model (T4.2 selector, consumed by T5.2): nests files by directory and compacts
  * single-child directory chains into one node (`src/engine/git`), like GitHub's file tree.
  */
+import type { ConflictKind } from "../engine/api";
 import type { FileDiff } from "../engine/types";
 
 export interface TreeDir {
@@ -164,10 +165,35 @@ const STATUS_LETTER: Record<FileDiff["status"], string> = {
   typechange: "T",
 };
 
+/**
+ * T11.3: git's XY column for an unmerged path, which only `ConflictPayload.kind` can tell apart —
+ * `UD` and `DU` are both `status: "deleted"` on the row. Until the payload lands (it is fetched as
+ * soon as the diff commits) the row says "Unmerged path" without claiming one of the five codes.
+ */
+export function conflictCode(kind: ConflictKind | undefined): LayerCodeInfo {
+  switch (kind) {
+    case "both-modified":
+      return { x: "U", y: "U", label: "Both modified (UU)" };
+    case "both-added":
+      return { x: "A", y: "A", label: "Both added (AA)" };
+    case "deleted-by-us":
+      return { x: "D", y: "U", label: "Deleted by us (DU)" };
+    case "deleted-by-them":
+      return { x: "U", y: "D", label: "Deleted by them (UD)" };
+    case "both-deleted":
+      return { x: "D", y: "D", label: "Both deleted (DD)" };
+    default:
+      return { x: "U", y: "U", label: "Unmerged path" };
+  }
+}
+
 /** D4: git's `status --short` XY column, or null for a committed-only file. */
-export function layerCode(file: Pick<FileDiff, "layers" | "status">): LayerCodeInfo | null {
+export function layerCode(
+  file: Pick<FileDiff, "layers" | "status">,
+  conflictKind?: ConflictKind,
+): LayerCodeInfo | null {
   const layers = file.layers;
-  if (layers.includes("conflict")) return { x: "U", y: "U", label: "Merge conflict (UU)" };
+  if (layers.includes("conflict")) return conflictCode(conflictKind);
   if (layers.includes("untracked")) return { x: "?", y: "?", label: "Untracked file (??)" };
   const staged = layers.includes("staged");
   const unstaged = layers.includes("unstaged");

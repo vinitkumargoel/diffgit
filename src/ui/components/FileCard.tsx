@@ -4,9 +4,11 @@ import type { FileDiffPayload } from "../../engine/api";
 import type { FileDiff } from "../../engine/types";
 import { hasCollapsedContext } from "../diff/toHunkData";
 import { describeError, errorReport, type UiError } from "../errors";
-import { isViewed, selectFileDiff, useStore } from "../store";
+import { isViewed, selectConflictKind, selectFileDiff, useStore } from "../store";
 import { filePathOf } from "../treeModel";
 import { BinaryNotice, RawTextView, rawSideFor, useRawText } from "./BinaryNotice";
+import { ConflictBody } from "./ConflictBody";
+import { ConflictTag } from "./ConflictTag";
 import { DiffBody } from "./DiffBody";
 import { FileHeader } from "./FileHeader";
 import { ImageDiff } from "./ImageDiff";
@@ -196,7 +198,11 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
 
   const [genOpen, setGenOpen] = useState(false);
   const gated = !!file.generated && !genOpen;
-  const wantsBody = !collapsed && !gated;
+  // Design §14.3: a conflicted file is a three-way view of the index stages, not a two-way diff,
+  // so the card loads `conflict()` (inside ConflictBody) instead of `fileDiff()`.
+  const conflict = file.layers.includes("conflict");
+  const conflictKind = useStore((s) => selectConflictKind(s, id));
+  const wantsBody = !collapsed && !gated && !conflict;
   useEffect(() => {
     if (wantsBody && !entry) void loadFileDiff(id);
   }, [wantsBody, entry, id, loadFileDiff]);
@@ -279,7 +285,9 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
 
   let body: ReactNode = null;
   if (!collapsed) {
-    if (gated) {
+    if (conflict) {
+      body = <ConflictBody file={file} />;
+    } else if (gated) {
       body = (
         <button
           type="button"
@@ -316,6 +324,7 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
         onToggleCollapse={() => setCollapsed(id, !collapsed)}
         onToggleViewed={() => toggleViewed(id)}
         onExpandAll={canExpandAll ? () => setExpandAllToken((t) => t + 1) : undefined}
+        tag={conflict ? <ConflictTag kind={conflictKind} /> : undefined}
       />
       {body}
     </article>

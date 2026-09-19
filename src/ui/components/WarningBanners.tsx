@@ -1,13 +1,13 @@
 import { CircleX, Info, TriangleAlert, X } from "lucide-react";
 import type { RepoWarning } from "../../engine/types";
 import { useStore } from "../store";
-import { type BannerLevel, describeWarning, type WarningAction } from "../warnings";
-
-const LEVEL_CLASS: Record<BannerLevel, string> = {
-  warning: "bg-banner-warning-bg border-banner-warning-border",
-  info: "bg-banner-info-bg border-banner-info-border",
-  error: "bg-banner-error-bg border-banner-error-border",
-};
+import {
+  BANNER_LEVEL_CLASS,
+  type BannerLevel,
+  describeWarning,
+  type WarningAction,
+} from "../warnings";
+import { OperationBanner } from "./OperationBanner";
 
 function LevelIcon({ level }: { level: BannerLevel }) {
   if (level === "info") return <Info size={14} className="shrink-0 text-accent" aria-hidden />;
@@ -69,7 +69,7 @@ export function WarningBanner({
     <div
       role={copy.level === "error" ? "alert" : "status"}
       data-level={copy.level}
-      className={`flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink ${LEVEL_CLASS[copy.level]}`}
+      className={`flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink ${BANNER_LEVEL_CLASS[copy.level]}`}
     >
       <LevelIcon level={copy.level} />
       <p className="min-w-0 flex-1">
@@ -98,15 +98,24 @@ export function WarningBanner({
   );
 }
 
-/** Stacked, independently dismissible banners for the current repo + diff warnings. */
+/**
+ * Stacked, independently dismissible banners for the current repo + diff warnings, with the
+ * contextual **OperationBanner** (Design §14.3, T11.3) on top of them — it is not dismissible and
+ * is driven by live state, so the engine's one-shot `OPERATION_IN_PROGRESS` warning, which says
+ * strictly less and would go stale the moment the rebase ends, never gets a row of its own.
+ */
 export function WarningBanners() {
   const warnings = useStore((s) => s.warnings);
   const dismissed = useStore((s) => s.dismissedWarnings);
   const dismissWarning = useStore((s) => s.dismissWarning);
-  const visible = warnings.filter((w) => !dismissed.has(w.code));
-  if (visible.length === 0) return null;
+  const operation = useStore((s) => s.operation);
+  const visible = warnings.filter(
+    (w) => !dismissed.has(w.code) && w.code !== "OPERATION_IN_PROGRESS",
+  );
+  if (visible.length === 0 && operation === null) return null;
   return (
     <section aria-label="Warnings" className="shrink-0">
+      <OperationBanner />
       {visible.map((w) => (
         <WarningBanner key={w.code} warning={w} onDismiss={() => dismissWarning(w.code)} />
       ))}

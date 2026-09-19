@@ -19,6 +19,7 @@ export function LayerCode({ code }: { code: LayerCodeInfo }) {
   return (
     <span
       role="img"
+      data-layer-code=""
       aria-label={code.label}
       title={code.label}
       className="inline-flex h-4 shrink-0 items-center rounded-[3px] border border-line bg-surface px-1 font-mono text-[10px] leading-4 font-semibold tracking-[0.08em]"

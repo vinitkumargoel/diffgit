@@ -1,5 +1,5 @@
 import { Check, ChevronDown, ChevronRight, Copy, UnfoldVertical, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { FileDiff } from "../../engine/types";
 import { filePathOf } from "../treeModel";
 import { RowStats, splitPath } from "./FileRow";
@@ -15,6 +15,8 @@ export interface FileHeaderProps {
   onToggleViewed: () => void;
   /** Undefined while there is nothing to expand (button disabled). */
   onExpandAll?: () => void;
+  /** An extra `ref`-style tag after the layer chips (T11.3: the conflict kind). */
+  tag?: ReactNode;
 }
 
 /** `100644` for 0o100644; null when the side is absent. */
@@ -41,6 +43,7 @@ export function FileHeader({
   onToggleCollapse,
   onToggleViewed,
   onExpandAll,
+  tag,
 }: FileHeaderProps) {
   const path = filePathOf(file);
   const rename = file.status === "renamed" || file.status === "copied";
@@ -101,6 +104,7 @@ export function FileHeader({
       {chipsFor(file).map((c) => (
         <LayerChip key={c} kind={c} />
       ))}
+      {tag}
       <span className="ml-auto flex items-center gap-2">
         <button
           type="button"
