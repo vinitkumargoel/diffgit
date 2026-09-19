@@ -172,7 +172,13 @@ export interface TagInfo {
   name: string; // "v2.3.0"
   fullName: string; // "refs/tags/v2.3.0"
   oid: Oid; // what the ref points at (the tag object for an annotated tag)
-  targetOid: Oid; // the peeled commit
+  targetOid: Oid; // the peeled object (a commit for every tag the history views use)
+  /**
+   * T10.5b B1: what `targetOid` actually is. `git tag` can name a blob or a tree (git.git's own
+   * `refs/tags/junio-gpg-pub` is a blob); everything that seeds a walk skips anything but
+   * `"commit"`, exactly as `git log --all` does.
+   */
+  targetType: "commit" | "tree" | "blob";
   annotated: boolean;
   message?: string;
   tagger?: Signature;
@@ -350,6 +356,11 @@ export interface WalkPage {
   graphAvailable: boolean;
   /** The 50,000-commit cap was reached (`HISTORY_CAPPED`). */
   capped: boolean;
+  /**
+   * T10.5b: a row in this page needed more than `MAX_LANES` lanes and was folded into the last
+   * one, so the graph column is no longer faithful — the UI offers `first-parent` instead.
+   */
+  laneOverflow: boolean;
 }
 
 /** `git rev-list --left-right --count a...b`: `ahead` is the left count, `behind` the right one. */

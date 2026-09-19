@@ -206,10 +206,17 @@ async function record(name: string, v2: boolean): Promise<void> {
     for (const p of EXPLAIN_PATHS[name] ?? []) explanations[p] = await session.explainPath(p);
 
     // ---- T10.5: history pages, commit payloads and the Branches table ------------------------
-    const walks: Record<string, { commits: CommitSummary[]; graphAvailable: boolean }> = {};
+    const walks: Record<
+      string,
+      { commits: CommitSummary[]; graphAvailable: boolean; laneOverflow: boolean }
+    > = {};
     for (const variant of walkVariants(name)) {
       const page = await session.walkCommits(variant.req);
-      walks[variant.key] = { commits: page.commits, graphAvailable: page.graphAvailable };
+      walks[variant.key] = {
+        commits: page.commits,
+        graphAvailable: page.graphAvailable,
+        laneOverflow: page.laneOverflow,
+      };
     }
     const walkedOids = [
       ...new Set(Object.values(walks).flatMap((w) => w.commits.map((c) => c.oid))),

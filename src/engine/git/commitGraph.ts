@@ -22,6 +22,7 @@
  * (`commit-graphs/commit-graph-chain`), a SHA-256 repository, an unknown version or a checksum
  * mismatch all degrade to "no graph" — `COMMIT_GRAPH_STALE` is a warning, never an error.
  */
+import { errorCode } from "../errors";
 import type { FsaFs } from "../fs/fsaFs";
 import type { Oid, RepoWarning } from "../types";
 import { sha1, toHex } from "./hash";
@@ -123,9 +124,20 @@ export class CommitGraph {
     let bytes: Uint8Array;
     try {
       bytes = await fs.readFile(`/${COMMIT_GRAPH_PATH}`);
-    } catch {
-      // No graph, or it vanished mid-read: both mean "walk the objects".
-      return (await fs.exists(`/${COMMIT_GRAPH_CHAIN_PATH}`)) ? none("chain") : none("absent");
+    } catch (e) {
+      // No graph, or it vanished mid-read: both mean "walk the objects". T10.5b nit 2: anything
+      // other than "not there" is an I/O failure the user should be told about, not swallowed.
+      const chain = await fs.exists(`/${COMMIT_GRAPH_CHAIN_PATH}`);
+      const code = errorCode(e);
+      if (code === "ENOENT" || code === "EISDIR" || code === "ENOTDIR")
+        return chain ? none("chain") : none("absent");
+      return none(chain ? "chain" : "absent", [
+        {
+          code: "HISTORY_DEGRADED",
+          message: "The commit-graph file could not be read; history is walked from the objects.",
+          detail: `IO_ERROR: ${COMMIT_GRAPH_PATH} (${code ?? "unknown"})`,
+        },
+      ]);
     }
     try {
       const graph = await CommitGraph.parse(bytes);
@@ -201,8 +213,14 @@ export class CommitGraph {
     if (oid.length !== 40) return -1;
     const first = Number.parseInt(oid.slice(0, 2), 16);
     if (!Number.isFinite(first)) return -1;
-    let lo = first === 0 ? 0 : this.view.getUint32(this.fanout + (first - 1) * 4);
-    let hi = this.view.getUint32(this.fanout + first * 4);
+    // T10.5b nit 9: a corrupt (but checksum-valid) fanout could point past OIDL; clamp so the
+    // binary search can only ever read rows the chunk-length checks in `parse` covered.
+    let lo = Math.min(
+      first === 0 ? 0 : this.view.getUint32(this.fanout + (first - 1) * 4),
+      this.count,
+    );
+    let hi = Math.min(this.view.getUint32(this.fanout + first * 4), this.count);
+    if (hi < lo) hi = lo;
     while (lo < hi) {
       const mid = (lo + hi) >>> 1;
       const cmp = compareHex(oid, this.bytes, this.lookup + mid * OID_LEN);

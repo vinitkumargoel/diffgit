@@ -185,7 +185,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": false
+      "graphAvailable": false,
+      "laneOverflow": false
     },
     "first-parent": {
       "commits": [
@@ -211,7 +212,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": false
+      "graphAvailable": false,
+      "laneOverflow": false
     },
     "all": {
       "commits": [
@@ -237,7 +239,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": false
+      "graphAvailable": false,
+      "laneOverflow": false
     }
   },
   "commits": {

@@ -179,7 +179,23 @@ describe("mock worker client: v2 sources (T10.1)", () => {
     const client = createMockWorkerClient();
     await client.open({ name: "tags" }, sink());
     const tags = await client.listTags();
-    expect(tags.map((x) => x.name)).toEqual(["v0.1.0", "v0.2.0", "v1.0.0", "v1.1.0"]);
+    // `blob-tag` / `tree-tag` are the T10.5b B1 fixtures: refs that do not name a commit.
+    expect(tags.map((x) => x.name)).toEqual([
+      "blob-tag",
+      "tree-tag",
+      "v0.1.0",
+      "v0.2.0",
+      "v1.0.0",
+      "v1.1.0",
+    ]);
+    expect(tags.map((x) => x.targetType)).toEqual([
+      "blob",
+      "tree",
+      "commit",
+      "commit",
+      "commit",
+      "commit",
+    ]);
     expect(tags.find((x) => x.name === "v1.0.0")?.annotated).toBe(true);
     expect(await client.resolveRevision("v1.0.0")).toMatchObject({
       kind: "tag",
@@ -515,7 +531,8 @@ describe("mock worker client: history, lanes and branches (T10.5)", () => {
     const client = createMockWorkerClient();
     await client.open({ name: "octopus" }, sink());
     const page = await client.walkCommits({ from: [], firstParent: false, all: true, limit: 50 });
-    expect(page.graphAvailable).toBe(false);
+    expect(page.graphAvailable).toBe(true); // T10.5b nit 1: the fixture now carries a commit-graph
+    expect(page.laneOverflow).toBe(false);
     const merge = page.commits.find((c) => c.parents.length === 3);
     expect(merge).toBeDefined();
     expect(merge?.edges?.filter((e) => e.from === (merge?.lane as number))).toHaveLength(3);
@@ -525,7 +542,13 @@ describe("mock worker client: history, lanes and branches (T10.5)", () => {
     const client = createMockWorkerClient();
     await client.open({ name: "showcase" }, sink());
     const page = await client.walkCommits({ from: ["HEAD"], firstParent: false, limit: 50 });
-    expect(page).toEqual({ commits: [], cursor: null, graphAvailable: false, capped: false });
+    expect(page).toEqual({
+      commits: [],
+      cursor: null,
+      graphAvailable: false,
+      capped: false,
+      laneOverflow: false,
+    });
     expect(await client.branchOverview()).toEqual([]);
   });
 });

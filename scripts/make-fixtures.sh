@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds every fixture repository under fixtures/ with the real git CLI (T0.3).
 # Idempotent: deletes and rebuilds fixtures/. Deterministic: fixed author/committer identity and
-# dates, no global/system git config. Run `FIXTURES_PERF=1` to also build `perf-5k`.
+# dates, no global/system git config. Run `FIXTURES_PERF=1` to also build `perf-5k` and `perf-log`.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -171,6 +171,41 @@ build_packed() {
   local r="$FIX/packed"; build_basic "$r"
   G -C "$r" gc -q --aggressive --prune=now
   G -C "$r" pack-refs --all
+}
+
+# perf-log: 2,000 linear commits + 50 branches, for the history-walk budget in docs/perf.md
+# (T10.5b nit 8: the perf-5k HEAD is two commits deep, so its "first page of 50" measured nothing).
+# Built through `git fast-import` — still the real git CLI, and the only way 2,000 commits do not
+# cost 2,000 process spawns. Fixed committer dates keep the oids byte-identical across rebuilds.
+build_perf_log() {
+  local r="$FIX/perf-log"; mkdir -p "$r"; G -C "$r" init -q
+  local i when msg body
+  {
+    for ((i=1; i<=2000; i++)); do
+      when=$(( 1717200000 + i * 60 ))
+      msg="c$i: commit $i"$'\n'
+      body="line $i"$'\n'
+      printf 'commit refs/heads/main\n'
+      printf 'mark :%d\n' "$i"
+      printf 'author test <test@example.com> %d +0000\n' "$when"
+      printf 'committer test <test@example.com> %d +0000\n' "$when"
+      printf 'data %d\n%s' "${#msg}" "$msg"
+      [ "$i" -gt 1 ] && printf 'from :%d\n' "$(( i - 1 ))"
+      printf 'M 644 inline log.txt\ndata %d\n%s\n' "${#body}" "$body"
+    done
+    for ((i=1; i<=50; i++)); do
+      printf 'reset refs/heads/topic%02d\nfrom :%d\n\n' "$i" "$(( i * 37 + 1 ))"
+    done
+    printf 'done\n'
+  } | G -C "$r" fast-import --quiet --done
+  rm -f "$r/.git/fast_import_crash_"* 2>/dev/null || true
+  G -C "$r" symbolic-ref HEAD refs/heads/main
+  G -C "$r" reset -q --hard main
+  G -C "$r" commit-graph write --reachable
+  G -C "$r" pack-refs --all
+  [ "$(G -C "$r" rev-list --count main)" = 2000 ] || { echo "perf-log: not 2000 commits" >&2; exit 1; }
+  [ "$(G -C "$r" for-each-ref --format=x refs/heads | wc -l | tr -d ' ')" = 51 ] ||
+    { echo "perf-log: expected main + 50 topics" >&2; exit 1; }
 }
 
 make_bare_from_basic() { # make_bare_from_basic <bare-path> [rename-main-to]
@@ -477,6 +512,12 @@ build_tags() {
   w "$r" file.txt "release four"$'\n'
   commit "$r" "c4: fourth release"
   G -C "$r" tag -a v1.1.0 -m "annotated release 1.1.0"
+  # T10.5b B1: a lightweight tag on a blob and one on a tree. git.git itself ships
+  # refs/tags/junio-gpg-pub (a blob); `git log --all` skips such refs instead of failing.
+  G -C "$r" tag blob-tag "$(G -C "$r" rev-parse HEAD:CHANGELOG.md)"
+  G -C "$r" tag tree-tag "$(G -C "$r" rev-parse 'HEAD^{tree}')"
+  [ "$(G -C "$r" cat-file -t blob-tag)" = blob ] || { echo "tags: blob-tag is not a blob" >&2; exit 1; }
+  [ "$(G -C "$r" cat-file -t tree-tag)" = tree ] || { echo "tags: tree-tag is not a tree" >&2; exit 1; }
 }
 
 # stash: two stashes, the newest pushed with -u (three parents), plus a dirty worktree.
@@ -788,6 +829,52 @@ build_octopus() {
   G -C "$r" merge -q --no-ff -m "c3: octopus merge of side-a and side-b" side-a side-b >/dev/null
   [ "$(G -C "$r" rev-list --parents -n 1 HEAD | wc -w | tr -d ' ')" = 4 ] ||
     { echo "octopus: HEAD is not a three-parent merge" >&2; exit 1; }
+  # T10.5b nit 1: the only fixture whose commit-graph needs an EDGE chunk (3rd..nth parents).
+  G -C "$r" commit-graph write --reachable
+  [ -f "$r/.git/objects/info/commit-graph" ] || { echo "octopus: commit-graph missing" >&2; exit 1; }
+}
+
+# ----------------------------------------------------------------------------------------------
+# skew: committer dates that do NOT decrease monotonically toward the parents (T10.5b S1).
+#
+#   r --- P --- M            (main)            dates: r 00:00  P 08:00  M 09:00
+#    \      \
+#     T ----- C --- S        (side)            dates: T 03:00  C 05:00  S 07:00
+#
+# P is *newer* than its child C, which is the one shape a streaming topological release gets
+# wrong: P becomes eligible (its only discovered child M was emitted) and, being the newest
+# entry in the queue, is emitted before C is discovered at all. `git log --date-order` computes
+# the indegree over the whole list first and prints M S C P T r.
+# Built with `commit-tree` because only that lets every commit carry its own committer date.
+build_skew() {
+  local r="$FIX/skew"; mkdir -p "$r"; G -C "$r" init -q
+  local root p m t c s
+  # <content> -> tree oid
+  skew_tree() {
+    printf '%s\n' "$1" > "$r/file.txt"
+    G -C "$r" add -A >/dev/null
+    G -C "$r" write-tree
+  }
+  # <hh> <message> <parent...> -> commit oid
+  skew_commit() {
+    local hh="$1" msg="$2"; shift 2
+    local args=() one
+    for one in "$@"; do args+=(-p "$one"); done
+    GIT_AUTHOR_DATE="2024-06-01T$hh:00:00Z" GIT_COMMITTER_DATE="2024-06-01T$hh:00:00Z" \
+      G -C "$r" commit-tree "$(skew_tree "$msg")" ${args[@]+"${args[@]}"} -m "$msg"
+  }
+  root=$(skew_commit 00 "r: root")
+  p=$(skew_commit 08 "P: parent newer than its child" "$root")
+  m=$(skew_commit 09 "M: main tip" "$p")
+  t=$(skew_commit 03 "T: side base" "$root")
+  c=$(skew_commit 05 "C: merge of T and P, older than P" "$t" "$p")
+  s=$(skew_commit 07 "S: side tip" "$c")
+  G -C "$r" update-ref refs/heads/main "$m"
+  G -C "$r" update-ref refs/heads/side "$s"
+  G -C "$r" symbolic-ref HEAD refs/heads/main
+  G -C "$r" reset -q --hard main
+  [ "$(G -C "$r" log --date-order --format=%H --all | head -1)" = "$m" ] ||
+    { echo "skew: unexpected --date-order head" >&2; exit 1; }
 }
 
 # ----------------------------------------------------------------------------------------------
@@ -822,7 +909,10 @@ main() {
   build_sha256;               echo "  sha256"
   build_alternates;           echo "  alternates"
   build_partial;              echo "  partial"
-  if [ "${FIXTURES_PERF:-0}" = "1" ]; then build_perf_5k; echo "  perf-5k"; fi
+  if [ "${FIXTURES_PERF:-0}" = "1" ]; then
+    build_perf_5k;            echo "  perf-5k"
+    build_perf_log;           echo "  perf-log"
+  fi
   build_tags;                 echo "  tags"
   build_stash;                echo "  stash"
   build_reflog_orphan;        echo "  reflog-orphan"
@@ -830,6 +920,7 @@ main() {
   build_secrets;              echo "  secrets"
   build_hidden;               echo "  hidden"
   build_octopus;              echo "  octopus"
+  build_skew;                 echo "  skew"
   build_conflict;             echo "  conflict (built last, never gc'd)"
   build_merge_conflict;       echo "  merge-conflict (mid-merge, never gc'd)"
   build_rebase_conflict;      echo "  rebase-conflict (mid-rebase, never gc'd)"

@@ -88,7 +88,10 @@ interface RecordedV2 {
   revisions: Record<string, ResolvedRevision>;
   ranges: { source: DiffSource; result: DiffResult }[];
   /** T10.5: the whole history per walk variant; the mock pages it with an index cursor. */
-  walks: Record<string, { commits: CommitSummary[]; graphAvailable: boolean }>;
+  walks: Record<
+    string,
+    { commits: CommitSummary[]; graphAvailable: boolean; laneOverflow?: boolean }
+  >;
   commits: Record<Oid, CommitDetails>;
   commitStats: Record<Oid, CommitDetails["stats"]>;
   branches: BranchRow[];
@@ -422,6 +425,7 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         cursor: end < recorded.commits.length ? String(end) : null,
         graphAvailable: recorded.graphAvailable,
         capped: false,
+        laneOverflow: recorded.laneOverflow === true,
       };
       sink?.onProgress({ phase: "history", done: page.commits.length, durationMs: 1 });
       return page;

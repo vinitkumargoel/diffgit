@@ -550,7 +550,7 @@ describe("revisions, tags and stashes over the session (T10.1)", () => {
     const first = session.listTags();
     const second = session.listTags();
     await expect(first).rejects.toMatchObject({ code: "CANCELLED" });
-    expect((await second).length).toBe(4);
+    expect((await second).length).toBe(6); // 4 version tags + the blob and tree tags (T10.5b B1)
     await session.close();
   });
 });

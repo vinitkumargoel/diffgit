@@ -63,16 +63,16 @@ try {
   );
   console.log(`open: ${openMs.toFixed(0)} ms`, phases);
 
-  // ---- history walk (T10.5) -------------------------------------------------------------------
-  // First page on the 5,000-file repository (atlas tab 03: "< 100 ms first page"), then the whole
-  // `history` fixture with and without its commit-graph — the file tab 20 exists to justify.
+  // ---- history walk (T10.5, budgets revised by T10.5b nit 8) ----------------------------------
+  // `perf-5k` HEAD is two commits deep, so its "first page of 50" measured nothing but the fixed
+  // cost. The real first-page budget (atlas tab 03: "< 100 ms first page") is measured on
+  // `perf-log`: 2,000 linear commits and 50 branches, with a commit-graph.
   const t4 = performance.now();
   const firstPage = await session.walkCommits({ from: ["HEAD"], firstParent: false, limit: 50 });
   const firstPageMs = performance.now() - t4;
   console.log(
-    `perf-5k first page: ${firstPage.commits.length} commits in ${firstPageMs.toFixed(1)} ms (commit-graph ${firstPage.graphAvailable})`,
+    `perf-5k first page (fixed cost only, HEAD is 2 deep): ${firstPage.commits.length} commits in ${firstPageMs.toFixed(1)} ms (commit-graph ${firstPage.graphAvailable})`,
   );
-  budget("history first page of 50 (perf-5k)", firstPageMs, 100, " ms", true);
 
   // first compute (cold caches) → file list visible
   progress.length = 0;
@@ -148,6 +148,70 @@ try {
     await s.close();
     return { ms, n, graph };
   };
+
+  // T10.5b nit 8: the first page of a real history, cold and warm, plus the `--all` page that also
+  // pays for 51 refs' worth of seeds and the refs-by-commit index.
+  if (!hasFixture("perf-log")) {
+    console.error("perf-log fixture missing: FIXTURES_PERF=1 bun run fixtures");
+    process.exit(1);
+  }
+  {
+    const tOpenLog = performance.now();
+    const logSession = await RepoSession.open(
+      await NodeDirHandle.open(fixturePath("perf-log")),
+      sink,
+      { id: "perf-log" },
+    );
+    const openLogMs = performance.now() - tOpenLog;
+    try {
+      const tCold = performance.now();
+      const cold = await logSession.walkCommits({ from: ["HEAD"], firstParent: false, limit: 50 });
+      const coldMs = performance.now() - tCold;
+      const tAll = performance.now();
+      const all = await logSession.walkCommits({
+        from: [],
+        firstParent: false,
+        all: true,
+        limit: 50,
+      });
+      const allMs = performance.now() - tAll;
+      const tNext = performance.now();
+      await logSession.walkCommits({
+        from: [],
+        firstParent: false,
+        all: true,
+        limit: 50,
+        cursor: all.cursor as string,
+      });
+      const nextMs = performance.now() - tNext;
+      const tFull = performance.now();
+      let cursor: string | null = null;
+      let rows = 0;
+      do {
+        const page: { commits: unknown[]; cursor: string | null } = await logSession.walkCommits({
+          from: [],
+          firstParent: false,
+          all: true,
+          limit: 250,
+          ...(cursor === null ? {} : { cursor }),
+        });
+        rows += page.commits.length;
+        cursor = page.cursor;
+      } while (cursor !== null);
+      const fullMs = performance.now() - tFull;
+      console.log(
+        `perf-log (2,000 commits, 51 refs): open ${openLogMs.toFixed(0)} ms; ` +
+          `first page of 50 ${coldMs.toFixed(1)} ms (graph ${cold.graphAvailable}); ` +
+          `--all first page ${allMs.toFixed(1)} ms, second page ${nextMs.toFixed(1)} ms; ` +
+          `full --all walk ${rows} rows in ${fullMs.toFixed(0)} ms`,
+      );
+      budget("history first page of 50 (perf-log)", coldMs, 100, " ms", true);
+      budget("history --all first page of 50 (perf-log)", allMs, 100, " ms", true);
+      budget("history --all next page of 50 (perf-log)", nextMs, 50, " ms", true);
+    } finally {
+      await logSession.close();
+    }
+  }
 
   const withGraph = await fullWalk(fixturePath("history"), "history-graph");
   const noGraphDir = mkdtempSync(join(tmpdir(), "diffgit-nograph-"));

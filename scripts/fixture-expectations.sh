@@ -293,7 +293,13 @@ dump_v2() { # dump_v2 <fixture-name>
   case "$name" in
     tags|stash|reflog-orphan|history|secrets|hidden|octopus|merge-conflict|rebase-conflict|cherry-pick-conflict) ;;
     # T10.5 walker parity only: a criss-cross merge, a detached HEAD and the 5,000-file perf repo.
-    crisscross|detached|perf-5k) log_orders "$r" "$exp"; return 0 ;;
+    crisscross)
+      log_orders "$r" "$exp"
+      # T10.5b S3: two merge bases, so the ahead/behind walk has to paint COMMON on both.
+      printf 'main...feature\t%s\n' "$(G -C "$r" rev-list --left-right --count main...feature)" \
+        > "$exp/rev-list-left-right-count.txt"
+      return 0 ;;
+    detached|perf-5k|perf-log|skew) log_orders "$r" "$exp"; return 0 ;;
     # T10.5 Branches table only: the three fixtures that configure an upstream.
     remote|remote-master|no-origin-head) branch_table "$r" "$exp"; return 0 ;;
     *) return 0 ;;

@@ -90,6 +90,8 @@ export const WARNING_CODES = [
   "SNAPSHOT_MODE",
   "JJ_COLOCATED",
   "PATCH_ONLY",
+  // T10.5b nit 2: an object read that history fell back from instead of failing the whole page.
+  "HISTORY_DEGRADED",
 ] as const;
 export type WarningCode = (typeof WARNING_CODES)[number];
 

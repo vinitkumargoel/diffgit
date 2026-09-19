@@ -1,10 +1,27 @@
 {
   "tags": [
     {
+      "name": "blob-tag",
+      "fullName": "refs/tags/blob-tag",
+      "oid": "2a0686f640b0a4ccef6c81788ecd2435a501b2be",
+      "targetOid": "2a0686f640b0a4ccef6c81788ecd2435a501b2be",
+      "targetType": "blob",
+      "annotated": false
+    },
+    {
+      "name": "tree-tag",
+      "fullName": "refs/tags/tree-tag",
+      "oid": "b2195abe8aaab9b17d3d7abeda445d97b4432c5a",
+      "targetOid": "b2195abe8aaab9b17d3d7abeda445d97b4432c5a",
+      "targetType": "tree",
+      "annotated": false
+    },
+    {
       "name": "v0.1.0",
       "fullName": "refs/tags/v0.1.0",
       "oid": "1e919f3681161418fef2e272272c9cb707fa65f6",
       "targetOid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+      "targetType": "commit",
       "annotated": false
     },
     {
@@ -12,6 +29,7 @@
       "fullName": "refs/tags/v0.2.0",
       "oid": "7f276549ffed610f8419f52e68edadb1348b883b",
       "targetOid": "7f276549ffed610f8419f52e68edadb1348b883b",
+      "targetType": "commit",
       "annotated": false
     },
     {
@@ -19,6 +37,7 @@
       "fullName": "refs/tags/v1.0.0",
       "oid": "11f05d304a2a99fc00f110ab8db9e3a61f6b0dd8",
       "targetOid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "targetType": "commit",
       "annotated": true,
       "message": "annotated release 1.0.0\n",
       "tagger": {
@@ -34,6 +53,7 @@
       "fullName": "refs/tags/v1.1.0",
       "oid": "a985da1704ea7b799dfb6c533ad5ad9047d4894f",
       "targetOid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+      "targetType": "commit",
       "annotated": true,
       "message": "annotated release 1.1.0\n",
       "tagger": {
@@ -438,7 +458,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": false
+      "graphAvailable": false,
+      "laneOverflow": false
     },
     "first-parent": {
       "commits": [
@@ -545,7 +566,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": false
+      "graphAvailable": false,
+      "laneOverflow": false
     },
     "all": {
       "commits": [
@@ -652,7 +674,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": false
+      "graphAvailable": false,
+      "laneOverflow": false
     }
   },
   "commits": {
@@ -766,17 +789,17 @@
     }
   },
   "commitStats": {
+    "810e06da6b25e979289dcf8f0b44291a03cff0a7": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
     "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8": {
       "files": 1,
       "additions": 1,
       "deletions": 1
     },
     "7f276549ffed610f8419f52e68edadb1348b883b": {
-      "files": 1,
-      "additions": 1,
-      "deletions": 1
-    },
-    "810e06da6b25e979289dcf8f0b44291a03cff0a7": {
       "files": 1,
       "additions": 1,
       "deletions": 1
@@ -827,12 +850,12 @@
       },
       "vsUpstream": null,
       "vsDefault": {
-        "ahead": 0,
+        "ahead": 3,
         "behind": 1,
         "mergeBase": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
         "capped": false
       },
-      "merged": true,
+      "merged": false,
       "tags": ["v1.0.0"]
     }
   ],

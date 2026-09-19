@@ -18,6 +18,7 @@ import {
   type FileDiff,
   MODE_GITLINK,
   type Oid,
+  type RepoWarning,
 } from "../types";
 import { throwIfAborted } from "../util/concurrency";
 import type { FlatTree, ObjectDb } from "./objectDb";
@@ -38,6 +39,8 @@ export interface CommitStatsDeps {
   renames?: boolean;
   renameLimit?: number;
   signal?: AbortSignal;
+  /** T10.5b nit 2: a commit whose objects could not be read is reported, not silently blanked. */
+  warn?: (w: RepoWarning) => void;
 }
 
 /**
@@ -50,6 +53,9 @@ export async function commitStats(
   oids: Oid[],
 ): Promise<Record<Oid, CommitStats>> {
   const out: Record<Oid, CommitStats> = {};
+  // Seeded in request order so the record has a stable key order whatever order the batch settles
+  // in (`bun run record` has to be idempotent).
+  for (const oid of oids) out[oid] = null;
   for (let i = 0; i < oids.length; i += COMMIT_STATS_BATCH) {
     throwIfAborted(deps.signal, "commit stats");
     const batch = oids.slice(i, i + COMMIT_STATS_BATCH);
@@ -61,6 +67,11 @@ export async function commitStats(
           } catch (e) {
             if (e instanceof EngineError && (e.code === "CANCELLED" || e.code === "STALE")) throw e;
             out[oid] = null;
+            deps.warn?.({
+              code: "HISTORY_DEGRADED",
+              message: `The change counts for ${oid.slice(0, 7)} could not be computed.`,
+              detail: `IO_ERROR: ${oid} (${e instanceof Error ? e.message : String(e)})`,
+            });
           }
         }),
       ),
@@ -72,6 +83,7 @@ export async function commitStats(
 async function statsForCommit(deps: CommitStatsDeps, oid: Oid): Promise<CommitStats> {
   const { db } = deps;
   const meta = await deps.reader.meta(oid);
+  if (meta === null) return null; // not a commit (T10.5b B1): no first-parent diff to take
   const parent = meta.parents[0];
   const before: FlatTree | null = parent === undefined ? null : await db.flattenTree(parent);
   const after = await db.flattenTree(oid);

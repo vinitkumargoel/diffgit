@@ -170,6 +170,11 @@ export const WARNING_COPY: Record<WarningCode, WarningCopy> = {
     subject: "Commit graph out of date",
     message: "The commit-graph file is older than the refs; history was walked without it.",
   },
+  HISTORY_DEGRADED: {
+    level: "warning",
+    subject: "Part of the history could not be read",
+    message: "Some commits or counts are missing because an object could not be read.",
+  },
   SECRETS_FOUND: {
     level: "error",
     subject: "Possible secret",
