@@ -23,6 +23,7 @@ import type {
   DiffResult,
   DiffSource,
   FileDiff,
+  Oid,
   RepoInfo,
   RepoRef,
   RepoWarning,
@@ -52,6 +53,14 @@ export type SidebarLayout = "tree" | "flat";
 /** D2: group the sidebar by change layer, or keep the plain path tree. */
 export type SidebarGroup = "layer" | "path";
 export type RefreshMode = "live" | "polling" | "manual";
+/** The four pages of v2 (Design §14.1); Files is the default and the only one with the file tree. */
+export type AppMode = "files" | "history" | "branches" | "insights";
+/** `Diff | Blame | History` on a FileCard header (Design §14.1, filled by T11.6). */
+export type CardMode = "diff" | "blame" | "history";
+/** Sub-tab of the History mode sidebar (Design §14.5, filled by T11.5). */
+export type HistoryTab = "commits" | "stack" | "reflog";
+/** Period of the Insights header (Design §14.6, filled by T11.12). */
+export type InsightsPeriod = "90d" | "1y" | "all";
 export type RefreshReason =
   | "manual"
   | "force"
@@ -70,6 +79,19 @@ export interface Prefs {
   sidebarWidth: number;
   sidebarLayout: SidebarLayout;
   sidebarGroup: SidebarGroup;
+  /**
+   * v2 (docs/v2-contracts.md § Store). `mode` is validated and defaulted like every other key but
+   * deliberately never carried across a session: `StoreState.mode` is the live value and always
+   * starts at "files", so opening a repository never lands somewhere unexpected.
+   */
+  mode: AppMode;
+  /** Sidebar "Show hidden files" toggle (Design §14.1 / §14.4; the group itself is T11.4). */
+  showHidden: boolean;
+  /** Apply diffgit's built-in excludes on top of the repository's ignore rules (T10.4). */
+  builtinExcludes: boolean;
+  insightsPeriod: InsightsPeriod;
+  /** Picker footer `three-dot … | two-dot ..` (Design §14.1; the pickers are T11.2). */
+  twoDot: boolean;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -79,6 +101,11 @@ export const DEFAULT_PREFS: Prefs = {
   sidebarWidth: 300,
   sidebarLayout: "tree",
   sidebarGroup: "layer",
+  mode: "files",
+  showHidden: false,
+  builtinExcludes: true,
+  insightsPeriod: "90d",
+  twoDot: false,
 };
 
 /** The four user-visible loading steps (Plan §6.1 screen 3) and how engine phases map onto them. */
@@ -240,6 +267,40 @@ export interface OpenOptions {
   skipWorktree?: boolean;
 }
 
+/**
+ * Stands in for an engine type that `docs/v2-contracts.md` names but a later phase-10 task still
+ * has to add to `src/engine/types.ts` (`RepoOperation` T10.2, `SecretFinding` T10.7,
+ * `HiddenEntry` T10.4, `CommitSummary` T10.5, `BisectState & BisectStep` T10.11). `never` keeps the
+ * field honest: it exists and the shell can switch on it, but nothing can put data in it until the
+ * task that owns the type widens this one annotation.
+ */
+type PendingEngineType = never;
+
+/** History-mode state (Design §14.5); T11.5 fills it. */
+export interface HistoryState {
+  commits: PendingEngineType[];
+  cursor: string | null;
+  loading: boolean;
+  selected: Oid | null;
+  rangeStart: Oid | null;
+  query: string;
+  firstParent: boolean;
+  all: boolean;
+  capped: boolean;
+}
+
+export const INITIAL_HISTORY: HistoryState = {
+  commits: [],
+  cursor: null,
+  loading: false,
+  selected: null,
+  rangeStart: null,
+  query: "",
+  firstParent: false,
+  all: false,
+  capped: false,
+};
+
 export interface StoreState {
   screen: Screen;
   repo: RepoInfo | null;
@@ -272,6 +333,29 @@ export interface StoreState {
   storageUnavailable: boolean;
   /** Set when the picker itself is refused (policy / SecurityError): the gate takes over (B6). */
   gateCause: GateCause | null;
+
+  // ---- v2 shell (docs/v2-contracts.md § Store; T11.1 creates them, later tasks fill behaviour) ----
+  /** Which page the body shows (Design §14.1). Session state: always "files" on open. */
+  mode: AppMode;
+  /** History sidebar sub-tab (T11.5). */
+  historyTab: HistoryTab;
+  /** `Diff | Blame | History` per file id (T11.6). */
+  cardModes: Record<string, CardMode>;
+  /** The merge / rebase / cherry-pick / revert / bisect in progress (T11.3). */
+  operation: PendingEngineType | null;
+  /** Secret-scan findings for the current diff; null = not scanned (T11.9). */
+  secrets: PendingEngineType[] | null;
+  /** Hidden paths behind the "Show hidden files" toggle; null = not listed (T11.4). */
+  hidden: PendingEngineType[] | null;
+  history: HistoryState;
+  /** Running bisect (T11.13). */
+  bisect: PendingEngineType | null;
+  /** Command palette open (Design §14.1). */
+  palette: boolean;
+  /** Firefox/Safari read-once mode: the folder was read once and cannot refresh (T11.15). */
+  snapshotMode: boolean;
+  /** A `.patch` / `.diff` file is open, not a repository (T11.14). */
+  patchOnly: boolean;
 
   // actions
   openRepo(handle: unknown, opts?: OpenOptions): Promise<void>;
@@ -307,6 +391,10 @@ export interface StoreState {
   setRecentNotice(notice: RecentNotice | null): void;
   setStorageUnavailable(on: boolean): void;
   setGateCause(cause: GateCause | null): void;
+  /** Switches the body page (ModeSwitch, keys `1`–`4`, palette). */
+  setMode(mode: AppMode): void;
+  /** Opens or closes the command palette (`⌘K` / `Ctrl+K`, the row 1 icon button). */
+  setPalette(open: boolean): void;
 }
 
 let toastSeq = 0;
@@ -513,6 +601,17 @@ export const useStore = create<StoreState>()((set, get) => {
     recentNotice: null,
     storageUnavailable: false,
     gateCause: null,
+    mode: "files",
+    historyTab: "commits",
+    cardModes: {},
+    operation: null,
+    secrets: null,
+    hidden: null,
+    history: INITIAL_HISTORY,
+    bisect: null,
+    palette: false,
+    snapshotMode: false,
+    patchOnly: false,
 
     async openRepo(handle, opts = {}) {
       await get().closeRepo();
@@ -648,6 +747,18 @@ export const useStore = create<StoreState>()((set, get) => {
         refresh: { mode: "manual", lastAt: null, busy: false, lastError: null, restarted: false },
         loading: initialLoading(),
         statsLastAt: null,
+        // v2 shell: a new repository always starts on Files with nothing carried over.
+        mode: "files",
+        historyTab: "commits",
+        cardModes: {},
+        operation: null,
+        secrets: null,
+        hidden: null,
+        history: INITIAL_HISTORY,
+        bisect: null,
+        palette: false,
+        snapshotMode: false,
+        patchOnly: false,
       });
     },
 
@@ -969,6 +1080,15 @@ export const useStore = create<StoreState>()((set, get) => {
 
     setGateCause(cause) {
       set({ gateCause: cause });
+    },
+
+    setMode(mode) {
+      if (get().mode === mode) return;
+      set({ mode, palette: false });
+    },
+
+    setPalette(open) {
+      set({ palette: open });
     },
 
     async fileBytes(id, side) {

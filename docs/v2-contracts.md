@@ -175,6 +175,15 @@ StoreState += {
 }
 ```
 
+<!-- T11.1 --> The fields exist in `src/ui/store.ts` now. Those whose engine type a later phase-10
+task still has to add (`RepoOperation`, `SecretFinding`, `HiddenEntry`, `CommitSummary`,
+`BisectState & BisectStep`) are annotated with the local alias `PendingEngineType = never`, so the
+field is present and empty until the task that owns the type widens that one annotation. `mode`
+lives in both `Prefs` (validated, defaulted) and `StoreState`; the live value is the store's and it
+always starts at `"files"` — the pref is never written back, per the contract's comment. The store
+also gained `setMode(mode)` (closes the palette) and `setPalette(open)`; `closeRepo` resets every
+v2 field.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).

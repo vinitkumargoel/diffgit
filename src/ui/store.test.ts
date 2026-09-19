@@ -38,6 +38,50 @@ async function openBasic(opts?: Parameters<typeof initial.openRepo>[1]) {
   await useStore.getState().openRepo({ name: "showcase" }, opts);
 }
 
+describe("store: v2 shell (T11.1)", () => {
+  it("starts in Files mode with the palette closed and the v2 fields empty", async () => {
+    await openBasic();
+    const s = useStore.getState();
+    expect(s.mode).toBe("files");
+    expect(s.palette).toBe(false);
+    expect(s.historyTab).toBe("commits");
+    expect(s.cardModes).toEqual({});
+    expect(s.operation).toBeNull();
+    expect(s.secrets).toBeNull();
+    expect(s.hidden).toBeNull();
+    expect(s.bisect).toBeNull();
+    expect(s.snapshotMode).toBe(false);
+    expect(s.patchOnly).toBe(false);
+    expect(s.history).toEqual({
+      commits: [],
+      cursor: null,
+      loading: false,
+      selected: null,
+      rangeStart: null,
+      query: "",
+      firstParent: false,
+      all: false,
+      capped: false,
+    });
+  });
+
+  it("setMode switches and closes the palette; closing the repo returns to Files", async () => {
+    await openBasic();
+    const { setMode, setPalette } = useStore.getState();
+    setPalette(true);
+    expect(useStore.getState().palette).toBe(true);
+    setMode("insights");
+    expect(useStore.getState().mode).toBe("insights");
+    expect(useStore.getState().palette).toBe(false);
+    setPalette(true);
+    setMode("insights"); // same mode: nothing to do, the palette stays as it is
+    expect(useStore.getState().palette).toBe(true);
+    await useStore.getState().closeRepo();
+    expect(useStore.getState().mode).toBe("files");
+    expect(useStore.getState().palette).toBe(false);
+  });
+});
+
 describe("store", () => {
   it("openRepo sets defaults from RepoInfo: source = checked-out, target = default, worktree on", async () => {
     await openBasic();

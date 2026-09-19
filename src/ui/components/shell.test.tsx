@@ -1,8 +1,9 @@
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DiffResult, RepoInfo } from "../../engine/types";
 import basicDiff from "../../test/recorded/showcase.diffresult.json";
 import basic from "../../test/recorded/showcase.repoinfo.json";
+import { SHORTCUTS, V2_SHORTCUTS } from "../hooks/useShortcuts";
 import { DEFAULT_PREFS, type StoreState, useStore } from "../store";
 import { HelpDialog, PRIVACY_SENTENCES } from "./HelpDialog";
 import { LiveRegion } from "./LiveRegion";
@@ -75,8 +76,8 @@ describe("RepoScreen shell (T5.6)", () => {
 
   it("`?` and the help button open the HelpDialog; Close closes it; `r` and `s` hit the store", () => {
     const a = seed();
-    render(<RepoScreen />);
-    const dialog = screen.getByRole("dialog", { hidden: true });
+    const { container } = render(<RepoScreen />);
+    const dialog = container.querySelector("dialog.help-dialog") as HTMLDialogElement;
     expect(dialog.hasAttribute("open")).toBe(false);
     fireEvent.keyDown(document, { key: "?", shiftKey: true });
     expect(dialog.hasAttribute("open")).toBe(true);
@@ -97,11 +98,29 @@ describe("HelpDialog", () => {
   it("lists every shortcut with a kbd and the three privacy sentences", () => {
     render(<HelpDialog open onClose={() => {}} />);
     const rows = screen.getAllByRole("row");
-    expect(rows.length).toBe(12);
-    expect(rows.map((r) => r.querySelector("kbd")?.textContent)).toContain("Esc");
-    expect(rows.map((r) => r.querySelector("kbd")?.textContent)).toContain("?");
+    // v1 keys (SHORTCUTS) + the v2 section: ⌘K plus every key in V2_SHORTCUTS (T11.1)
+    expect(rows.length).toBe(SHORTCUTS.length + V2_SHORTCUTS.length + 1);
+    const keys = rows.map((r) => r.querySelector("kbd")?.textContent);
+    expect(keys).toContain("Esc");
+    expect(keys).toContain("?");
+    expect(keys).toContain("⌘K");
+    expect(keys).toContain("1");
+    expect(keys).toContain("Shift+H");
+    // the keys no task has wired yet say so instead of pretending to work (Design §14.7)
+    expect(screen.getAllByText("when available").length).toBe(
+      V2_SHORTCUTS.filter((s) => "pending" in s && s.pending).length,
+    );
     for (const s of PRIVACY_SENTENCES)
       expect(screen.getByText(/Privacy/).parentElement?.textContent).toContain(s);
+  });
+
+  it("shows the derived-cache size and a Clear button (Design §14.1 footer)", async () => {
+    render(<HelpDialog open onClose={() => {}} />);
+    expect(screen.getByRole("button", { name: "Clear" })).toBeTruthy();
+    // no IndexedDB in happy-dom: `guarded` swallows it and the footer settles on an empty cache
+    await waitFor(() =>
+      expect(screen.getByTestId("cache-size").textContent).toBe("Cached data: 0 B"),
+    );
   });
 });
 

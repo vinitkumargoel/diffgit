@@ -26,6 +26,19 @@ export function validatePrefs(raw: unknown): Prefs {
     out.sidebarLayout = raw.sidebarLayout;
   if (raw.sidebarGroup === "layer" || raw.sidebarGroup === "path")
     out.sidebarGroup = raw.sidebarGroup;
+  // v2 keys (T11.1, docs/v2-contracts.md § Persistence)
+  if (
+    raw.mode === "files" ||
+    raw.mode === "history" ||
+    raw.mode === "branches" ||
+    raw.mode === "insights"
+  )
+    out.mode = raw.mode;
+  if (typeof raw.showHidden === "boolean") out.showHidden = raw.showHidden;
+  if (typeof raw.builtinExcludes === "boolean") out.builtinExcludes = raw.builtinExcludes;
+  if (raw.insightsPeriod === "90d" || raw.insightsPeriod === "1y" || raw.insightsPeriod === "all")
+    out.insightsPeriod = raw.insightsPeriod;
+  if (typeof raw.twoDot === "boolean") out.twoDot = raw.twoDot;
   return out;
 }
 

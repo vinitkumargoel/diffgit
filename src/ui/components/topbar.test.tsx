@@ -86,6 +86,24 @@ describe("TopBar row 1", () => {
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("0");
   });
 
+  it("v2 adds exactly two controls: ModeSwitch after the repo name, palette before the theme (Design §14.1)", () => {
+    seed();
+    const { container } = render(<TopBar />);
+    const row1 = container.querySelector("header > div") as HTMLElement;
+    const children = [...row1.children];
+    // the repo name is first, the ModeSwitch immediately after it
+    expect(children[0]?.textContent).toBe("basic");
+    expect(children[1]?.tagName).toBe("FIELDSET");
+    expect(children[1]?.getAttribute("aria-label")).toBe("View");
+    // and the last three controls are help, palette, theme — nothing else moved
+    const buttons = [...row1.querySelectorAll("button")].map((b) => b.getAttribute("aria-label"));
+    expect(buttons.slice(-3)).toEqual([
+      "Keyboard shortcuts",
+      "Command palette",
+      "Switch to light theme",
+    ]);
+  });
+
   it("opens the base picker grouped Local / Remote: origin and selecting calls setTarget", async () => {
     const a = seed();
     render(<TopBar />);

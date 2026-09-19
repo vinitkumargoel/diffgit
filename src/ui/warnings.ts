@@ -135,30 +135,33 @@ export const WARNING_COPY: Record<WarningCode, WarningCopy> = {
     subject: "Path type changed",
     message: "A path switched between file and directory; its diff may be incomplete.",
   },
+  // ---- v2 codes (T10.1 registered them, T11.1 owns this copy; docs/v2-contracts.md § Codes) ----
   HISTORY_CAPPED: {
     level: "warning",
     subject: "History capped",
-    message: "Only the first pages of history were walked; older commits are not shown.",
+    message: "Only part of the history was walked; older commits are not listed.",
   },
   NO_REFLOG: {
-    level: "info",
+    level: "warning",
     subject: "No reflog",
-    message: "This repository keeps no reflog, so recent operations cannot be listed.",
+    message:
+      "This repository keeps no reflog, so recent operations and orphaned commits cannot be listed.",
   },
   SEARCH_CAPPED: {
     level: "warning",
     subject: "Search capped",
-    message: "The search stopped at its limit; there may be more matches.",
+    message: "The search stopped at its limit; there may be more matches than are listed.",
   },
   BLAME_CAPPED: {
     level: "warning",
     subject: "Blame capped",
-    message: "Blame stopped after its revision limit; older lines are attributed to that commit.",
+    message:
+      "Blame stopped at its revision limit; older lines are attributed to the oldest commit it reached.",
   },
   INSIGHTS_CAPPED: {
     level: "warning",
     subject: "Insights capped",
-    message: "Insights were computed from a sample of the history, not all of it.",
+    message: "Insights were computed from part of the history, so the numbers are a sample.",
   },
   HIDDEN_CAPPED: {
     level: "warning",
@@ -168,32 +171,38 @@ export const WARNING_COPY: Record<WarningCode, WarningCopy> = {
   COMMIT_GRAPH_STALE: {
     level: "warning",
     subject: "Commit graph out of date",
-    message: "The commit-graph file is older than the refs; history was walked without it.",
+    message: "The commit-graph file is older than the refs, so history was walked without it.",
   },
   SECRETS_FOUND: {
     level: "error",
     subject: "Possible secret",
-    message: "Uncommitted changes contain something that looks like a credential.",
+    message:
+      "Uncommitted changes contain something that looks like a credential. It stays masked until you reveal it.",
   },
+  // Design §14.3: the banner is a warning while the operation has conflicts, info otherwise; the
+  // registry carries the calm case and T11.3 raises the level when `operation.conflicts > 0`.
   OPERATION_IN_PROGRESS: {
     level: "info",
     subject: "Operation in progress",
     message: "A merge, rebase, cherry-pick, revert or bisect is running in this repository.",
   },
   SNAPSHOT_MODE: {
-    level: "info",
+    level: "warning",
     subject: "Snapshot mode",
-    message: "This browser can only read the folder once; re-open it to refresh.",
+    message:
+      "This browser can only read the folder once, so the diff cannot refresh itself. Re-open the folder to see newer changes.",
   },
   JJ_COLOCATED: {
     level: "info",
     subject: "Colocated jj repository",
-    message: "This repository is also a jj workspace; git refs may lag behind jj.",
+    message: "This is also a jj workspace; git refs can lag behind jj's own view of the change.",
   },
+  // Design §14.6 asks for an info banner on a patch-only diff, so this one is not a warning.
   PATCH_ONLY: {
     level: "info",
     subject: "Patch only",
-    message: "A patch file is open, not a repository; there is no working tree to compare.",
+    message:
+      "A patch file is open, not a repository: there is no working tree, history or branch to compare.",
   },
 };
 

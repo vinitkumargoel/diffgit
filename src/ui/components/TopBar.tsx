@@ -2,8 +2,10 @@ import { CircleHelp } from "lucide-react";
 import { sourceRefs } from "../../engine/diffSource";
 import { selectCanIncludeWorktree, useStore } from "../store";
 import { BranchPicker } from "./BranchPicker";
+import { PaletteButton } from "./CommandPalette";
 import { IncludeWorktreeToggle } from "./IncludeWorktreeToggle";
 import { Logo } from "./Logo";
+import { ModeSwitch } from "./ModeSwitch";
 import { RefreshControl } from "./RefreshControl";
 import { StatsRow } from "./StatsRow";
 import { SwapButton } from "./SwapButton";
@@ -37,6 +39,7 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
           <Logo size={20} className="rounded-[5px]" />
           {repo.name}
         </span>
+        <ModeSwitch />
         <span className="text-xs text-muted">base:</span>
         <BranchPicker label="base" value={refs.targetRef} refs={repo.refs} onSelect={setTarget} />
         <span
@@ -79,6 +82,7 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
         >
           <CircleHelp size={16} aria-hidden />
         </button>
+        <PaletteButton />
         <ThemeToggle />
       </div>
       <StatsRow />

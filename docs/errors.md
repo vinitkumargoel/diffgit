@@ -71,7 +71,7 @@ The registry is `src/engine/errors.ts`. Three tiers:
 | `REFRESH_DEGRADED` | `refresh/scheduler.ts` (ladder live → polling → manual) | Live refresh unavailable | warning |
 | `PATH_TYPE_CHANGED` | `WorktreeScanner` (file ↔ directory at the same path) | Path type changed | warning |
 | `HISTORY_CAPPED` | `walkCommits` (T10.5: the page limit was reached) | History capped | warning |
-| `NO_REFLOG` | `reflog` (T10.2: no `.git/logs`) | No reflog | info |
+| `NO_REFLOG` | `reflog` (T10.2: no `.git/logs`) | No reflog | warning |
 | `SEARCH_CAPPED` | `search` (T10.8: the scan limit was reached) | Search capped | warning |
 | `BLAME_CAPPED` | `blame` (T10.6: `maxRevisions` reached) | Blame capped | warning |
 | `INSIGHTS_CAPPED` | `insights` (T10.9: the walk limit was reached) | Insights capped | warning |
@@ -79,7 +79,7 @@ The registry is `src/engine/errors.ts`. Three tiers:
 | `COMMIT_GRAPH_STALE` | `walkCommits` (T10.5: the commit-graph predates the refs) | Commit graph out of date | warning |
 | `SECRETS_FOUND` | `scanSecrets` (T10.7: a rule matched an added line) | Possible secret | error |
 | `OPERATION_IN_PROGRESS` | `operation` (T10.2: MERGE_HEAD / rebase-merge / CHERRY_PICK_HEAD / BISECT_LOG) | Operation in progress | info |
-| `SNAPSHOT_MODE` | `browserGate` (T11.15: Firefox/Safari read-once mode) | Snapshot mode | info |
+| `SNAPSHOT_MODE` | `browserGate` (T11.15: Firefox/Safari read-once mode) | Snapshot mode | warning |
 | `JJ_COLOCATED` | `layoutChecks` (T10.12: `.jj` beside `.git`) | Colocated jj repository | info |
 | `PATCH_ONLY` | `parsePatch` (T10.12: patch-only mode, no repository) | Patch only | info |
 

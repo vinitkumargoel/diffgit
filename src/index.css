@@ -323,6 +323,23 @@
     background: var(--backdrop);
   }
 
+  /* §14.1 command palette: the HelpDialog surface, wider and pinned near the top of the screen */
+  .palette-dialog {
+    width: 560px;
+    max-width: calc(100vw - 32px);
+    margin: 12vh auto auto;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-popover);
+    overflow: hidden;
+  }
+  .palette-dialog::backdrop {
+    background: var(--backdrop);
+  }
+
   /* §7.7 image panes: 16px checkerboard from the --checker-* tokens */
   .checkerboard {
     background:
@@ -570,6 +587,14 @@
   }
   [cmdk-item][data-selected="true"] {
     background: var(--surface-raised);
+  }
+  /* Commands read as UI text; only the "Go to file" rows keep the cmdk monospace default (§4) */
+  .palette-dialog [cmdk-item] {
+    height: 30px;
+    font-size: 12.5px;
+  }
+  .palette-dialog [cmdk-item] .font-sans {
+    font-size: 13px;
   }
   [cmdk-empty] {
     padding: 8px 12px;

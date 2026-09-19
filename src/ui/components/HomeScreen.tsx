@@ -9,41 +9,13 @@ import precisionCss from "../../marketing/precision.css?raw";
 import precisionHtml from "../../marketing/precision.html?raw";
 import { useNow } from "../hooks/useNow";
 import { useShortcuts } from "../hooks/useShortcuts";
-import { removeRepo, upsertRepo } from "../persistence";
+import { pickAndOpenRepo } from "../openRepo";
 import { useStore } from "../store";
 import { ContinueCard } from "./home/ContinueCard";
 import { NavRecent } from "./home/NavRecent";
 import { initPrecisionDemo } from "./home/precisionDemo";
 import { RecentPanel } from "./home/RecentPanel";
 import { useRecents } from "./home/useRecents";
-
-type Picker = (opts: { mode: "read"; id?: string }) => Promise<FileSystemDirectoryHandle>;
-
-function picker(): Picker | null {
-  const w = window as unknown as { showDirectoryPicker?: Picker };
-  return typeof w.showDirectoryPicker === "function" ? w.showDirectoryPicker.bind(window) : null;
-}
-
-/** Codes from the layout checks: the picked folder can never open here (Design §7.8 E2). */
-const LAYOUT_CODES: ReadonlySet<string> = new Set([
-  "NOT_A_REPO",
-  "WORKTREE_GITDIR",
-  "BARE_REPO",
-  "REFTABLE",
-  "OBJECT_FORMAT_SHA256",
-  "ALTERNATES",
-  "PARTIAL_CLONE",
-  "PACK_TOO_LARGE",
-]);
-
-function isAbort(e: unknown): boolean {
-  return errorName(e) === "AbortError";
-}
-
-function errorName(e: unknown): string {
-  const name = (e as { name?: unknown })?.name;
-  return typeof name === "string" && name !== "" ? name : "Error";
-}
 
 /** The mockup's footer carries a hard-coded build id; show the real one this bundle was built at. */
 const HTML = precisionHtml.replace("build 11648ff", `build ${__BUILD_ID__}`);
@@ -69,9 +41,6 @@ interface Mounts {
  * is portalled into the static markup so the landing page itself stays verbatim.
  */
 export function HomeScreen() {
-  const openRepo = useStore((s) => s.openRepo);
-  const addToast = useStore((s) => s.addToast);
-  const setGateCause = useStore((s) => s.setGateCause);
   const storageUnavailable = useStore((s) => s.storageUnavailable);
   const rootRef = useRef<HTMLDivElement>(null);
   const [mounts, setMounts] = useState<Mounts | null>(null);
@@ -80,42 +49,8 @@ export function HomeScreen() {
   const hasHistory = recents.loaded && recents.repos.length > 0;
   const now = useNow(60_000, hasHistory);
 
-  const retry = useRef<(() => void) | null>(null);
-  const openPicker = useCallback(async () => {
-    const pick = picker();
-    if (!pick) return;
-    try {
-      // D16: read-only access, always.
-      const handle = await pick({ mode: "read", id: "diffgit-repo" });
-      const stored = await upsertRepo(handle);
-      await openRepo(handle, {
-        id: stored.id,
-        lastSource: stored.lastSource,
-        lastTarget: stored.lastTarget,
-        expectedMs: stored.lastOpenMs,
-      });
-      // A folder refused by the layout checks is not a repository: it must not appear in Recent.
-      const after = useStore.getState();
-      if (after.screen === "error" && after.error && LAYOUT_CODES.has(after.error.code))
-        await removeRepo(stored.id);
-    } catch (e) {
-      if (isAbort(e)) return; // user cancelled the picker
-      const name = errorName(e);
-      // E5.1 / B6: a refusal by policy is the browser gate's story, not a toast's.
-      if (name === "SecurityError" || name === "NotAllowedError") {
-        setGateCause("policy");
-        return;
-      }
-      addToast({
-        level: "error",
-        message: `Couldn't open the folder. The browser refused the request (${name}).`,
-        action: { label: "Retry", onClick: () => retry.current?.() },
-      });
-    }
-  }, [openRepo, addToast, setGateCause]);
-  useEffect(() => {
-    retry.current = () => void openPicker();
-  }, [openPicker]);
+  // The picker flow lives in `openRepo.ts` so Home, the `o` key and the command palette share it.
+  const openPicker = useCallback(() => pickAndOpenRepo(), []);
 
   // `o` opens the picker while on Home (T4.4 AC); `r` toggles the nav's Recent popover (H5).
   useShortcuts({ o: () => void openPicker(), r: () => setNavOpen((v) => !v) });

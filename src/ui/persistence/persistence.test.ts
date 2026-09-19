@@ -1,6 +1,14 @@
 import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_PREFS } from "../store";
+import {
+  clearDerived,
+  derivedKey,
+  derivedSize,
+  getDerived,
+  resetDerivedStore,
+  setDerived,
+} from "./derived";
 import { loadPrefs, PREFS_KEY, savePrefs, setPrefsStorage, validatePrefs } from "./prefs";
 import {
   ensurePermission,
@@ -45,6 +53,7 @@ beforeEach(() => {
   dbSeq++;
   resetRepoStore(`repos-test-${dbSeq}`);
   resetViewedStore(`viewed-test-${dbSeq}`);
+  resetDerivedStore(`derived-test-${dbSeq}`);
   resetStorageErrorState();
   localStorage.clear();
 });
@@ -142,6 +151,31 @@ describe("prefs", () => {
     expect(loadPrefs().sidebarGroup).toBe("path");
   });
 
+  it("accepts only the v2 keys the contract names (T11.1)", () => {
+    expect(DEFAULT_PREFS.mode).toBe("files");
+    expect(DEFAULT_PREFS.showHidden).toBe(false);
+    expect(DEFAULT_PREFS.builtinExcludes).toBe(true);
+    expect(DEFAULT_PREFS.insightsPeriod).toBe("90d");
+    expect(DEFAULT_PREFS.twoDot).toBe(false);
+    expect(validatePrefs({ mode: "history" }).mode).toBe("history");
+    expect(validatePrefs({ mode: "insights" }).mode).toBe("insights");
+    expect(validatePrefs({ mode: "stack" }).mode).toBe("files");
+    expect(validatePrefs({ showHidden: true }).showHidden).toBe(true);
+    expect(validatePrefs({ showHidden: "yes" }).showHidden).toBe(false);
+    expect(validatePrefs({ builtinExcludes: false }).builtinExcludes).toBe(false);
+    expect(validatePrefs({ builtinExcludes: 0 }).builtinExcludes).toBe(true);
+    expect(validatePrefs({ insightsPeriod: "1y" }).insightsPeriod).toBe("1y");
+    expect(validatePrefs({ insightsPeriod: "all" }).insightsPeriod).toBe("all");
+    expect(validatePrefs({ insightsPeriod: "5y" }).insightsPeriod).toBe("90d");
+    expect(validatePrefs({ twoDot: true }).twoDot).toBe(true);
+    expect(validatePrefs({ twoDot: "true" }).twoDot).toBe(false);
+    savePrefs({ ...DEFAULT_PREFS, showHidden: true, insightsPeriod: "all", twoDot: true });
+    const back = loadPrefs();
+    expect(back.showHidden).toBe(true);
+    expect(back.insightsPeriod).toBe("all");
+    expect(back.twoDot).toBe(true);
+  });
+
   it("storage throwing does not throw out and reports once", () => {
     const reports: string[] = [];
     onStorageError((m) => reports.push(m));
@@ -157,5 +191,55 @@ describe("prefs", () => {
     setPrefsStorage(null);
     expect(loadPrefs()).toEqual(DEFAULT_PREFS); // unavailable storage → defaults, no throw
     setPrefsStorage(undefined);
+  });
+});
+
+describe("derived cache (T11.1)", () => {
+  it("round-trips a value, reports its size and clears", async () => {
+    const key = derivedKey.blame("r1", "a".repeat(40), "src/index.ts");
+    expect(key).toBe(`blame:r1:${"a".repeat(40)}:src/index.ts`);
+    expect(await getDerived(key)).toBeNull(); // a miss is null, never a throw
+    await setDerived(key, { lines: [1, 2, 3] });
+    expect(await getDerived<{ lines: number[] }>(key)).toEqual({ lines: [1, 2, 3] });
+    await setDerived(derivedKey.summary("r1"), { headBranch: "main" });
+    const size = await derivedSize();
+    expect(size.entries).toBe(2);
+    expect(size.bytes).toBeGreaterThan(key.length);
+    await clearDerived(key);
+    expect(await getDerived(key)).toBeNull();
+    expect((await derivedSize()).entries).toBe(1);
+    await clearDerived();
+    expect(await derivedSize()).toEqual({ entries: 0, bytes: 0 });
+  });
+
+  it("keys name every cached kind (docs/v2-contracts.md § Persistence)", () => {
+    const oid = "b".repeat(40);
+    expect(derivedKey.history("r1", oid, "a/b.ts")).toBe(`history:r1:${oid}:a/b.ts`);
+    expect(derivedKey.insights("r1", oid, "90d")).toBe(`insights:r1:${oid}:90d`);
+    expect(derivedKey.summary("r1")).toBe("summary:r1");
+    expect(derivedKey.bisect("r1")).toBe("bisect:r1");
+  });
+
+  it("a blocked database is reported once and every call falls back", async () => {
+    const reports: string[] = [];
+    onStorageError((m) => reports.push(m));
+    const real = globalThis.indexedDB;
+    Object.defineProperty(globalThis, "indexedDB", {
+      configurable: true,
+      get() {
+        throw new Error("blocked by policy");
+      },
+    });
+    try {
+      resetDerivedStore(`derived-blocked-${dbSeq}`);
+      await setDerived("k", 1);
+      expect(await getDerived("k")).toBeNull();
+      expect(await derivedSize()).toEqual({ entries: 0, bytes: 0 });
+      await clearDerived();
+      expect(reports).toEqual(["blocked by policy"]);
+    } finally {
+      Object.defineProperty(globalThis, "indexedDB", { configurable: true, value: real });
+      resetStorageErrorState();
+    }
   });
 });

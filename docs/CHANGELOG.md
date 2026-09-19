@@ -15,6 +15,17 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T11.1 — Shell: modes, palette, prefs, derived cache (2026-09-19)
+
+- Design §14.1 in full and nothing more: TopBar row 1 gains the `Files | History | Branches | Insights` **ModeSwitch** after the repo name (segmented control styled exactly like `Unified | Split`, `aria-label="View"`, keys `1`–`4`) and a `lucide:command` **palette** button before the theme toggle. `RepoScreen` now renders `FilesView` (v1's sidebar + diff pane, moved verbatim) or a placeholder page for the other three modes (T11.5 / T11.7 / T11.12). Files mode is unchanged otherwise — a new `topbar.test.tsx` case asserts row 1's order so a third control cannot slip in.
+- **CommandPalette** (cmdk, like the BranchPicker; `⌘K`/`Ctrl+K`, Escape closes and focus goes back to the trigger): `Actions` — open a repository, refresh, force refresh, the four modes, split/unified, whitespace, show hidden files, shortcuts, clear cached data — and `Go to file` over the visible files. The picker flow moved to `src/ui/openRepo.ts` so Home, the `o` key and the palette open a folder the same way; file rows are pre-narrowed by a subsequence match (cap 50) so a huge diff never renders thousands of items. Search scopes stay with T11.8.
+- Store/prefs (`docs/v2-contracts.md` § Store): `mode`, `historyTab`, `cardModes`, `operation`, `secrets`, `hidden`, `history`, `bisect`, `palette`, `snapshotMode`, `patchOnly` plus `setMode` / `setPalette`; prefs gained `mode`, `showHidden`, `builtinExcludes`, `insightsPeriod`, `twoDot` with validation. **Decision:** fields whose engine type is still owed by a phase-10 task are annotated `PendingEngineType = never` rather than inventing a UI-side copy of `RepoOperation` & co. — the field exists and is empty until its owner widens one annotation (noted in the contract).
+- New `src/ui/persistence/derived.ts` (`getDerived` / `setDerived` / `clearDerived` / `derivedSize` + `derivedKey.*`), store `diffgit-derived`, every access through `guarded()`, and the HelpDialog footer reads "Cached data: <size> · Clear". The HelpDialog also grew a second shortcut table for `⌘K`, `1`–`4` and the keys later tasks will wire, marked "when available".
+- Final copy for the twelve v2 warning codes (T10.1 left placeholders). **Deviations from the task text, both Design-backed:** `SNAPSHOT_MODE` is `warning` (the attention banner of §3.4), and `PATCH_ONLY` stays `info` because §14.6 asks for an info banner on a patch-only diff; `NO_REFLOG` moved from info to warning as the task asked. `docs/errors.md` and the banner snapshots were updated deliberately (copy + two levels).
+- Checks: `bun run check` green — tsc, Biome (242 files), 258 engine tests, 316 UI tests (27 files), guards; `bun run e2e` 3/3, including the browser axe pass on the repo screen. No TopBar snapshot file existed, so none was updated.
+
+---
+
 ## T10.1 — Range sources, revision resolver, tags, stashes (2026-09-19)
 
 - `DiffSource` is now `BranchesSource | RangeSource`. `DiffEngine.compute` takes a range: three-dot uses the merge base as before, two-dot uses the `from` tree directly (`mergeBase: null`), `fromOid: null`/`EMPTY_TREE_OID` is git's empty tree, and the working tree is layered only when `isWorktreeSource` says the compare side is HEAD. A stash as the compare side is layered like the working tree it came from — second parent's tree `staged`, the stash's own tree `unstaged`, third parent's tree `untracked` — which is what makes "2 files (1 untracked)" possible.

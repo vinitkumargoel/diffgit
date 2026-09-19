@@ -6,10 +6,12 @@ import basicDiff from "../../test/recorded/showcase.diffresult.json";
 import basic from "../../test/recorded/showcase.repoinfo.json";
 import worktreeDiff from "../../test/recorded/showcase-worktree.diffresult.json";
 import { DEFAULT_PREFS, useStore } from "../store";
+import { CommandPalette } from "./CommandPalette";
 import { EmptyState } from "./EmptyState";
 import ErrorScreen from "./ErrorScreen";
 import { HelpDialog } from "./HelpDialog";
 import { HomeScreen } from "./HomeScreen";
+import { ModeSwitch } from "./ModeSwitch";
 import { Sidebar } from "./Sidebar";
 import { Toasts } from "./Toasts";
 import { WarningBanners } from "./WarningBanners";
@@ -120,6 +122,19 @@ describe("axe (vitest, happy-dom)", () => {
     const { container } = render(<Sidebar initialRect={{ width: 300, height: 600 }} />);
     // sanity: the five group headers really are on screen (T9.1)
     expect(container.querySelectorAll('[role="treeitem"][aria-level="1"]')).toHaveLength(5);
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it("ModeSwitch and the open CommandPalette have no serious or critical issues", async () => {
+    useStore.setState({ palette: true });
+    const { container } = render(
+      <>
+        <ModeSwitch />
+        <CommandPalette />
+      </>,
+    );
+    await new Promise((r) => setTimeout(r, 10));
+    expect(container.querySelector("[cmdk-item]")).toBeTruthy(); // sanity: the list is up
     expect(await violations(container)).toEqual([]);
   });
 
