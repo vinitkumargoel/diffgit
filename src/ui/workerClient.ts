@@ -23,6 +23,8 @@ import type {
 } from "../engine/api";
 import type {
   AheadBehind,
+  BisectState,
+  BisectStep,
   BlamePayload,
   BranchRow,
   CommitDetails,
@@ -34,6 +36,7 @@ import type {
   Oid,
   PathExplanation,
   PathHistoryEntry,
+  PreflightResult,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -143,6 +146,10 @@ export interface WorkerClient {
   patchText(generation: number, ids: string[] | null): Promise<string>;
   /** The dashboard card for this repository (T10.10); never disturbs an open diff generation. */
   summarise(): Promise<RepoSummary>;
+  /** The next commit to test, from the good/bad/skip marks (T10.11); nothing is written. */
+  bisectStep(state: BisectState): Promise<BisectStep>;
+  /** Which commits a rebase would replay and which would conflict (T10.11); a report only. */
+  rebasePreflight(branchRef: string, ontoRef: string): Promise<PreflightResult>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
   prioritise(ids: string[]): Promise<void>;
   probe(tier: ProbeTier): Promise<string>;
@@ -296,6 +303,9 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     scanSecrets: (generation) => call((r) => r.scanSecrets(generation), "scanSecrets"),
     search: (req) => call((r) => r.search(req), "search"),
     insights: (req) => call((r) => r.insights(req), "insights"),
+    bisectStep: (state) => call((r) => r.bisectStep(state), "bisectStep"),
+    rebasePreflight: (branchRef, ontoRef) =>
+      call((r) => r.rebasePreflight(branchRef, ontoRef), "rebasePreflight"),
     fileBytes: (generation, id, side) =>
       call((r) => r.fileBytes(generation, id, side), "fileBytes"),
     patchText: (generation, ids) => call((r) => r.patchText(generation, ids), "patchText"),

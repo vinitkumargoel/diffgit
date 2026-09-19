@@ -72,6 +72,9 @@ export function createEngineApi(
     scanSecrets: (generation) => guard(() => need().scanSecrets(generation)),
     search: (req) => guard(() => need().search(req)),
     insights: (req) => guard(() => need().insights(req)),
+    bisectStep: (state) => guard(() => need().bisectStep(state)),
+    rebasePreflight: (branchRef, ontoRef) =>
+      guard(() => need().rebasePreflight(branchRef, ontoRef)),
     fileBytes: (generation, id, side) => guard(() => need().fileBytes(generation, id, side)),
     patchText: (generation, ids) => guard(() => need().patchText(generation, ids)),
     summarise: () => guard(() => need().summarise()),

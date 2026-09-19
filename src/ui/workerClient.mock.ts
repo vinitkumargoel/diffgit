@@ -12,6 +12,8 @@ import { secretsWarning } from "../engine/scan/secrets";
 import { createMatcher, isOidPrefix, searchKey } from "../engine/search/query";
 import type {
   AheadBehind,
+  BisectState,
+  BisectStep,
   BlamePayload,
   BranchRow,
   CommitDetails,
@@ -24,6 +26,7 @@ import type {
   Oid,
   PathExplanation,
   PathHistoryEntry,
+  PreflightResult,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -120,6 +123,50 @@ interface RecordedV2 {
   insights: InsightsResult;
   /** T10.10: the dashboard card, `indexMtimeMs` pinned to 0 so re-recording is byte-stable. */
   summary?: RepoSummary;
+  /** T10.11: the engine's own answer for each round of a recorded bisect replay. */
+  bisect: { state: BisectState; step: BisectStep }[];
+  /** T10.11: one preflight report per recorded `<branch> onto <onto>` pair (`preflightKey`). */
+  preflights: Record<string, PreflightResult>;
+}
+
+/** `preflights` is keyed the same way `scripts/record-fixtures.ts` keys it. */
+function preflightKey(branchRef: string, ontoRef: string): string {
+  return `${branchRef} onto ${ontoRef}`;
+}
+
+/** The same normalisation `scripts/record-fixtures.ts` uses, so a replayed round finds its answer. */
+function bisectKey(state: BisectState): string {
+  return JSON.stringify([[...state.good].sort(), state.bad, [...state.skipped].sort()]);
+}
+
+/**
+ * The midpoint of an unrecorded state, read off the recorded walk as if the range were linear: the
+ * candidate whose ancestor count is `floor(n / 2)`, which is the weight `git rev-list --bisect`
+ * picks on a linear range (ties go to the older commit — `find_bisection` scans oldest-first).
+ * Exact for a linear range, an approximation otherwise; a recorded round always wins over it.
+ */
+function linearBisect(order: Oid[], state: BisectState): BisectStep {
+  const badIndex = order.indexOf(state.bad);
+  if (badIndex < 0) return { candidate: null, remaining: 0, steps: 0, firstBad: state.bad };
+  const good = new Set(state.good);
+  const skipped = new Set(state.skipped);
+  const slice: Oid[] = [];
+  for (let i = badIndex; i < order.length; i++) {
+    const oid = order[i] as Oid;
+    if (good.has(oid)) break;
+    slice.push(oid);
+  }
+  const candidates = slice.filter((oid) => !skipped.has(oid));
+  const remaining = candidates.length;
+  if (remaining === 0) return { candidate: null, remaining: 0, steps: 0, firstBad: state.bad };
+  if (remaining === 1)
+    return { candidate: null, remaining: 1, steps: 0, firstBad: candidates[0] as Oid };
+  return {
+    candidate: candidates[remaining - Math.floor(remaining / 2)] as Oid,
+    remaining,
+    steps: Math.ceil(Math.log2(remaining)),
+    firstBad: null,
+  };
 }
 
 /** An empty `InsightsResult`, for a fixture with no recording (and the mock's empty repository). */
@@ -653,6 +700,29 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       });
       return { ...recorded, hotspots: [...real, ...manifests] };
     },
+    /**
+     * T10.11: the recorded round wins; anything else — a skip the user invents, a range the
+     * recording does not cover — falls back to the linear midpoint over the recorded walk, so the
+     * strip keeps halving in the demo instead of dead-ending.
+     */
+    async bisectStep(state) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const hit = v2.bisect?.find((b) => bisectKey(b.state) === bisectKey(state));
+      if (hit) return hit.step;
+      return linearBisect(
+        (v2.walks.default ?? v2.walks.all)?.commits.map((c) => c.oid) ?? [],
+        state,
+      );
+    },
+    async rebasePreflight(branchRef, ontoRef) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const hit = v2.preflights?.[preflightKey(branchRef, ontoRef)];
+      if (!hit)
+        throw err("REV_NOT_FOUND", `no recorded preflight for ${branchRef} onto ${ontoRef}`);
+      return hit;
+    },
     async fileBytes(gen, id, side) {
       const files = requireGen(gen);
       const f = files.find((x) => x.id === id);
@@ -741,6 +811,8 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         secrets: [],
         searches: {},
         insights: EMPTY_INSIGHTS,
+        bisect: [],
+        preflights: {},
       }
     );
   }
