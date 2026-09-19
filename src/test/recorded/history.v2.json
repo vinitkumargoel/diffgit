@@ -1055,7 +1055,7 @@
     {
       "path": "expected",
       "kind": "ignored-dir",
-      "count": 35
+      "count": 64
     }
   ],
   "explanations": {},
@@ -8815,5 +8815,2016 @@
       "capped": false
     }
   },
-  "secrets": []
+  "secrets": [],
+  "searches": {
+    "worktree|lit|||guide note": {
+      "hits": [
+        {
+          "kind": "file",
+          "path": "docs/guide.md",
+          "line": 4,
+          "text": "guide note 8"
+        },
+        {
+          "kind": "file",
+          "path": "docs/guide.md",
+          "line": 5,
+          "text": "guide note 9"
+        },
+        {
+          "kind": "file",
+          "path": "docs/guide.md",
+          "line": 6,
+          "text": "guide note 10"
+        },
+        {
+          "kind": "file",
+          "path": "docs/guide.md",
+          "line": 7,
+          "text": "guide note 11"
+        },
+        {
+          "kind": "file",
+          "path": "docs/guide.md",
+          "line": 8,
+          "text": "guide note 12"
+        },
+        {
+          "kind": "file",
+          "path": "docs/guide.md",
+          "line": 9,
+          "text": "guide note 13"
+        },
+        {
+          "kind": "file",
+          "path": "docs/guide.md",
+          "line": 10,
+          "text": "guide note 14"
+        },
+        {
+          "kind": "file",
+          "path": "docs/guide.md",
+          "line": 11,
+          "text": "guide note 15"
+        }
+      ],
+      "scanned": 13,
+      "capped": false,
+      "durationMs": 0
+    },
+    "worktree|lit|||module": {
+      "hits": [
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 1,
+          "text": "module 1"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 2,
+          "text": "module 2"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 3,
+          "text": "module 3"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 4,
+          "text": "module 4"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 5,
+          "text": "module 5"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 6,
+          "text": "module 6"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 7,
+          "text": "module 7"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 8,
+          "text": "module 8"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 9,
+          "text": "module 9"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 10,
+          "text": "module 10"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 11,
+          "text": "module 11"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 12,
+          "text": "module 12"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 13,
+          "text": "module 13"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 14,
+          "text": "module 14"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 15,
+          "text": "module 15"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 16,
+          "text": "module 16"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 17,
+          "text": "module 17"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 18,
+          "text": "module 18"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 19,
+          "text": "module 19"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 20,
+          "text": "module 20"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 21,
+          "text": "module 21"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 22,
+          "text": "module 22"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 23,
+          "text": "module 23"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 24,
+          "text": "module 24"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 25,
+          "text": "module 25"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 26,
+          "text": "module 26"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 27,
+          "text": "module 27"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 28,
+          "text": "module 28"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 29,
+          "text": "module 29"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 30,
+          "text": "module 30"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 31,
+          "text": "module 31"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 32,
+          "text": "module 32"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 33,
+          "text": "module 33"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 34,
+          "text": "module 34"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 35,
+          "text": "module 35"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 36,
+          "text": "module 36"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 37,
+          "text": "module 37"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 38,
+          "text": "module 38"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 39,
+          "text": "module 39"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 40,
+          "text": "module 40"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 41,
+          "text": "module 41"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 42,
+          "text": "module 42"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 43,
+          "text": "module 43"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 44,
+          "text": "module 44"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 45,
+          "text": "module 45"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 46,
+          "text": "module 46"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 47,
+          "text": "module 47"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 48,
+          "text": "module 48"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 49,
+          "text": "module 49"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 50,
+          "text": "module 50"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 51,
+          "text": "module 51"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 52,
+          "text": "module 52"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 53,
+          "text": "module 53"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 54,
+          "text": "module 54"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 55,
+          "text": "module 55"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 56,
+          "text": "module 56"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 57,
+          "text": "module 57"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 58,
+          "text": "module 58"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 59,
+          "text": "module 59"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod1.txt",
+          "line": 60,
+          "text": "module 60"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 1,
+          "text": "module 1"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 2,
+          "text": "module 2"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 3,
+          "text": "module 3"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 4,
+          "text": "module 4"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 5,
+          "text": "module 5"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 6,
+          "text": "module 6"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 7,
+          "text": "module 7"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 8,
+          "text": "module 8"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 9,
+          "text": "module 9"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 10,
+          "text": "module 10"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 11,
+          "text": "module 11"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 12,
+          "text": "module 12"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 13,
+          "text": "module 13"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 14,
+          "text": "module 14"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 15,
+          "text": "module 15"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 16,
+          "text": "module 16"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 17,
+          "text": "module 17"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 18,
+          "text": "module 18"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 19,
+          "text": "module 19"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 20,
+          "text": "module 20"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 21,
+          "text": "module 21"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 22,
+          "text": "module 22"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 23,
+          "text": "module 23"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 24,
+          "text": "module 24"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 25,
+          "text": "module 25"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 26,
+          "text": "module 26"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 27,
+          "text": "module 27"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 28,
+          "text": "module 28"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 29,
+          "text": "module 29"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 30,
+          "text": "module 30"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 31,
+          "text": "module 31"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 32,
+          "text": "module 32"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 33,
+          "text": "module 33"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 34,
+          "text": "module 34"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 35,
+          "text": "module 35"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 36,
+          "text": "module 36"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 37,
+          "text": "module 37"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 38,
+          "text": "module 38"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 39,
+          "text": "module 39"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 40,
+          "text": "module 40"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 41,
+          "text": "module 41"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 42,
+          "text": "module 42"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 43,
+          "text": "module 43"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 44,
+          "text": "module 44"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 45,
+          "text": "module 45"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 46,
+          "text": "module 46"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 47,
+          "text": "module 47"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 48,
+          "text": "module 48"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 49,
+          "text": "module 49"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 50,
+          "text": "module 50"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 51,
+          "text": "module 51"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 52,
+          "text": "module 52"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 53,
+          "text": "module 53"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 54,
+          "text": "module 54"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 55,
+          "text": "module 55"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 56,
+          "text": "module 56"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 57,
+          "text": "module 57"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 58,
+          "text": "module 58"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 59,
+          "text": "module 59"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 60,
+          "text": "module 60"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod2.txt",
+          "line": 61,
+          "text": "module 61"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 1,
+          "text": "module 1"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 2,
+          "text": "module 2"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 3,
+          "text": "module 3"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 4,
+          "text": "module 4"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 5,
+          "text": "module 5"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 6,
+          "text": "module 6"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 7,
+          "text": "module 7"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 8,
+          "text": "module 8"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 9,
+          "text": "module 9"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 10,
+          "text": "module 10"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 11,
+          "text": "module 11"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 12,
+          "text": "module 12"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 13,
+          "text": "module 13"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 14,
+          "text": "module 14"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 15,
+          "text": "module 15"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 16,
+          "text": "module 16"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 17,
+          "text": "module 17"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 18,
+          "text": "module 18"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 19,
+          "text": "module 19"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 20,
+          "text": "module 20"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 21,
+          "text": "module 21"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 22,
+          "text": "module 22"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 23,
+          "text": "module 23"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 24,
+          "text": "module 24"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 25,
+          "text": "module 25"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 26,
+          "text": "module 26"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 27,
+          "text": "module 27"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 28,
+          "text": "module 28"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 29,
+          "text": "module 29"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 30,
+          "text": "module 30"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 31,
+          "text": "module 31"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 32,
+          "text": "module 32"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 33,
+          "text": "module 33"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 34,
+          "text": "module 34"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 35,
+          "text": "module 35"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 36,
+          "text": "module 36"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 37,
+          "text": "module 37"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 38,
+          "text": "module 38"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 39,
+          "text": "module 39"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 40,
+          "text": "module 40"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 41,
+          "text": "module 41"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 42,
+          "text": "module 42"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 43,
+          "text": "module 43"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 44,
+          "text": "module 44"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 45,
+          "text": "module 45"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 46,
+          "text": "module 46"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 47,
+          "text": "module 47"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 48,
+          "text": "module 48"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 49,
+          "text": "module 49"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 50,
+          "text": "module 50"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 51,
+          "text": "module 51"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 52,
+          "text": "module 52"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 53,
+          "text": "module 53"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 54,
+          "text": "module 54"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 55,
+          "text": "module 55"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 56,
+          "text": "module 56"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 57,
+          "text": "module 57"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 58,
+          "text": "module 58"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 59,
+          "text": "module 59"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 60,
+          "text": "module 60"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 61,
+          "text": "module 61"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod3.txt",
+          "line": 62,
+          "text": "module 62"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 1,
+          "text": "module 1"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 2,
+          "text": "module 2"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 3,
+          "text": "module 3"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 4,
+          "text": "module 4"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 5,
+          "text": "module 5"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 6,
+          "text": "module 6"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 7,
+          "text": "module 7"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 8,
+          "text": "module 8"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 9,
+          "text": "module 9"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 10,
+          "text": "module 10"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 11,
+          "text": "module 11"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 12,
+          "text": "module 12"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 13,
+          "text": "module 13"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 14,
+          "text": "module 14"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 15,
+          "text": "module 15"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 16,
+          "text": "module 16"
+        },
+        {
+          "kind": "file",
+          "path": "src/mod4.txt",
+          "line": 17,
+          "text": "module 17"
+        }
+      ],
+      "scanned": 13,
+      "capped": true,
+      "durationMs": 0
+    },
+    "worktree|lit|src||hot": {
+      "hits": [
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 1,
+          "text": "hot-main 1"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 2,
+          "text": "hot-main 2"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 3,
+          "text": "hot-main 3"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 4,
+          "text": "hot 4"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 5,
+          "text": "hot 5"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 6,
+          "text": "hot 6"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 7,
+          "text": "hot 7"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 8,
+          "text": "hot 8"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 9,
+          "text": "hot 9"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 10,
+          "text": "hot 10"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 11,
+          "text": "hot 11"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 12,
+          "text": "hot 12"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 13,
+          "text": "hot 13"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 14,
+          "text": "hot 14"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 15,
+          "text": "hot 15"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 16,
+          "text": "hot 16"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 17,
+          "text": "hot 17"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 18,
+          "text": "hot 18"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 19,
+          "text": "hot 19"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 20,
+          "text": "hot 20"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 21,
+          "text": "hot 21"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 22,
+          "text": "hot 22"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 23,
+          "text": "hot 23"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 24,
+          "text": "hot 24"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 25,
+          "text": "hot-later 25"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 26,
+          "text": "hot-later 26"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 27,
+          "text": "hot-later 27"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 28,
+          "text": "hot-later 28"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 29,
+          "text": "hot-later 29"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 30,
+          "text": "hot-later 30"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 31,
+          "text": "hot 31"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 32,
+          "text": "hot 32"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 33,
+          "text": "hot 33"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 34,
+          "text": "hot 34"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 35,
+          "text": "hot 35"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 36,
+          "text": "hot 36"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 37,
+          "text": "hot 37"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 38,
+          "text": "hot 38"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 39,
+          "text": "hot 39"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 40,
+          "text": "hot 40"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 41,
+          "text": "hot 41"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 42,
+          "text": "hot 42"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 43,
+          "text": "hot 43"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 44,
+          "text": "hot 44"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 45,
+          "text": "hot 45"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 46,
+          "text": "hot 46"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 47,
+          "text": "hot 47"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 48,
+          "text": "hot 48"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 49,
+          "text": "hot 49"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 50,
+          "text": "hot 50"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 51,
+          "text": "hot 51"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 52,
+          "text": "hot 52"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 53,
+          "text": "hot 53"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 54,
+          "text": "hot 54"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 55,
+          "text": "hot 55"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 56,
+          "text": "hot 56"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 57,
+          "text": "hot 57"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 58,
+          "text": "hot 58"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 59,
+          "text": "hot 59"
+        },
+        {
+          "kind": "file",
+          "path": "src/hot.txt",
+          "line": 60,
+          "text": "hot 60"
+        }
+      ],
+      "scanned": 9,
+      "capped": false,
+      "durationMs": 0
+    },
+    "pickaxe|lit||200|module": {
+      "hits": [
+        {
+          "kind": "commit",
+          "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+          "subject": "c59: extend mod4",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "fb9edcd9be63538ff6d425970ceaaaf27e1009ee",
+          "subject": "c57: extend mod3",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "8295928b1c222c2877dbcf442573effe40d97e5a",
+          "subject": "c56: extend mod2",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "87a3a12b31ee4268cf84cfed8254425a12658c7a",
+          "subject": "c55: extend mod1",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+          "subject": "c54: extend mod4",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "2e318a86392b07c04747e14483e9b76e60a88775",
+          "subject": "c52: extend mod3",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "31891cde0399736142305af8b7fadea68c479e59",
+          "subject": "c51: extend mod2",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "261e0b9d0d06bbc309a69590239e4a2efc139807",
+          "subject": "c50: extend mod1",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "70703c5dfb94774c4c7b8f293b409a2fb02132c8",
+          "subject": "c49: extend mod4",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1",
+          "subject": "c47: extend mod3",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "931eea0f815b84e93b40772ca7b237f5b808c2ab",
+          "subject": "c46: extend mod2",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "b92c2756a82e15f54285d7c209da3ac886e1579b",
+          "subject": "c45: extend mod1",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "0bea629635c4eaad5fe5f84fe29aba700a92a71a",
+          "subject": "c44: extend mod4",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "472d458ef31d9f36fe8e65576019fd18c4b39c16",
+          "subject": "c42: extend mod3",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "d35a4cf95b7a15a449ee6d4d96a94008ac892e70",
+          "subject": "c41: extend mod2",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb",
+          "subject": "c40: extend mod1",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "8946f98688375397a15dda82801f07072ede8813",
+          "subject": "c39: extend mod4",
+          "delta": 5
+        },
+        {
+          "kind": "commit",
+          "oid": "760c968a61db48a810deaef5c1269fb71028c560",
+          "subject": "c37: extend mod3",
+          "delta": 23
+        },
+        {
+          "kind": "commit",
+          "oid": "8d363ef7d323c8bb14e88374f1634419182050ed",
+          "subject": "c36: extend mod2",
+          "delta": 23
+        },
+        {
+          "kind": "commit",
+          "oid": "82bed6085338e895515daf7061e4673c169013f8",
+          "subject": "c35: extend mod1",
+          "delta": 23
+        },
+        {
+          "kind": "commit",
+          "oid": "e8e51a9f9cb74aedca494962f36f4c62ed11e4aa",
+          "subject": "c34: extend mod4",
+          "delta": 19
+        },
+        {
+          "kind": "commit",
+          "oid": "d9459d1a6e53815426c4992b3591dad1408a3e27",
+          "subject": "c15: iterate on modules and the guide",
+          "delta": 4
+        },
+        {
+          "kind": "commit",
+          "oid": "e93098bc65bfabd2c6beaecda4692b479dfd305f",
+          "subject": "c14: iterate on modules and the guide",
+          "delta": 4
+        },
+        {
+          "kind": "commit",
+          "oid": "9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7",
+          "subject": "c13: iterate on modules and the guide",
+          "delta": 4
+        },
+        {
+          "kind": "commit",
+          "oid": "375ca4ebf9753133a1a89486cf4ee1305bf77fef",
+          "subject": "c12: iterate on modules and the guide",
+          "delta": 4
+        },
+        {
+          "kind": "commit",
+          "oid": "a0a0c78717004cb71945e9cf659e16b81d062eb7",
+          "subject": "c11: iterate on modules and the guide",
+          "delta": 7
+        },
+        {
+          "kind": "commit",
+          "oid": "c1b0f387ee5a621cb043e9e492443d65f310a947",
+          "subject": "c10: iterate on modules and the guide",
+          "delta": 7
+        },
+        {
+          "kind": "commit",
+          "oid": "0e378a89244273883b77045fa7bd450a9ed62a5a",
+          "subject": "c09: iterate on modules and the guide",
+          "delta": 7
+        },
+        {
+          "kind": "commit",
+          "oid": "6b9edc8d680b71f414fa56cc589f9f91c6d84860",
+          "subject": "c08: iterate on modules and the guide",
+          "delta": 7
+        },
+        {
+          "kind": "commit",
+          "oid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+          "subject": "c04: add module 4",
+          "delta": 9
+        },
+        {
+          "kind": "commit",
+          "oid": "910020f5448cd147675c1ce71e2737ae0e1d3cf5",
+          "subject": "c03: add module 3",
+          "delta": 8
+        },
+        {
+          "kind": "commit",
+          "oid": "adb2ec86ec8b4d052cd42a6d85c5f6b1eda3a59a",
+          "subject": "c02: add module 2",
+          "delta": 7
+        },
+        {
+          "kind": "commit",
+          "oid": "c86003e71f1ae4869664db372ac422b8c684818c",
+          "subject": "c01: add module 1",
+          "delta": 6
+        }
+      ],
+      "scanned": 48,
+      "capped": false,
+      "durationMs": 0
+    },
+    "pickaxe|lit||200|hot-main": {
+      "hits": [
+        {
+          "kind": "commit",
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "subject": "c05: rework the top of hot.txt",
+          "delta": 3
+        }
+      ],
+      "scanned": 48,
+      "capped": false,
+      "durationMs": 0
+    }
+  },
+  "insights": {
+    "commits": 48,
+    "authors": [
+      {
+        "name": "Ada Lovelace",
+        "commits": 19
+      },
+      {
+        "name": "Grace Hopper",
+        "commits": 15
+      },
+      {
+        "name": "test",
+        "commits": 6
+      }
+    ],
+    "hotspots": [
+      {
+        "path": "src/mod4.txt",
+        "commits": 9,
+        "size": 631,
+        "score": 83.713,
+        "manifest": false
+      },
+      {
+        "path": "src/mod3.txt",
+        "commits": 8,
+        "size": 611,
+        "score": 74.04,
+        "manifest": false
+      },
+      {
+        "path": "src/mod2.txt",
+        "commits": 8,
+        "size": 601,
+        "score": 73.85,
+        "manifest": false
+      },
+      {
+        "path": "src/mod1.txt",
+        "commits": 8,
+        "size": 591,
+        "score": 73.656,
+        "manifest": false
+      },
+      {
+        "path": "docs/guide.md",
+        "commits": 9,
+        "size": 138,
+        "score": 63.977,
+        "manifest": false
+      },
+      {
+        "path": "src/hot.txt",
+        "commits": 3,
+        "size": 462,
+        "score": 26.555,
+        "manifest": false
+      },
+      {
+        "path": "src/renamed-to.txt",
+        "commits": 2,
+        "size": 203,
+        "score": 15.331,
+        "manifest": false
+      },
+      {
+        "path": "src/indent.txt",
+        "commits": 2,
+        "size": 159,
+        "score": 14.626,
+        "manifest": false
+      },
+      {
+        "path": "src/topic.txt",
+        "commits": 1,
+        "size": 168,
+        "score": 7.392,
+        "manifest": false
+      },
+      {
+        "path": "README.md",
+        "commits": 1,
+        "size": 102,
+        "score": 6.672,
+        "manifest": false
+      },
+      {
+        "path": ".mailmap",
+        "commits": 1,
+        "size": 63,
+        "score": 5.977,
+        "manifest": false
+      },
+      {
+        "path": "src/stable.txt",
+        "commits": 1,
+        "size": 33,
+        "score": 5.044,
+        "manifest": false
+      },
+      {
+        "path": "src/renamed-from.txt",
+        "commits": 3,
+        "size": 0,
+        "score": 3,
+        "manifest": false
+      },
+      {
+        "path": "package.json",
+        "commits": 9,
+        "size": 50,
+        "score": 50.795,
+        "manifest": true
+      }
+    ],
+    "activity": [
+      {
+        "weekStart": 1703980800000,
+        "days": [0, 1, 1, 1, 1, 1, 1]
+      },
+      {
+        "weekStart": 1704585600000,
+        "days": [1, 1, 1, 1, 1, 1, 1]
+      },
+      {
+        "weekStart": 1705190400000,
+        "days": [1, 1, 1, 0, 0, 0, 0]
+      },
+      {
+        "weekStart": 1705795200000,
+        "days": [0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "weekStart": 1706400000000,
+        "days": [0, 0, 0, 0, 1, 1, 1]
+      },
+      {
+        "weekStart": 1707004800000,
+        "days": [1, 1, 1, 1, 1, 1, 1]
+      },
+      {
+        "weekStart": 1707609600000,
+        "days": [1, 1, 1, 1, 1, 1, 1]
+      },
+      {
+        "weekStart": 1708214400000,
+        "days": [1, 1, 1, 1, 1, 1, 1]
+      },
+      {
+        "weekStart": 1708819200000,
+        "days": [1, 1, 1, 1, 0, 1, 1]
+      },
+      {
+        "weekStart": 1709424000000,
+        "days": [1, 1, 0, 0, 0, 0, 0]
+      }
+    ],
+    "walked": 48,
+    "capped": false,
+    "bots": 8
+  }
 }

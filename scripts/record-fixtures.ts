@@ -20,6 +20,16 @@
  * T10.7 adds `secrets`: every `SecretFinding` of the recorded working tree, so T11.9 can build the
  * banner and the popover against real (fake-credential) findings.
  *
+ * T10.8 adds `searches`: the `worktree` and `pickaxe` answers for a few queries per fixture, keyed
+ * by `searchKey`, so T11.8 can build the palette's result list against real hits. The commit scope
+ * is not recorded — the mock runs it live against the recorded walk. `durationMs` is pinned to 0
+ * so re-recording is byte-stable.
+ * `bun run record` pins `TZ=UTC` (T10.9): `InsightsResult.activity` buckets at **local** midnight,
+ * so without it the recording would differ between machines in different zones.
+ *
+ * T10.9 adds `insights`: the whole-history (`sinceMs` unset) pass, so T11.12 can build the Insights
+ * mode against real activity, contributors and hotspots.
+ *
  * T10.5 adds `walks` (the whole history per variant — default, first-parent, all, per path — which
  * the mock pages itself), `commits` (`CommitDetails`), `commitStats`, `branches` (the Branches
  * table with its cells filled), `aheadBehind` and `reachable`, plus the `octopus` fixture so the
@@ -29,6 +39,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import type { ConflictPayload } from "../src/engine/api";
 import { defaultDiffSource } from "../src/engine/diffSource";
 import { NodeDirHandle } from "../src/engine/fs/nodeDirHandle";
+import { searchKey } from "../src/engine/search/query";
 import { RepoSession } from "../src/engine/session";
 import type {
   AheadBehind,
@@ -37,12 +48,15 @@ import type {
   CommitDetails,
   CommitSummary,
   DiffResult,
+  InsightsResult,
   Oid,
   PathExplanation,
   PathHistoryEntry,
   RangeSource,
   RepoOperation,
   ResolvedRevision,
+  SearchRequest,
+  SearchResult,
   SecretFinding,
   WalkRequest,
 } from "../src/engine/types";
@@ -52,6 +66,9 @@ const OUT = new URL("../src/test/recorded/", import.meta.url).pathname;
 mkdirSync(OUT, { recursive: true });
 
 const FIXED_COMPUTED_AT = 1704067200000; // 2024-01-01T00:00:00Z
+
+/** Hotspot rows recorded per fixture (T10.9); the mock re-slices them to the caller's `limit`. */
+const RECORDED_HOTSPOTS = 25;
 
 /** Ranges worth having in the mock, by fixture. `from`/`to` are revision expressions. */
 const RANGES: Record<string, { from: string; to: string; threeDot: boolean }[]> = {
@@ -116,6 +133,21 @@ const BLAME_PATHS: Record<string, string[]> = {
   history: [HISTORY_FIXTURE.hotPath, HISTORY_FIXTURE.indentPath, HISTORY_FIXTURE.renamedTo],
 };
 
+/**
+ * T10.8: the searches the mock replays. Only the two scopes that need a repository on disk; the
+ * commit scope is matched live against the recorded walk.
+ */
+const SEARCHES: Record<string, SearchRequest[]> = {
+  history: [
+    { scope: "worktree", query: "guide note", limit: 200 },
+    { scope: "worktree", query: "module", limit: 200 },
+    { scope: "worktree", query: "hot", path: "src", limit: 200 },
+    { scope: "pickaxe", query: "module", commits: 200, limit: 200 },
+    { scope: "pickaxe", query: "hot-main", commits: 200, limit: 200 },
+  ],
+  secrets: [{ scope: "worktree", query: "aws", limit: 200 }],
+};
+
 /** Ahead/behind pairs worth recording, by fixture (the ones T10.0 recorded git's counts for). */
 const AHEAD_BEHIND: Record<string, [string, string][]> = {
   history: [
@@ -173,6 +205,7 @@ async function record(name: string, v2: boolean): Promise<void> {
     }
     // T10.7: also before any further computeDiff — the scan takes the current generation.
     const secrets: SecretFinding[] = await session.scanSecrets(result.generation);
+    const insights: InsightsResult = await session.insights({ limit: RECORDED_HOTSPOTS });
     const revisions: Record<string, ResolvedRevision> = {};
     for (const line of hasExpected(name, "rev-parse") ? loadExpectedLines(name, "rev-parse") : []) {
       const expr = line.split("\t")[0] as string;
@@ -263,6 +296,12 @@ async function record(name: string, v2: boolean): Promise<void> {
       }
     }
 
+    // ---- T10.8: the two search scopes that need a repository on disk --------------------------
+    const searches: Record<string, SearchResult> = {};
+    for (const req of SEARCHES[name] ?? []) {
+      searches[searchKey(req)] = { ...(await session.search(req)), durationMs: 0 };
+    }
+
     const reachable = await session.markReachable([
       ...new Set([...walkedOids, ...(await session.reflog("HEAD", 200)).map((e) => e.newOid)]),
     ]);
@@ -293,6 +332,12 @@ async function record(name: string, v2: boolean): Promise<void> {
       blames,
       // T10.7: the secret scan of the recorded working tree.
       secrets,
+      // T10.8: the recorded `worktree` / `pickaxe` answers, keyed by `searchKey`.
+      searches,
+      // T10.9: the whole-history insights pass. `limit` is generous so the mock can re-slice it;
+      // `sinceMs` is left out because a wall-clock period would break `bun run record`'s
+      // byte-idempotency (the result is otherwise a pure function of the repository).
+      insights,
     };
     writeFileSync(`${OUT}${name}.v2.json`, `${JSON.stringify(payload, null, 2)}\n`);
     console.log(
@@ -303,7 +348,10 @@ async function record(name: string, v2: boolean): Promise<void> {
         `${Object.keys(explanations).length} explanations, ` +
         `${walks.all?.commits.length ?? 0} commits (graph ${walks.all?.graphAvailable ?? false}), ` +
         `${branches.length} branches, ${Object.keys(pathHistories).length} path histories, ` +
-        `${Object.keys(blames).length} blames, ${secrets.length} secret findings`,
+        `${Object.keys(blames).length} blames, ${secrets.length} secret findings, ` +
+        `${Object.keys(searches).length} searches`,
+      `insights: ${insights.commits} commits / ${insights.authors.length} authors / ` +
+        `${insights.hotspots.length} hotspots / ${insights.activity.length} weeks`,
     );
   }
   await session.close();

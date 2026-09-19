@@ -14,6 +14,7 @@ import type {
 } from "../engine/api";
 import { isWorktreeSource, sourceRefs } from "../engine/diffSource";
 import { secretsWarning } from "../engine/scan/secrets";
+import { createMatcher, isOidPrefix, searchKey } from "../engine/search/query";
 import type {
   AheadBehind,
   BlamePayload,
@@ -24,6 +25,7 @@ import type {
   DiffSource,
   FileDiff,
   HiddenEntry,
+  InsightsResult,
   Oid,
   PathExplanation,
   PathHistoryEntry,
@@ -31,6 +33,9 @@ import type {
   RepoInfo,
   RepoOperation,
   ResolvedRevision,
+  SearchHit,
+  SearchRequest,
+  SearchResult,
   SecretFinding,
   StashInfo,
   TagInfo,
@@ -116,7 +121,22 @@ interface RecordedV2 {
   blames: Record<string, BlamePayload>;
   /** T10.7: every finding of the secret scan on the recorded working tree. */
   secrets: SecretFinding[];
+  /** T10.8: recorded `worktree` / `pickaxe` answers, keyed by `searchKey`. */
+  searches: Record<string, SearchResult>;
+  /** T10.9: the whole-history (`sinceMs` unset) insights pass. */
+  insights: InsightsResult;
 }
+
+/** An empty `InsightsResult`, for a fixture with no recording (and the mock's empty repository). */
+const EMPTY_INSIGHTS: InsightsResult = {
+  commits: 0,
+  authors: [],
+  hotspots: [],
+  activity: [],
+  walked: 0,
+  capped: false,
+  bots: 0,
+};
 
 /** `blames` is keyed by path, `w:` prefixed for the `-w` recording (see `scripts/record-fixtures.ts`). */
 function blameKey(path: string, opts: BlameRequest): string {
@@ -547,6 +567,59 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       if (found.length > 0) sink?.onWarning(secretsWarning(found.length, found.length));
       return found;
     },
+    async search(req) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      let result: SearchResult;
+      try {
+        result =
+          req.scope === "commits"
+            ? searchRecordedCommits(v2, req)
+            : (v2.searches[searchKey(req)] ?? {
+                hits: [],
+                scanned: 0,
+                capped: false,
+                durationMs: 0,
+              });
+      } catch (e) {
+        // The engine refuses an empty or uncompilable query with `INTERNAL`; so does the mock.
+        throw err("INTERNAL", e instanceof Error ? e.message : "Invalid search query.");
+      }
+      sink?.onProgress({
+        phase: "search",
+        done: result.scanned,
+        total: result.scanned,
+        durationMs: result.durationMs,
+      });
+      if (result.capped) {
+        sink?.onWarning({
+          code: "SEARCH_CAPPED",
+          message: "The search stopped at its limit; there may be more matches.",
+        });
+      }
+      return result;
+    },
+    /**
+     * The recording is the whole-history pass (`sinceMs` unset), so the mock honours `limit` — it
+     * re-slices the two hotspot groups — and ignores `sinceMs`: a period recorded relative to a
+     * wall clock would not survive `bun run record` being byte-idempotent. T11.12 drives the period
+     * chips against a real engine.
+     */
+    async insights(req) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const recorded = v2.insights ?? EMPTY_INSIGHTS;
+      const limit = Math.max(1, req.limit);
+      const real = recorded.hotspots.filter((h) => !h.manifest).slice(0, limit);
+      const manifests = recorded.hotspots.filter((h) => h.manifest).slice(0, limit);
+      sink?.onProgress({
+        phase: "insights",
+        done: recorded.walked,
+        total: recorded.walked,
+        durationMs: 1,
+      });
+      return { ...recorded, hotspots: [...real, ...manifests] };
+    },
     async fileBytes(gen, id, side) {
       const files = requireGen(gen);
       const f = files.find((x) => x.id === id);
@@ -633,6 +706,8 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         pathHistories: {},
         blames: {},
         secrets: [],
+        searches: {},
+        insights: EMPTY_INSIGHTS,
       }
     );
   }
@@ -673,6 +748,34 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
   }
 
   return client;
+}
+
+/**
+ * The commit scope runs for real against the recorded walk, so T11.8 can type anything into the
+ * palette and get a live answer. Bodies are not recorded, so only the subject, the author and an
+ * object-name prefix are matched — the engine also looks at `%B`.
+ */
+function searchRecordedCommits(v2: RecordedV2, req: SearchRequest): SearchResult {
+  const matcher = createMatcher(req.query, req.regex === true);
+  const prefix = !matcher.regex && isOidPrefix(req.query) ? req.query.toLowerCase() : null;
+  const commits = v2.walks.default?.commits ?? v2.walks.all?.commits ?? [];
+  const scan = commits.slice(0, Math.max(1, req.commits ?? 1000));
+  const hits: SearchHit[] = [];
+  for (const c of scan) {
+    if (hits.length >= Math.max(1, req.limit)) break;
+    const matched =
+      (prefix !== null && c.oid.startsWith(prefix)) ||
+      matcher.test(c.subject) ||
+      matcher.test(c.author.name) ||
+      matcher.test(c.author.email);
+    if (matched) hits.push({ kind: "commit", oid: c.oid, subject: c.subject });
+  }
+  return {
+    hits,
+    scanned: scan.length,
+    capped: hits.length >= Math.max(1, req.limit) || scan.length < commits.length,
+    durationMs: 1,
+  };
 }
 
 function wait(ms: number): Promise<void> {

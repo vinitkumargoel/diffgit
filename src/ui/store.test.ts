@@ -869,14 +869,20 @@ describe("store: History mode (T11.5)", () => {
     });
   });
 
-  it("searchCommits answers null until T10.8 ships `search`, and maps its hits when it does", async () => {
+  it("searchCommits maps T10.8 `search` hits to commit oids, and answers null without the method", async () => {
     await openHistory();
-    expect(await useStore.getState().searchCommits("anything")).toBeNull();
+    // The mock runs the commit scope live against the recorded walk (T10.8).
+    const live = await useStore.getState().searchCommits("extend mod");
+    expect(live).not.toBeNull();
+    expect(live?.length).toBeGreaterThan(0);
+    for (const oid of live ?? []) expect(oid).toMatch(/^[0-9a-f]{40}$/);
     setStoreClient({
       ...mock,
       search: async () => ({ hits: [{ kind: "commit", oid: headOid }, { kind: "file" }] }),
     } as unknown as MockWorkerClient);
     expect(await useStore.getState().searchCommits("anything")).toEqual([headOid]);
+    setStoreClient({ ...mock, search: undefined } as unknown as MockWorkerClient);
+    expect(await useStore.getState().searchCommits("anything")).toBeNull();
   });
 
   it("the stack walks back to the merge base, newest first", async () => {
