@@ -308,9 +308,9 @@ describe("CommitCard (Design §14.5)", () => {
       "Blame here",
     ]);
     // nothing is hidden; what is not wired yet says so
-    // T11.6 wired `Blame here` and T11.13 the two bisect marks, so only the export row is pending
-    expect(items.filter((i) => (i as HTMLButtonElement).disabled)).toHaveLength(1);
-    expect(items[0]?.getAttribute("title")).toBe("coming soon (T11.10)");
+    // T11.6 wired `Blame here`, T11.10 the patch export and T11.13 the two bisect marks: nothing pending
+    expect(items.filter((i) => (i as HTMLButtonElement).disabled)).toHaveLength(0);
+    expect((items[0] as HTMLButtonElement).disabled).toBe(false);
     expect((items[1] as HTMLButtonElement).disabled).toBe(false);
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByRole("menu")).toBeNull();

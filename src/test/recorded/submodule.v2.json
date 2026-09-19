@@ -5,10 +5,10 @@
     {
       "index": 0,
       "expr": "HEAD@{0}",
-      "oldOid": "9f920895bac7d57238446250bc6b1e529057ffc2",
-      "newOid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+      "oldOid": "21c2ffd77b245ec0474ae06775ccf159efd8e274",
+      "newOid": "5207992343dd85e6131fd247a8c42a848b260cd9",
       "action": "commit",
-      "message": "commit: c5: work after the reset",
+      "message": "commit: f1: bump submodule to s2",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -20,10 +20,10 @@
     {
       "index": 1,
       "expr": "HEAD@{1}",
-      "oldOid": "14c77533a88cbeaf673c2fde62b011258a115545",
-      "newOid": "9f920895bac7d57238446250bc6b1e529057ffc2",
-      "action": "reset",
-      "message": "reset: moving to HEAD~2",
+      "oldOid": "21c2ffd77b245ec0474ae06775ccf159efd8e274",
+      "newOid": "21c2ffd77b245ec0474ae06775ccf159efd8e274",
+      "action": "checkout",
+      "message": "checkout: moving from main to feature",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -35,40 +35,10 @@
     {
       "index": 2,
       "expr": "HEAD@{2}",
-      "oldOid": "f956822f4d6b4f237e501911264a7471e3ea26a8",
-      "newOid": "14c77533a88cbeaf673c2fde62b011258a115545",
+      "oldOid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
+      "newOid": "21c2ffd77b245ec0474ae06775ccf159efd8e274",
       "action": "commit",
-      "message": "commit: c4: fourth (orphaned by the reset)",
-      "who": {
-        "name": "test",
-        "email": "test@example.com",
-        "timestamp": 1704067200000,
-        "tzOffsetMin": 0
-      },
-      "reachable": false
-    },
-    {
-      "index": 3,
-      "expr": "HEAD@{3}",
-      "oldOid": "9f920895bac7d57238446250bc6b1e529057ffc2",
-      "newOid": "f956822f4d6b4f237e501911264a7471e3ea26a8",
-      "action": "commit",
-      "message": "commit: c3: third (orphaned by the reset)",
-      "who": {
-        "name": "test",
-        "email": "test@example.com",
-        "timestamp": 1704067200000,
-        "tzOffsetMin": 0
-      },
-      "reachable": false
-    },
-    {
-      "index": 4,
-      "expr": "HEAD@{4}",
-      "oldOid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
-      "newOid": "9f920895bac7d57238446250bc6b1e529057ffc2",
-      "action": "commit",
-      "message": "commit: c2: second",
+      "message": "commit: c2: add submodule at s1",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -78,12 +48,12 @@
       "reachable": true
     },
     {
-      "index": 5,
-      "expr": "HEAD@{5}",
+      "index": 3,
+      "expr": "HEAD@{3}",
       "oldOid": null,
-      "newOid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
+      "newOid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
       "action": "commit (initial)",
-      "message": "commit (initial): c1: first",
+      "message": "commit (initial): c1: super",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -99,7 +69,7 @@
     {
       "path": "expected",
       "kind": "ignored-dir",
-      "count": 13
+      "count": 14
     }
   ],
   "explanations": {},
@@ -109,8 +79,8 @@
     "default": {
       "commits": [
         {
-          "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
-          "parents": ["9f920895bac7d57238446250bc6b1e529057ffc2"],
+          "oid": "5207992343dd85e6131fd247a8c42a848b260cd9",
+          "parents": ["21c2ffd77b245ec0474ae06775ccf159efd8e274"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -123,8 +93,8 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c5: work after the reset",
-          "refs": ["HEAD", "main"],
+          "subject": "f1: bump submodule to s2",
+          "refs": ["HEAD", "feature"],
           "lane": 0,
           "laneCount": 1,
           "edges": [
@@ -136,8 +106,8 @@
           ]
         },
         {
-          "oid": "9f920895bac7d57238446250bc6b1e529057ffc2",
-          "parents": ["1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808"],
+          "oid": "21c2ffd77b245ec0474ae06775ccf159efd8e274",
+          "parents": ["2f90b1a82c96123d74b40e58deb206479fd565e0"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -150,8 +120,8 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c2: second",
-          "refs": [],
+          "subject": "c2: add submodule at s1",
+          "refs": ["main"],
           "lane": 0,
           "laneCount": 1,
           "edges": [
@@ -163,7 +133,7 @@
           ]
         },
         {
-          "oid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
+          "oid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
           "parents": [],
           "author": {
             "name": "test",
@@ -177,7 +147,7 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c1: first",
+          "subject": "c1: super",
           "refs": [],
           "lane": 0,
           "laneCount": 1,
@@ -190,8 +160,8 @@
     "first-parent": {
       "commits": [
         {
-          "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
-          "parents": ["9f920895bac7d57238446250bc6b1e529057ffc2"],
+          "oid": "5207992343dd85e6131fd247a8c42a848b260cd9",
+          "parents": ["21c2ffd77b245ec0474ae06775ccf159efd8e274"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -204,8 +174,8 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c5: work after the reset",
-          "refs": ["HEAD", "main"],
+          "subject": "f1: bump submodule to s2",
+          "refs": ["HEAD", "feature"],
           "lane": 0,
           "laneCount": 1,
           "edges": [
@@ -217,8 +187,8 @@
           ]
         },
         {
-          "oid": "9f920895bac7d57238446250bc6b1e529057ffc2",
-          "parents": ["1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808"],
+          "oid": "21c2ffd77b245ec0474ae06775ccf159efd8e274",
+          "parents": ["2f90b1a82c96123d74b40e58deb206479fd565e0"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -231,8 +201,8 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c2: second",
-          "refs": [],
+          "subject": "c2: add submodule at s1",
+          "refs": ["main"],
           "lane": 0,
           "laneCount": 1,
           "edges": [
@@ -244,7 +214,7 @@
           ]
         },
         {
-          "oid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
+          "oid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
           "parents": [],
           "author": {
             "name": "test",
@@ -258,7 +228,7 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c1: first",
+          "subject": "c1: super",
           "refs": [],
           "lane": 0,
           "laneCount": 1,
@@ -271,8 +241,8 @@
     "all": {
       "commits": [
         {
-          "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
-          "parents": ["9f920895bac7d57238446250bc6b1e529057ffc2"],
+          "oid": "5207992343dd85e6131fd247a8c42a848b260cd9",
+          "parents": ["21c2ffd77b245ec0474ae06775ccf159efd8e274"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -285,8 +255,8 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c5: work after the reset",
-          "refs": ["HEAD", "main"],
+          "subject": "f1: bump submodule to s2",
+          "refs": ["HEAD", "feature"],
           "lane": 0,
           "laneCount": 1,
           "edges": [
@@ -298,8 +268,8 @@
           ]
         },
         {
-          "oid": "9f920895bac7d57238446250bc6b1e529057ffc2",
-          "parents": ["1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808"],
+          "oid": "21c2ffd77b245ec0474ae06775ccf159efd8e274",
+          "parents": ["2f90b1a82c96123d74b40e58deb206479fd565e0"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -312,8 +282,8 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c2: second",
-          "refs": [],
+          "subject": "c2: add submodule at s1",
+          "refs": ["main"],
           "lane": 0,
           "laneCount": 1,
           "edges": [
@@ -325,7 +295,7 @@
           ]
         },
         {
-          "oid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
+          "oid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
           "parents": [],
           "author": {
             "name": "test",
@@ -339,7 +309,7 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c1: first",
+          "subject": "c1: super",
           "refs": [],
           "lane": 0,
           "laneCount": 1,
@@ -351,9 +321,9 @@
     }
   },
   "commits": {
-    "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752": {
-      "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
-      "parents": ["9f920895bac7d57238446250bc6b1e529057ffc2"],
+    "5207992343dd85e6131fd247a8c42a848b260cd9": {
+      "oid": "5207992343dd85e6131fd247a8c42a848b260cd9",
+      "parents": ["21c2ffd77b245ec0474ae06775ccf159efd8e274"],
       "author": {
         "name": "test",
         "email": "test@example.com",
@@ -366,37 +336,10 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "subject": "c5: work after the reset",
-      "refs": ["HEAD", "main"],
+      "subject": "f1: bump submodule to s2",
+      "refs": ["HEAD", "feature"],
       "body": "",
-      "tree": "ac56c747e50578eb7be0cdcecc791c2f7210244a",
-      "signed": false,
-      "note": null,
-      "stats": {
-        "files": 1,
-        "additions": 1,
-        "deletions": 0
-      }
-    },
-    "9f920895bac7d57238446250bc6b1e529057ffc2": {
-      "oid": "9f920895bac7d57238446250bc6b1e529057ffc2",
-      "parents": ["1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808"],
-      "author": {
-        "name": "test",
-        "email": "test@example.com",
-        "timestamp": 1704067200000,
-        "tzOffsetMin": 0
-      },
-      "committer": {
-        "name": "test",
-        "email": "test@example.com",
-        "timestamp": 1704067200000,
-        "tzOffsetMin": 0
-      },
-      "subject": "c2: second",
-      "refs": [],
-      "body": "",
-      "tree": "313eba2d168cdf6ede5f9caa87c9f1b5f7c3d304",
+      "tree": "2084869b2a68c1cd2bf208b22aea5e4256051f46",
       "signed": false,
       "note": null,
       "stats": {
@@ -405,8 +348,35 @@
         "deletions": 1
       }
     },
-    "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808": {
-      "oid": "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808",
+    "21c2ffd77b245ec0474ae06775ccf159efd8e274": {
+      "oid": "21c2ffd77b245ec0474ae06775ccf159efd8e274",
+      "parents": ["2f90b1a82c96123d74b40e58deb206479fd565e0"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c2: add submodule at s1",
+      "refs": ["main"],
+      "body": "",
+      "tree": "e8673cb1c29b656eca9ee71b9bfb0b5b84bab949",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 2,
+        "additions": 4,
+        "deletions": 0
+      }
+    },
+    "2f90b1a82c96123d74b40e58deb206479fd565e0": {
+      "oid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
       "parents": [],
       "author": {
         "name": "test",
@@ -420,10 +390,10 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "subject": "c1: first",
+      "subject": "c1: super",
       "refs": [],
       "body": "",
-      "tree": "20e50a07feffafe7699bf38ff4027a606f406eaa",
+      "tree": "9b94f00d2ec8210765b22bc41c77a350260013da",
       "signed": false,
       "note": null,
       "stats": {
@@ -434,17 +404,17 @@
     }
   },
   "commitStats": {
-    "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808": {
+    "21c2ffd77b245ec0474ae06775ccf159efd8e274": {
+      "files": 2,
+      "additions": 4,
+      "deletions": 0
+    },
+    "2f90b1a82c96123d74b40e58deb206479fd565e0": {
       "files": 1,
       "additions": 1,
       "deletions": 0
     },
-    "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752": {
-      "files": 1,
-      "additions": 1,
-      "deletions": 0
-    },
-    "9f920895bac7d57238446250bc6b1e529057ffc2": {
+    "5207992343dd85e6131fd247a8c42a848b260cd9": {
       "files": 1,
       "additions": 1,
       "deletions": 1
@@ -453,17 +423,43 @@
   "branches": [
     {
       "ref": {
-        "name": "main",
-        "fullName": "refs/heads/main",
+        "name": "feature",
+        "fullName": "refs/heads/feature",
         "kind": "local",
-        "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
-        "isDefault": true,
+        "oid": "5207992343dd85e6131fd247a8c42a848b260cd9",
+        "isDefault": false,
         "isCheckedOut": true
       },
       "upstream": null,
       "lastCommit": {
-        "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
-        "subject": "c5: work after the reset",
+        "oid": "5207992343dd85e6131fd247a8c42a848b260cd9",
+        "subject": "f1: bump submodule to s2",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": {
+        "ahead": 1,
+        "behind": 0,
+        "mergeBase": "21c2ffd77b245ec0474ae06775ccf159efd8e274",
+        "capped": false
+      },
+      "merged": false,
+      "tags": []
+    },
+    {
+      "ref": {
+        "name": "main",
+        "fullName": "refs/heads/main",
+        "kind": "local",
+        "oid": "21c2ffd77b245ec0474ae06775ccf159efd8e274",
+        "isDefault": true,
+        "isCheckedOut": false
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "21c2ffd77b245ec0474ae06775ccf159efd8e274",
+        "subject": "c2: add submodule at s1",
         "author": "test",
         "timestamp": 1704067200000
       },
@@ -475,11 +471,9 @@
   ],
   "aheadBehind": {},
   "reachable": {
-    "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752": true,
-    "9f920895bac7d57238446250bc6b1e529057ffc2": true,
-    "1c3ec2a8a2baebe33a0ad4d9efcd788b9df89808": true,
-    "14c77533a88cbeaf673c2fde62b011258a115545": false,
-    "f956822f4d6b4f237e501911264a7471e3ea26a8": false
+    "5207992343dd85e6131fd247a8c42a848b260cd9": true,
+    "21c2ffd77b245ec0474ae06775ccf159efd8e274": true,
+    "2f90b1a82c96123d74b40e58deb206479fd565e0": true
   },
   "pathHistories": {},
   "blames": {},
@@ -495,17 +489,24 @@
     ],
     "hotspots": [
       {
-        "path": "c.txt",
+        "path": ".gitmodules",
         "commits": 1,
-        "size": 21,
-        "score": 4.392,
+        "size": 133,
+        "score": 7.055,
         "manifest": false
       },
       {
-        "path": "a.txt",
+        "path": "README.md",
+        "commits": 1,
+        "size": 13,
+        "score": 3.7,
+        "manifest": false
+      },
+      {
+        "path": "sub",
         "commits": 2,
-        "size": 4,
-        "score": 4,
+        "size": 0,
+        "score": 2,
         "manifest": false
       }
     ],
@@ -520,8 +521,8 @@
     "bots": 0
   },
   "summary": {
-    "headBranch": "main",
-    "headDisplay": "main",
+    "headBranch": "feature",
+    "headDisplay": "feature",
     "counts": {
       "staged": 0,
       "unstaged": 0,
@@ -530,8 +531,8 @@
     },
     "vsUpstream": null,
     "lastCommit": {
-      "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
-      "subject": "c5: work after the reset",
+      "oid": "5207992343dd85e6131fd247a8c42a848b260cd9",
+      "subject": "f1: bump submodule to s2",
       "timestamp": 1704067200000
     },
     "operation": null,
@@ -539,13 +540,21 @@
   },
   "bisect": [],
   "preflights": {},
-  "submodules": [],
+  "submodules": [
+    {
+      "path": "sub",
+      "url": "fixtures/_remotes/sub.git",
+      "recorded": "339e41b26a605a13b8170dd1eb84e9625955ccf6",
+      "checkedOut": null,
+      "dirty": null
+    }
+  ],
   "worktrees": [
     {
-      "name": "reflog-orphan",
+      "name": "submodule",
       "path": null,
-      "head": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
-      "branch": "refs/heads/main",
+      "head": "5207992343dd85e6131fd247a8c42a848b260cd9",
+      "branch": "refs/heads/feature",
       "prunable": false,
       "isThis": true
     }

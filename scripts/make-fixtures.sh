@@ -381,6 +381,60 @@ build_submodule() {
   G -C "$r" submodule -q deinit -f sub >/dev/null
 }
 
+# ----------------------------------------------------------------------------------------------
+# jj (T10.12): a colocated jujutsu workspace — an empty `.jj/` beside `.git/`, and a detached HEAD.
+# Built with git alone, on purpose: `jj` is not on the build machine's PATH, and it does not need
+# to be. jj writes an ordinary `.git` and leaves git's HEAD detached at the working-copy commit;
+# diffgit reads exactly two things about jj — that `.jj/` exists, and that HEAD is detached — so a
+# git repository with a detached HEAD and an empty `.jj/` is a faithful stand-in for both.
+build_jj() {
+  local r="$FIX/jj"; mkdir -p "$r"; G -C "$r" init -q
+  w "$r" README.md "# jj fixture"$'\n'"A colocated jj workspace, as far as git can tell."$'\n'
+  w "$r" src/a.txt "$(lines alpha 1 6)"$'\n'
+  commit "$r" "c1: initial files"
+  w "$r" src/a.txt "$(lines alpha 1 5)"$'\n'"alpha 6 edited"$'\n'
+  commit "$r" "c2: edit a.txt"
+  G -C "$r" checkout -q -b feature
+  w "$r" src/b.txt "beta 1"$'\n'"beta 2"$'\n'
+  commit "$r" "f1: add b.txt"
+  G -C "$r" checkout -q main
+  # jj checks its working-copy commit out with a detached git HEAD; that is the state to reproduce.
+  G -C "$r" checkout -q --detach main
+  mkdir -p "$r/.jj"
+}
+
+# ----------------------------------------------------------------------------------------------
+# lfs (T10.12): files tracked by Git LFS, committed as the pointer text git actually stores.
+# No `git lfs` binary is involved — a pointer is three lines of ASCII, and the filter that would
+# swap it for the real object is exactly what diffgit never runs. Three shapes:
+#   assets/hero.psd  pointer on both sides, marked `binary` so the row is a binary row as well
+#   data/table.dat   pointer added on the feature side only (one-sided parse, plain text row)
+#   notes.txt        an ordinary file, so the fixture also proves nothing else is mistaken for one
+# `git lfs track` itself writes `-text` rather than `binary`. The `binary` macro is used here
+# because git and the engine agree on it: git's `diff_filespec_is_binary` reads the `diff`
+# attribute, so a file marked only `-text` is still diffed as text by git while
+# `GitAttributes.isBinary` (T3.4) calls it binary — a divergence recorded as a follow-up in
+# docs/CHANGELOG.md, not something this fixture should paper over or provoke.
+LFS_OID_A=9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+LFS_OID_B=4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393
+LFS_OID_C=60303ae22b998861bce3b28f33eec1be758a213c86c93c076dbe9f558c11c752
+lfs_pointer() { # lfs_pointer <repo> <path> <oid> <size>
+  w "$1" "$2" "version https://git-lfs.github.com/spec/v1"$'\n'"oid sha256:$3"$'\n'"size $4"$'\n'
+}
+build_lfs() {
+  local r="$FIX/lfs"; mkdir -p "$r"; G -C "$r" init -q
+  w "$r" .gitattributes "*.psd filter=lfs merge=lfs binary"$'\n'"*.dat filter=lfs"$'\n'
+  w "$r" notes.txt "not a pointer"$'\n'"version 2"$'\n'
+  lfs_pointer "$r" assets/hero.psd "$LFS_OID_A" 12400000
+  commit "$r" "c1: hero.psd as an LFS pointer"
+  G -C "$r" checkout -q -b feature
+  lfs_pointer "$r" assets/hero.psd "$LFS_OID_B" 12900000
+  lfs_pointer "$r" data/table.dat "$LFS_OID_C" 5242880
+  w "$r" notes.txt "not a pointer"$'\n'"version 3"$'\n'
+  commit "$r" "f1: new hero revision, add table.dat"
+  G -C "$r" checkout -q main
+}
+
 build_crisscross() {
   local r="$FIX/crisscross"; mkdir -p "$r"; G -C "$r" init -q
   w "$r" base.txt "base"$'\n'
@@ -903,6 +957,8 @@ main() {
   build_symlink;              echo "  symlink"
   build_worktree_gitdir;      echo "  worktree-gitdir"
   build_submodule;            echo "  submodule"
+  build_jj;                   echo "  jj"
+  build_lfs;                  echo "  lfs"
   build_crisscross;           echo "  crisscross"
   build_rebase_detached;      echo "  rebase-detached"
   build_attributes;           echo "  attributes"

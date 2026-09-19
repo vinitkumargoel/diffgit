@@ -29,6 +29,8 @@ directory with JSON dumped from git (see the expectations script for the exact c
 | `symlink` | `feature` | `main`, `feature` | `link` retargeted (120000), `link2` symlink → regular file (typechange), target edited | `git diff --name-status main...feature` |
 | `worktree-gitdir` | `feature` | — | `.git` is a file with `gitdir:` (linked worktree of `_worktree-main`) | `cat .git` |
 | `submodule` | `feature` | `main`, `feature` | gitlink bumped on feature; submodule deinitialised (empty dir) | `git ls-files -s sub` |
+| `jj` | detached at `main` | `main`, `feature` | colocated jujutsu workspace: an empty `.jj/` beside `.git/` and a detached HEAD (T10.12) | `ls -d .jj; git symbolic-ref -q HEAD` (fails) |
+| `lfs` | `main` | `main`, `feature` | Git LFS pointer files committed verbatim: `assets/hero.psd` changes on both sides, `data/table.dat` is added on `feature`, `notes.txt` is an ordinary file (T10.12) | `cat assets/hero.psd; git check-attr -a assets/hero.psd` |
 | `crisscross` | `feature` | `main`, `feature` | two merge bases | `git merge-base --all main feature` |
 | `rebase-detached` | detached (rebase) | `main`, `feature` | interrupted `git rebase -i` (`.git/rebase-merge/` present) | `git status` |
 | `attributes` | `feature` | `main`, `feature` | `.gitattributes`: `-diff`, `binary`, `linguist-generated`, `text` | `git diff --numstat main...feature` |

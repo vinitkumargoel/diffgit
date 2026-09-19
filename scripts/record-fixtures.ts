@@ -37,6 +37,13 @@
  * good" plus one round with a skip) and `preflights` (one report per `<branch> onto <onto>` pair),
  * so T11.13 can build the bisect strip and the preflight panel without a repository on disk.
  *
+ * T10.12 adds `submodules` and `worktrees`, and with them two more recorded fixtures: `submodule`
+ * (a gitlink recorded at HEAD whose checkout was deinit'd) and the main checkout behind
+ * `worktree-gitdir`, recorded under the name `worktree-main` so the mock has a repository with a
+ * **linked** worktree to list. `WorktreeInfo.path` is an absolute host path, so it is rewritten
+ * relative to `fixtures/` before it is written out — otherwise the recording would differ per
+ * machine and `bun run record` would not be byte-idempotent.
+ *
  * T10.5 adds `walks` (the whole history per variant — default, first-parent, all, per path — which
  * the mock pages itself), `commits` (`CommitDetails`), `commitStats`, `branches` (the Branches
  * table with its cells filled), `aheadBehind` and `reachable`, plus the `octopus` fixture so the
@@ -69,9 +76,17 @@ import type {
   SearchRequest,
   SearchResult,
   SecretFinding,
+  SubmoduleInfo,
   WalkRequest,
+  WorktreeInfo,
 } from "../src/engine/types";
-import { fixturePath, HISTORY_FIXTURE, hasExpected, loadExpectedLines } from "../src/test/fixtures";
+import {
+  FIXTURES_ROOT,
+  fixturePath,
+  HISTORY_FIXTURE,
+  hasExpected,
+  loadExpectedLines,
+} from "../src/test/fixtures";
 
 const OUT = new URL("../src/test/recorded/", import.meta.url).pathname;
 mkdirSync(OUT, { recursive: true });
@@ -189,6 +204,23 @@ const BISECTS: Record<string, [string, string][]> = {
   history: [["main~47", "main"]],
 };
 
+/**
+ * T10.12: `WorktreeInfo.path` is whatever absolute path the `gitdir` file records on this machine.
+ * Rewriting it relative to `fixtures/` keeps `bun run record` byte-identical everywhere.
+ */
+function pinWorktreePaths(list: WorktreeInfo[]): WorktreeInfo[] {
+  return list.map((w) =>
+    w.path === null ? w : { ...w, path: w.path.replace(`${FIXTURES_ROOT}/`, "fixtures/") },
+  );
+}
+
+/** Same for `SubmoduleInfo.url`: the fixture's `.gitmodules` points at `fixtures/_remotes/sub.git`. */
+function pinSubmoduleUrls(list: SubmoduleInfo[]): SubmoduleInfo[] {
+  return list.map((s) =>
+    s.url === null ? s : { ...s, url: s.url.replace(`${FIXTURES_ROOT}/`, "fixtures/") },
+  );
+}
+
 /** Replaces the operation's real mtime with the fixed clock so re-recording is a no-op. */
 /** A record with its keys in a fixed order, so a re-record is a byte-for-byte no-op. */
 function sortKeys<T>(record: Record<string, T>): Record<string, T> {
@@ -201,11 +233,12 @@ function pinStartedAt(op: RepoOperation | null): RepoOperation | null {
   return op && op.startedAt !== undefined ? { ...op, startedAt: FIXED_COMPUTED_AT } : op;
 }
 
-async function record(name: string, v2: boolean): Promise<void> {
+/** `outName` lets a fixture be recorded under a different handle name (T10.12: `_worktree-main`). */
+async function record(name: string, v2: boolean, outName = name): Promise<void> {
   const session = await RepoSession.open(
     await NodeDirHandle.open(fixturePath(name)),
     { onProgress() {}, onStats() {}, onWarning() {} },
-    { id: `recorded-${name}` },
+    { id: `recorded-${outName}` },
   );
   const info = await session.info();
   info.operation = pinStartedAt(info.operation);
@@ -224,9 +257,9 @@ async function record(name: string, v2: boolean): Promise<void> {
   result.totals = { files: result.files.length, additions, deletions };
   result.computedAt = FIXED_COMPUTED_AT;
   result.durationMs = 0;
-  writeFileSync(`${OUT}${name}.repoinfo.json`, `${JSON.stringify(info, null, 2)}\n`);
-  writeFileSync(`${OUT}${name}.diffresult.json`, `${JSON.stringify(result, null, 2)}\n`);
-  console.log(`${name}: ${result.files.length} files, +${additions} -${deletions}`);
+  writeFileSync(`${OUT}${outName}.repoinfo.json`, `${JSON.stringify(info, null, 2)}\n`);
+  writeFileSync(`${OUT}${outName}.diffresult.json`, `${JSON.stringify(result, null, 2)}\n`);
+  console.log(`${outName}: ${result.files.length} files, +${additions} -${deletions}`);
 
   if (v2) {
     // Recorded before any further computeDiff, while `result.generation` is still the current one.
@@ -367,6 +400,10 @@ async function record(name: string, v2: boolean): Promise<void> {
       );
     }
 
+    // ---- T10.12: submodules and the worktree list ---------------------------------------------
+    const submodules: SubmoduleInfo[] = pinSubmoduleUrls(await session.listSubmodules());
+    const worktrees: WorktreeInfo[] = pinWorktreePaths(await session.listWorktrees());
+
     const reachable = await session.markReachable([
       ...new Set([...walkedOids, ...(await session.reflog("HEAD", 200)).map((e) => e.newOid)]),
     ]);
@@ -408,10 +445,13 @@ async function record(name: string, v2: boolean): Promise<void> {
       // T10.11: every round of the replayed bisect, and one report per rebase pair.
       bisect,
       preflights,
+      // T10.12: the submodule cards and the worktree list of atlas tab 19.
+      submodules,
+      worktrees,
     };
-    writeFileSync(`${OUT}${name}.v2.json`, `${JSON.stringify(payload, null, 2)}\n`);
+    writeFileSync(`${OUT}${outName}.v2.json`, `${JSON.stringify(payload, null, 2)}\n`);
     console.log(
-      `${name}: ${payload.tags.length} tags, ${payload.stashes.length} stashes, ` +
+      `${outName}: ${payload.tags.length} tags, ${payload.stashes.length} stashes, ` +
         `${payload.reflog.length} reflog entries, operation ${payload.operation?.kind ?? "none"}, ` +
         `${Object.keys(revisions).length} revisions, ${ranges.length} ranges, ` +
         `${Object.keys(conflicts).length} conflicts, ${payload.hidden.length} hidden, ` +
@@ -420,7 +460,8 @@ async function record(name: string, v2: boolean): Promise<void> {
         `${branches.length} branches, ${Object.keys(pathHistories).length} path histories, ` +
         `${Object.keys(blames).length} blames, ${secrets.length} secret findings, ` +
         `${Object.keys(searches).length} searches, ${bisect.length} bisect rounds, ` +
-        `${Object.keys(preflights).length} preflights`,
+        `${Object.keys(preflights).length} preflights, ${submodules.length} submodules, ` +
+        `${worktrees.length} worktrees`,
       `insights: ${insights.commits} commits / ${insights.authors.length} authors / ` +
         `${insights.hotspots.length} hotspots / ${insights.activity.length} weeks, ` +
         `${Object.keys(searches).length} searches, ` +
@@ -449,5 +490,11 @@ for (const name of [
   "reflog-orphan",
   // T10.7: the planted fake credentials, for the secret banner and popover.
   "secrets",
+  // T10.12: a gitlink recorded at HEAD with a deinit'd checkout, for the submodule card.
+  "submodule",
 ])
   await record(name, true);
+// T10.12: the main checkout behind `worktree-gitdir`, so the mock has a repository whose worktree
+// list holds a *linked* entry. Recorded under `worktree-main` (the fixture directory is `_`-prefixed
+// because it is scaffolding for another fixture, not a fixture the expectations script visits).
+await record("_worktree-main", true, "worktree-main");

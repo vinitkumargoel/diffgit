@@ -30,7 +30,23 @@ function sortRefs(refs: RepoRef[]): RepoRef[] {
   return [...synthetic, ...checkedOut, ...def, ...locals, ...remotes];
 }
 
-export async function loadRefs(db: ObjectDb, config: GitConfig): Promise<RefSnapshot> {
+/** What `loadRefs` needs to know about the repository beyond its config (T10.12). */
+export interface RefLoadOptions {
+  /**
+   * A colocated jujutsu workspace (`.jj/` beside `.git/`). jj checks its working-copy commit out
+   * with a detached git HEAD as a matter of course, so calling that "detached" would put a scary
+   * label on every jj repository. `RefSnapshot.detached` stays true — it is a fact about `.git/HEAD`
+   * that every other reader depends on — but `headDisplay` reads `jj working copy @ <sha7>`, and
+   * nothing raises an information banner about the detachment (atlas tab 19).
+   */
+  jj?: boolean;
+}
+
+export async function loadRefs(
+  db: ObjectDb,
+  config: GitConfig,
+  opts: RefLoadOptions = {},
+): Promise<RefSnapshot> {
   // ---- HEAD ----
   const headTarget = await db.readSymref("HEAD");
   let headBranch: string | null = null;
@@ -94,7 +110,9 @@ export async function loadRefs(db: ObjectDb, config: GitConfig): Promise<RefSnap
 
   // ---- synthetic HEAD entry (detached / unborn) ----
   const headDisplay = detached
-    ? `HEAD (detached @ ${(headOid ?? "").slice(0, 7)})`
+    ? opts.jj === true
+      ? `jj working copy @ ${(headOid ?? "").slice(0, 7)}`
+      : `HEAD (detached @ ${(headOid ?? "").slice(0, 7)})`
     : unborn
       ? "HEAD (no commits)"
       : (headBranch as string);

@@ -886,4 +886,58 @@ describe("mock worker client: bisect and rebase preflight (T10.11)", () => {
       code: "REV_NOT_FOUND",
     });
   });
+
+  // ---- T10.12: submodules, worktrees and patch-only mode (atlas tabs 19 and 17) ----------------
+
+  it("serves the recorded submodule card: recorded oid, deinit'd checkout, url", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "submodule" }, sink());
+    const subs = await client.listSubmodules();
+    expect(subs).toHaveLength(1);
+    expect(subs[0]?.path).toBe("sub");
+    expect(subs[0]?.recorded).toMatch(/^[0-9a-f]{40}$/);
+    expect(subs[0]?.checkedOut).toBeNull();
+    expect(subs[0]?.dirty).toBeNull();
+    expect(subs[0]?.url).toBe("fixtures/_remotes/sub.git");
+  });
+
+  it("serves the worktree list: the main checkout first, then the linked one", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "worktree-main" }, sink());
+    const list = await client.listWorktrees();
+    expect(list.map((w) => w.name)).toEqual(["_worktree-main", "worktree-gitdir"]);
+    expect(list.map((w) => w.isThis)).toEqual([true, false]);
+    expect(list[1]?.path).toBe("fixtures/worktree-gitdir");
+    expect(list[1]?.branch).toBe("refs/heads/feature");
+    expect(list.every((w) => w.prunable === false)).toBe(true);
+  });
+
+  it("falls back to the open repository when a fixture recorded no worktrees", async () => {
+    const client = createMockWorkerClient();
+    const info = await client.open({ name: "tags" }, sink());
+    const list = await client.listWorktrees();
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({ name: info.name, isThis: true, path: null });
+    expect(await client.listSubmodules()).toEqual([]);
+  });
+
+  it("parses a patch with the real parser, with no repository open", async () => {
+    const client = createMockWorkerClient();
+    const patch = ["--- a/x.txt", "+++ b/x.txt", "@@ -1 +1 @@", "-a", "+b", ""].join("\n");
+    const parsed = await client.parsePatch(patch);
+    expect(parsed.files.map((f) => f.id)).toEqual(["x.txt"]);
+    expect(parsed.hunks["x.txt"]?.hunks).toHaveLength(1);
+    expect(parsed.stats).toEqual({ files: 1, additions: 1, deletions: 1 });
+    expect(parsed.warnings.map((w) => w.code)).toEqual(["PATCH_ONLY"]);
+  });
+
+  it("rejects a file that is not a patch with NOT_A_PATCH and a line number", async () => {
+    const client = createMockWorkerClient();
+    await expect(client.parsePatch("this is a bug report\n")).rejects.toMatchObject({
+      code: "NOT_A_PATCH",
+    });
+    await client.parsePatch("--- a/x\n+++ b/x\n@@ -1 +1 @@\n-a\n+b\n").catch(() => {
+      throw new Error("a valid patch must not reject");
+    });
+  });
 });

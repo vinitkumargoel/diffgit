@@ -6,6 +6,7 @@ import type { EngineApi, OpenOptions, ProgressSink } from "./api";
 import { EngineError } from "./errors";
 import type { DirHandleLike } from "./fs/dirHandleLike";
 import { resolveHandle } from "./fs/resolveHandle";
+import { PatchSession } from "./patchSession";
 import { RepoSession, type SessionOptions, toPublicError } from "./session";
 
 export interface WorkerApiOptions {
@@ -19,6 +20,9 @@ export function createEngineApi(
 ): EngineApi & { current(): RepoSession | null } {
   let session: RepoSession | null = null;
   const resolve = opts.resolve ?? resolveHandle;
+  // T10.12: patch-only mode. `parsePatch` is the one method that must answer with no repository
+  // open (Design §14.6), so it never goes through `need()`.
+  const patches = new PatchSession();
 
   async function guard<T>(fn: () => Promise<T>): Promise<T> {
     try {
@@ -75,6 +79,9 @@ export function createEngineApi(
     bisectStep: (state) => guard(() => need().bisectStep(state)),
     rebasePreflight: (branchRef, ontoRef) =>
       guard(() => need().rebasePreflight(branchRef, ontoRef)),
+    listSubmodules: () => guard(() => need().listSubmodules()),
+    listWorktrees: () => guard(() => need().listWorktrees()),
+    parsePatch: (text) => guard(() => patches.parse(text)),
     fileBytes: (generation, id, side) => guard(() => need().fileBytes(generation, id, side)),
     patchText: (generation, ids) => guard(() => need().patchText(generation, ids)),
     summarise: () => guard(() => need().summarise()),

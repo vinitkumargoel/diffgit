@@ -2,6 +2,7 @@ import { Copy, MoreHorizontal, ShieldCheck } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { CommitDetails } from "../../engine/types";
 import { describeError } from "../errors";
+import { EXPORT_LABELS } from "../export/exportModel";
 import { cherryPickCommand, formatCommitDate, formatSignature, shortOid } from "../history";
 import { useStore } from "../store";
 import { RefChip } from "./CommitRow";
@@ -35,6 +36,7 @@ export function CommitCard({ oid }: { oid: string }) {
   const showCommit = useStore((s) => s.showCommit);
   const compareCommitWithBase = useStore((s) => s.compareCommitWithBase);
   const markBisect = useStore((s) => s.markBisect);
+  const requestExport = useStore((s) => s.requestExport);
   const baseName = useStore((s) => s.compareBase?.display ?? "base");
   const [expanded, setExpanded] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -233,7 +235,14 @@ export function CommitCard({ oid }: { oid: string }) {
               aria-label="More commit actions"
               className="absolute top-full right-0 z-10 mt-1 w-60 rounded-[6px] border border-line bg-surface py-1 shadow-popover"
             >
-              <MenuItem label="Export as .patch" pending="T11.10" />
+              <MenuItem
+                label={EXPORT_LABELS["commit-patch"]}
+                title="The diff on screen, as a git-apply-compatible patch"
+                onClick={() => {
+                  setMenu(false);
+                  void requestExport({ kind: "commit-patch", ids: null, oid });
+                }}
+              />
               <MenuItem
                 label={copied === "cherry" ? "Copied" : "Copy cherry-pick command"}
                 onClick={() => void copy(cherryPickCommand(oid), "cherry")}

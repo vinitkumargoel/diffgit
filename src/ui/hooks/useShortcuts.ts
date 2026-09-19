@@ -30,7 +30,7 @@ export const V2_SHORTCUTS = [
   { key: "h", description: "History of the active file" },
   { key: "g", description: "Bisect: mark good" },
   { key: "x", description: "Bisect: mark bad" },
-  { key: "e", description: "Export menu", pending: true },
+  { key: "e", description: "Export menu" },
   { key: "H", label: "Shift+H", description: "Show hidden files" },
 ] as const;
 

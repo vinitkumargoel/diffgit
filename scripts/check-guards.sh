@@ -45,6 +45,12 @@ guard "computeDiff called outside store.ts / workerClient" \
 guard "recompute() called outside store.ts / refresh/scheduler.ts" \
   grep -rnE "\.recompute\(" src/ui src/App.tsx src/main.tsx --include='*.ts' --include='*.tsx' --exclude='*.test.ts' --exclude='*.test.tsx' --exclude='store.ts' --exclude='scheduler.ts'
 
+# T11.10: the review snapshot is opened from a file:// URL, with no worker and no network. Its
+# generator is a string inside an app chunk, so scripts/check-dist.sh cannot see it; guard the
+# source instead. (The generated page is asserted the same way in export.test.tsx.)
+guard "network call or remote URL in the review snapshot generator" \
+  grep -nE "fetch\(|XMLHttpRequest|importScripts|https?://" src/ui/export/snapshot.ts
+
 # T7.3: every catch rethrows, converts to a typed error, or emits a warning; an empty body (even
 # across lines) is a swallowed failure. Comment-only bodies are allowed when they say why.
 guard "empty catch body in src/" \

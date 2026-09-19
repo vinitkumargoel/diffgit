@@ -107,7 +107,7 @@ describe("HelpDialog", () => {
     expect(keys).toContain("1");
     expect(keys).toContain("Shift+H");
     // the keys no task has wired yet say so instead of pretending to work (Design §14.7)
-    expect(screen.getAllByText("when available").length).toBe(
+    expect(screen.queryAllByText("when available").length).toBe(
       V2_SHORTCUTS.filter((s) => "pending" in s && s.pending).length,
     );
     for (const s of PRIVACY_SENTENCES)

@@ -15,6 +15,7 @@ import type {
   FileDiffPayload,
   FileStats,
   InvalidateScope,
+  PatchResult,
   PathHistoryOptions,
   ProbeTier,
   Progress,
@@ -26,6 +27,7 @@ import { blame as runBlame } from "./diff/blame";
 import { buildConflictPayload } from "./diff/conflict";
 import { loadSide, loadSides } from "./diff/contentLoader";
 import { type DiffComputation, DiffEngine } from "./diff/diffEngine";
+import { parsePatch } from "./diff/parsePatch";
 import { type PatchRow, patchText as renderPatch } from "./diff/patchText";
 import { detectRenames } from "./diff/renames";
 import { describeFile, HUGE_FILE_BYTES, LARGE_FILE_BYTES, toPayload } from "./diff/textDiff";
@@ -53,6 +55,7 @@ import { readReflog } from "./git/reflog";
 import { loadRefs } from "./git/refStore";
 import { resolveRevision } from "./git/revisions";
 import { countStashFiles, listStashes } from "./git/stash";
+import { listSubmodules } from "./git/submodules";
 import { listTags } from "./git/tags";
 import {
   CommitReader,
@@ -66,6 +69,7 @@ import {
   walkRequestKey,
 } from "./git/walk";
 import { type ScannerOptions, WorktreeScanner } from "./git/worktree";
+import { listWorktrees } from "./git/worktrees";
 import { computeInsights } from "./insights/insights";
 import { SECRET_ALLOWLIST_FILE } from "./scan/secretRules";
 import {
@@ -111,9 +115,11 @@ import {
   type SearchResult,
   type SecretFinding,
   type StashInfo,
+  type SubmoduleInfo,
   type TagInfo,
   type WalkPage,
   type WalkRequest,
+  type WorktreeInfo,
 } from "./types";
 import { CancelledError, pLimit, throwIfAborted } from "./util/concurrency";
 
@@ -286,7 +292,9 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       RepoSession.emitWarning(sink, w);
     });
     const t2 = performance.now();
-    const refs = await loadRefs(db, cfg);
+    // T10.12: `.jj/` is detected by `checkLayout` (it also raises the `JJ_COLOCATED` banner), and
+    // `loadRefs` needs it *before* it builds `headDisplay` — jj's detached HEAD is its working copy.
+    const refs = await loadRefs(db, cfg, { jj: layout.jj });
     RepoSession.emit(sink, { phase: "refs", durationMs: performance.now() - t2 });
     const t3 = performance.now();
     const capabilities = { ...layout.capabilities };
@@ -329,7 +337,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       opts.id ?? crypto.randomUUID(),
       opts,
     );
-    session.jj = await fs.exists("/.jj");
+    session.jj = layout.jj;
     session.hasCommitGraph =
       (await fs.exists("/.git/objects/info/commit-graph")) ||
       (await fs.exists("/.git/objects/info/commit-graphs/commit-graph-chain"));
@@ -387,7 +395,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     const t0 = performance.now();
     this.db.dropCaches(true);
     this.fs.invalidatePath("/.git");
-    this.refs = await this.withRootCheck(() => loadRefs(this.db, this.cfg));
+    this.refs = await this.withRootCheck(() => loadRefs(this.db, this.cfg, { jj: this.jj }));
     this.engine.updateRefs(this.refs);
     this.dropHistoryCaches();
     await this.refreshOperation();
@@ -1234,7 +1242,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   async summarise(): Promise<RepoSummary> {
     this.assertOpen();
     return this.single("summarise", async (signal) => {
-      const refs = await loadRefs(this.db, this.cfg);
+      const refs = await loadRefs(this.db, this.cfg, { jj: this.jj });
       const operation = await detectOperation(this.fs, this.db, refs.refs);
       const index = await this.currentIndex();
       const headTree = refs.headOid ? await this.db.flattenTree(refs.headOid) : null;
@@ -1337,6 +1345,41 @@ export class RepoSession implements Omit<EngineApi, "open"> {
         { oid: onto.oid, display: onto.display },
       );
     });
+  }
+
+  // ---- submodules, worktrees and patch parsing (T10.12) ---------------------------------------
+
+  /**
+   * Every gitlink at HEAD with its `.gitmodules` URL and the commit checked out under the picked
+   * folder (atlas tab 19). `dirty` is null — see `SubmoduleInfo`.
+   */
+  async listSubmodules(): Promise<SubmoduleInfo[]> {
+    this.assertOpen();
+    return this.single("listSubmodules", () =>
+      listSubmodules({ fs: this.fs, db: this.db }, this.refs.headOid),
+    );
+  }
+
+  /**
+   * `git worktree list`: the main checkout (`isThis`) followed by one entry per
+   * `.git/worktrees/<name>/`. Paths of linked checkouts are reported as recorded and never
+   * verified — they are outside the folder the File System Access API granted (atlas tab 19).
+   */
+  async listWorktrees(): Promise<WorktreeInfo[]> {
+    this.assertOpen();
+    return this.single("listWorktrees", () =>
+      listWorktrees({ fs: this.fs, db: this.db }, this.refs, this.root.name),
+    );
+  }
+
+  /**
+   * One unified diff as diff rows (T10.12, Design §14.6). Nothing here touches the repository —
+   * the same call answers without one through `PatchSession` — so an open diff is undisturbed and
+   * no generation changes. `NOT_A_PATCH` when the text is not a unified diff.
+   */
+  async parsePatch(text: string): Promise<PatchResult> {
+    this.assertOpen();
+    return this.single("parsePatch", async () => parsePatch(text));
   }
 
   /** A repo-root text file, or null when it does not exist (`.diffgitignore-secrets`). */

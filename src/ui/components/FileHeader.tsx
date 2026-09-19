@@ -1,7 +1,9 @@
 import { ChevronDown, ChevronRight, MoreHorizontal, UnfoldVertical } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { FileDiff } from "../../engine/types";
+import { EXPORT_LABELS } from "../export/exportModel";
 import type { CardMode } from "../store";
+import { useStore } from "../store";
 import { filePathOf } from "../treeModel";
 import { CardModeSwitch } from "./CardModeSwitch";
 import { RowStats, splitPath } from "./FileRow";
@@ -72,9 +74,11 @@ const COPIED_MS = 1500;
 /**
  * The header's `…` menu (Design §14.1 "never buttons in the chrome"): `Why is this file shown like
  * this` opens T11.4's explanation popover, `Copy path` is v1's copy button moved in here, and
- * `Export this file as .patch` is T11.10's and disabled until it ships.
+ * `Export this file as .patch` (T11.10) renders `patchText(generation, [id])` and saves it through
+ * the browser's download path, behind the same secret gate as the StatsRow menu.
  */
-function FileMenu({ path }: { path: string }) {
+function FileMenu({ path, id }: { path: string; id: string }) {
+  const requestExport = useStore((s) => s.requestExport);
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
   const [why, setWhy] = useState<PopoverAnchor | null>(null);
@@ -147,7 +151,13 @@ function FileMenu({ path }: { path: string }) {
             label={copied === "done" ? "Copied" : copied === "failed" ? "Copy failed" : "Copy path"}
             onClick={() => void copy()}
           />
-          <MenuItem label="Export this file as .patch" pending="T11.10" />
+          <MenuItem
+            label={EXPORT_LABELS["file-patch"]}
+            onClick={() => {
+              setOpen(false);
+              void requestExport({ kind: "file-patch", ids: [id] });
+            }}
+          />
         </div>
       )}
       {why && (
@@ -221,7 +231,7 @@ export function FileHeader({
         {mode !== undefined && onMode !== undefined && (
           <CardModeSwitch mode={mode} onMode={onMode} path={path} />
         )}
-        <FileMenu path={path} />
+        <FileMenu path={path} id={file.id} />
         <button
           type="button"
           className="btn btn-sm"
