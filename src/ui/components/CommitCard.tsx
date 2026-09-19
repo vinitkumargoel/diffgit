@@ -6,6 +6,7 @@ import { cherryPickCommand, formatCommitDate, formatSignature, shortOid } from "
 import { useStore } from "../store";
 import { RefChip } from "./CommitRow";
 import { LoadingSkeleton } from "./LoadingSkeleton";
+import { MenuItem } from "./MenuItem";
 import { Notice } from "./Notice";
 
 /** Lines of the commit message body shown before "Show more" (Design §14.5). */
@@ -19,30 +20,6 @@ function Fact({ term, children }: { term: string; children: ReactNode }) {
       <dt className="text-[11px] leading-5 text-muted">{term}</dt>
       <dd className="min-w-0 text-[12px] leading-5 text-ink">{children}</dd>
     </>
-  );
-}
-
-/** A `…` menu row; an action whose task has not shipped is disabled, never hidden. */
-function MenuItem({
-  label,
-  onClick,
-  pending,
-}: {
-  label: string;
-  onClick?: () => void;
-  pending?: string;
-}) {
-  return (
-    <button
-      type="button"
-      role="menuitem"
-      disabled={pending !== undefined}
-      title={pending === undefined ? undefined : `coming soon (${pending})`}
-      className="flex w-full items-center px-3 py-1.5 text-left text-[12.5px] leading-5 text-ink not-disabled:hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-50"
-      onClick={onClick}
-    >
-      {label}
-    </button>
   );
 }
 

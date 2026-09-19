@@ -34,6 +34,9 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
   const twoDot = useStore((s) =>
     s.diffSource ? s.diffSource.kind === "range" && !s.diffSource.threeDot : s.prefs.twoDot,
   );
+  // Design §14.1: in Branches (and, from T11.12, Insights) the StatsRow is replaced by the page's
+  // own header — same height, same border — so row 2 is not drawn twice.
+  const ownHeader = useStore((s) => s.mode === "branches");
   const tags = useStore((s) => s.tags);
   const stashes = useStore((s) => s.stashes);
 
@@ -53,7 +56,9 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
   };
 
   return (
-    <header className="shrink-0 border-b border-line text-[13px] leading-5 text-ink">
+    <header
+      className={`shrink-0 text-[13px] leading-5 text-ink ${ownHeader ? "" : "border-b border-line"}`}
+    >
       <div className="flex min-h-11 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface-raised px-3 py-1">
         <span className="flex items-center gap-1.5 text-sm font-semibold">
           <Logo size={20} className="rounded-[5px]" />
@@ -114,7 +119,7 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
         <PaletteButton />
         <ThemeToggle />
       </div>
-      <StatsRow />
+      {!ownHeader && <StatsRow />}
     </header>
   );
 }

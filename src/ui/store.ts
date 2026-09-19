@@ -28,6 +28,7 @@ import type { WarningCode } from "../engine/errors";
 import type {
   BlamePayload,
   BranchesSource,
+  BranchRow,
   CommitDetails,
   CommitSummary,
   DiffResult,
@@ -49,6 +50,7 @@ import type {
   WalkRequest,
 } from "../engine/types";
 import { BLAME_REVISIONS, blameCacheKey, PATH_HISTORY_PAGE, pathHistoryCacheKey } from "./blame";
+import { BRANCH_CELL_BATCH, type BranchCells, type BranchFilter } from "./branches";
 import type { CompareSpec } from "./compareHash";
 import { buildSource, isRefExpr, labelOf, revToSide, type SideRev, sideOf } from "./compareSource";
 import { getWorkerClient } from "./engineClient";
@@ -438,6 +440,29 @@ export interface BlameTarget {
   includeWorktree: boolean;
 }
 
+/**
+ * Branches-mode state (T11.7, Design §14.6). `rows` is `branchOverview()` — one row per ref with
+ * the expensive cells left null — and `cells` is what `branchCells()` has filled in since, keyed
+ * by full ref name, so the table can show every row immediately and let the counts arrive.
+ */
+export interface BranchesState {
+  rows: BranchRow[] | null;
+  loading: boolean;
+  error: UiError | null;
+  cells: Record<string, BranchCells>;
+  filter: BranchFilter;
+  query: string;
+}
+
+export const INITIAL_BRANCHES: BranchesState = {
+  rows: null,
+  loading: false,
+  error: null,
+  cells: {},
+  filter: "active",
+  query: "",
+};
+
 export interface StoreState {
   screen: Screen;
   repo: RepoInfo | null;
@@ -525,6 +550,8 @@ export interface StoreState {
   tags: TagInfo[] | null;
   /** Stashes for the picker's `Stashes` group; null = not listed yet (T11.2). */
   stashes: StashInfo[] | null;
+  /** Branches mode (T11.7, Design §14.6). */
+  branches: BranchesState;
 
   // actions
   openRepo(handle: unknown, opts?: OpenOptions): Promise<void>;
@@ -645,6 +672,25 @@ export interface StoreState {
   loadStack(): Promise<void>;
   /** CommitCard action `Compare with base…`: the range `base…commit` (Design §14.5). */
   compareCommitWithBase(oid: Oid): void;
+
+  // ---- Branches mode (T11.7, Design §14.6) ----
+  /** `branchOverview()`, once per repository; the cells stay null until `requestBranchCells`. */
+  loadBranches(): Promise<void>;
+  /**
+   * Fills the ahead/behind cells of the rows the table is showing, `BRANCH_CELL_BATCH` (50) at a
+   * time. `branchCells` is single-in-flight in the engine, so the names queue here and one drain
+   * loop serialises the batches — exactly as `requestCommitStats` does for the commit list.
+   */
+  requestBranchCells(fullNames: string[]): void;
+  /** The `Active | Stale > 90 d | Tags` control and the search box of Design §14.6. */
+  setBranchFilter(filter: BranchFilter): void;
+  setBranchQuery(query: string): void;
+  /** Clicking a row: walk that branch in History mode (Design §14.5 "the pickers … compare"). */
+  showBranchHistory(fullName: string): void;
+  /** Row action `Compare with <base>`: the base branch … this branch, in Files mode. */
+  compareBranchWithBase(fullName: string): void;
+  /** Tags table action `Compare with previous tag`: the range `prev…this`, in Files mode. */
+  compareTags(previous: TagInfo, tag: TagInfo): void;
 }
 
 let toastSeq = 0;
@@ -760,6 +806,38 @@ let pickerSources: Promise<void> | null = null;
  */
 const commitStatsQueue = new Set<Oid>();
 let commitStatsDraining = false;
+
+/** T11.7: the same rule for `branchCells` — the table's visible rows queue, one loop drains them. */
+const branchCellQueue = new Set<string>();
+let branchCellsDraining = false;
+
+/**
+ * T11.7: **the base branch**. It is chosen once and then remembered, but it is not a preference of
+ * its own: it is the base side of the pickers whenever that side is a plain branch (T11.5's
+ * `compareBase`, which `openRepo` seeds from the remembered `lastTarget` and every `Set as base`
+ * updates), and otherwise the repository's own default branch — `RepoRef.isDefault`, which the
+ * engine resolves per D8 (`refs/remotes/<remote>/HEAD`, then `main`, then `master`). One source of
+ * truth, remembered per repository by the mechanism that already remembers the compare pair.
+ */
+function baseRefOf(s: Pick<StoreState, "repo" | "compareBase">): RepoRef | null {
+  const repo = s.repo;
+  if (!repo) return null;
+  const chosen = s.compareBase ? findRef(repo, s.compareBase.expr) : null;
+  return chosen ?? repo.defaultRef ?? findRef(repo, "HEAD");
+}
+
+/** The base branch, for the page header and the row menu's label. */
+export function selectBranchBase(
+  s: Pick<StoreState, "repo" | "compareBase">,
+): { fullName: string; display: string } | null {
+  const ref = baseRefOf(s);
+  return ref ? { fullName: ref.fullName, display: ref.name } : null;
+}
+
+/** A tag as a comparison side. Never `branchRef`, so a tag pair is always a `RangeSource`. */
+function tagSide(tag: TagInfo): SideRev {
+  return { expr: tag.fullName, display: tag.name, oid: tag.targetOid, branchRef: null };
+}
 
 /** Only a v1 branch pair is remembered for the next open; a range is deep-linked by hash instead. */
 function withRef(src: BranchesSource, side: "source" | "target", ref: RepoRef): BranchesSource {
@@ -964,6 +1042,7 @@ export const useStore = create<StoreState>()((set, get) => {
     patchOnly: false,
     tags: null,
     stashes: null,
+    branches: INITIAL_BRANCHES,
 
     async openRepo(handle, opts = {}) {
       await get().closeRepo();
@@ -1129,9 +1208,11 @@ export const useStore = create<StoreState>()((set, get) => {
         patchOnly: false,
         tags: null,
         stashes: null,
+        branches: INITIAL_BRANCHES,
       });
       pickerSources = null;
       commitStatsQueue.clear();
+      branchCellQueue.clear();
     },
 
     setSource(refOrName) {
@@ -2002,6 +2083,93 @@ export const useStore = create<StoreState>()((set, get) => {
       });
       set((s) => ({ history: { ...s.history, selected: oid, rangeStart: null } }));
       void get().loadCommitDetails(oid);
+    },
+
+    // ---- Branches mode (T11.7, Design §14.6) ------------------------------------------------
+    async loadBranches() {
+      const { repo, branches } = get();
+      if (!repo || branches.loading || branches.rows !== null) return;
+      set((s) => ({ branches: { ...s.branches, loading: true, error: null } }));
+      try {
+        const rows = await client().branchOverview();
+        if (!get().repo) return;
+        set((s) => ({ branches: { ...s.branches, rows, loading: false } }));
+      } catch (e) {
+        const err = toUiError(e);
+        const stale =
+          err.code === "STALE" || err.code === "CANCELLED" || err.code === "WORKER_CRASHED";
+        set((s) => ({
+          branches: { ...s.branches, loading: false, error: stale ? null : err },
+        }));
+        if (stale) ignoreStale(e);
+      }
+    },
+
+    requestBranchCells(fullNames) {
+      const have = get().branches.cells;
+      for (const name of fullNames) if (!(name in have)) branchCellQueue.add(name);
+      if (branchCellsDraining || branchCellQueue.size === 0 || !get().repo) return;
+      branchCellsDraining = true;
+      void (async () => {
+        try {
+          while (branchCellQueue.size > 0 && get().repo) {
+            const batch = [...branchCellQueue].slice(0, BRANCH_CELL_BATCH);
+            for (const name of batch) branchCellQueue.delete(name);
+            const filled = await client().branchCells(batch);
+            if (!get().repo) return;
+            // A name the engine did not answer for (a ref that vanished under us) is recorded as
+            // "asked and unknown", so the table prints `—` instead of asking again for ever.
+            const cells: Record<string, BranchCells> = {};
+            for (const name of batch) {
+              cells[name] = filled[name] ?? { vsUpstream: null, vsDefault: null, merged: null };
+            }
+            set((s) => ({ branches: { ...s.branches, cells: { ...s.branches.cells, ...cells } } }));
+          }
+        } catch (e) {
+          // Superseded or stale: the rows keep their skeletons and the next render asks again.
+          ignoreStale(e);
+        } finally {
+          branchCellsDraining = false;
+        }
+      })();
+    },
+
+    setBranchFilter(filter) {
+      set((s) => ({ branches: { ...s.branches, filter } }));
+    },
+
+    setBranchQuery(query) {
+      set((s) => ({ branches: { ...s.branches, query } }));
+    },
+
+    showBranchHistory(fullName) {
+      const { repo, diffSource } = get();
+      if (!repo || !diffSource) return;
+      const ref = findRef(repo, fullName);
+      if (!ref) return;
+      // The compare side is the branch History walks (Design §14.1), so this is the picker's own
+      // action — hash, remembered pair and StatsRow follow exactly as if it had been chosen there.
+      applySides(sideOf(diffSource, "target", repo), revToSide(revisionOfRef(ref)));
+      set((s) => ({ history: { ...s.history, selected: null, rangeStart: null } }));
+      get().setMode("history");
+      void get().loadHistory(true);
+    },
+
+    compareBranchWithBase(fullName) {
+      const { repo, diffSource } = get();
+      if (!repo || !diffSource) return;
+      const ref = findRef(repo, fullName);
+      const base = baseRefOf(get());
+      if (!ref || !base || base.fullName === ref.fullName) return;
+      applySides(revToSide(revisionOfRef(base)), revToSide(revisionOfRef(ref)));
+      get().setMode("files");
+    },
+
+    compareTags(previous, tag) {
+      const { repo, diffSource } = get();
+      if (!repo || !diffSource) return;
+      applySides(tagSide(previous), tagSide(tag));
+      get().setMode("files");
     },
 
     async fileBytes(id, side) {

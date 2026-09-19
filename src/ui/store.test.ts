@@ -14,9 +14,11 @@ import { Lru } from "./lru";
 import { derivedKey, resetDerivedStore, setDerived } from "./persistence/derived";
 import {
   configurePersistence,
+  INITIAL_BRANCHES,
   INITIAL_HISTORY,
   INITIAL_STACK,
   isViewed,
+  selectBranchBase,
   selectCanIncludeWorktree,
   selectConflictKind,
   selectConflictKinds,
@@ -1016,5 +1018,134 @@ describe("store: blame and file history (T11.6)", () => {
     expect(s.blames).toEqual({});
     expect(s.pathHistories).toEqual({});
     expect(s.cardModes).toEqual({});
+  });
+});
+
+describe("store: Branches mode (T11.7)", () => {
+  const openHistoryRepo = () => useStore.getState().openRepo({ name: "history" }, { id: "hist" });
+  const openTagsRepo = () => useStore.getState().openRepo({ name: "tags" }, { id: "tagrepo" });
+
+  function range(src: DiffSource | null | undefined): RangeSource | null {
+    return src && src.kind === "range" ? src : null;
+  }
+
+  it("reads the overview once, with the expensive cells still empty", async () => {
+    await openHistoryRepo();
+    const spy = vi.spyOn(mock, "branchOverview");
+    await useStore.getState().loadBranches();
+    const b = useStore.getState().branches;
+    expect(b.rows?.map((r) => r.ref.name)).toEqual([
+      "main",
+      "preflight/a",
+      "preflight/base",
+      "topic",
+    ]);
+    expect(b.rows?.every((r) => r.vsUpstream === null && r.vsDefault === null)).toBe(true);
+    expect(b.cells).toEqual({});
+    expect(b.error).toBeNull();
+    // a second call is a no-op: the overview is read once per repository
+    await useStore.getState().loadBranches();
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("fills the cells in batches and never asks for one twice", async () => {
+    await openHistoryRepo();
+    await useStore.getState().loadBranches();
+    const names = (useStore.getState().branches.rows ?? []).map((r) => r.ref.fullName);
+    const spy = vi.spyOn(mock, "branchCells");
+    useStore.getState().requestBranchCells(names);
+    await vi.waitFor(() =>
+      expect(Object.keys(useStore.getState().branches.cells)).toHaveLength(names.length),
+    );
+    expect(spy.mock.calls[0]?.[0]).toEqual(names); // 4 rows fit in one 50-row batch
+    expect(useStore.getState().branches.cells["refs/heads/preflight/a"]?.vsDefault).toEqual({
+      ahead: 3,
+      behind: 55,
+      mergeBase: "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      capped: false,
+    });
+    expect(useStore.getState().branches.cells["refs/heads/topic"]?.merged).toBe(true);
+    spy.mockClear();
+    useStore.getState().requestBranchCells(names);
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("records a cell the engine did not answer for, so the row stops asking", async () => {
+    await openHistoryRepo();
+    useStore.getState().requestBranchCells(["refs/heads/gone"]);
+    await vi.waitFor(() =>
+      expect(useStore.getState().branches.cells["refs/heads/gone"]).toEqual({
+        vsUpstream: null,
+        vsDefault: null,
+        merged: null,
+      }),
+    );
+  });
+
+  it("clicking a row walks that branch in History mode", async () => {
+    await openHistoryRepo();
+    await useStore.getState().loadHistory();
+    expect(useStore.getState().history.commits[0]?.oid).toBe(
+      "822313f6746d7982943f0d59fc5e09b626769141",
+    );
+    useStore.getState().showBranchHistory("refs/heads/topic");
+    expect(useStore.getState().mode).toBe("history");
+    expect(branches(useStore.getState().diffSource)?.sourceRef).toBe("refs/heads/topic");
+    expect(useStore.getState().history.selected).toBeNull();
+    await vi.waitFor(() => expect(useStore.getState().history.loading).toBe(false));
+    // the list was thrown away and walked again from the new tip
+    expect(useStore.getState().history.commits.length).toBeGreaterThan(0);
+  });
+
+  it("`Compare with base` sets the source exactly as the pickers do", async () => {
+    await openHistoryRepo();
+    useStore.getState().compareBranchWithBase("refs/heads/topic");
+    const src = branches(useStore.getState().diffSource);
+    expect(useStore.getState().mode).toBe("files");
+    // two plain refs three-dot stay a v1 `BranchesSource` (compareSource's single rule)
+    expect(src).toMatchObject({ targetRef: "refs/heads/main", sourceRef: "refs/heads/topic" });
+    // the base is the base picker's side, so `Set as base` moves it
+    useStore.getState().setTarget("refs/heads/preflight/base");
+    useStore.getState().compareBranchWithBase("refs/heads/topic");
+    expect(branches(useStore.getState().diffSource)?.targetRef).toBe("refs/heads/preflight/base");
+    expect(selectBranchBase(useStore.getState())?.display).toBe("preflight/base");
+  });
+
+  it("defaults the base to the repository's own default branch", async () => {
+    await openHistoryRepo();
+    useStore.setState({ compareBase: null });
+    expect(selectBranchBase(useStore.getState())).toEqual({
+      fullName: "refs/heads/main",
+      display: "main",
+    });
+  });
+
+  it("`Compare with previous tag` builds the range prev…this", async () => {
+    await openTagsRepo();
+    await useStore.getState().loadPickerSources();
+    const all = useStore.getState().tags ?? [];
+    const v1 = all.find((t) => t.name === "v1.0.0");
+    const v02 = all.find((t) => t.name === "v0.2.0");
+    if (!v1 || !v02) throw new Error("recorded tags missing");
+    useStore.getState().compareTags(v02, v1);
+    expect(useStore.getState().mode).toBe("files");
+    // a tag is not a branch, so the pair is a RangeSource (contracts `<!-- T11.2 -->`)
+    expect(range(useStore.getState().diffSource)).toMatchObject({
+      from: "v0.2.0",
+      to: "v1.0.0",
+      fromRef: "refs/tags/v0.2.0",
+      toRef: "refs/tags/v1.0.0",
+      threeDot: true,
+    });
+  });
+
+  it("closeRepo drops the overview, its cells and the filter", async () => {
+    await openHistoryRepo();
+    await useStore.getState().loadBranches();
+    useStore.getState().setBranchFilter("stale");
+    useStore.getState().setBranchQuery("topic");
+    expect(useStore.getState().branches.rows).not.toBeNull();
+    await useStore.getState().closeRepo();
+    expect(useStore.getState().branches).toEqual(INITIAL_BRANCHES);
   });
 });

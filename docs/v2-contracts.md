@@ -501,6 +501,54 @@ newest = `--heat5`), which is its age quintile from five revisions up. New pure 
 `heatClass`, `ageOrder`, `heatOf`, `blameRows`, `revisionsLabel`, `cappedLine`, `renamedFromLabel`,
 `splitLines`, the two key builders and every label) owns the maths and the copy.
 
+<!-- T11.7 --> `StoreState` gained `branches: BranchesState` (`rows` = `branchOverview()` with
+the expensive cells still null, `cells` = what `branchCells()` has filled since, keyed by full ref
+name, plus `loading`, `error`, `filter` and `query`) and the actions `loadBranches()` (once per
+repository), `requestBranchCells(fullNames)`, `setBranchFilter`, `setBranchQuery`,
+`showBranchHistory(fullName)`, `compareBranchWithBase(fullName)` and `compareTags(previous, tag)`.
+`requestBranchCells` is the `requestCommitStats` rule again: `branchCells` is single-in-flight in
+the engine, so the table's rows queue in the store and one drain loop asks in batches of
+`BRANCH_CELL_BATCH` (50). A name the engine does not answer for is written back as
+`{ vsUpstream: null, vsDefault: null, merged: null }`, so a ref that vanished stops being asked for.
+`closeRepo` resets the slice to `INITIAL_BRANCHES` and clears the queue.
+
+**The base branch** is not a preference of its own. The new selector `selectBranchBase(s)` reads
+the base side of the pickers while that side is a plain ref (T11.5's `compareBase`, which `openRepo`
+seeds from the remembered `lastTarget` and every `Set as base` updates) and otherwise the
+repository's own default branch — `RepoRef.isDefault`, resolved by the engine per D8
+(`refs/remotes/<remote>/HEAD`, then `main`, then `master`). It is therefore chosen once and
+remembered per repository by the mechanism that already remembers the compare pair; no second
+source of truth. `compareBranchWithBase` and `compareTags` both go through `applySides`, so a row
+action sets the source exactly as the picker does, including `lastSource`/`lastTarget` and the
+`#compare=` hash.
+
+The **`vs base` column is `branchCells.vsDefault`** and its header prints the default branch's own
+name (`vs main`), because `BranchRow` carries exactly two comparisons and `branchCells` computes the
+second one against `RefSnapshot.defaultRef`. When `Set as base` has moved the base elsewhere, the
+column still says `vs <default>` and the row menu says `Compare with <base>`: each label names the
+branch it really used, and no number is printed that was not computed. `AheadBehind.capped` is
+rendered as a `≥` prefix on **both** counts (`≥4 ↑ ≥0 ↓`) with `CAPPED_TITLE` as the explanation —
+T10.5b makes both counts lower bounds once the divergence walk hits its cap.
+
+New pure module `src/ui/branches.ts` (`STALE_DAYS`/`STALE_MS`, `BRANCH_CELL_BATCH`, `BAR_W`,
+`BranchFilter`, `BRANCH_FILTERS`, `BranchCells`, `isStale`, `matchesBranch`, `sortBranches`,
+`filterBranches`, `countLabel`, `aheadBehindLabel`, `CAPPED_TITLE`, `barWidths`, `syncHint`,
+`SYNC_TITLE`, `NO_UPSTREAM`, `MERGED_TITLE`, `tagKindLabel`, `tagMessageLine`, `sortTags`,
+`previousTag`, `matchesTag`, `filterTags`, `overviewCounts` and the empty-state copy) owns the
+filters, the order and every string. Tags are ordered by **name**, numerically aware, newest first:
+git gives a lightweight tag no date of its own, so a date sort would order half the list by nothing;
+the Age column shows a tagger date for an annotated tag and `—` for a lightweight one. The tags
+table reads `StoreState.tags`, which `loadPickerSources()` already narrows to `targetType ===
+"commit"` (T10.5b), so a blob or tree tag is listed no more than `git log --all` walks it.
+
+Design §14.1's "in Branches and Insights the row is replaced by the page's own header" is now real:
+`TopBar` renders `StatsRow` only outside Branches mode and moves its own `border-b` with it, and
+`BranchesView`'s header is the same height, the same border and the same surface. `HISTORY_DEGRADED`
+is shown as one inline line above the table, driven by the rows themselves (`branchOverview` hands
+back a row with `lastCommit: null` for a tip it could not read) rather than by the warning, which
+`recompute()` replaces on the next diff. `MenuItem` moved out of `CommitCard.tsx` into
+`components/MenuItem.tsx` and gained a `disabled` + `title` pair, so both `…` menus share one row.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).
