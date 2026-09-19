@@ -110,7 +110,10 @@ export function WarningBanners() {
   const dismissWarning = useStore((s) => s.dismissWarning);
   const operation = useStore((s) => s.operation);
   const visible = warnings.filter(
-    (w) => !dismissed.has(w.code) && w.code !== "OPERATION_IN_PROGRESS",
+    // T11.6: `BLAME_CAPPED` belongs to one blame of one file, not to the repository, so the card
+    // prints it as a single inline line with a `Continue` button instead (Design §14, rule 2).
+    (w) =>
+      !dismissed.has(w.code) && w.code !== "OPERATION_IN_PROGRESS" && w.code !== "BLAME_CAPPED",
   );
   if (visible.length === 0 && operation === null) return null;
   return (

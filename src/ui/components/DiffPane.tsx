@@ -4,7 +4,7 @@ import type { FileDiff } from "../../engine/types";
 import { useShortcuts } from "../hooks/useShortcuts";
 import { onScrollRequest } from "../scrollBus";
 import { selectVisibleFiles, useStore } from "../store";
-import { FileCard } from "./FileCard";
+import { FileCard, hasCommittedSide } from "./FileCard";
 
 const HEADER_PX = 41;
 const ROW_PX = 20;
@@ -74,7 +74,17 @@ export function DiffPane({ initialRect }: { initialRect?: { width: number; heigh
     virtualizer.scrollToOffset(start + a.delta);
   }, [files, virtualizer]);
 
-  // `[` / `]` collapse / expand the active card (Plan §6.5)
+  // `[` / `]` collapse / expand the active card (Plan §6.5); `b` / `h` switch it between
+  // `Diff | Blame | History` (Design §14.7) and switch back when it is already there.
+  const setCardMode = useStore((s) => s.setCardMode);
+  const cardModes = useStore((s) => s.cardModes);
+  const toggleMode = (mode: "blame" | "history") => {
+    if (!activeFileId) return;
+    const file = files.find((f) => f.id === activeFileId);
+    if (!file || !hasCommittedSide(file)) return;
+    setCardMode(activeFileId, (cardModes[activeFileId] ?? "diff") === mode ? "diff" : mode);
+    setCollapsed(activeFileId, false);
+  };
   useShortcuts({
     "[": () => {
       if (activeFileId) setCollapsed(activeFileId, true);
@@ -82,6 +92,8 @@ export function DiffPane({ initialRect }: { initialRect?: { width: number; heigh
     "]": () => {
       if (activeFileId) setCollapsed(activeFileId, false);
     },
+    b: () => toggleMode("blame"),
+    h: () => toggleMode("history"),
   });
 
   return (

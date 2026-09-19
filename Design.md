@@ -93,6 +93,22 @@ Each is a `bg` / `fg` pair (light → dark). Border of a chip = its `fg` at 40 %
 
 Shiki themes `github-light` and `github-dark` (bundled, no network; T5.0 confirms the loader). No custom token colours.
 
+### 3.6 Age heat ramp (added by T11.6)
+
+One five-step ramp, oldest → newest, used by the blame gutter's 6 px age strip (§14.1 / atlas tab 02)
+and by the Insights activity heatmap (§14.6). `--heat1` is the **oldest** bucket and `--heat5` the
+newest, which is the direction the atlas mockup's own legend prints (`old → new`). The strip is
+decorative: every row states its commit, author and age in text as well, so the ramp never carries
+information on its own and needs no contrast ratio.
+
+| Token | Light | Dark |
+|---|---|---|
+| `--heat1` | `#dafbe1` | `#12261e` |
+| `--heat2` | `#aceebb` | `#1b4d2b` |
+| `--heat3` | `#6fdd8b` | `#2ea043` |
+| `--heat4` | `#2da44e` | `#3fb950` |
+| `--heat5` | `#116329` | `#56d364` |
+
 ## 4. Typography
 
 | Role | Stack | Size / line height | Weight |

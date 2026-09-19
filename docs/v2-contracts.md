@@ -398,6 +398,34 @@ appends. New pure module `src/ui/history.ts` (`laneX`, `laneColor`, `LANE_TOKENS
 `formatCommitDate`, `formatSignature`, `cherryPickCommand`, `shortOid`, the page sizes) owns the
 lane geometry and every string the list and the card show.
 
+<!-- T11.6 --> `StoreState.cardModes` is now live and gained `setCardMode(id, mode)`; the card
+control is rendered only when `hasCommittedSide(file)` (`FileCard`) — `oldOid !== null` or the
+`committed` layer — so an untracked-only file and a conflicted file (whose card is the three-way
+view) do not get it, per Design §14.1. `StoreState` also gained `blames: Record<string, BlameEntry>`
+(`loading | ready | error`, `ready` carrying the `maxRevisions` it was asked for) and
+`pathHistories: Record<string, PathHistoryState>` (`entries`, `cursor`, `loading`, `error`), keyed
+by the new pure helpers `blameCacheKey(oid, path, ignoreWhitespace)` and
+`pathHistoryCacheKey(oid, path, follow)` in `src/ui/blame.ts`. Actions `loadBlame(path, { at,
+ignoreWhitespace, maxRevisions? })` and `loadPathHistory(path, { at, follow, more? })`; both resolve
+what to ask at through the exported selector `blameTarget(s, at)` → `{ ref, oid, includeWorktree }`
+— the compare side of the current source (`RangeSource.toRef`/`toOid`, else `sourceRef` and its
+oid), or the given commit, in which case `includeWorktree` is false. `includeWorktree` is therefore
+**not** a control: it is the diff's own `includeWorktree` guarded by `isWorktreeSource`, so blame
+shows exactly the text the card shows. `ignoreWhitespace` **is** a control, the card-local
+`Ignore whitespace-only commits` checkbox (default on, Design §14.1), independent of the StatsRow's
+`prefs.ignoreWhitespace`, which is about the *diff*.
+`derivedKey.blame` gained a fourth argument and is now `blame:<repoId>:<oid>:<path>:<w|x>`; a blame
+is written there **only when it does not contain the working tree**, because the derived cache is
+keyed by a commit oid and only a commit fully determines such an answer. `BLAME_CAPPED` is filtered
+out of `WarningBanners` (like T11.3's `OPERATION_IN_PROGRESS`): the card prints it as one inline
+line with `Continue`, which re-asks with `maxRevisions + BLAME_REVISION_STEP` (400). Design gained
+**§3.6**, the five-step `--heat1..5` age ramp the atlas used but `src/index.css` had not defined;
+`blame.ts`'s `heatOf` spreads a revision's **age rank** across the five steps (oldest = `--heat1`,
+newest = `--heat5`), which is its age quintile from five revisions up. New pure module
+`src/ui/blame.ts` (`BLAME_REVISIONS`, `BLAME_REVISION_STEP`, `PATH_HISTORY_PAGE`, `HEAT_CLASS`,
+`heatClass`, `ageOrder`, `heatOf`, `blameRows`, `revisionsLabel`, `cappedLine`, `renamedFromLabel`,
+`splitLines`, the two key builders and every label) owns the maths and the copy.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).

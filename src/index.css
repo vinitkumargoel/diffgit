@@ -37,6 +37,13 @@
   --diff-ctx-num: #f6f8fa;
   --diff-empty: repeating-linear-gradient(-45deg, transparent 0 6px, #eaeef2 6px 7px);
 
+  /* §3.6 age heat ramp (blame gutter, Insights activity) */
+  --heat1: #dafbe1;
+  --heat2: #aceebb;
+  --heat3: #6fdd8b;
+  --heat4: #2da44e;
+  --heat5: #116329;
+
   /* §3.3 status squares */
   --status-m-bg: #fff8c5;
   --status-m-fg: #9a6700;
@@ -123,6 +130,12 @@
   --diff-ctx-num: #161b22;
   --diff-empty: repeating-linear-gradient(-45deg, transparent 0 6px, #1c2129 6px 7px);
 
+  --heat1: #12261e;
+  --heat2: #1b4d2b;
+  --heat3: #2ea043;
+  --heat4: #3fb950;
+  --heat5: #56d364;
+
   --status-m-bg: #2d2a16;
   --status-m-fg: #d29922;
   --status-a-bg: #12261e;
@@ -201,6 +214,12 @@
   --color-diff-hunk-bg: var(--diff-hunk-bg);
   --color-diff-hunk-ink: var(--diff-hunk-ink);
   --color-diff-ctx-num: var(--diff-ctx-num);
+
+  --color-heat-1: var(--heat1);
+  --color-heat-2: var(--heat2);
+  --color-heat-3: var(--heat3);
+  --color-heat-4: var(--heat4);
+  --color-heat-5: var(--heat5);
 
   --color-status-m-bg: var(--status-m-bg);
   --color-status-m-fg: var(--status-m-fg);

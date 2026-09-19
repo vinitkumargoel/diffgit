@@ -26,6 +26,7 @@ import {
 } from "../engine/diffSource";
 import type { WarningCode } from "../engine/errors";
 import type {
+  BlamePayload,
   BranchesSource,
   CommitDetails,
   CommitSummary,
@@ -35,6 +36,7 @@ import type {
   HiddenEntry,
   Oid,
   PathExplanation,
+  PathHistoryEntry,
   RangeSource,
   ReflogEntry,
   RepoInfo,
@@ -46,6 +48,7 @@ import type {
   TagInfo,
   WalkRequest,
 } from "../engine/types";
+import { BLAME_REVISIONS, blameCacheKey, PATH_HISTORY_PAGE, pathHistoryCacheKey } from "./blame";
 import type { CompareSpec } from "./compareHash";
 import { buildSource, isRefExpr, labelOf, revToSide, type SideRev, sideOf } from "./compareSource";
 import { getWorkerClient } from "./engineClient";
@@ -60,6 +63,7 @@ import {
   spanRange,
 } from "./history";
 import { Lru } from "./lru";
+import { derivedKey, getDerived, setDerived } from "./persistence/derived";
 import { revisionOfRef } from "./refGroups";
 import {
   buildTree,
@@ -399,6 +403,41 @@ export const INITIAL_STACK: StackState = {
   capped: false,
 };
 
+/**
+ * T11.6: one blame, keyed by `blameCacheKey(oid, path, -w)`. `maxRevisions` is what the answer was
+ * asked for, so `Continue` can tell "capped at 200" from "already re-asked for 600".
+ */
+export type BlameEntry =
+  | { status: "loading" }
+  | { status: "ready"; data: BlamePayload; maxRevisions: number }
+  | { status: "error"; error: UiError };
+
+/** T11.6: one file history, keyed by `pathHistoryCacheKey(oid, path, follow)`. */
+export interface PathHistoryState {
+  entries: PathHistoryEntry[];
+  /** Opaque continuation token; null = the whole history is listed. */
+  cursor: string | null;
+  loading: boolean;
+  error: UiError | null;
+}
+
+export const INITIAL_PATH_HISTORY: PathHistoryState = {
+  entries: [],
+  cursor: null,
+  loading: false,
+  error: null,
+};
+
+/** What `blame` / `pathHistory` are asked at: the compare side, or an explicit commit. */
+export interface BlameTarget {
+  /** Revision expression handed to the engine (a full ref name, `HEAD`, or an oid). */
+  ref: string;
+  /** The commit it resolves to — the immutable half of every cache key. */
+  oid: Oid;
+  /** True only when the working tree is part of the comparison *and* no commit was pinned. */
+  includeWorktree: boolean;
+}
+
 export interface StoreState {
   screen: Screen;
   repo: RepoInfo | null;
@@ -439,6 +478,10 @@ export interface StoreState {
   historyTab: HistoryTab;
   /** `Diff | Blame | History` per file id (T11.6). */
   cardModes: Record<string, CardMode>;
+  /** T11.6: `blame()` answers, keyed by `blameCacheKey(oid, path, -w)`. */
+  blames: Record<string, BlameEntry>;
+  /** T11.6: `pathHistory()` pages, keyed by `pathHistoryCacheKey(oid, path, follow)`. */
+  pathHistories: Record<string, PathHistoryState>;
   /**
    * The merge / rebase / cherry-pick / revert / bisect in progress (T11.3, Design §14.3). Mirrors
    * `repo.operation`, which `reloadRefs()` refreshes on every git-side refresh tick, so the banner
@@ -554,6 +597,22 @@ export interface StoreState {
   setMode(mode: AppMode): void;
   /** Opens or closes the command palette (`⌘K` / `Ctrl+K`, the row 1 icon button). */
   setPalette(open: boolean): void;
+  /** T11.6: which of `Diff | Blame | History` this card's body shows (Design §14.1). */
+  setCardMode(id: string, mode: CardMode): void;
+  /**
+   * T11.6: blame one path at `opts.at` (a commit) or, with `at: null`, at the compare side.
+   * Memoised per key in `blames` and, while the answer does not contain the working tree, in the
+   * `diffgit-derived` IndexedDB store. A `STALE` / `CANCELLED` rejection is dropped silently.
+   */
+  loadBlame(
+    path: string,
+    opts: { at: Oid | null; ignoreWhitespace: boolean; maxRevisions?: number },
+  ): Promise<void>;
+  /** T11.6: one page of `pathHistory`; `more` appends the next page instead of starting over. */
+  loadPathHistory(
+    path: string,
+    opts: { at: Oid | null; follow: boolean; more?: boolean },
+  ): Promise<void>;
 
   // ---- History mode (T11.5, Design §14.5) ----
   /** `Commits | Stack | Reflog` in the History sidebar. */
@@ -658,6 +717,29 @@ function client(): WorkerClient {
     });
   }
   return c;
+}
+
+/**
+ * T11.6: what `blame` / `pathHistory` are asked at. With `at` set (the History-mode "Blame here"
+ * action, or the popover's "Blame at parent") it is that commit and the working tree is out of the
+ * picture; otherwise it is the compare side of the current source, which is also the side whose
+ * text the card already shows.
+ */
+export function blameTarget(
+  s: Pick<StoreState, "diffSource" | "repo">,
+  at: Oid | null = null,
+): BlameTarget | null {
+  const { diffSource, repo } = s;
+  if (at !== null) return { ref: at, oid: at, includeWorktree: false };
+  if (!diffSource || !repo) return null;
+  const includeWorktree = diffSource.includeWorktree && isWorktreeSource(diffSource, repo);
+  if (diffSource.kind === "range") {
+    return { ref: diffSource.toRef, oid: diffSource.toOid, includeWorktree };
+  }
+  const { sourceRef } = sourceRefs(diffSource);
+  const oid = sourceRef === "HEAD" ? repo.headOid : (findRef(repo, sourceRef)?.oid ?? repo.headOid);
+  // An unborn HEAD has no commit to blame or to key a cache entry by.
+  return oid === null ? null : { ref: sourceRef, oid, includeWorktree };
 }
 
 function findRef(repo: RepoInfo, nameOrRef: string): RepoRef | null {
@@ -864,6 +946,8 @@ export const useStore = create<StoreState>()((set, get) => {
     mode: "files",
     historyTab: "commits",
     cardModes: {},
+    blames: {},
+    pathHistories: {},
     operation: null,
     reflog: null,
     conflicts: {},
@@ -1027,6 +1111,8 @@ export const useStore = create<StoreState>()((set, get) => {
         mode: "files",
         historyTab: "commits",
         cardModes: {},
+        blames: {},
+        pathHistories: {},
         operation: null,
         reflog: null,
         conflicts: {},
@@ -1546,6 +1632,125 @@ export const useStore = create<StoreState>()((set, get) => {
 
     setPalette(open) {
       set({ palette: open });
+    },
+
+    setCardMode(id, cardMode) {
+      set((s) =>
+        s.cardModes[id] === cardMode ? {} : { cardModes: { ...s.cardModes, [id]: cardMode } },
+      );
+    },
+
+    async loadBlame(path, opts) {
+      const s = get();
+      const target = blameTarget(s, opts.at);
+      if (!target || !s.repo) return;
+      const max = opts.maxRevisions ?? BLAME_REVISIONS;
+      const key = blameCacheKey(target.oid, path, opts.ignoreWhitespace);
+      const existing = s.blames[key];
+      if (existing?.status === "loading") return;
+      if (existing?.status === "ready" && existing.maxRevisions >= max) return;
+      set((cur) => ({ blames: { ...cur.blames, [key]: { status: "loading" } } }));
+      // The derived cache is keyed by a commit oid, so it may only hold answers that a commit fully
+      // determines: a blame that carries working-tree lines is not one of those.
+      const cacheable = !target.includeWorktree && s.repoId !== null;
+      const derived = cacheable
+        ? derivedKey.blame(s.repoId as string, target.oid, path, opts.ignoreWhitespace)
+        : null;
+      if (derived !== null) {
+        const hit = await getDerived<{ data: BlamePayload; maxRevisions: number }>(derived);
+        if (hit && hit.maxRevisions >= max) {
+          if (get().blames[key]?.status !== "loading") return;
+          set((cur) => ({
+            blames: {
+              ...cur.blames,
+              [key]: { status: "ready", data: hit.data, maxRevisions: hit.maxRevisions },
+            },
+          }));
+          return;
+        }
+      }
+      try {
+        const data = await client().blame(target.ref, path, {
+          ignoreWhitespace: opts.ignoreWhitespace,
+          includeWorktree: target.includeWorktree,
+          maxRevisions: max,
+        });
+        if (!get().repo) return;
+        set((cur) => ({
+          blames: { ...cur.blames, [key]: { status: "ready", data, maxRevisions: max } },
+        }));
+        if (derived !== null) void setDerived(derived, { data, maxRevisions: max });
+      } catch (e) {
+        const err = toUiError(e);
+        if (err.code === "STALE" || err.code === "CANCELLED" || err.code === "WORKER_CRASHED") {
+          // A superseded blame is normal (one in flight per method): drop the placeholder and let
+          // the card ask again rather than showing a failure the user did not cause.
+          set((cur) => {
+            const { [key]: dropped, ...rest } = cur.blames;
+            return dropped?.status === "loading" ? { blames: rest } : {};
+          });
+          return;
+        }
+        set((cur) => ({ blames: { ...cur.blames, [key]: { status: "error", error: err } } }));
+      }
+    },
+
+    async loadPathHistory(path, opts) {
+      const s = get();
+      const target = blameTarget(s, opts.at);
+      if (!target || !s.repo) return;
+      const key = pathHistoryCacheKey(target.oid, path, opts.follow);
+      const existing = s.pathHistories[key];
+      if (existing?.loading) return;
+      if (!opts.more && existing && existing.entries.length > 0) return;
+      if (opts.more && existing && existing.cursor === null) return;
+      const cursor = opts.more ? (existing?.cursor ?? undefined) : undefined;
+      set((cur) => ({
+        pathHistories: {
+          ...cur.pathHistories,
+          [key]: {
+            ...(cur.pathHistories[key] ?? INITIAL_PATH_HISTORY),
+            loading: true,
+            error: null,
+          },
+        },
+      }));
+      try {
+        const page = await client().pathHistory(target.ref, path, {
+          follow: opts.follow,
+          limit: PATH_HISTORY_PAGE,
+          ...(cursor === undefined ? {} : { cursor }),
+        });
+        if (!get().repo) return;
+        set((cur) => {
+          const before = cur.pathHistories[key] ?? INITIAL_PATH_HISTORY;
+          return {
+            pathHistories: {
+              ...cur.pathHistories,
+              [key]: {
+                entries: cursor === undefined ? page.entries : [...before.entries, ...page.entries],
+                cursor: page.cursor,
+                loading: false,
+                error: null,
+              },
+            },
+          };
+        });
+      } catch (e) {
+        const err = toUiError(e);
+        const stale =
+          err.code === "STALE" || err.code === "CANCELLED" || err.code === "WORKER_CRASHED";
+        set((cur) => {
+          const before = cur.pathHistories[key] ?? INITIAL_PATH_HISTORY;
+          return {
+            pathHistories: {
+              ...cur.pathHistories,
+              [key]: { ...before, loading: false, error: stale ? null : err },
+            },
+          };
+        });
+        if (stale) ignoreStale(e);
+      }
     },
 
     setHistoryTab(tab) {

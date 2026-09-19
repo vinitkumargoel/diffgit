@@ -196,8 +196,8 @@ describe("prefs", () => {
 
 describe("derived cache (T11.1)", () => {
   it("round-trips a value, reports its size and clears", async () => {
-    const key = derivedKey.blame("r1", "a".repeat(40), "src/index.ts");
-    expect(key).toBe(`blame:r1:${"a".repeat(40)}:src/index.ts`);
+    const key = derivedKey.blame("r1", "a".repeat(40), "src/index.ts", false);
+    expect(key).toBe(`blame:r1:${"a".repeat(40)}:src/index.ts:x`);
     expect(await getDerived(key)).toBeNull(); // a miss is null, never a throw
     await setDerived(key, { lines: [1, 2, 3] });
     expect(await getDerived<{ lines: number[] }>(key)).toEqual({ lines: [1, 2, 3] });
@@ -215,6 +215,8 @@ describe("derived cache (T11.1)", () => {
   it("keys name every cached kind (docs/v2-contracts.md § Persistence)", () => {
     const oid = "b".repeat(40);
     expect(derivedKey.history("r1", oid, "a/b.ts")).toBe(`history:r1:${oid}:a/b.ts`);
+    // T11.6: `-w` is a different blame, so it is a different key
+    expect(derivedKey.blame("r1", oid, "a/b.ts", true)).toBe(`blame:r1:${oid}:a/b.ts:w`);
     expect(derivedKey.insights("r1", oid, "90d")).toBe(`insights:r1:${oid}:90d`);
     expect(derivedKey.summary("r1")).toBe("summary:r1");
     expect(derivedKey.bisect("r1")).toBe("bisect:r1");

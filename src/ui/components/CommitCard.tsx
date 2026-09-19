@@ -89,6 +89,18 @@ export function CommitCard({ oid }: { oid: string }) {
     };
   }, [menu]);
 
+  /**
+   * T11.6 / Design §14.5: show this commit and put every one of its file cards into Blame mode.
+   * Selecting the commit makes the source `parent…commit`, so the blame each card then asks for is
+   * a blame *at this commit* — which is what "Blame here" means.
+   */
+  const blameHere = async () => {
+    setMenu(false);
+    await showCommit(oid);
+    const { diff, setCardMode } = useStore.getState();
+    for (const f of diff?.files ?? []) setCardMode(f.id, "blame");
+  };
+
   const copy = async (text: string, what: "sha" | "cherry") => {
     if (timer.current) clearTimeout(timer.current);
     try {
@@ -250,7 +262,7 @@ export function CommitCard({ oid }: { oid: string }) {
               />
               <MenuItem label="Bisect: mark good" pending="T11.13" />
               <MenuItem label="Bisect: mark bad" pending="T11.13" />
-              <MenuItem label="Blame here" pending="T11.6" />
+              <MenuItem label="Blame here" onClick={() => void blameHere()} />
             </div>
           )}
         </div>

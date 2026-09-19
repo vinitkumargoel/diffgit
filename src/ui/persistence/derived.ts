@@ -31,7 +31,12 @@ export function resetDerivedStore(name = "diffgit-derived"): void {
 
 /** Key builders — the only place the key format is written down. */
 export const derivedKey = {
-  blame: (repoId: string, oid: Oid, path: string) => `blame:${repoId}:${oid}:${path}`,
+  /**
+   * T11.6 added the `-w` flag: `blame -w` is a different question with a different answer
+   * (contracts `<!-- T10.6 -->`), so the two must not share a key.
+   */
+  blame: (repoId: string, oid: Oid, path: string, ignoreWhitespace: boolean) =>
+    `blame:${repoId}:${oid}:${path}:${ignoreWhitespace ? "w" : "x"}`,
   history: (repoId: string, oid: Oid, path: string) => `history:${repoId}:${oid}:${path}`,
   insights: (repoId: string, tipOid: Oid, period: string) =>
     `insights:${repoId}:${tipOid}:${period}`,

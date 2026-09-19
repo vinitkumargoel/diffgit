@@ -122,6 +122,13 @@ const AHEAD_BEHIND: Record<string, [string, string][]> = {
 };
 
 /** Replaces the operation's real mtime with the fixed clock so re-recording is a no-op. */
+/** A record with its keys in a fixed order, so a re-record is a byte-for-byte no-op. */
+function sortKeys<T>(record: Record<string, T>): Record<string, T> {
+  const out: Record<string, T> = {};
+  for (const key of Object.keys(record).sort()) out[key] = record[key] as T;
+  return out;
+}
+
 function pinStartedAt(op: RepoOperation | null): RepoOperation | null {
   return op && op.startedAt !== undefined ? { ...op, startedAt: FIXED_COMPUTED_AT } : op;
 }
@@ -216,7 +223,10 @@ async function record(name: string, v2: boolean): Promise<void> {
     ];
     const commits: Record<Oid, CommitDetails> = {};
     for (const oid of walkedOids.slice(0, 12)) commits[oid] = await session.commitDetails(oid);
-    const commitStats = await session.commitStats(walkedOids);
+    // The engine answers `commitStats` in whatever order its batches finished, which made a second
+    // `bun run record` rewrite the same numbers under different keys (T11.6). Sorting the keys here
+    // is what makes the recording byte-stable.
+    const commitStats = sortKeys(await session.commitStats(walkedOids));
     const branches: BranchRow[] = await session.branchOverview();
     const cells = await session.branchCells(branches.map((b) => b.ref.fullName));
     for (const row of branches) Object.assign(row, cells[row.ref.fullName] ?? {});

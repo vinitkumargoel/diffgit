@@ -1,3 +1,4 @@
+import "fake-indexeddb/auto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   BranchesSource,
@@ -6,8 +7,11 @@ import type {
   RangeSource,
   RepoInfo,
 } from "../engine/types";
+import historyInfo from "../test/recorded/history.repoinfo.json";
 import basicInfo from "../test/recorded/showcase.repoinfo.json";
+import { blameCacheKey, pathHistoryCacheKey } from "./blame";
 import { Lru } from "./lru";
+import { derivedKey, resetDerivedStore, setDerived } from "./persistence/derived";
 import {
   configurePersistence,
   INITIAL_HISTORY,
@@ -31,6 +35,7 @@ import { viewedKey } from "./viewedKey";
 import { createMockWorkerClient, type MockWorkerClient } from "./workerClient.mock";
 
 let mock: MockWorkerClient;
+let derivedSeq = 0;
 /** Narrows the store's DiffSource to the branch pair these tests always build (T10.1 union). */
 function branches(src: DiffSource | null | undefined): BranchesSource | null {
   return src && src.kind === "branches" ? src : null;
@@ -42,6 +47,9 @@ beforeEach(() => {
   mock = createMockWorkerClient();
   setStoreClient(mock);
   useStore.setState(initial, true);
+  // T11.6 writes blames into `diffgit-derived`; a fresh database per case keeps them apart.
+  derivedSeq++;
+  resetDerivedStore(`store-derived-${derivedSeq}`);
 });
 afterEach(() => {
   setStoreClient(null);
@@ -903,5 +911,109 @@ describe("store: History mode (T11.5)", () => {
     expect(s.commitStats).toEqual({});
     expect(s.stack).toEqual(INITIAL_STACK);
     expect(s.compareBase).toBeNull();
+  });
+});
+
+describe("store: blame and file history (T11.6)", () => {
+  const openHistoryRepo = () => useStore.getState().openRepo({ name: "history" }, { id: "hist" });
+  const HOT = "src/hot.txt";
+  const RENAMED = "src/renamed-to.txt";
+  const MAIN = (historyInfo as unknown as RepoInfo).refs.find(
+    (r) => r.fullName === "refs/heads/main",
+  )?.oid as string;
+
+  it("blames the compare side, keyed by commit, path and `-w`", async () => {
+    await openHistoryRepo();
+    const spy = vi.spyOn(mock, "blame");
+    await useStore.getState().loadBlame(HOT, { at: null, ignoreWhitespace: true });
+    const key = blameCacheKey(MAIN, HOT, true);
+    const entry = useStore.getState().blames[key];
+    expect(entry?.status).toBe("ready");
+    expect(entry?.status === "ready" && entry.data.lines).toHaveLength(60);
+    expect(spy).toHaveBeenCalledWith(
+      "refs/heads/main",
+      HOT,
+      // the `history` fixture compares main with the working tree on top of it
+      { ignoreWhitespace: true, includeWorktree: true, maxRevisions: 200 },
+    );
+    // a second ask for the same key is answered from the store, not the worker
+    await useStore.getState().loadBlame(HOT, { at: null, ignoreWhitespace: true });
+    expect(spy).toHaveBeenCalledTimes(1);
+    // `-w` off is a different key and a second call
+    await useStore.getState().loadBlame(HOT, { at: null, ignoreWhitespace: false });
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(useStore.getState().blames[blameCacheKey(MAIN, HOT, false)]?.status).toBe("ready");
+  });
+
+  it("a derived-cache hit skips the worker call", async () => {
+    await openHistoryRepo();
+    // the working tree is not part of an immutable answer, so the cache only applies without it
+    useStore.getState().setIncludeWorktree(false);
+    await vi.waitFor(() => expect(useStore.getState().diff?.source.includeWorktree).toBe(false));
+    const cached = { lines: [], commits: {}, path: HOT, ref: "x", revisions: 7, capped: false };
+    await setDerived(derivedKey.blame("hist", MAIN, HOT, true), {
+      data: cached,
+      maxRevisions: 200,
+    });
+    const spy = vi.spyOn(mock, "blame");
+    await useStore.getState().loadBlame(HOT, { at: null, ignoreWhitespace: true });
+    expect(spy).not.toHaveBeenCalled();
+    const entry = useStore.getState().blames[blameCacheKey(MAIN, HOT, true)];
+    expect(entry?.status === "ready" && entry.data.revisions).toBe(7);
+  });
+
+  it("`Continue` re-asks with a higher cap; a cached answer below the cap does not count", async () => {
+    await openHistoryRepo();
+    const spy = vi.spyOn(mock, "blame");
+    await useStore.getState().loadBlame(HOT, { at: null, ignoreWhitespace: true });
+    await useStore
+      .getState()
+      .loadBlame(HOT, { at: null, ignoreWhitespace: true, maxRevisions: 600 });
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy.mock.calls[1]?.[2]).toMatchObject({ maxRevisions: 600 });
+  });
+
+  it("blames an explicit commit without the working tree", async () => {
+    await openHistoryRepo();
+    const spy = vi.spyOn(mock, "blame");
+    const oid = "a73418042de715a7bef7e9bc59a8a2fadd8eb920";
+    await useStore.getState().loadBlame(HOT, { at: oid, ignoreWhitespace: false });
+    expect(spy).toHaveBeenCalledWith(oid, HOT, {
+      ignoreWhitespace: false,
+      includeWorktree: false,
+      maxRevisions: 200,
+    });
+    expect(useStore.getState().blames[blameCacheKey(oid, HOT, false)]?.status).toBe("ready");
+  });
+
+  it("pages the file history, follows renames and stops when the cursor runs out", async () => {
+    await openHistoryRepo();
+    await useStore.getState().loadPathHistory(RENAMED, { at: null, follow: true });
+    const key = pathHistoryCacheKey(MAIN, RENAMED, true);
+    let state = useStore.getState().pathHistories[key];
+    expect(state?.entries).toHaveLength(4);
+    expect(state?.cursor).toBeNull();
+    expect(state?.entries.some((e) => e.renamedFrom !== null)).toBe(true);
+    // `Load more` on an exhausted list is a no-op
+    const spy = vi.spyOn(mock, "pathHistory");
+    await useStore.getState().loadPathHistory(RENAMED, { at: null, follow: true, more: true });
+    expect(spy).not.toHaveBeenCalled();
+    // follow off is its own key and its own (shorter) list
+    await useStore.getState().loadPathHistory(RENAMED, { at: null, follow: false });
+    state = useStore.getState().pathHistories[pathHistoryCacheKey(MAIN, RENAMED, false)];
+    expect(state?.entries).toHaveLength(2);
+  });
+
+  it("closeRepo drops the blames and the file histories", async () => {
+    await openHistoryRepo();
+    await useStore.getState().loadBlame(HOT, { at: null, ignoreWhitespace: true });
+    await useStore.getState().loadPathHistory(RENAMED, { at: null, follow: true });
+    useStore.getState().setCardMode(HOT, "blame");
+    expect(useStore.getState().cardModes[HOT]).toBe("blame");
+    await useStore.getState().closeRepo();
+    const s = useStore.getState();
+    expect(s.blames).toEqual({});
+    expect(s.pathHistories).toEqual({});
+    expect(s.cardModes).toEqual({});
   });
 });

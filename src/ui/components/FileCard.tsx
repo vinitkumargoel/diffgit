@@ -4,13 +4,15 @@ import type { FileDiffPayload } from "../../engine/api";
 import type { FileDiff } from "../../engine/types";
 import { hasCollapsedContext } from "../diff/toHunkData";
 import { describeError, errorReport, type UiError } from "../errors";
-import { isViewed, selectConflictKind, selectFileDiff, useStore } from "../store";
+import { type CardMode, isViewed, selectConflictKind, selectFileDiff, useStore } from "../store";
 import { filePathOf } from "../treeModel";
 import { BinaryNotice, RawTextView, rawSideFor, useRawText } from "./BinaryNotice";
+import { BlameBody } from "./BlameBody";
 import { ConflictBody } from "./ConflictBody";
 import { ConflictTag } from "./ConflictTag";
 import { DiffBody } from "./DiffBody";
 import { FileHeader } from "./FileHeader";
+import { FileHistoryBody } from "./FileHistoryBody";
 import { ImageDiff } from "./ImageDiff";
 import { renderInline } from "./InlineText";
 import { LargeFileGate } from "./LargeFileGate";
@@ -179,6 +181,17 @@ function changedLines(stats: FileDiff["stats"]): string {
 }
 
 /**
+ * Design §14.1: `Diff | Blame | History` is rendered "only when the file has a committed side
+ * (`oldOid` or `newOid` reachable from a commit; untracked-only files do not get it)". An
+ * untracked file has no `oldOid` and is in no committed layer, so there is nothing to walk back
+ * through — and a conflicted file's card is the three-way view, which has no third mode.
+ */
+export function hasCommittedSide(file: FileDiff): boolean {
+  if (file.layers.includes("conflict")) return false;
+  return file.oldOid !== null || file.layers.includes("committed");
+}
+
+/**
  * One file (Design §7.5): sticky header + lazily loaded body. Loads its diff when mounted by
  * the virtualiser (DiffPane keeps ±1 viewport of cards mounted) and cancels on unmount.
  */
@@ -195,6 +208,9 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
   const setCollapsed = useStore((s) => s.setCollapsed);
   const toggleViewed = useStore((s) => s.toggleViewed);
   const setPref = useStore((s) => s.setPref);
+  const committed = hasCommittedSide(file);
+  const cardMode: CardMode = useStore((s) => (committed ? (s.cardModes[id] ?? "diff") : "diff"));
+  const setCardMode = useStore((s) => s.setCardMode);
 
   const [genOpen, setGenOpen] = useState(false);
   const gated = !!file.generated && !genOpen;
@@ -202,7 +218,8 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
   // so the card loads `conflict()` (inside ConflictBody) instead of `fileDiff()`.
   const conflict = file.layers.includes("conflict");
   const conflictKind = useStore((s) => selectConflictKind(s, id));
-  const wantsBody = !collapsed && !gated && !conflict;
+  // Blame needs the card's text, which is the diff payload's; the file-history list does not.
+  const wantsBody = !collapsed && !gated && !conflict && cardMode !== "history";
   useEffect(() => {
     if (wantsBody && !entry) void loadFileDiff(id);
   }, [wantsBody, entry, id, loadFileDiff]);
@@ -285,7 +302,9 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
 
   let body: ReactNode = null;
   if (!collapsed) {
-    if (conflict) {
+    if (cardMode === "history" && committed) {
+      body = <FileHistoryBody file={file} />;
+    } else if (conflict) {
       body = <ConflictBody file={file} />;
     } else if (gated) {
       body = (
@@ -301,6 +320,14 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
       body = <LoadingSkeleton />;
     } else if (entry.status === "error") {
       body = <LoadErrorNotice file={file} error={entry.error} />;
+    } else if (cardMode === "blame" && committed) {
+      body = (
+        <BlameBody
+          file={file}
+          text={entry.data.newText ?? entry.data.oldText}
+          language={entry.data.language}
+        />
+      );
     } else {
       body = renderReady(entry.data);
     }
@@ -325,6 +352,7 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
         onToggleViewed={() => toggleViewed(id)}
         onExpandAll={canExpandAll ? () => setExpandAllToken((t) => t + 1) : undefined}
         tag={conflict ? <ConflictTag kind={conflictKind} /> : undefined}
+        {...(committed ? { mode: cardMode, onMode: (m: CardMode) => setCardMode(id, m) } : {})}
       />
       {body}
     </article>
