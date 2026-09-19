@@ -268,6 +268,31 @@ record_preflight_outcome() {
     fi
     rm -rf "$tmp"
   done
+
+  record_preflight_todo
+}
+
+# T10.11: the todo list `git rebase -i main` itself generates for preflight/a, so `PreflightResult.todo`
+# is graded against git's own text rather than against this repository's idea of it. The sequence
+# editor copies the file out and exits non-zero, which makes git abort before anything is replayed —
+# and the clone is thrown away either way, so the fixture is never touched.
+#
+# git ≥ 2.46 writes `pick <sha> # <subject>`; the `# ` is git commenting the oneline out, and the
+# engine emits the `pick <sha7> <subject>` form docs/v2-contracts.md fixes (which every git parses).
+# The test strips an optional `# ` before comparing, so the oracle survives both spellings.
+record_preflight_todo() {
+  local src="$FIX/history" out="$FIX/history/expected/preflight-todo.txt"
+  local tmp="$FIX/_tmp-preflight" ed="$FIX/_tmp-seq-editor.sh" todo="$FIX/_tmp-todo.txt"
+  rm -rf "$tmp"; rm -f "$todo"
+  G clone -q --no-hardlinks --branch preflight/a "$src" "$tmp" 2>/dev/null
+  G -C "$tmp" branch -q -f main origin/main
+  printf '#!/bin/sh\ncp "$1" "%s"\nexit 1\n' "$todo" > "$ed"
+  chmod +x "$ed"
+  GIT_SEQUENCE_EDITOR="$ed" G -C "$tmp" -c core.abbrev=7 rebase -i main >/dev/null 2>&1 || true
+  [ -f "$todo" ] || { echo "preflight: git wrote no rebase todo" >&2; exit 1; }
+  grep -v '^#' "$todo" | sed '/^[[:space:]]*$/d' > "$out"
+  [ -s "$out" ] || { echo "preflight: the recorded rebase todo is empty" >&2; exit 1; }
+  rm -rf "$tmp" "$ed" "$todo"
 }
 
 # T10.5: what the Branches table (Design §14.6) says per branch, in git's own words.

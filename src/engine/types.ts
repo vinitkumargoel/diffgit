@@ -564,3 +564,65 @@ export interface RepoSummary {
   operation: RepoOperation | null;
   indexMtimeMs: number;
 }
+
+// ---- v2 bisect and rebase preflight (T10.11, docs/v2-contracts.md) -----------------------------
+
+/**
+ * What the bisect strip has marked so far (atlas tab 15). Nothing is written to the repository:
+ * the user checks the candidate out with the command the UI shows and answers good / bad / skip.
+ *
+ * `good` is every commit known to be good (git allows several), `bad` the one known-bad tip, and
+ * `skipped` the commits the user could not test. All three are commit oids.
+ */
+export interface BisectState {
+  good: Oid[];
+  bad: Oid;
+  skipped: Oid[];
+}
+
+/**
+ * The answer to one round: `candidate` is the commit to test next (git's `rev-list --bisect`
+ * midpoint), `remaining` how many commits are still suspects, and `steps` the `ceil(log2)` bound
+ * on the rounds left. `candidate` is null and `firstBad` set once at most one suspect is left —
+ * that commit is the first bad one.
+ */
+export interface BisectStep {
+  candidate: Oid | null;
+  remaining: number;
+  steps: number;
+  firstBad: Oid | null;
+}
+
+/**
+ * One commit a rebase would replay (atlas tab 16). `files` is the number of paths it changes
+ * against its first parent, `merge` whether it has more than one parent (the command then needs
+ * `--rebase-merges`) and `signed` whether it carries a `gpgsig` header — rebasing drops it.
+ *
+ * `overlaps` has one entry per path this commit and the onto side both changed, `theirs` naming
+ * the onto-side commit that changed it; `prediction` is the worst of them (`clean` with none).
+ */
+export interface PreflightRow {
+  oid: Oid;
+  subject: string;
+  files: number;
+  merge: boolean;
+  signed: boolean;
+  overlaps: { path: string; prediction: "likely" | "possible"; theirs: Oid }[];
+  prediction: "clean" | "possible" | "likely";
+}
+
+/**
+ * "Will this rebase conflict?" for `branch` onto `onto` — a report, never a write. `rows` are the
+ * commits since `mergeBase`, oldest first (the order they would be replayed in), `ontoAdvanced`
+ * how many commits the onto side gained since the same base, `command` the exact `git rebase -i`
+ * to run and `todo` the `pick <sha7> <subject>` list to paste into the editor it opens.
+ */
+export interface PreflightResult {
+  branch: string;
+  onto: string;
+  mergeBase: Oid | null;
+  ontoAdvanced: number;
+  rows: PreflightRow[];
+  command: string;
+  todo: string;
+}

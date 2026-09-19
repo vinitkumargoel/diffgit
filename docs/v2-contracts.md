@@ -347,6 +347,55 @@ whole-history pass, `limit: 25`) into `<fixture>.v2.json` and now runs under **`
 `insights-days.txt` oracle is recorded under `TZ=UTC` for the same reason (`bun test` pins its
 process to UTC). `summarise()` / `RepoSummary` stay with T10.10, as the EngineApi table says.
 
+<!-- T10.11 --> `bisectStep(state)` and `rebasePreflight(branchRef, ontoRef)` are read-only by
+construction (atlas tabs 15 and 16): the user runs the checkout and the rebase themselves.
+
+**Bisect.** The candidate set is `git rev-list <bad> ^<good…>`, produced by `revListOrder`
+(`src/engine/git/bisect.ts`, also used by `preflight.ts`) — a commit-date priority queue, newest
+first, ties by insertion, i.e. `commit_list_insert_by_date` + `limit_list`. `find_bisection`
+**reverses** that list before weighing anything, so the scan is oldest-first and a tie goes to the
+older commit: that is why `git rev-list --bisect` over the 59 commits of `history` answers the
+commit of weight 29 rather than the one of weight 30, both scoring `min(w, 59 − w) = 29`.
+`weight(c)` is how many candidates `c` reaches, itself included, computed git's way (roots, then
+`count_distance` per merge, then `weight(parent) + 1` along single-parent strands), and the
+midpoint is the largest `min(weight, remaining − weight)`. `remaining` includes `bad`,
+`steps = ceil(log2(remaining))`, and `candidate` is null with `firstBad` set once `remaining ≤ 1`
+(`remaining === 0` answers `bad`). Two documented divergences: git's `halfway()` short-circuit is
+not replicated (it always returns a commit of maximal distance, but in a merge-heavy tie possibly a
+different one), and `skipped` commits are removed from the *count* as the T10.11 brief says rather
+than replaced with git's PRNG pick (`get_prn`), which is not reproducible from the outside — they
+stay in the graph so strands are not cut, are never returned as `candidate`, and count for nothing.
+The parity oracle is `fixtures/history/expected/rev-list-bisect.txt`, a full replay of
+`git rev-list --count` / `--bisect` answering "the midpoint was good" at every round.
+Anything but a commit for `bad` is `REV_NOT_FOUND`; either side may be a revision expression.
+
+**Rebase preflight.** `rows` are `mergeBase..branchRef`, oldest first (the replay order);
+`ontoAdvanced` counts `mergeBase..ontoRef`. Both sides are graded **per commit against its first
+parent** — the patch a rebase actually replays — using the **old-side** line ranges of
+`computeHunks(context: 0)`: overlapping or adjacent (≤ 1 line) ranges are `likely`, the same file at
+disjoint ranges `possible`, a path the onto side never touched `clean`, and a row takes the worst of
+its paths. `overlaps` carries one entry per path, `theirs` naming the newest onto-side commit that
+decided it. The brief's "`computeHunks` of each side vs the merge base" is per **path at the two
+tips** and cannot reproduce the recorded outcome: `preflight/a`'s p2 keeps p1's edit to the top of
+`src/hot.txt`, so tip-vs-base ranges grade it `likely` while the real
+`git rebase --onto main p2^ p2` in `expected/preflight-outcome.txt` applies it cleanly; per-commit
+patches give the recorded likely / possible / clean. Ranges are read in each patch's own
+coordinates, exact wherever neither side changed the line count above the other's hunk and a
+heuristic otherwise — `clean` is still trustworthy, because a textual conflict needs both sides to
+touch the file. Two changed binary blobs (or gitlinks) are `likely`; a side over 10 MB or unreadable
+is `possible` (plus `HISTORY_DEGRADED`). Renames are mapped with `detectRenames` between the merge
+base and each tip, and `overlaps[].path` is always the branch-side name. `command` is
+`git rebase -i <onto>`, or `git rebase -i --rebase-merges <onto>` when any row is a merge; `todo` is
+`pick <sha7> <subject>` lines with a trailing newline (git ≥ 2.46 writes `pick <sha> # <subject>` —
+it comments the oneline out — so `expected/preflight-todo.txt` is compared with an optional `# `
+stripped). Each side is capped at `PREFLIGHT_COMMIT_CAP` (500) commits with `HISTORY_CAPPED`;
+unrelated histories raise `UNRELATED_HISTORIES` and `mergeBase` is null.
+`bun run record` writes `bisect` (every round of a replayed bisect on `history`, plus one round with
+the first midpoint skipped) and `preflights` (`preflight/a onto main` and `main onto preflight/base`,
+the `--rebase-merges` case) into `<fixture>.v2.json`; the mock replays a recorded round and falls
+back to a linear midpoint over the recorded walk for a state the recording does not cover, so
+T11.13's strip keeps halving.
+
 ```ts
 export interface ResolvedRevision {
   expr: string; oid: Oid | null;                     // null only for "<root>^" → empty tree

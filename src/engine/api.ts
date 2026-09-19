@@ -8,6 +8,8 @@
 import type { EngineErrorJSON, PublicCode } from "./errors";
 import type {
   AheadBehind,
+  BisectState,
+  BisectStep,
   BlamePayload,
   BranchRow,
   CommitDetails,
@@ -20,6 +22,7 @@ import type {
   Oid,
   PathExplanation,
   PathHistoryEntry,
+  PreflightResult,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -388,6 +391,21 @@ export interface EngineApi {
    * never disturbs an open diff generation.
    */
   summarise(): Promise<RepoSummary>;
+  /**
+   * The next commit to test in a bisect (T10.11, atlas tab 15): `git rev-list --bisect` over the
+   * commits reachable from `state.bad` and not from any `state.good`, with `state.skipped` removed
+   * from the count. Nothing is written — the page shows the checkout command and the user answers.
+   * `REV_NOT_FOUND` when `state.bad` is not a commit; `CANCELLED` when a newer call supersedes it.
+   */
+  bisectStep(state: BisectState): Promise<BisectStep>;
+  /**
+   * "Will this rebase conflict?" for `branchRef` onto `ontoRef` (T10.11, atlas tab 16): the commits
+   * that would be replayed oldest first, a `clean` / `possible` / `likely` prediction per commit
+   * from the hunk ranges both sides touched, the exact `git rebase -i` command and the todo list to
+   * paste. A report only — nothing is written. `REV_NOT_FOUND` when either side does not resolve;
+   * `CANCELLED` when a newer call supersedes it.
+   */
+  rebasePreflight(branchRef: string, ontoRef: string): Promise<PreflightResult>;
   /** Move these files to the front of the background stats queue (visible sidebar rows). */
   prioritise(ids: string[]): Promise<void>;
   /** Cheap change signature per tier for the polling fallback (T6.3). */

@@ -389,5 +389,7 @@
     },
     "operation": null,
     "indexMtimeMs": 0
-  }
+  },
+  "bisect": [],
+  "preflights": {}
 }
