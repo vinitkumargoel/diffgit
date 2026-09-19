@@ -10,13 +10,22 @@
  * T10.3 adds `conflicts`: the `ConflictPayload` of every file in the `conflict` layer, so the mock
  * can serve a real three-way card for `rebase-conflict`, `merge-conflict` and
  * `cherry-pick-conflict` without a repository on disk.
+ *
+ * T10.4 adds the `hidden` fixture with `hidden` (the whole Hidden group) and `explanations` (one
+ * `PathExplanation` per interesting path), so T11.4 can build the popover against real data.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import type { ConflictPayload } from "../src/engine/api";
 import { defaultDiffSource } from "../src/engine/diffSource";
 import { NodeDirHandle } from "../src/engine/fs/nodeDirHandle";
 import { RepoSession } from "../src/engine/session";
-import type { DiffResult, RangeSource, RepoOperation, ResolvedRevision } from "../src/engine/types";
+import type {
+  DiffResult,
+  PathExplanation,
+  RangeSource,
+  RepoOperation,
+  ResolvedRevision,
+} from "../src/engine/types";
 import { fixturePath, hasExpected, loadExpectedLines } from "../src/test/fixtures";
 
 const OUT = new URL("../src/test/recorded/", import.meta.url).pathname;
@@ -34,6 +43,22 @@ const RANGES: Record<string, { from: string; to: string; threeDot: boolean }[]> 
   history: [
     { from: "main~5", to: "main", threeDot: true },
     { from: "main~1", to: "main", threeDot: false },
+  ],
+};
+
+/** Paths worth an `explainPath` recording, by fixture (T10.4: one per reason, plus two shown ones). */
+const EXPLAIN_PATHS: Record<string, string[]> = {
+  hidden: [
+    "dist",
+    "dist/bundle.js",
+    ".env.local",
+    ".DS_Store",
+    "src/skipped.txt",
+    "src/assumed.txt",
+    "big.txt",
+    "src/app.txt",
+    "README.md",
+    "notes.txt",
   ],
 };
 
@@ -118,6 +143,8 @@ async function record(name: string, v2: boolean): Promise<void> {
       r.durationMs = 0;
       ranges.push({ source, result: r });
     }
+    const explanations: Record<string, PathExplanation> = {};
+    for (const p of EXPLAIN_PATHS[name] ?? []) explanations[p] = await session.explainPath(p);
     const payload = {
       tags: await session.listTags(),
       stashes: await session.listStashes(),
@@ -127,6 +154,9 @@ async function record(name: string, v2: boolean): Promise<void> {
       operation: pinStartedAt(await session.operation()),
       // T10.3: the conflict card replays these; `generation` is rewritten by the mock on serve.
       conflicts,
+      // T10.4: the Hidden group and the "why hidden" popover replay these.
+      hidden: await session.listHidden(),
+      explanations,
       revisions,
       ranges,
     };
@@ -135,7 +165,8 @@ async function record(name: string, v2: boolean): Promise<void> {
       `${name}: ${payload.tags.length} tags, ${payload.stashes.length} stashes, ` +
         `${payload.reflog.length} reflog entries, operation ${payload.operation?.kind ?? "none"}, ` +
         `${Object.keys(revisions).length} revisions, ${ranges.length} ranges, ` +
-        `${Object.keys(conflicts).length} conflicts`,
+        `${Object.keys(conflicts).length} conflicts, ${payload.hidden.length} hidden, ` +
+        `${Object.keys(explanations).length} explanations`,
     );
   }
   await session.close();
@@ -151,5 +182,7 @@ for (const name of [
   "rebase-conflict",
   "merge-conflict",
   "cherry-pick-conflict",
+  // T10.4: the Hidden group, the rule attribution and the index flags.
+  "hidden",
 ])
   await record(name, true);

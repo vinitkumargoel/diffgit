@@ -10,7 +10,7 @@
 import { EngineError, errorCode } from "../errors";
 import type { FileLike } from "../fs/dirHandleLike";
 import type { FsaFs } from "../fs/fsaFs";
-import { MODE_GITLINK, type Oid, type RepoWarning } from "../types";
+import { type HiddenEntry, MODE_GITLINK, type Oid, type RepoWarning } from "../types";
 import { pLimit, throwIfAborted } from "../util/concurrency";
 import type { GitConfig } from "./config";
 import { hashBlob, hashBlobStream } from "./hash";
@@ -59,6 +59,19 @@ export interface ScannerOptions {
 }
 
 const MODE_SYMLINK = 0o120000;
+
+/** T10.4: most rows the Hidden group ever gets; beyond it the list is cut and `HIDDEN_CAPPED` warns. */
+export const HIDDEN_LIMIT = 2000;
+
+export interface HiddenOptions {
+  /** Paths the last diff classified as over 10 MB (`RepoSession` reads them off the current rows). */
+  tooLarge?: string[];
+}
+
+export interface HiddenListing {
+  entries: HiddenEntry[];
+  warnings: RepoWarning[];
+}
 
 interface StatCacheEntry {
   size: number;
@@ -112,6 +125,99 @@ export class WorktreeScanner {
         : await hashBlob(new Uint8Array(await f.arrayBuffer()));
     this.statCache.set(path, { size: f.size, lastModified: f.lastModified, oid });
     return oid;
+  }
+
+  /**
+   * The Hidden group (T10.4, Design §14.4). A second, opt-in walk: `scan()` prunes ignored
+   * directories without ever naming them, and adding the bookkeeping there would make every normal
+   * refresh pay for a list nobody asked for. This one is only ever called from `listHidden()`.
+   *
+   * An ignored directory is one row with the number of entries directly inside it and is never
+   * descended into (atlas tab 08, "Risks": listing `node_modules` is 100k rows). Tracked paths are
+   * never reported as ignored — git shows them, and so does diffgit.
+   */
+  async listHidden(index: IndexSnapshot, opts: HiddenOptions = {}): Promise<HiddenListing> {
+    const found = new Map<string, HiddenEntry>();
+    const warnings: RepoWarning[] = [];
+    let capped = false;
+    const add = (e: HiddenEntry) => {
+      if (!found.has(e.path)) found.set(e.path, e);
+    };
+    const conflictSet = new Set(Object.keys(index.conflicts));
+    const tracked = (p: string) => index.byPath[p] !== undefined || conflictSet.has(p);
+    const gitlinkDirs = new Set(
+      index.entries.filter((e) => e.mode === MODE_GITLINK).map((e) => e.path),
+    );
+    const sparseSet = new Set(index.entries.filter((e) => e.isSparseDir).map((e) => e.path));
+
+    const walk = async (dir: string): Promise<void> => {
+      if (found.size >= HIDDEN_LIMIT) {
+        capped = true;
+        return;
+      }
+      let entries: { name: string; kind: "file" | "directory" }[];
+      try {
+        entries = await this.fs.readdirWithKinds(dir);
+      } catch (err) {
+        if (errorCode(err) === "ENOENT" || errorCode(err) === "ENOTDIR") return;
+        throw err;
+      }
+      if (dir !== "" && entries.some((en) => en.name === ".git")) return; // embedded repo, as in scan()
+      await this.ignore.enterDir(dir);
+      entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+      for (const en of entries) {
+        if (found.size >= HIDDEN_LIMIT) {
+          capped = true;
+          return;
+        }
+        const path = dir === "" ? en.name : `${dir}/${en.name}`;
+        if (dir === "" && en.name === ".git") continue;
+        if (en.kind === "directory") {
+          if (gitlinkDirs.has(path)) continue;
+          if (sparseSet.has(path)) {
+            add({ path, kind: "sparse" });
+            continue;
+          }
+          if (this.ignore.isDirIgnored(path)) {
+            add({ path, kind: "ignored-dir", count: await this.countChildren(path) });
+            continue; // never descend: that is the whole point of the row
+          }
+          await walk(path);
+        } else if (!tracked(path) && this.ignore.isFileIgnored(path)) {
+          add({ path, kind: "ignored" });
+        }
+      }
+    };
+    await walk("");
+
+    for (const e of index.entries) {
+      if (e.stage !== 0) continue;
+      if (e.isSparseDir) add({ path: e.path, kind: "sparse" });
+      else if (e.skipWorktree) add({ path: e.path, kind: "skip-worktree" });
+      else if (e.assumeValid) add({ path: e.path, kind: "assume-unchanged" });
+    }
+    for (const path of opts.tooLarge ?? []) add({ path, kind: "too-large" });
+
+    const all = [...found.values()].sort((a, b) =>
+      a.path < b.path ? -1 : a.path > b.path ? 1 : 0,
+    );
+    if (capped || all.length > HIDDEN_LIMIT) {
+      warnings.push({
+        code: "HIDDEN_CAPPED",
+        message: `More than ${HIDDEN_LIMIT} hidden paths; the list was cut off.`,
+      });
+    }
+    return { entries: all.slice(0, HIDDEN_LIMIT), warnings };
+  }
+
+  /** Entries directly inside an ignored directory — one readdir, never a descent. */
+  private async countChildren(dir: string): Promise<number> {
+    try {
+      return (await this.fs.readdirWithKinds(dir)).length;
+    } catch (err) {
+      if (errorCode(err) === "ENOENT" || errorCode(err) === "ENOTDIR") return 0;
+      throw err;
+    }
   }
 
   async scan(

@@ -1,0 +1,59 @@
+{
+  "source": {
+    "kind": "branches",
+    "source": "main",
+    "target": "main",
+    "sourceRef": "refs/heads/main",
+    "targetRef": "refs/heads/main",
+    "includeWorktree": true
+  },
+  "mergeBase": "c5d61a4e4036296631abfb307bfc988db8e3d062",
+  "files": [
+    {
+      "id": "big.txt",
+      "oldPath": "big.txt",
+      "newPath": "big.txt",
+      "status": "modified",
+      "layers": ["unstaged"],
+      "oldOid": "c7943e695552719b79cc6717dbcd300403ea2ba5",
+      "newOid": "d894bcc35ca45b44e83c612e7de63509e7791f32",
+      "oldMode": 33188,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 11130000,
+      "newSize": 11130051,
+      "stats": null,
+      "tooLarge": true
+    },
+    {
+      "id": "notes.txt",
+      "oldPath": null,
+      "newPath": "notes.txt",
+      "status": "added",
+      "layers": ["untracked"],
+      "oldOid": null,
+      "newOid": "f720e4400afba354b2f65731769a1674e405f308",
+      "oldMode": null,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 0,
+      "newSize": 22,
+      "stats": {
+        "additions": 1,
+        "deletions": 0
+      },
+      "tooLarge": false
+    }
+  ],
+  "totals": {
+    "files": 2,
+    "additions": 1,
+    "deletions": 0
+  },
+  "computedAt": 1704067200000,
+  "durationMs": 0,
+  "generation": 1,
+  "warnings": []
+}

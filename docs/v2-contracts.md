@@ -110,6 +110,32 @@ follows the file while the user resolves it elsewhere. `bun run record` also rec
 `cherry-pick-conflict` and writes `conflicts` (file id → `ConflictPayload`) into
 `<fixture>.v2.json`; the mock rewrites `generation` on serve.
 
+<!-- T10.4 --> `src/engine/api.ts` gains `OpenOptions` — what the page may set when it opens a
+repository, as a third argument to `EngineApi.open` / `WorkerClient.open`:
+
+```ts
+export interface OpenOptions { builtinExcludes?: boolean }   // default true; backlog B10
+```
+
+`SessionOptions.builtinExcludes` carries it to `IgnoreRules`. `IgnoreRules` gains
+`explain(path, isDir)` → `IgnoreMatch | null` (`{ source; line; pattern; negated }`) and the async
+`explainPath(path, kind)` that loads the ancestors first; `isIgnored` is unchanged. `source` is
+spelled as `git check-ignore -v` spells it (`.gitignore`, `src/.gitignore`, `.git/info/exclude`) plus
+`BUILTIN_SOURCE = "(built-in excludes)"` for diffgit's own defaults — git prints `::` for those, the
+one documented divergence, and `builtinExcludes: false` removes it. `pattern` is the rule verbatim
+including a leading `!`, and a negated last match is *reported* (`negated: true`, the path is not
+ignored) rather than swallowed. Attribution matches the last rule in the file, the nearest
+`.gitignore` first, and — like git — a path under an ignored directory reports the rule that
+excluded the outermost such directory. `PathExplanation.shown` is true only when the path has a row
+in the current diff *and* no hiding reason (`ignored`, `skip-worktree`, `assume-unchanged`, `sparse`,
+`too-large`) applies, so everything `listHidden` returns answers `shown: false`; `generated` and
+`clean` are explanatory, and `clean` is only added when nothing else applies. `listHidden()` is its
+own opt-in walk in `WorktreeScanner` (`HIDDEN_LIMIT = 2000`) — the normal scan is untouched; a
+tracked path is never reported as `ignored`, an ignored directory is one `ignored-dir` row with the
+count of its direct children and is never descended, and `too-large` comes from the rows of the
+current diff. `bun run record` records the `hidden` fixture and writes `hidden` (the whole group)
+and `explanations` (path → `PathExplanation`) into `<fixture>.v2.json`.
+
 ```ts
 export interface ResolvedRevision {
   expr: string; oid: Oid | null;                     // null only for "<root>^" → empty tree

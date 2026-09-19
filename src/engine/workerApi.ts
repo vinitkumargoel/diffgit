@@ -2,7 +2,7 @@
  * The object exposed over comlink (T3.5). One session at a time; every rejection is a plain
  * `PublicError` so it survives structured cloning with its `code`.
  */
-import type { EngineApi, ProgressSink } from "./api";
+import type { EngineApi, OpenOptions, ProgressSink } from "./api";
 import { EngineError } from "./errors";
 import type { DirHandleLike } from "./fs/dirHandleLike";
 import { resolveHandle } from "./fs/resolveHandle";
@@ -34,12 +34,16 @@ export function createEngineApi(
 
   return {
     current: () => session,
-    open: (handle, sink: ProgressSink) =>
+    open: (handle, sink: ProgressSink, open?: OpenOptions) =>
       guard(async () => {
         await session?.close();
         session = null;
         const root = await resolve(handle);
-        session = await RepoSession.open(root, sink, opts.session);
+        // T10.4: the page's `builtinExcludes` preference (B10) wins over the worker's own default.
+        session = await RepoSession.open(root, sink, {
+          ...opts.session,
+          ...(open?.builtinExcludes !== undefined ? { builtinExcludes: open.builtinExcludes } : {}),
+        });
         return session.info();
       }),
     info: () => guard(() => need().info()),
@@ -54,6 +58,8 @@ export function createEngineApi(
     fileDiff: (generation, id, o) => guard(() => need().fileDiff(generation, id, o)),
     cancelFileDiff: (id) => guard(() => need().cancelFileDiff(id)),
     conflict: (generation, id) => guard(() => need().conflict(generation, id)),
+    explainPath: (path) => guard(() => need().explainPath(path)),
+    listHidden: () => guard(() => need().listHidden()),
     fileBytes: (generation, id, side) => guard(() => need().fileBytes(generation, id, side)),
     prioritise: (ids) => guard(() => need().prioritise(ids)),
     probe: (tier) => guard(() => need().probe(tier)),

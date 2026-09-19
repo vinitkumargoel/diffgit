@@ -15,12 +15,15 @@ import type {
   FileDiffPayload,
   FileStats,
   InvalidateScope,
+  OpenOptions,
   ProbeTier,
   ProgressSink,
 } from "../engine/api";
 import type {
   DiffResult,
   DiffSource,
+  HiddenEntry,
+  PathExplanation,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -72,7 +75,8 @@ function countingSink(sink: ProgressSink, m: ClientMetrics): ProgressSink {
 
 /** What the store sees. Same methods as `EngineApi` plus lifecycle helpers. */
 export interface WorkerClient {
-  open(handle: unknown, sink: ProgressSink): Promise<RepoInfo>;
+  /** `opts` carries the page's preferences (T10.4: `builtinExcludes`, backlog B10). */
+  open(handle: unknown, sink: ProgressSink, opts?: OpenOptions): Promise<RepoInfo>;
   info(): Promise<RepoInfo>;
   reloadRefs(): Promise<RepoInfo>;
   computeDiff(src: DiffSource): Promise<DiffResult>;
@@ -86,6 +90,10 @@ export interface WorkerClient {
   cancelFileDiff(id: string): Promise<void>;
   /** Three-way view of one conflicted file (T10.3); `STALE`/`CANCELLED` as `fileDiff`. */
   conflict(generation: number, id: string): Promise<ConflictPayload>;
+  /** Why one path is not in the diff (T10.4). */
+  explainPath(path: string): Promise<PathExplanation>;
+  /** The sidebar's Hidden group, on demand (T10.4); capped at 2,000 (`HIDDEN_CAPPED`). */
+  listHidden(): Promise<HiddenEntry[]>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
   prioritise(ids: string[]): Promise<void>;
   probe(tier: ProbeTier): Promise<string>;
@@ -120,6 +128,7 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
   const restartListeners = new Set<RestartListener>();
   let retainedHandle: unknown = null;
   let retainedSink: ProgressSink | null = null;
+  let retainedOpen: OpenOptions | undefined;
   let proxiedSink: (ProgressSink & Comlink.ProxyMarked) | null = null;
   let lastSrc: DiffSource | null = null;
   const metrics = newClientMetrics();
@@ -186,7 +195,11 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     }
     try {
       proxiedSink = Comlink.proxy(countingSink(retainedSink, metrics));
-      const info = await (remote as Comlink.Remote<EngineApi>).open(retainedHandle, proxiedSink);
+      const info = await (remote as Comlink.Remote<EngineApi>).open(
+        retainedHandle,
+        proxiedSink,
+        retainedOpen,
+      );
       for (const l of restartListeners) l(info, null);
     } catch (e) {
       for (const l of restartListeners) l(null, toUiError(e));
@@ -195,12 +208,13 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
 
   const client: WorkerClient = {
     isMock: false,
-    async open(handle, sink) {
+    async open(handle, sink, openOpts) {
       retainedHandle = handle;
       retainedSink = sink;
+      retainedOpen = openOpts;
       lastSrc = null;
       proxiedSink = Comlink.proxy(countingSink(sink, metrics));
-      return call((r) => r.open(handle, proxiedSink as ProgressSink), "open");
+      return call((r) => r.open(handle, proxiedSink as ProgressSink, openOpts), "open");
     },
     info: () => call((r) => r.info(), "info"),
     reloadRefs: () => call((r) => r.reloadRefs(), "reloadRefs"),
@@ -219,6 +233,8 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     fileDiff: (generation, id, opts) => call((r) => r.fileDiff(generation, id, opts), "fileDiff"),
     cancelFileDiff: (id) => call((r) => r.cancelFileDiff(id), "cancelFileDiff"),
     conflict: (generation, id) => call((r) => r.conflict(generation, id), "conflict"),
+    explainPath: (path) => call((r) => r.explainPath(path), "explainPath"),
+    listHidden: () => call((r) => r.listHidden(), "listHidden"),
     fileBytes: (generation, id, side) =>
       call((r) => r.fileBytes(generation, id, side), "fileBytes"),
     prioritise: (ids) => call((r) => r.prioritise(ids), "prioritise"),
@@ -234,6 +250,7 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     async close() {
       retainedHandle = null;
       retainedSink = null;
+      retainedOpen = undefined;
       lastSrc = null;
       if (remote && !dead) await call((r) => r.close(), "close");
     },

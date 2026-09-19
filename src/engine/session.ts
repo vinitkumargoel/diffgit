@@ -31,9 +31,10 @@ import type { DirHandleLike } from "./fs/dirHandleLike";
 import { createFsaFs, type FsaFs } from "./fs/fsaFs";
 import { GitAttributes } from "./git/attributes";
 import { type GitConfig, loadGitConfig } from "./git/config";
+import { explainPath } from "./git/explain";
 import { sha1, toHex } from "./git/hash";
 import { IgnoreRules } from "./git/ignoreRules";
-import { type IndexSnapshot, readIndex } from "./git/indexReader";
+import { emptySnapshot, type IndexSnapshot, readIndex } from "./git/indexReader";
 import { checkLayout } from "./git/layoutChecks";
 import { ObjectDb } from "./git/objectDb";
 import { detectOperation, OPERATION_FILES } from "./git/operation";
@@ -47,6 +48,8 @@ import type {
   DiffResult,
   DiffSource,
   FileDiff,
+  HiddenEntry,
+  PathExplanation,
   ReflogEntry,
   RefSnapshot,
   RepoCapabilities,
@@ -68,6 +71,11 @@ export interface SessionOptions {
   statsBatchMs?: number;
   /** Fixed repo id (tests/recordings); default `crypto.randomUUID()`. */
   id?: string;
+  /**
+   * T10.4: apply the built-in excludes (`.DS_Store`, `._*`, `Thumbs.db`, `desktop.ini`) in
+   * `IgnoreRules`. Default true; `OpenOptions.builtinExcludes` is how the page sets it (B10).
+   */
+  builtinExcludes?: boolean;
 }
 
 interface Current {
@@ -220,7 +228,10 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       if (errorCode(e) !== "ENOENT") throw e; // unborn repos have no index yet
     }
     RepoSession.emit(sink, { phase: "index", durationMs: performance.now() - t3 });
-    const ignore = await IgnoreRules.load(fs, { config: cfg });
+    const ignore = await IgnoreRules.load(fs, {
+      config: cfg,
+      ...(opts.builtinExcludes !== undefined ? { builtinExcludes: opts.builtinExcludes } : {}),
+    });
     warnings.push(...ignore.warnings);
     const attrs = await GitAttributes.load(fs);
     const scanner = new WorktreeScanner(fs, db, cfg, ignore, opts.scanner);
@@ -674,6 +685,61 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     } finally {
       if (this.conflictAborts.get(id) === ac) this.conflictAborts.delete(id);
     }
+  }
+
+  // ---- why hidden (T10.4) ---------------------------------------------------------------------
+
+  /** The index as it is right now, or an empty one for a repository with no `.git/index` yet. */
+  private async currentIndex(): Promise<IndexSnapshot> {
+    try {
+      return await this.withRootCheck(() => readIndex(this.fs));
+    } catch (e) {
+      if (errorCode(e) === "ENOENT") return emptySnapshot(0);
+      throw e;
+    }
+  }
+
+  /**
+   * Why `path` is not in the diff (T10.4): the ignore rule that matched, the index flags, the
+   * sparse checkout, the 10 MB gate, `linguist-generated`, or `clean`. The index is re-read per
+   * call for the same reason `conflict()` does it — the answer must follow the file.
+   */
+  async explainPath(path: string): Promise<PathExplanation> {
+    this.assertOpen();
+    return this.single("explainPath", async () =>
+      explainPath(
+        {
+          fs: this.fs,
+          ignore: this.ignore,
+          attrs: this.attrs,
+          index: await this.currentIndex(),
+          files: this.current?.byId ?? null,
+        },
+        path,
+      ),
+    );
+  }
+
+  /**
+   * The sidebar's Hidden group (T10.4). Opt-in: it is its own pruned walk, so a normal refresh
+   * never pays for it. `too-large` comes from the rows of the current diff — the classification
+   * that made the UI gate them in the first place.
+   */
+  async listHidden(): Promise<HiddenEntry[]> {
+    this.assertOpen();
+    return this.single("listHidden", async () => {
+      const index = await this.currentIndex();
+      const tooLarge: string[] = [];
+      for (const f of this.current?.byId.values() ?? []) {
+        if (Math.max(f.oldSize, f.newSize) > HUGE_FILE_BYTES)
+          tooLarge.push(f.newPath ?? f.oldPath ?? f.id);
+      }
+      const { entries, warnings } = await this.withRootCheck(() =>
+        this.scanner.listHidden(index, { tooLarge }),
+      );
+      for (const w of warnings) RepoSession.emitWarning(this.sink, w);
+      return entries;
+    });
   }
 
   /** Raw bytes of one side (image viewer, "View as text"). Sides over 10 MB are refused with TOO_LARGE. */

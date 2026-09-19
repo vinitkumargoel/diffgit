@@ -10,7 +10,9 @@ import type {
   DiffResult,
   DiffSource,
   FileDiff,
+  HiddenEntry,
   Oid,
+  PathExplanation,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -182,6 +184,19 @@ export interface ConflictPayload {
   labels: { ours: string; theirs: string };
 }
 
+/**
+ * What the page may set when it opens a repository (T10.4). Separate from `SessionOptions`, which
+ * is the engine's own tuning: these are user preferences that travel across the worker boundary.
+ */
+export interface OpenOptions {
+  /**
+   * Apply diffgit's built-in excludes (`.DS_Store`, `._*`, `Thumbs.db`, `desktop.ini`) at the
+   * lowest precedence. Default true; the UI preference is backlog B10 (T11.4). With it off, a
+   * `.DS_Store` shows up as untracked, exactly as git reports it.
+   */
+  builtinExcludes?: boolean;
+}
+
 /** Engine-side counters for the hidden debug panel and `scripts/perf.ts` (T7.2). */
 export interface EngineMetrics {
   generation: number;
@@ -207,7 +222,7 @@ export interface PublicError extends EngineErrorJSON {
  */
 export interface EngineApi {
   /** `handle` is a `FileSystemDirectoryHandle` (or an E2E memory marker). */
-  open(handle: unknown, sink: ProgressSink): Promise<RepoInfo>;
+  open(handle: unknown, sink: ProgressSink, opts?: OpenOptions): Promise<RepoInfo>;
   info(): Promise<RepoInfo>;
   reloadRefs(): Promise<RepoInfo>;
   /** Cancels any in-flight compute; the superseded call rejects with `CANCELLED`. */
@@ -241,6 +256,18 @@ export interface EngineApi {
    */
   conflict(generation: number, id: string): Promise<ConflictPayload>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
+  /**
+   * Why one path is not in the diff (T10.4): the ignore rule that matched (`git check-ignore -v`
+   * terms), the index flags `skip-worktree` / `assume-unchanged`, the sparse checkout, the 10 MB
+   * gate, `linguist-generated`, or `clean` when it is simply unchanged.
+   */
+  explainPath(path: string): Promise<PathExplanation>;
+  /**
+   * The sidebar's Hidden group (T10.4): ignored directories as one row with a count (never
+   * descended), ignored files, the index-flagged entries, sparse directories and the files the last
+   * diff found to be over 10 MB. Runs only on demand; capped at 2,000 rows (`HIDDEN_CAPPED`).
+   */
+  listHidden(): Promise<HiddenEntry[]>;
   /** Move these files to the front of the background stats queue (visible sidebar rows). */
   prioritise(ids: string[]): Promise<void>;
   /** Cheap change signature per tier for the polling fallback (T6.3). */
