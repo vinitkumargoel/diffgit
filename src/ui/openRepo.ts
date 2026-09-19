@@ -41,6 +41,9 @@ export async function pickAndOpenRepo(): Promise<void> {
   const pick = directoryPicker();
   if (!pick) return;
   const store = useStore.getState();
+  // T11.11: the dashboard must never be in the way of opening a repository. Its sweep is stopped
+  // before the picker, so no background summary competes with the open the user just asked for.
+  store.cancelSummaries();
   try {
     const handle = await pick({ mode: "read", id: "diffgit-repo" });
     const stored = await upsertRepo(handle);

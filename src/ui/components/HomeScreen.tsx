@@ -1,5 +1,5 @@
 import { TriangleAlert } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 // The landing page, verbatim from the approved "Precision" mockup (docs/mockups/e-precision.html).
 // Kept as raw assets outside src/ui so the design's literal colours don't trip the token guard;
@@ -7,10 +7,11 @@ import { createPortal } from "react-dom";
 // the CSP forbids inline — runs from precisionDemo.ts instead.
 import precisionCss from "../../marketing/precision.css?raw";
 import precisionHtml from "../../marketing/precision.html?raw";
+import type { DashboardRepo } from "../dashboard";
 import { useNow } from "../hooks/useNow";
 import { useShortcuts } from "../hooks/useShortcuts";
 import { pickAndOpenRepo } from "../openRepo";
-import { useStore } from "../store";
+import { EMPTY_DASHBOARD_ENTRY, useStore } from "../store";
 import { ContinueCard } from "./home/ContinueCard";
 import { NavRecent } from "./home/NavRecent";
 import { initPrecisionDemo } from "./home/precisionDemo";
@@ -48,6 +49,38 @@ export function HomeScreen() {
   const recents = useRecents();
   const hasHistory = recents.loaded && recents.repos.length > 0;
   const now = useNow(60_000, hasHistory);
+  const summaries = useStore((s) => s.dashboard.summaries);
+  const loadSummaries = useStore((s) => s.loadSummaries);
+  const cancelSummaries = useStore((s) => s.cancelSummaries);
+  const busy = Object.values(summaries).some((e) => e.loading);
+
+  /**
+   * T11.11 — the cards the background summariser walks. Rebuilt when the list or the browser's
+   * permission answers change, which is also what makes a `Re-authorise` click fill that card:
+   * the sweep restarts and skips everything whose index has not moved since its cached summary.
+   */
+  const cards = useMemo<DashboardRepo[]>(
+    () =>
+      recents.repos.map((r) => ({
+        id: r.id,
+        name: r.name,
+        handle: r.handle,
+        access: recents.access[r.id] ?? "prompt",
+      })),
+    [recents.repos, recents.access],
+  );
+
+  // Only while Home is visible (atlas tab 11): leaving the screen — including opening a repository
+  // — cancels the sweep wherever it is, so nothing reads a repository the user has moved on from.
+  useEffect(() => {
+    if (cards.length === 0) return;
+    void loadSummaries(cards);
+    return () => cancelSummaries();
+  }, [cards, loadSummaries, cancelSummaries]);
+
+  const refreshAll = useCallback(() => {
+    void loadSummaries(cards, { force: true });
+  }, [cards, loadSummaries]);
 
   // The picker flow lives in `openRepo.ts` so Home, the `o` key and the command palette share it.
   const openPicker = useCallback(() => pickAndOpenRepo(), []);
@@ -129,8 +162,10 @@ export function HomeScreen() {
               repo={only}
               access={recents.access[only.id] ?? "prompt"}
               state={recents.state[only.id] ?? "idle"}
+              entry={summaries[only.id] ?? EMPTY_DASHBOARD_ENTRY}
               now={now}
               onOpen={recents.open}
+              onGrant={recents.grant}
               onForget={recents.forget}
               onUndo={recents.undo}
               onChoose={choose}
@@ -140,12 +175,16 @@ export function HomeScreen() {
               repos={recents.repos}
               access={recents.access}
               state={recents.state}
+              summaries={summaries}
+              busy={busy}
               now={now}
               onOpen={recents.open}
+              onGrant={recents.grant}
               onForget={recents.forget}
               onUndo={recents.undo}
               onChoose={choose}
               onClearAll={recents.clearAll}
+              onRefreshAll={refreshAll}
             />
           ),
           mounts.side,

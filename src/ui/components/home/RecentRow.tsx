@@ -52,8 +52,8 @@ export function shortRef(ref: string | undefined): string {
   return ref.replace(/^refs\/(heads|remotes|tags)\//, "");
 }
 
-/** The filter's matched substring, marked (H3). */
-function Highlight({ text, match }: { text: string; match: string }) {
+/** The filter's matched substring, marked (H3). Shared with the RepoCard grid (T11.11). */
+export function Highlight({ text, match }: { text: string; match: string }) {
   const at = match ? text.toLowerCase().indexOf(match.toLowerCase()) : -1;
   if (at < 0) return <>{text}</>;
   return (

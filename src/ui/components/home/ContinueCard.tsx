@@ -4,10 +4,13 @@
  * the last pair and the access state.
  */
 import { Clock, LoaderCircle, X } from "lucide-react";
+import { GRANT_LABEL, lastSeenLine, NEEDS_PERMISSION_TITLE } from "../../dashboard";
 import type { PermissionAnswer, StoredRepo } from "../../persistence";
+import type { DashboardEntry } from "../../store";
 import { timeAgo } from "../../timeAgo";
 import { Logo } from "../Logo";
-import { AccessDot, Pair, RecentRow, RowMessage } from "./RecentRow";
+import { AccessDot, Pair, RecentRow, RowMessage, shortRef } from "./RecentRow";
+import { RepoSummaryStrip } from "./RepoCard";
 import type { RowState } from "./useRecents";
 
 const ACCESS_TEXT: Record<PermissionAnswer, string> = {
@@ -20,10 +23,14 @@ export interface ContinueCardProps {
   repo: StoredRepo;
   access: PermissionAnswer;
   state: RowState;
+  /** T11.11: the same summary a RepoCard shows, so one stored repository is not a poorer card. */
+  entry: DashboardEntry;
   now: number;
   onOpen(repo: StoredRepo): void;
   onForget(repo: StoredRepo): void;
   onUndo(repo: StoredRepo): void;
+  /** Grants read access without opening, so the card's summary can be read (T11.11). */
+  onGrant(repo: StoredRepo): void;
   /** "Different folder" / "Choose it again" / "Choose another" — the read-only picker. */
   onChoose(): void;
 }
@@ -32,10 +39,12 @@ export function ContinueCard({
   repo,
   access,
   state,
+  entry,
   now,
   onOpen,
   onForget,
   onUndo,
+  onGrant,
   onChoose,
 }: ContinueCardProps) {
   // Forgetting the only repository leaves the row itself behind, so the 5 s Undo still has a home.
@@ -80,6 +89,13 @@ export function ContinueCard({
           {ACCESS_TEXT[access]}
         </span>
       </div>
+      <div className="flex flex-col gap-2">
+        <RepoSummaryStrip
+          entry={entry}
+          fallback={lastSeenLine(shortRef(repo.lastSource))}
+          now={now}
+        />
+      </div>
       <div className="acts">
         <button
           type="button"
@@ -89,6 +105,16 @@ export function ContinueCard({
         >
           Open {repo.name}
         </button>
+        {access !== "granted" && (
+          <button
+            type="button"
+            className="btn btn-sm"
+            title={NEEDS_PERMISSION_TITLE}
+            onClick={() => onGrant(repo)}
+          >
+            {GRANT_LABEL}
+          </button>
+        )}
         <button type="button" className="btn btn-sm" onClick={onChoose}>
           Different folder
         </button>
