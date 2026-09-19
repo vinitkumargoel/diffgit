@@ -29,6 +29,7 @@ import {
 } from "../search";
 import { selectPreflightPair, selectVisibleFiles, useStore } from "../store";
 import { filePathOf } from "../treeModel";
+import { WORKTREES_ACTION, worktreeCount } from "../worktrees";
 import { MODES } from "./ModeSwitch";
 import { openPatchPicker } from "./PatchDrop";
 
@@ -104,6 +105,10 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
   const preflightPair = useStore(useShallow(selectPreflightPair));
   // T11.14: both rows are conditional, so the palette never advertises what cannot happen.
   const patchOnly = useStore((s) => s.patchOnly);
+  // T11.16: `Worktrees` is offered only with a repository open — a patch file has none.
+  const repoOpen = useStore((s) => s.repo !== null);
+  const worktrees = useStore((s) => s.worktrees);
+  const setWorktreesOpen = useStore((s) => s.setWorktreesOpen);
   const installable = useInstallPrompt();
   const ref = useRef<HTMLDialogElement>(null);
   const returnTo = useRef<HTMLElement | null>(null);
@@ -255,6 +260,19 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
             },
           ]
         : []),
+      ...(repoOpen
+        ? [
+            {
+              // T11.16 (Design §14.1, atlas tab 19): `git worktree list` is a dialog, not a bar
+              // control — the palette and the repo name are its two openers.
+              id: "worktrees",
+              label: WORKTREES_ACTION,
+              keywords: ["worktree", "linked", "checkout", "prunable", "git worktree list"],
+              ...(worktrees ? { hint: worktreeCount(worktrees.length) } : {}),
+              run: () => setWorktreesOpen(true),
+            },
+          ]
+        : []),
       {
         // T11.10: Design §14.6's menu is in the StatsRow; the palette is how it opens from anywhere.
         id: "export",
@@ -329,6 +347,9 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
     return list;
   }, [
     patchOnly,
+    repoOpen,
+    worktrees,
+    setWorktreesOpen,
     installable,
     prefs,
     cache,

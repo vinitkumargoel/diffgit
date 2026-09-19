@@ -37,6 +37,9 @@
  * good" plus one round with a skip) and `preflights` (one report per `<branch> onto <onto>` pair),
  * so T11.13 can build the bisect strip and the preflight panel without a repository on disk.
  *
+ * T11.16 adds the last two atlas-tab-19 fixtures: `lfs` (with a `main…feature` range, because the
+ * fixture's HEAD is on `main` and the pointers change on `feature`) and `jj`.
+ *
  * T10.12 adds `submodules` and `worktrees`, and with them two more recorded fixtures: `submodule`
  * (a gitlink recorded at HEAD whose checkout was deinit'd) and the main checkout behind
  * `worktree-gitdir`, recorded under the name `worktree-main` so the mock has a repository with a
@@ -106,6 +109,13 @@ const RANGES: Record<string, { from: string; to: string; threeDot: boolean }[]> 
   history: [
     { from: "main~5", to: "main", threeDot: true },
     { from: "main~1", to: "main", threeDot: false },
+  ],
+  // T11.16: `build_lfs` leaves HEAD on `main`, so the default source is an empty diff. The rows
+  // the LFS card exists for live on `feature`: a pointer changed on both sides (`assets/hero.psd`,
+  // also marked `binary`) and one added on the feature side only (`data/table.dat`).
+  lfs: [
+    { from: "main", to: "feature", threeDot: true },
+    { from: "main", to: "feature", threeDot: false },
   ],
 };
 
@@ -492,6 +502,10 @@ for (const name of [
   "secrets",
   // T10.12: a gitlink recorded at HEAD with a deinit'd checkout, for the submodule card.
   "submodule",
+  // T11.16: the two remaining atlas-tab-19 fixtures — committed LFS pointer text (the card), and
+  // a colocated jj workspace (the repo-name tag and its detached HEAD).
+  "lfs",
+  "jj",
 ])
   await record(name, true);
 // T10.12: the main checkout behind `worktree-gitdir`, so the mock has a repository whose worktree

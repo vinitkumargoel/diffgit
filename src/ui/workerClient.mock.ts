@@ -61,6 +61,12 @@ import hiddenV2 from "../test/recorded/hidden.v2.json";
 import historyDiff from "../test/recorded/history.diffresult.json";
 import historyInfo from "../test/recorded/history.repoinfo.json";
 import historyV2 from "../test/recorded/history.v2.json";
+import jjDiff from "../test/recorded/jj.diffresult.json";
+import jjInfo from "../test/recorded/jj.repoinfo.json";
+import jjV2 from "../test/recorded/jj.v2.json";
+import lfsDiff from "../test/recorded/lfs.diffresult.json";
+import lfsInfo from "../test/recorded/lfs.repoinfo.json";
+import lfsV2 from "../test/recorded/lfs.v2.json";
 import mergeDiff from "../test/recorded/merge-conflict.diffresult.json";
 import mergeInfo from "../test/recorded/merge-conflict.repoinfo.json";
 import mergeV2 from "../test/recorded/merge-conflict.v2.json";
@@ -312,6 +318,20 @@ const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult; v2?: Recorded
     info: worktreeMainInfo as RepoInfo,
     diff: worktreeMainDiff as DiffResult,
     v2: worktreeMainV2 as unknown as RecordedV2,
+  },
+  // T11.16: the other two halves of atlas tab 19. `lfs` carries a recorded `main…feature` range —
+  // its HEAD is on `main`, where nothing differs — with a pointer that changed on both sides and
+  // one that was added; `jj` is a colocated workspace (`RepoInfo.jj`, a detached HEAD spelled
+  // `jj working copy @ <sha7>`, one `JJ_COLOCATED` warning).
+  lfs: {
+    info: lfsInfo as RepoInfo,
+    diff: lfsDiff as DiffResult,
+    v2: lfsV2 as unknown as RecordedV2,
+  },
+  jj: {
+    info: jjInfo as RepoInfo,
+    diff: jjDiff as DiffResult,
+    v2: jjV2 as unknown as RecordedV2,
   },
   showcase: { info: basicInfo as RepoInfo, diff: basicDiff as DiffResult },
   "showcase-worktree": { info: worktreeInfo as RepoInfo, diff: worktreeDiff as DiffResult },

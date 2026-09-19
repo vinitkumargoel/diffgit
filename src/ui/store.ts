@@ -57,8 +57,10 @@ import type {
   SearchResult,
   SecretFinding,
   StashInfo,
+  SubmoduleInfo,
   TagInfo,
   WalkRequest,
+  WorktreeInfo,
 } from "../engine/types";
 import {
   type BisectAction,
@@ -868,6 +870,15 @@ export interface StoreState {
   tags: TagInfo[] | null;
   /** Stashes for the picker's `Stashes` group; null = not listed yet (T11.2). */
   stashes: StashInfo[] | null;
+  /**
+   * T11.16 (atlas tab 19). Both lists are read once per repository, lazily: `submodules` when the
+   * first gitlink card mounts, `worktrees` when the dialog is opened. `null` = not listed yet;
+   * `[]` is a real answer (a repository with no submodules), and the two are different things.
+   */
+  submodules: SubmoduleInfo[] | null;
+  worktrees: WorktreeInfo[] | null;
+  /** The `Worktrees` dialog the palette action and the repo-name button open (Design §14.1). */
+  worktreesOpen: boolean;
   /** Branches mode (T11.7, Design §14.6). */
   branches: BranchesState;
   /** The palette's search scopes (T11.8, Design §14.1 rule 2, atlas tab 05). */
@@ -904,6 +915,12 @@ export interface StoreState {
   resolveRevision(expr: string): Promise<ResolvedRevision>;
   /** Fills `tags` / `stashes` once per open; called when a picker is opened for the first time. */
   loadPickerSources(): Promise<void>;
+  /** T11.16: `listSubmodules()` once per repository; the gitlink card calls it when it mounts. */
+  loadSubmodules(): Promise<void>;
+  /** T11.16: `listWorktrees()` once per repository; the Worktrees dialog calls it when it opens. */
+  loadWorktrees(): Promise<void>;
+  /** T11.16: opens or closes the Worktrees dialog (palette action, repo-name button). */
+  setWorktreesOpen(open: boolean): void;
   /** Applies a `#compare=<from>...<to>` spec to the open repository (T11.2). */
   applyCompare(spec: CompareSpec): Promise<void>;
   swapBranches(): void;
@@ -1258,6 +1275,10 @@ function findRef(repo: RepoInfo, nameOrRef: string): RepoRef | null {
 /** The `listTags` + `listStashes` pass for the pickers; one per open (T11.2). */
 let pickerSources: Promise<void> | null = null;
 
+/** T11.16: the same one-per-open rule for the two atlas-tab-19 listings. */
+let submodulesRead: Promise<void> | null = null;
+let worktreesRead: Promise<void> | null = null;
+
 /**
  * T11.5: `commitStats` is single-in-flight in the engine like every other method, so a second call
  * would cancel the first. The visible rows queue here and one drain loop serialises the batches.
@@ -1560,6 +1581,9 @@ export const useStore = create<StoreState>()((set, get) => {
     patchSession: INITIAL_PATCH_SESSION,
     tags: null,
     stashes: null,
+    submodules: null,
+    worktrees: null,
+    worktreesOpen: false,
     branches: INITIAL_BRANCHES,
     search: INITIAL_SEARCH,
     insights: INITIAL_INSIGHTS,
@@ -1747,6 +1771,9 @@ export const useStore = create<StoreState>()((set, get) => {
         patchSession: INITIAL_PATCH_SESSION,
         tags: null,
         stashes: null,
+        submodules: null,
+        worktrees: null,
+        worktreesOpen: false,
         branches: INITIAL_BRANCHES,
         search: INITIAL_SEARCH,
         insights: INITIAL_INSIGHTS,
@@ -1754,6 +1781,8 @@ export const useStore = create<StoreState>()((set, get) => {
         export: INITIAL_EXPORT,
       });
       pickerSources = null;
+      submodulesRead = null;
+      worktreesRead = null;
       commitStatsQueue.clear();
       branchCellQueue.clear();
       secretsAfterStats = null;
@@ -1837,6 +1866,51 @@ export const useStore = create<StoreState>()((set, get) => {
         }
       })();
       await pickerSources;
+    },
+
+    /**
+     * T11.16: the gitlink card's own source (atlas tab 19). One call per repository — a submodule
+     * set changes only with a commit, and `recompute()` would have re-read it for every refresh.
+     * A failure is not fatal: the card falls back to the two pointer oids the diff already carries.
+     */
+    async loadSubmodules() {
+      if (!get().repo) return;
+      if (submodulesRead) {
+        await submodulesRead;
+        return;
+      }
+      submodulesRead = (async () => {
+        try {
+          set({ submodules: await client().listSubmodules() });
+        } catch (e) {
+          ignoreStale(e);
+          set((s) => ({ submodules: s.submodules ?? [] }));
+        }
+      })();
+      await submodulesRead;
+    },
+
+    /** T11.16: the Worktrees dialog's only engine call, once per repository (Design §14.1). */
+    async loadWorktrees() {
+      if (!get().repo) return;
+      if (worktreesRead) {
+        await worktreesRead;
+        return;
+      }
+      worktreesRead = (async () => {
+        try {
+          set({ worktrees: await client().listWorktrees() });
+        } catch (e) {
+          ignoreStale(e);
+          set((s) => ({ worktrees: s.worktrees ?? [] }));
+        }
+      })();
+      await worktreesRead;
+    },
+
+    setWorktreesOpen(open) {
+      set({ worktreesOpen: open, ...(open ? { palette: false } : {}) });
+      if (open) void get().loadWorktrees();
     },
 
     async applyCompare(spec) {
@@ -3679,6 +3753,18 @@ export function selectFileDiff(
   id: string,
 ): FileDiffEntry | undefined {
   return s.fileDiffs.peek(cacheKey(id, s.prefs.ignoreWhitespace));
+}
+
+/**
+ * T11.16: what `listSubmodules()` says about one gitlink path, or undefined while the list is not
+ * in yet (or when this path is a gitlink the superproject's HEAD does not record — a submodule
+ * added in the working tree, which `git submodule status` does not list either).
+ */
+export function selectSubmodule(
+  s: Pick<StoreState, "submodules">,
+  path: string,
+): SubmoduleInfo | undefined {
+  return s.submodules?.find((m) => m.path === path);
 }
 
 /** T11.3: the kind of a conflicted file once its payload is in, so `layerCode` can print git's XY. */

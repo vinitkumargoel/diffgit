@@ -1,6 +1,8 @@
 import { CircleHelp } from "lucide-react";
 import { sourceLabels, sourceRefs } from "../../engine/diffSource";
+import { JJ_TAG, JJ_TITLE } from "../jj";
 import { selectCanIncludeWorktree, useStore } from "../store";
+import { WORKTREES_ACTION } from "../worktrees";
 import { BranchPicker } from "./BranchPicker";
 import { PaletteButton } from "./CommandPalette";
 import { IncludeWorktreeToggle } from "./IncludeWorktreeToggle";
@@ -13,6 +15,38 @@ import { ThemeToggle } from "./ThemeToggle";
 
 function Divider() {
   return <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-line" />;
+}
+
+/**
+ * Row 1's repo name (Design §14.1). Nothing is *added* to the row: the name itself is the button
+ * that opens the Worktrees dialog (T11.16, atlas tab 19), and the `jj colocated` tag — the only
+ * thing a colocated jujutsu workspace changes about the chrome — sits inside the same element,
+ * which is where Design §14 puts it.
+ */
+function RepoName({ name, jj }: { name: string; jj: boolean }) {
+  const setWorktreesOpen = useStore((s) => s.setWorktreesOpen);
+  const open = useStore((s) => s.worktreesOpen);
+  return (
+    <button
+      type="button"
+      className="flex items-center gap-1.5 rounded-[5px] text-sm font-semibold hover:underline"
+      aria-haspopup="dialog"
+      aria-expanded={open}
+      title={WORKTREES_ACTION}
+      onClick={() => setWorktreesOpen(true)}
+    >
+      <Logo size={20} className="rounded-[5px]" />
+      {name}
+      {jj && (
+        <span
+          className="inline-flex h-4 shrink-0 items-center rounded-full border border-chip-generated-fg/40 bg-chip-generated-bg px-1.5 font-sans text-[11px] leading-4 font-medium text-chip-generated-fg"
+          title={JJ_TITLE}
+        >
+          {JJ_TAG}
+        </span>
+      )}
+    </button>
+  );
 }
 
 /** Two-row control strip (Design §7.1 + §7.2, Plan §6.1 screen 4). Wraps on narrow widths. */
@@ -94,10 +128,7 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
       className={`shrink-0 text-[13px] leading-5 text-ink ${ownHeader ? "" : "border-b border-line"}`}
     >
       <div className="flex min-h-11 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface-raised px-3 py-1">
-        <span className="flex items-center gap-1.5 text-sm font-semibold">
-          <Logo size={20} className="rounded-[5px]" />
-          {repo.name}
-        </span>
+        <RepoName name={repo.name} jj={repo.jj} />
         <ModeSwitch />
         <span className="text-xs text-muted">base:</span>
         <BranchPicker

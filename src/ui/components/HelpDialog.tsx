@@ -15,7 +15,6 @@ interface Row {
   key: string;
   label?: string;
   description: string;
-  pending?: boolean;
 }
 
 function Shortcuts({ rows, caption }: { rows: readonly Row[]; caption: string }) {
@@ -28,10 +27,7 @@ function Shortcuts({ rows, caption }: { rows: readonly Row[]; caption: string })
             <td className="w-20 py-1.5 pr-3">
               <kbd className="kbd">{s.label ?? s.key}</kbd>
             </td>
-            <td className="py-1.5 text-ink">
-              {s.description}
-              {s.pending && <span className="ml-2 text-xs text-muted">when available</span>}
-            </td>
+            <td className="py-1.5 text-ink">{s.description}</td>
           </tr>
         ))}
       </tbody>
@@ -67,7 +63,6 @@ export function HelpDialog({ open, onClose }: { open: boolean; onClose: () => vo
       key: s.key,
       ...("label" in s ? { label: s.label } : {}),
       description: s.description,
-      ...("pending" in s && s.pending ? { pending: true } : {}),
     })),
   ];
 

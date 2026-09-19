@@ -1,0 +1,51 @@
+{
+  "id": "recorded-lfs",
+  "name": "lfs",
+  "headBranch": "main",
+  "headOid": "52bbe710234999a0264cdd2eba3711befacd3163",
+  "detached": false,
+  "unborn": false,
+  "headDisplay": "main",
+  "refs": [
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "52bbe710234999a0264cdd2eba3711befacd3163",
+      "isDefault": true,
+      "isCheckedOut": true
+    },
+    {
+      "name": "feature",
+      "fullName": "refs/heads/feature",
+      "kind": "local",
+      "oid": "49305593a72361d7afddcc319168fc8ac66b0370",
+      "isDefault": false,
+      "isCheckedOut": false
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "52bbe710234999a0264cdd2eba3711befacd3163",
+    "isDefault": true,
+    "isCheckedOut": true
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": [
+    {
+      "code": "LFS_PRESENT",
+      "message": "Git LFS is in use; LFS pointer files are shown as-is."
+    }
+  ],
+  "operation": null,
+  "jj": false,
+  "hasCommitGraph": false
+}

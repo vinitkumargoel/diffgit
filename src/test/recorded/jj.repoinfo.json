@@ -1,0 +1,60 @@
+{
+  "id": "recorded-jj",
+  "name": "jj",
+  "headBranch": null,
+  "headOid": "730f2aa04cbaf1832e5c73d747d8b4bdb5546226",
+  "detached": true,
+  "unborn": false,
+  "headDisplay": "jj working copy @ 730f2aa",
+  "refs": [
+    {
+      "name": "jj working copy @ 730f2aa",
+      "fullName": "HEAD",
+      "kind": "local",
+      "oid": "730f2aa04cbaf1832e5c73d747d8b4bdb5546226",
+      "isDefault": false,
+      "isCheckedOut": true,
+      "synthetic": true
+    },
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "730f2aa04cbaf1832e5c73d747d8b4bdb5546226",
+      "isDefault": true,
+      "isCheckedOut": false
+    },
+    {
+      "name": "feature",
+      "fullName": "refs/heads/feature",
+      "kind": "local",
+      "oid": "a8ede1325b4da020f4c0f0c8c17ee53d15bdf839",
+      "isDefault": false,
+      "isCheckedOut": false
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "730f2aa04cbaf1832e5c73d747d8b4bdb5546226",
+    "isDefault": true,
+    "isCheckedOut": false
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": [
+    {
+      "code": "JJ_COLOCATED",
+      "message": "This repository is also a jj workspace; git's HEAD is jj's working copy."
+    }
+  ],
+  "operation": null,
+  "jj": true,
+  "hasCommitGraph": false
+}

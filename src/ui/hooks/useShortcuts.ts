@@ -17,9 +17,10 @@ export const SHORTCUTS = [
 ] as const;
 
 /**
- * v2 keys (Design §14.7). `1`–`4` switch mode from T11.1 on; the rest are registered by the task
- * that owns the surface, so until then the HelpDialog lists them as "when available" and pressing
- * them does nothing (`useShortcuts` only fires keys that have a handler).
+ * v2 keys (Design §14.7). Every one of them is registered by the surface that owns it and works
+ * (T11.16 checked the list against the handlers): `1`–`4` in `RepoScreen`, `b` / `h` in `DiffPane`,
+ * `g` / `x` in `RepoScreen` while a bisect runs, `e` in `ExportMenu`, `Shift+H` in `FilesView`.
+ * The HelpDialog renders this table verbatim — there is no "when available" row left.
  */
 export const V2_SHORTCUTS = [
   { key: "1", description: "Files mode" },

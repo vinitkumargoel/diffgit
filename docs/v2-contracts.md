@@ -1071,6 +1071,60 @@ nobody may open); if that install probe fails — a host that merges the two pol
 **unregisters itself**, so a missing header costs offline support and nothing else. It never fetches
 cross-origin, never `skipWaiting()`s, and an update is one toast with a Reload action.
 
+<!-- T11.16 --> **The small wins of atlas tab 19, the docs and the final pass.** No engine call
+and no engine type was added: every one of the four surfaces reads a method T10.12 already ships.
+
+`StoreState` gained three fields and three actions: `submodules: SubmoduleInfo[] | null`,
+`worktrees: WorktreeInfo[] | null` and `worktreesOpen: boolean`, with `loadSubmodules()`,
+`loadWorktrees()` and `setWorktreesOpen(open)`. Both listings follow `loadPickerSources`'s rule —
+**once per repository**, lazily, `null` = not listed and `[]` a real answer — because a submodule
+set and a worktree set change with a commit, not with a refresh, and `recompute()` would otherwise
+re-read them on every tick. `closeRepo` resets all three and drops the two in-flight promises.
+Selector `selectSubmodule(s, path)`.
+
+**`SubmoduleCard`** (replacing `SubmoduleNotice` in place, same position in `FileCard`) is the
+gitlink body: the recorded pointer (`a → b`, which is all v1 had), the checked-out commit with an
+`in sync` / `drifted` / `not checked out` tag, the `.gitmodules` url, and the open action. `dirty`
+is never rendered — the contract records it as "not computed" and the card says so once in a
+footnote. **Opening a submodule is honest about what the engine allows**: `src/ui/openRepo.ts`
+gained `probeSubmodule(path)` and `openSubmodule(path)`, which walk down to `<path>` inside the
+folder the user already granted (no second permission prompt) and look at its `.git`. A `.git`
+**directory** — an old-style submodule or a nested clone — is handed to `store.openRepo`; a `.git`
+**file** is *not*, because `checkLayout` refuses it with `WORKTREE_GITDIR` (T1.2, Plan §5.2). The
+pointer is still resolved, with the engine's own `resolveGitdirLine`, so the card can say whether
+the git directory is inside the picked folder (where `SubmoduleInfo.checkedOut` came from) or
+outside it. The atlas's risk-row mitigation — teaching `checkLayout` to *follow* a contained
+`gitdir:` — is engine work T10.12 deliberately did not do, and is filed as a follow-up.
+
+**`WorktreesDialog`** is a `<dialog>`, opened from the palette action `Worktrees of this
+repository` and from the repo name in TopBar row 1 (which becomes the button; **nothing is added to
+row 1 or the StatsRow**, Design §14.1). Rows are `pathLabel · branch/detached · prunable ·
+this folder | open it to view`; the two honest gaps carry their explanation in a `title`.
+
+**`LfsCard`** is the file card body for a row with `FileClassification.lfs`, rendered **before**
+the image and binary gates — the same order `describeFile` sniffs it in, which is what makes an
+LFS row that `.gitattributes` marks binary show the card instead of "Binary file not shown". The
+classification carries one pointer (the new side wins) and a binary row has no `oldText`/`newText`,
+so the card reads **both** sides itself through `fileBytes`, and only where that side's blob is at
+most `LFS_POINTER_MAX_BYTES` — so a file converted to LFS is never read back in full. No LFS
+object is fetched, named or mentioned to anything off this machine; `Content` says exactly that.
+
+**jj** is one tag, `jj colocated`, inside the existing repo-name element (`src/ui/jj.ts`). There is
+nothing to suppress: the engine has no detached-HEAD warning code, `RefSnapshot.detached` stays
+true on purpose, and `headDisplay` is already `jj working copy @ <sha7>`.
+
+New pure modules `src/ui/submodules.ts` (`SubmoduleSync`, `syncOf`, `SYNC_LABEL`/`SYNC_TITLE`,
+`pointerLine`, `pointerSubtitle`, `shortSubmoduleOid`, `gitdirInsideNote` and every string),
+`src/ui/worktrees.ts` (`worktreeCount`, `branchLabel`, `pathLabel` and every string),
+`src/ui/lfs.ts` (`canBePointer`, `shortLfsOid`, `objectLine`, `sizeLine`, `lfsSubtitle`,
+`NOT_FETCHED`) and `src/ui/jj.ts` (`JJ_TAG`, `JJ_TITLE`); new shared primitives
+`components/KeyValue.tsx` (the atlas's `.kv` two-column body) and `components/KindTag.tsx`.
+`bun run record` gained the `lfs` fixture (with a recorded `main…feature` range in both dot modes —
+`build_lfs` leaves HEAD on `main`, where nothing differs) and the `jj` fixture; `mockContents.ts`
+serves the `lfs` fixture's pointer text verbatim and runs the engine's own `parseLfsPointerText`
+over it, so the mock's classification is produced by the same rule the engine uses and
+`bun run record` stays byte-idempotent.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).

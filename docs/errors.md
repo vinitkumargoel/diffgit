@@ -51,7 +51,7 @@ The registry is `src/engine/errors.ts`. Three tiers:
 |---|---|---|---|
 | `MULTI_PACK_INDEX` | `layoutChecks` (`.git/objects/pack/multi-pack-index`) | Multi-pack index | warning |
 | `SHALLOW` | `layoutChecks` (`.git/shallow`); `DiffEngine` when the merge base hit the shallow boundary; `RepoSession.open` | Shallow clone | warning |
-| `LFS_PRESENT` | `layoutChecks` (`filter.lfs` in config or `.gitattributes` `filter=lfs`) | Git LFS | warning |
+| `LFS_PRESENT` | `layoutChecks` (`filter.lfs` in config or `.gitattributes` `filter=lfs`); per file, `describeFile` sets `FileClassification.lfs` and the card names the object (T10.12 / T11.16) | Git LFS | warning |
 | `AUTOCRLF` | `layoutChecks` (`core.autocrlf = true/input`); `WorktreeScanner` when it affects hashing | Line endings | warning |
 | `PACK_LARGE` | `layoutChecks` (packs on disk > 300 MB); `RepoSession.checkMemory` (pack bytes read > 300 MB, `detail: "memory"`) | Large pack files | warning |
 | `INDEX_CHECKSUM` | `RepoSession.open`, `WorktreeScanner` (`readIndex` returned `checksumOk = false` after the retry) | Index checksum mismatch | warning |
@@ -80,9 +80,27 @@ The registry is `src/engine/errors.ts`. Three tiers:
 | `HISTORY_DEGRADED` | `walkCommits` / `commitStats` / `branchOverview` (T10.5b: an object read failed and the answer fell back instead of failing) | Part of the history could not be read | warning |
 | `SECRETS_FOUND` | `scanSecrets` (T10.7: a rule matched an added line) | Possible secret | error |
 | `OPERATION_IN_PROGRESS` | `operation` (T10.2: MERGE_HEAD / rebase-merge / CHERRY_PICK_HEAD / BISECT_LOG) | Operation in progress | info |
-| `SNAPSHOT_MODE` | `browserGate` (T11.15: Firefox/Safari read-once mode) | Snapshot mode | warning |
-| `JJ_COLOCATED` | `layoutChecks` (T10.12: `.jj` beside `.git`) | Colocated jj repository | info |
+| `SNAPSHOT_MODE` | the store's `openRepo` when the handle is a `FileSnapshot` (T11.15: Firefox/Safari read-once mode); re-merged into `warnings` on every recompute | Snapshot mode | warning |
+| `JJ_COLOCATED` | `layoutChecks` (T10.12: `.jj` beside `.git`); the page also tags the repo name `jj colocated` (T11.16) | Colocated jj repository | info |
 | `PATCH_ONLY` | `parsePatch` (T10.12: patch-only mode, no repository) | Patch only | info |
+
+## Warnings that are deliberately not banners
+
+Five warning codes never reach `WarningBanners`, because the surface that caused them prints the
+same fact in the one place it belongs (Design §14, rule 2: "inside a surface the user already
+opens"). One fact, one surface:
+
+| Code | Where it is shown instead |
+|---|---|
+| `OPERATION_IN_PROGRESS` | the operation banner itself (§14.3), which carries the step and the todo |
+| `BLAME_CAPPED` | one inline line in the blame body, with `Continue` (re-asks with +400 revisions) |
+| `SEARCH_CAPPED` | one line inside the palette's results, next to `scanned` and the duration |
+| `SECRETS_FOUND` | the `SecretBanner`; the count past the 500-finding cap is printed in its list |
+| `INSIGHTS_CAPPED` | one line under the Insights footer, driven by `InsightsResult.capped` |
+
+`HISTORY_DEGRADED` is shown from the data rather than from the warning in Branches mode (a row whose
+tip could not be read arrives with `lastCommit: null`), for the same reason: the warning is replaced
+by the next recompute, the row is not.
 
 ## Silent-failure review (every `catch` in `src/**`, 2026-09-17)
 

@@ -22,6 +22,7 @@ diffgit is a static page. Everything it does with your repository happens inside
 | IndexedDB `diffgit-repos` | Up to 20 recent repositories: the directory **handle** (an opaque browser token, not a path), the folder name, the last source/target branch names, last-opened time | The "Recent" list on the home screen. The browser re-asks for read permission the next time you open one. |
 | IndexedDB `diffgit-viewed` | Keys marking files you ticked as "viewed": repository id, refs, file id and blob hashes → timestamp, pruned to 5,000 | Viewed marks survive a reload and reset automatically when the file changes. |
 | `localStorage` `diffgit:prefs` | View preferences: split/unified, ignore whitespace, theme, sidebar width and similar | Remember your layout. |
+| IndexedDB `diffgit-derived` | Results diffgit computed from your repository and can reuse: blame and file history per `(repository, commit, path)`, insights per `(repository, tip, period)`, one summary card per repository, and the good/bad marks of a bisect | Blame and insights are expensive walks; keying them on a commit id means they are never stale. They contain file *attributions* and counts, not file contents, and the help dialog shows the total with a **Clear** button (also the palette's *Clear cached data*). |
 | Cache Storage `diffgit-<build>` | Copies of diffgit's **own** built files (scripts, styles, the page), as the browser loads them | The installed app opens with the network off (T11.14). No repository content is ever cached; an old build's cache is deleted when a new one activates. |
 
 No file contents, diffs, or hashes of file contents other than the git blob ids inside viewed keys are
@@ -74,6 +75,41 @@ ever stored. Every storage operation is optional: if storage is blocked or full,
   handle, no File System Access API call, no refresh.
 - **Installing changes one thing for you**: Chrome remembers folder permissions for an installed
   app, so it stops asking on every visit. It grants diffgit nothing it does not already have.
+
+## Exports: the only bytes that leave the page, and where they go (T11.10)
+
+- **There is no upload path.** `connect-src 'none'` makes one impossible. Every export is written by
+  the browser itself, from a `blob:` URL on a detached `<a download>`; you choose the folder in the
+  browser's own dialog. Nothing is written into your repository — it cannot be: writing through a
+  File System Access handle needs the write-capable call `scripts/check-guards.sh` fails the build
+  on (D16), which is also why `showSaveFilePicker()` is not used.
+- **What each export contains.** *Copy as unified diff* / *Save as `.patch`* are the patch text
+  `git apply` accepts, rendered from the comparison you are looking at. *Save review snapshot* is a
+  single self-contained HTML file: the design tokens, the patch as diff bodies, the file list, the
+  viewed ticks and a theme toggle in `localStorage`. It loads no script, no font and no image from
+  anywhere — `scripts/check-guards.sh` greps the generator for a network call and
+  `export.test.tsx` greps the generated page for one — so a snapshot opened from `file://` is as
+  offline as diffgit is. *Copy file list as Markdown* and *Copy stats line* are paths and counts.
+- **The secret gate runs before the write.** The uncommitted changes are scanned for credentials
+  (locally, on the added lines only); if anything is found, every export that carries file content
+  is replaced by a list of the findings — masked — and an explicit *Export anyway*. A snapshot
+  written past the gate records that it was. "Not scanned yet" is treated as unknown, never as
+  clean. The patch itself is **not** masked: it is your own lines, and a masked patch is one git
+  refuses to apply — the gate is the protection, not redaction.
+
+## Snapshot mode, on Firefox and Safari (T11.15)
+
+- Those browsers have no File System Access API, so there is no handle to keep. The folder is read
+  **once**, through `<input type="file" webkitdirectory>`, which is a browser-native file chooser:
+  the page receives `File` objects, hands them to the same Web Worker, and the engine reads bytes
+  out of them only when a diff actually needs them — a file the comparison does not touch is never
+  read at all.
+- Because there is no handle: **nothing is remembered**. Snapshot mode writes no Recent entry,
+  starts no refresh scheduler and grants no lasting access; when the tab closes, the page has
+  nothing left to open. A `Snapshot mode · read at 14:02 · Re-open to refresh` tag says exactly
+  what you are looking at and how old it is.
+- The same read-only guarantees apply: `File` objects carry no write path, the CSP is the same one,
+  and a folder above 100,000 entries is refused with advice rather than read.
 
 ## How to clear everything
 

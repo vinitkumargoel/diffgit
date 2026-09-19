@@ -26,9 +26,6 @@ import { openRepoOnce } from "../openRepo";
 import { type GateCause, useStore } from "../store";
 import { Logo } from "./Logo";
 
-export const PRIVACY_LINE =
-  "Nothing leaves your browser: the folder is opened read-only, no data is uploaded, and there are no analytics.";
-
 /** The address the gate points people at — never `location.href`, which may be a LAN ip or a frame. */
 const CANONICAL = "https://diffgit.com";
 
