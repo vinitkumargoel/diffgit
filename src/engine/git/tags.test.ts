@@ -16,7 +16,8 @@ async function tagsOf(name: string): Promise<TagInfo[]> {
 
 /** The `TAG_FMT` line git printed for this tag (a lightweight tag has an empty `*objectname`). */
 function asGit(t: TagInfo): string {
-  return `${t.fullName} ${t.annotated ? "tag" : "commit"} ${t.oid} ${t.annotated ? t.targetOid : ""}`;
+  const type = t.annotated ? "tag" : t.targetType;
+  return `${t.fullName} ${type} ${t.oid} ${t.annotated ? t.targetOid : ""}`;
 }
 
 describe("listTags", () => {
@@ -37,6 +38,14 @@ describe("listTags", () => {
     // milliseconds, like every other timestamp crossing the worker boundary
     expect(annotated.timestamp).toBe(annotated.tagger?.timestamp as number);
     expect(annotated.timestamp).toBeGreaterThan(1e12);
+
+    // T10.5b B1: a tag can name a blob or a tree, and `targetType` says which.
+    const blob = tags.find((t) => t.name === "blob-tag") as TagInfo;
+    expect(blob.targetType).toBe("blob");
+    expect(blob.annotated).toBe(false);
+    expect(blob.oid).toBe(blob.targetOid);
+    expect((tags.find((t) => t.name === "tree-tag") as TagInfo).targetType).toBe("tree");
+    expect(annotated.targetType).toBe("commit");
 
     const lightweight = tags.find((t) => t.name === "v0.1.0") as TagInfo;
     expect(lightweight.annotated).toBe(false);

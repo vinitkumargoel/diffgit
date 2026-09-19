@@ -5,6 +5,7 @@
       "fullName": "refs/tags/v0.1.0",
       "oid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
       "targetOid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "targetType": "commit",
       "annotated": false
     },
     {
@@ -12,6 +13,7 @@
       "fullName": "refs/tags/v0.2.0",
       "oid": "52052fc357c12a45a641e38d1d910fdec75f4241",
       "targetOid": "52052fc357c12a45a641e38d1d910fdec75f4241",
+      "targetType": "commit",
       "annotated": false
     },
     {
@@ -19,6 +21,7 @@
       "fullName": "refs/tags/v0.3.0",
       "oid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
       "targetOid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+      "targetType": "commit",
       "annotated": false
     },
     {
@@ -26,6 +29,7 @@
       "fullName": "refs/tags/v1.0.0",
       "oid": "b611cc845ddc7e1ddf0374473da5db8c21892a1a",
       "targetOid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "targetType": "commit",
       "annotated": true,
       "message": "annotated release 1.0.0\n",
       "tagger": {
@@ -3075,7 +3079,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": true
+      "graphAvailable": true,
+      "laneOverflow": false
     },
     "first-parent": {
       "commits": [
@@ -4373,7 +4378,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": true
+      "graphAvailable": true,
+      "laneOverflow": false
     },
     "all": {
       "commits": [
@@ -6436,7 +6442,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": true
+      "graphAvailable": true,
+      "laneOverflow": false
     },
     "path:src/hot.txt": {
       "commits": [
@@ -6495,7 +6502,8 @@
           "refs": []
         }
       ],
-      "graphAvailable": true
+      "graphAvailable": true,
+      "laneOverflow": false
     },
     "path:src/renamed-to.txt": {
       "commits": [
@@ -6536,7 +6544,8 @@
           "refs": ["v0.3.0"]
         }
       ],
-      "graphAvailable": true
+      "graphAvailable": true,
+      "laneOverflow": false
     }
   },
   "commits": {
@@ -8805,5 +8814,6 @@
       "revisions": 4,
       "capped": false
     }
-  }
+  },
+  "secrets": []
 }

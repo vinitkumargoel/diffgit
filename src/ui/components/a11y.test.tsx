@@ -154,6 +154,7 @@ describe("axe (vitest, happy-dom)", () => {
             oid: "1".repeat(40),
             targetOid: "1".repeat(40),
             annotated: true,
+            targetType: "commit",
           },
         ]}
         stashes={[

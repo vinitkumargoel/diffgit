@@ -28,16 +28,25 @@ export function toSignature(s: {
 
 /**
  * Peels `oid` through any chain of annotated tag objects to the object they ultimately name.
- * Returns the target and the first tag object seen (null for a lightweight tag).
+ * Returns the target, its type and the first tag object seen (null for a lightweight tag).
  */
 export async function peelTag(
   db: ObjectDb,
   oid: Oid,
-): Promise<{ target: Oid; tagOid: Oid | null; message?: string; tagger?: Signature }> {
+): Promise<{
+  target: Oid;
+  targetType: TagInfo["targetType"];
+  tagOid: Oid | null;
+  message?: string;
+  tagger?: Signature;
+}> {
   let current = oid;
   let tagOid: Oid | null = null;
   let message: string | undefined;
   let tagger: Signature | undefined;
+  /** The last tag object's `type` field is git's own answer for `%(*objecttype)`. */
+  let targetType: TagInfo["targetType"] = "commit";
+  let typeKnown = false;
   for (let i = 0; i < MAX_PEEL; i++) {
     const tag = await db.readTag(current);
     if (!tag) break;
@@ -46,10 +55,26 @@ export async function peelTag(
       message = tag.message;
       if (tag.tagger) tagger = toSignature(tag.tagger);
     }
+    if (tag.type !== "tag") {
+      targetType = tag.type;
+      typeKnown = true;
+    }
     current = tag.object;
   }
-  const out: { target: Oid; tagOid: Oid | null; message?: string; tagger?: Signature } = {
+  if (!typeKnown) {
+    // A lightweight tag: ask the object database what the ref actually names (T10.5b B1).
+    const type = await db.objectType(current);
+    targetType = type === null || type === "tag" ? "commit" : type;
+  }
+  const out: {
+    target: Oid;
+    targetType: TagInfo["targetType"];
+    tagOid: Oid | null;
+    message?: string;
+    tagger?: Signature;
+  } = {
     target: current,
+    targetType,
     tagOid,
   };
   if (message !== undefined) out.message = message;
@@ -70,6 +95,7 @@ export async function listTags(db: ObjectDb): Promise<TagInfo[]> {
       fullName,
       oid,
       targetOid: peeled.target,
+      targetType: peeled.targetType,
       annotated: peeled.tagOid !== null,
     };
     if (peeled.message !== undefined) info.message = peeled.message;

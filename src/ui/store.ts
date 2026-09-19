@@ -1198,7 +1198,9 @@ export const useStore = create<StoreState>()((set, get) => {
       pickerSources = (async () => {
         try {
           // One in-flight call per method (T4.1), so the two listings go one after the other.
-          const tags = await client().listTags();
+          // A tag can name a blob or a tree (T10.5b `TagInfo.targetType`); only a commit can be a
+          // side of a diff, so the picker lists the others no more than `git log --all` walks them.
+          const tags = (await client().listTags()).filter((t) => t.targetType === "commit");
           const stashes = await client().listStashes();
           set({ tags, stashes });
         } catch (e) {

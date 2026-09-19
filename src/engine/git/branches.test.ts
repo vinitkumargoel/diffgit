@@ -7,9 +7,28 @@ import { describe, expect, test } from "bun:test";
 import { fixturePath, loadExpectedLines } from "../../test/fixtures";
 import { NodeDirHandle } from "../fs/nodeDirHandle";
 import { RepoSession } from "../session";
-import type { BranchRow } from "../types";
-import { upstreamOf } from "./branches";
+import type { BranchRow, RefSnapshot } from "../types";
+import { mapFetchRefspec, upstreamOf } from "./branches";
 import { parseGitConfig } from "./config";
+
+/** A `RefSnapshot` with just the refs a test needs; nothing else is read by `upstreamOf`. */
+function snapshot(refs: { name: string; fullName: string }[]): RefSnapshot {
+  return {
+    headBranch: "main",
+    headOid: null,
+    detached: false,
+    unborn: false,
+    headDisplay: "main",
+    refs: refs.map((r) => ({
+      ...r,
+      kind: r.fullName.startsWith("refs/remotes/") ? ("remote" as const) : ("local" as const),
+      oid: "0".repeat(40),
+      isDefault: false,
+      isCheckedOut: false,
+    })),
+    defaultRef: null,
+  };
+}
 
 async function open(name: string): Promise<RepoSession> {
   return RepoSession.open(
@@ -158,9 +177,48 @@ describe("upstreamOf", () => {
         '[branch "local"]\n\tremote = .\n\tmerge = refs/heads/main\n' +
         '[branch "half"]\n\tremote = origin\n',
     );
-    expect(upstreamOf(cfg, "main")).toBe("origin/main");
-    expect(upstreamOf(cfg, "local")).toBe("main");
-    expect(upstreamOf(cfg, "half")).toBeNull();
-    expect(upstreamOf(cfg, "absent")).toBeNull();
+    const refs = snapshot([]);
+    expect(upstreamOf(cfg, refs, "main")).toBe("origin/main");
+    expect(upstreamOf(cfg, refs, "local")).toBe("main");
+    expect(upstreamOf(cfg, refs, "half")).toBeNull();
+    expect(upstreamOf(cfg, refs, "absent")).toBeNull();
+  });
+
+  // T10.5b nit 3.
+  test("a merge ref outside refs/heads/ does not become origin/refs/for/x", () => {
+    const cfg = parseGitConfig(
+      '[branch "gerrit"]\n\tremote = origin\n\tmerge = refs/for/main\n' +
+        '[remote "origin"]\n\tfetch = +refs/heads/*:refs/remotes/origin/*\n',
+    );
+    expect(upstreamOf(cfg, snapshot([]), "gerrit")).toBeNull();
+  });
+
+  test("the upstream is resolved through the remote's fetch refspec", () => {
+    const cfg = parseGitConfig(
+      '[branch "main"]\n\tremote = up\n\tmerge = refs/heads/main\n' +
+        '[remote "up"]\n\tfetch = +refs/heads/*:refs/remotes/upstream/*\n',
+    );
+    const refs = snapshot([
+      { name: "upstream/main", fullName: "refs/remotes/upstream/main" },
+      { name: "up/main", fullName: "refs/remotes/up/main" },
+    ]);
+    // The refspec wins over the `refs/remotes/<remote>/<short>` guess, which also exists here.
+    expect(upstreamOf(cfg, refs, "main")).toBe("upstream/main");
+  });
+
+  test("a remote with no refspec falls back to refs/remotes/<remote>/<short> by fullName", () => {
+    const cfg = parseGitConfig('[branch "main"]\n\tremote = origin\n\tmerge = refs/heads/trunk\n');
+    const refs = snapshot([{ name: "origin/trunk", fullName: "refs/remotes/origin/trunk" }]);
+    expect(upstreamOf(cfg, refs, "main")).toBe("origin/trunk");
+  });
+
+  test("mapFetchRefspec maps a wildcard spec and refuses one it does not cover", () => {
+    const spec = "+refs/heads/*:refs/remotes/origin/*";
+    expect(mapFetchRefspec(spec, "refs/heads/x/y")).toBe("refs/remotes/origin/x/y");
+    expect(mapFetchRefspec(spec, "refs/for/x")).toBeNull();
+    expect(mapFetchRefspec("refs/heads/main:refs/remotes/o/main", "refs/heads/main")).toBe(
+      "refs/remotes/o/main",
+    );
+    expect(mapFetchRefspec(undefined, "refs/heads/main")).toBeNull();
   });
 });

@@ -24,18 +24,35 @@ and sink message counts, DiffResult payload size, handle-cache size and pack byt
 | Handle-cache evictions per single-path refresh | ≤ paths reported | 1 for 1 path | always |
 | Pack bytes held (R3 guard) | warn > 300 MB | 480 kB, no warning | `RepoSession.checkMemory` |
 
-## History walk (T10.5, same machine, 2026-09-19)
+## History walk (T10.5, re-measured for T10.5b, same machine, 2026-09-19)
 
 `walkCommits` pages by 50 and reads parents + commit times from `.git/objects/info/commit-graph`
 when there is one, falling back to `ObjectDb.readCommit` per commit when there is not (atlas tab 20).
 The emitted rows always cost one `readCommit` each, for the author and subject.
 
+T10.5b changed three things that show up here. The release is windowed (`LOOKAHEAD = 512` commits
+discovered ahead of the emission point) so the first page pays for ~560 `CommitReader.meta` lookups
+rather than ~50 — off the commit-graph that is a binary search per commit, and the numbers below are
+the whole cost. The cursor is an opaque token into session-held state instead of a serialised
+frontier, so it is **13 bytes** on every page rather than ≈ 47 B per commit walked (≈ 2.3 MB at the
+50,000-commit cap, and ≈ 1 GB of cumulative transfer over a full paging run). And `aheadBehind` is
+git's single painted queue, so it walks the divergence rather than both full histories.
+
+`perf-log`: 2,000 linear commits, 50 branches, a commit-graph, built only under `FIXTURES_PERF=1`.
+The old first-page number came from `perf-5k`, whose HEAD is two commits deep — it measured the
+fixed cost and nothing else (T10.5b nit 8), and is kept below only as that fixed cost.
+
 | Metric | Budget | Measured | Where asserted |
 |---|---|---|---|
-| First page (`limit: 50`) on `perf-5k`, straight after open | < 100 ms | 8 ms (2 commits; the fixture's HEAD is two deep, so this is the fixed cost: parse + verify the commit-graph, build the refs-by-commit index, one `readCommit` per row on a 5,000-file repository) | `scripts/perf.ts`, strict only |
-| Full `--all` walk of `history` (63 commits, pages of 50) **with** the commit-graph | – | 13 ms | `scripts/perf.ts` (printed) |
+| First page (`limit: 50`) on `perf-log`, straight after open (2,000 commits) | < 100 ms | **10 ms** (open is a further 101 ms: 51 refs, `packed-refs`, the commit-graph) | `scripts/perf.ts`, strict only |
+| `--all` first page of 50 on `perf-log` (51 seeds + the refs-by-commit index) | < 100 ms | **6 ms** | strict only |
+| `--all` **second** page of 50 on `perf-log` (resumed from the token) | < 50 ms | **6 ms** | strict only |
+| Full `--all` walk of `perf-log` (2,000 rows, pages of 250) | – | 185 ms (≈ 0.09 ms per row, including one `readCommit` each) | `scripts/perf.ts` (printed) |
+| Walk cursor size, any page | – | 13 B (`w<8 hex>.<n>`), against ≈ 47 B × commits walked before T10.5b | – |
+| First page on `perf-5k` (HEAD is 2 deep: the fixed cost of parse + verify + refs index) | – | 8.5 ms | `scripts/perf.ts` (printed) |
+| Full `--all` walk of `history` (63 commits, pages of 50) **with** the commit-graph | – | 12 ms | `scripts/perf.ts` (printed) |
 | Full `--all` walk of `history` **without** it (the file removed from a copy) | – | 25 ms | `scripts/perf.ts` (printed) |
-| Commit-graph speed-up on that walk | – | **1.9×** (the atlas estimated 2–5× on bigger histories, where the per-commit object inflation dominates rather than the 63 `readCommit` calls both paths still pay for the rows) | – |
+| Commit-graph speed-up on that walk | – | **2.1×** (the atlas estimated 2–5× on bigger histories, where the per-commit object inflation dominates rather than the 63 `readCommit` calls both paths still pay for the rows) | – |
 
 ## Blame and file history (T10.6, same machine, 2026-09-19)
 
@@ -59,9 +76,12 @@ fixed cost — the tree walk and the per-revision blob reads — rather than the
 termination means a file whose lines were all rewritten recently never walks to its root.
 
 `markReachable` is one walk from every ref, cached per refs snapshot, so the reflog panel's
-`unreachable` badges cost one traversal for the whole list. `aheadBehind` builds both reachability
-sets (capped at 10,000 each) rather than pruning at the merge base, because a commit reachable from
-the base can also be reached on a path that never passes through it.
+`unreachable` badges cost one traversal for the whole list. `aheadBehind` (T10.5b S3) is git's own
+`rev-list --left-right --count`: one date-ordered queue seeded LEFT/RIGHT, painting COMMON where the
+two meet and stopping as soon as nothing but COMMON is left (`still_interesting`). Two branches five
+commits apart on a 2,000-commit trunk therefore walk six commits, not 2,000 — which is also why the
+10,000 cap no longer produces arbitrary numbers when it does bite. `branchCells` memoises the result
+per `(a, b)` pair for the current refs snapshot, so a 50-row table walks each pair once.
 
 Earlier per-phase engine numbers (T1–T3, same machine): `flattenTree` on perf-5k 30–150 ms,
 index parse 28 ms, worktree scan ≈ 0.5 s cold, probes git 0.2 ms / index 6 ms / untracked 24 ms.

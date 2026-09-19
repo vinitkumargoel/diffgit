@@ -13,6 +13,7 @@ import type {
   ProgressSink,
 } from "../engine/api";
 import { isWorktreeSource, sourceRefs } from "../engine/diffSource";
+import { secretsWarning } from "../engine/scan/secrets";
 import type {
   AheadBehind,
   BlamePayload,
@@ -30,6 +31,7 @@ import type {
   RepoInfo,
   RepoOperation,
   ResolvedRevision,
+  SecretFinding,
   StashInfo,
   TagInfo,
   WalkPage,
@@ -58,6 +60,9 @@ import rebaseV2 from "../test/recorded/rebase-conflict.v2.json";
 import orphanDiff from "../test/recorded/reflog-orphan.diffresult.json";
 import orphanInfo from "../test/recorded/reflog-orphan.repoinfo.json";
 import orphanV2 from "../test/recorded/reflog-orphan.v2.json";
+import secretsDiff from "../test/recorded/secrets.diffresult.json";
+import secretsInfo from "../test/recorded/secrets.repoinfo.json";
+import secretsV2 from "../test/recorded/secrets.v2.json";
 import basicDiff from "../test/recorded/showcase.diffresult.json";
 import basicInfo from "../test/recorded/showcase.repoinfo.json";
 import worktreeDiff from "../test/recorded/showcase-worktree.diffresult.json";
@@ -97,7 +102,10 @@ interface RecordedV2 {
   revisions: Record<string, ResolvedRevision>;
   ranges: { source: DiffSource; result: DiffResult }[];
   /** T10.5: the whole history per walk variant; the mock pages it with an index cursor. */
-  walks: Record<string, { commits: CommitSummary[]; graphAvailable: boolean }>;
+  walks: Record<
+    string,
+    { commits: CommitSummary[]; graphAvailable: boolean; laneOverflow?: boolean }
+  >;
   commits: Record<Oid, CommitDetails>;
   commitStats: Record<Oid, CommitDetails["stats"]>;
   branches: BranchRow[];
@@ -106,6 +114,8 @@ interface RecordedV2 {
   /** T10.6: the follow-renames history per path, and one blame per path and `-w` setting. */
   pathHistories: Record<string, PathHistoryEntry[]>;
   blames: Record<string, BlamePayload>;
+  /** T10.7: every finding of the secret scan on the recorded working tree. */
+  secrets: SecretFinding[];
 }
 
 /** `blames` is keyed by path, `w:` prefixed for the `-w` recording (see `scripts/record-fixtures.ts`). */
@@ -194,6 +204,12 @@ const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult; v2?: Recorded
     info: orphanInfo as RepoInfo,
     diff: orphanDiff as DiffResult,
     v2: orphanV2 as unknown as RecordedV2,
+  },
+  // T10.7: planted fake credentials in staged and unstaged hunks, for the secret banner (T11.9)
+  secrets: {
+    info: secretsInfo as RepoInfo,
+    diff: secretsDiff as DiffResult,
+    v2: secretsV2 as unknown as RecordedV2,
   },
   // T10.4: the ignored dir / ignored file / index flags / 11 MB file, for the Hidden group (T11.4)
   hidden: {
@@ -441,6 +457,7 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         cursor: end < recorded.commits.length ? String(end) : null,
         graphAvailable: recorded.graphAvailable,
         capped: false,
+        laneOverflow: recorded.laneOverflow === true,
       };
       sink?.onProgress({ phase: "history", done: page.commits.length, durationMs: 1 });
       return page;
@@ -519,6 +536,16 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         durationMs: 1,
       });
       return { ...recorded, ref };
+    },
+    async scanSecrets(gen) {
+      const files = requireGen(gen);
+      const v2 = requireV2();
+      await wait(client.latency);
+      const ids = new Set(files.map((f) => f.id));
+      const found = v2.secrets.filter((s) => ids.has(s.fileId));
+      sink?.onProgress({ phase: "secrets", done: files.length, total: files.length });
+      if (found.length > 0) sink?.onWarning(secretsWarning(found.length, found.length));
+      return found;
     },
     async fileBytes(gen, id, side) {
       const files = requireGen(gen);
@@ -605,6 +632,7 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         reachable: {},
         pathHistories: {},
         blames: {},
+        secrets: [],
       }
     );
   }

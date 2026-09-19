@@ -409,6 +409,7 @@ const TAGS: TagInfo[] = [
     oid: "1".repeat(40),
     targetOid: "1".repeat(40),
     annotated: false,
+    targetType: "commit",
   },
   {
     name: "v1.0.0",
@@ -416,6 +417,7 @@ const TAGS: TagInfo[] = [
     oid: "2".repeat(40),
     targetOid: "3".repeat(40),
     annotated: true,
+    targetType: "commit",
     message: "release",
     timestamp: 1704067200000,
   },

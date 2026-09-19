@@ -4010,6 +4010,154 @@ exports[`warning registry > snapshots one banner per code in both themes > banne
 </div>
 `;
 
+exports[`warning registry > snapshots one banner per code in both themes > banner HISTORY_DEGRADED (dark) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Part of the history could not be read
+    </strong>
+     
+    Some commits or counts are missing because an object could not be read.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      HISTORY_DEGRADED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Part of the history could not be read"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`warning registry > snapshots one banner per code in both themes > banner HISTORY_DEGRADED (light) 1`] = `
+<div
+  class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"
+  data-level="warning"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-triangle-alert lucide-alert-triangle shrink-0 text-attention"
+    fill="none"
+    height="14"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+    />
+    <path
+      d="M12 9v4"
+    />
+    <path
+      d="M12 17h.01"
+    />
+  </svg>
+  <p
+    class="min-w-0 flex-1"
+  >
+    <strong
+      class="font-semibold"
+    >
+      Part of the history could not be read
+    </strong>
+     
+    Some commits or counts are missing because an object could not be read.
+    <span
+      class="ml-1 font-mono text-[10.5px] text-muted/70"
+    >
+      HISTORY_DEGRADED
+    </span>
+  </p>
+  <button
+    aria-label="Dismiss: Part of the history could not be read"
+    class="shrink-0 rounded-[3px] p-0.5 text-muted hover:bg-surface-raised hover:text-ink"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-x"
+      fill="none"
+      height="14"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="14"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M18 6 6 18"
+      />
+      <path
+        d="m6 6 12 12"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
 exports[`warning registry > snapshots one banner per code in both themes > banner INDEX_CHECKSUM (dark) 1`] = `
 <div
   class="flex items-center gap-2 border-b px-4 py-2 text-[12.5px] leading-[18px] text-ink bg-banner-warning-bg border-banner-warning-border"

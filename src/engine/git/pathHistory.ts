@@ -196,6 +196,7 @@ export async function pathHistory(
     throwIfAborted(deps.signal, "path history");
     const oid: Oid = current;
     const meta = await deps.reader.meta(oid);
+    if (meta === null) break; // not a commit (T10.5b B1); a resolved start never is
     const parent = meta.parents[0] ?? null;
     const childTree = await db.flattenTree(oid);
     const mine = childTree[currentPath] ?? null;

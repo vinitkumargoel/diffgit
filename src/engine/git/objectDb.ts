@@ -2,9 +2,9 @@
  * ObjectDb (T1.3, Plan §5.2): the only place that calls isomorphic-git. Pure reads, one shared
  * `cache` object per session, memoised flattened trees, stale-pack retry.
  *
- * Allowed isomorphic-git calls: resolveRef, listBranches, listTags, readCommit, readTree, readBlob,
- * readTag, readNote, expandOid, findMergeBase (and walk(TREE) / listRemotes if ever needed).
- * Nothing here may write.
+ * Allowed isomorphic-git calls: resolveRef, listBranches, listTags, readObject, readCommit,
+ * readTree, readBlob, readTag, readNote, expandOid, findMergeBase (and walk(TREE) / listRemotes if
+ * ever needed). Nothing here may write.
  */
 import git from "isomorphic-git";
 import { EngineError, errorCode } from "../errors";
@@ -222,6 +222,29 @@ export class ObjectDb {
   async listRemoteBranches(remote: string): Promise<string[]> {
     const names = await git.listBranches({ fs: this.fs, dir: DIR, remote });
     return names.filter((n) => n !== "HEAD");
+  }
+
+  /**
+   * The git object type of `oid`, or null when the database does not have it (T10.5b B1). A ref
+   * can name a blob or a tree — git.git ships `refs/tags/junio-gpg-pub`, a blob — and everything
+   * that walks history has to skip those instead of failing with an `ObjectTypeError`.
+   */
+  async objectType(oid: Oid): Promise<"blob" | "tree" | "commit" | "tag" | null> {
+    return this.withStalePackRetry(async () => {
+      try {
+        const r = await git.readObject({
+          fs: this.fs,
+          dir: DIR,
+          oid,
+          format: "content",
+          cache: this.cache,
+        });
+        return r.type as "blob" | "tree" | "commit" | "tag";
+      } catch (e) {
+        if (errorCode(e) === "NotFoundError") return null;
+        throw e;
+      }
+    });
   }
 
   async readCommit(oid: Oid): Promise<CommitInfo> {

@@ -136,20 +136,18 @@ count of its direct children and is never descended, and `too-large` comes from 
 current diff. `bun run record` records the `hidden` fixture and writes `hidden` (the whole group)
 and `explanations` (path → `PathExplanation`) into `<fixture>.v2.json`.
 
-<!-- T10.5 --> `walkCommits` reproduces `git log --date-order`, which is git's *topological* order with
-a commit-date tie-break (revision.c sets `topo_order` for `--date-order`): a commit is queued only
-once every discovered commit that names it as a parent has been emitted (git's indegree), and among
-those the newest wins, ties going to whichever became eligible first — `prio_queue`'s insertion
-counter. The walk streams, so the indegree is over the commits discovered so far rather than a whole
-pre-walk; the two agree whenever commit dates do not increase towards the parents, which is every
-history git itself writes. `WalkRequest.from` holds revision expressions (`resolveRevision`); `all`
+<!-- T10.5, amended by T10.5b --> `walkCommits` reproduces `git log --date-order`, which is git's
+*topological* order with a commit-date tie-break (revision.c sets `topo_order` for `--date-order`): a
+commit is queued only once every discovered commit that names it as a parent has been emitted (git's
+indegree), and among those the newest wins, ties going to whichever became eligible first —
+`prio_queue`'s insertion counter. See the T10.5b paragraph below for the exact guarantee the walk
+gives against git's whole-list pass. `WalkRequest.from` holds revision expressions (`resolveRevision`); `all`
 seeds from every ref, tag and stash sorted by ref name and then `HEAD`, the order `git log --all`
 seeds its own walk in. `path` applies git's default history simplification (a commit TREESAME to a
 parent is not shown and only that parent is followed); rename following is T10.6, and a path-filtered
 page carries no `lane`/`laneCount`/`edges` because a lane reserved for a commit the filter skips
-would never close. `WalkPage.cursor` is a JSON blob carrying the eligible queue, the indegree map,
-the oids discovered so far and the lane table, so a page is self-contained and survives a worker
-restart. `CommitSummary.refs` are display names, `HEAD` first, then branch and remote names in
+would never close. `WalkPage.cursor` is an opaque token (T10.5b S4 replaced the self-contained JSON blob).
+`CommitSummary.refs` are display names, `HEAD` first, then branch and remote names in
 `RefSnapshot` order, then tags, then stash selectors. `CommitSummary.edges` describes the band
 **below** the node: `from` is a lane index at this row, `to` a lane index at the next, `straight` is
 a line that stays in its lane (a pass-through, or the commit continuing into its first parent),
@@ -194,6 +192,82 @@ methods stop reading objects instead of running to completion. `bun run record` 
 `pathHistories` (follow-renames, per path) and `blames` (per path, `w:`-prefixed for the `-w`
 recording) into `<fixture>.v2.json` for the three `history` files the blame oracles cover.
 
+<!-- T10.5b --> Five corrections to the T10.5 walker, from an independent review of 59d121a.
+
+**Ordering — what the walk actually guarantees.** git computes `--date-order` in two passes: the
+whole candidate list (`limit_list`), then an indegree over that list and a date-priority release
+(`sort_in_topological_order`). `walkCommits` does the same two passes over a **window**: before any
+commit is released, `limit + LOOKAHEAD` (512) further commits have been discovered and their
+indegrees counted. The guarantee is therefore: **the page equals `git log --date-order` unless a
+commit is older than one of its own parents by more than `limit + 512` commits of history.** Under
+that much committer-date skew the order can differ from git's and the extra child edge is dropped
+rather than drawn (`placeCommit` never reserves a lane for an already-emitted oid and never emits an
+edge into one, so no lane leaks and no line is left dangling). The earlier claim that a streaming
+indegree "agrees whenever commit dates do not increase towards the parents" was too weak: a parent
+newer than its child could be emitted first and leak a lane — `fixtures/skew` is that case, built
+with `git commit-tree` and explicit `GIT_COMMITTER_DATE`s.
+
+**`WalkPage.cursor` is an opaque token.** It is `w<8 hex>.<n>` (13 bytes), a key into walk state the
+session holds; the walk state itself never crosses the worker boundary. A token the session does not
+hold — a worker restart, a `reloadRefs()`, more than eight pages ago — and a token whose request key
+no longer matches the request (`from`, `firstParent`, `all`, `path`) both reject with **`STALE`**:
+**the UI must drop the list it has and restart from page 1 when `walkCommits` answers `STALE`**;
+silently restarting inside the engine duplicated rows while refs moved. A cursor string that is not
+a token this engine issues at all is a caller bug and answers `INTERNAL` with the text as `detail`.
+A `limit` that is not a positive integer is likewise `INTERNAL`.
+
+**`WalkPage.laneOverflow: boolean`** is true when a row in that page needed more than `MAX_LANES`
+(12) lanes: the extra lanes are folded into the last one and `laneCount` is capped at 12, so the
+graph column stays drawable but is no longer faithful — the UI offers `first-parent` when it is set.
+
+**`aheadBehind` is exact under its cap.** It is git's own algorithm: one date-ordered priority queue
+seeded `LEFT`/`RIGHT`, a commit carrying both flags is COMMON and counted for neither side, and the
+walk stops as soon as nothing but COMMON is left (`still_interesting`). Two branches five commits
+apart on a 10,000-commit trunk walk six commits. `capped` therefore means the *divergence* exceeded
+the cap, not that two independently truncated reachability sets were subtracted; the counts are
+lower bounds only then. `branchCells` memoises the result per `(a, b)` pair for the current refs
+snapshot. `TagInfo` gains `targetType: "commit" | "tree" | "blob"` — a tag can name a blob (git.git
+ships `refs/tags/junio-gpg-pub`) and everything that seeds a walk skips anything but `"commit"`,
+exactly as `git log --all` does; `CommitReader.meta` answers null for a non-commit.
+
+**Cancellation.** `RepoSession.single()`'s `AbortSignal` now reaches `WalkDeps`, `reachableFrom`,
+`aheadBehind` and `CommitStatsDeps`, and every loop checks it, so a superseded call stops reading
+objects instead of running to completion. `walkCommits` reports `{ phase: "history", done }` every
+500 commits discovered rather than once at the end.
+
+`WARNING_CODES` gains **`HISTORY_DEGRADED`**: an object read that history fell back from instead of
+failing the page (an unreadable commit-graph, a ref whose commit cannot be read, a commit whose
+stats could not be computed). `detail` is `IO_ERROR: <what>`. `bun run record` writes
+`WalkPage.laneOverflow` into `walks`; the `tags` fixture gains a blob tag and a tree tag, `octopus`
+gains a commit-graph (so the EDGE chunk is exercised), and `FIXTURES_PERF=1` also builds `perf-log`
+(2,000 linear commits + 50 branches) for `docs/perf.md`.
+<!-- T10.7 --> `scanSecrets(generation)` reuses `describeFile` on every row of the current diff
+whose `layers` include `staged` or `unstaged`, and reads the **added** lines of its hunks — so the
+scan costs what the change costs, not what the repository costs, and never looks at committed
+history. Skipped without reading a byte: rows with no uncommitted layer, `generated` rows and paths
+matched by `.diffgitignore-secrets` (gitignore syntax, repository root, re-read on every scan);
+skipped after loading: binary and `tooLarge` rows. `SecretFinding.layer` is `unstaged` whenever the
+row has unstaged work, because that is where the line is now. `SecretFinding.masked` is the
+redaction the UI shows by default — first 8 characters, `…`, last 4, or `•` per character for a
+value of 12 or fewer — and `SecretFinding.full` is the matched value itself, which only the card's
+explicit **Reveal** click renders (atlas tab 14); nothing else in the payload carries it and the
+engine never logs it. `SecretFinding.entropy` is `shannonEntropy` of the matched value in bits/char,
+rounded to two decimals, reported for every finding even when its rule did not gate on entropy.
+The rule table is `src/engine/scan/secretRules.ts` — `{ id, description, regex, group?, entropyMin? }`
+plus `RULESET_DATE`, `ALLOW_COMMENT`, `SECRET_ALLOWLIST_FILE`, `ENTROPY_FLOOR = 3.8` — ordered by
+precedence, vendor shapes first and the four generic assignment rules last, so a value matched by
+two rules produces **one** finding under the more specific rule (overlapping spans are deduped).
+Dropped before reporting: allowlisted lines (`# diffgit:allow-secret` / `// …` / `-- …` / `<!-- … -->`
+at the end of the line), bare 40/64-hex digests, and values that merely *name* a secret
+(`process.env.API_KEY`, `${TOKEN}`, `{{ vault_x }}`, `<your-token>`). A documentation key such as
+`AKIAIOSFODNN7EXAMPLE` **is** reported: the shape is unambiguous and the two allowlists are the
+escape hatch. Findings are sorted by path, line, rule, masked and capped at `SECRET_FINDING_CAP`
+(500); one `SECRETS_FOUND` warning carries the total in `detail` and says when the list was cut.
+`ProgressPhase` gains `"secrets"` (`done`/`total` = files scanned). `bun run record` records the
+`secrets` fixture and writes `secrets` (the whole finding list) into `<fixture>.v2.json`.
+`commitStats` now keys its record in the caller's order rather than the order the batch finished
+in, which is what made `bun run record` drift between runs.
+
 ```ts
 export interface ResolvedRevision {
   expr: string; oid: Oid | null;                     // null only for "<root>^" → empty tree
@@ -202,7 +276,8 @@ export interface ResolvedRevision {
   fullRef?: string;                                   // refs/heads/main, refs/tags/v2.3.0
   peeledFrom?: Oid;                                   // annotated tag object oid
 }
-export interface TagInfo { name: string; fullName: string; oid: Oid; targetOid: Oid; annotated: boolean;
+export interface TagInfo { name: string; fullName: string; oid: Oid; targetOid: Oid;
+  targetType: "commit" | "tree" | "blob"; annotated: boolean;                       // targetType: T10.5b
   message?: string; tagger?: Signature; timestamp?: number }
 export interface Signature { name: string; email: string; timestamp: number; tzOffsetMin: number }
 export interface StashInfo { index: number; expr: string; oid: Oid; message: string; timestamp: number;
@@ -221,7 +296,7 @@ export interface CommitDetails extends CommitSummary { body: string; tree: Oid; 
 export interface WalkRequest { from: string[]; firstParent: boolean; cursor?: string; limit: number;
   path?: string; all?: boolean }
 export interface WalkPage { commits: CommitSummary[]; cursor: string | null; graphAvailable: boolean;
-  capped: boolean }
+  capped: boolean; laneOverflow: boolean }                                          // laneOverflow: T10.5b
 export interface AheadBehind { ahead: number; behind: number; mergeBase: Oid | null; capped: boolean }
 export interface BranchRow { ref: RepoRef; upstream: string | null; lastCommit: { oid: Oid; subject: string;
   author: string; timestamp: number } | null; vsUpstream: AheadBehind | null; vsDefault: AheadBehind | null;
@@ -274,10 +349,10 @@ export interface WorktreeInfo { name: string; path: string | null; head: Oid | n
 | `conflict(generation: number, id: string): Promise<ConflictPayload>` | T10.3 | see task for shape. |
 | `explainPath(path: string): Promise<PathExplanation>` | T10.4 | |
 | `listHidden(): Promise<HiddenEntry[]>` | T10.4 | capped at 2,000 (`HIDDEN_CAPPED`). |
-| `walkCommits(req: WalkRequest): Promise<WalkPage>` | T10.5 | cursor = opaque string; lanes assigned per page continuously. |
+| `walkCommits(req: WalkRequest): Promise<WalkPage>` | T10.5 | cursor = opaque session token (T10.5b); `STALE` when it is no longer valid — the UI restarts the list. Lanes assigned per page continuously. |
 | `commitDetails(oid: Oid): Promise<CommitDetails>` | T10.5 | |
 | `commitStats(oids: Oid[]): Promise<Record<Oid, CommitDetails["stats"]>>` | T10.5 | vs first parent, path-level + numstat, batched. |
-| `aheadBehind(a: string, b: string): Promise<AheadBehind>` | T10.5 | cap 10,000 each side. |
+| `aheadBehind(a: string, b: string): Promise<AheadBehind>` | T10.5 | git's painted queue; cap 10,000 commits **walked** (T10.5b), exact below it. |
 | `branchOverview(): Promise<BranchRow[]>` | T10.5 | lazily computed cells are `null` until `branchCells(names)` fills them. |
 | `branchCells(fullNames: string[]): Promise<Record<string, Pick<BranchRow, "vsUpstream" \| "vsDefault" \| "merged">>>` | T10.5 | |
 | `pathHistory(ref: string, path: string, opts: { follow: boolean; limit: number; cursor?: string }): Promise<{ entries: PathHistoryEntry[]; cursor: string \| null }>` | T10.6 | |
@@ -442,7 +517,9 @@ file), `merge-conflict` (merge stopped, `MERGE_HEAD` present, one deleted-by-the
 (a reset that orphaned a commit), `history` (60 commits on two branches with a merge, a root, a
 rename, a whitespace-only commit, a `.mailmap`, one `[bot]` author, `git commit-graph write`),
 `secrets` (planted fake keys in unstaged hunks, one allowlisted), `hidden` (ignored dir, ignored file,
-`skip-worktree` file, `assume-unchanged` file, 11 MB file), `octopus` (three-parent merge). Each with
+`skip-worktree` file, `assume-unchanged` file, 11 MB file), `octopus` (three-parent merge, plus a commit-graph from T10.5b), `skew` (T10.5b: committer dates
+that do not decrease toward the parents), and under `FIXTURES_PERF=1` `perf-log` (T10.5b: 2,000
+linear commits + 50 branches). Each with
 `fixture-expectations.sh` output from the real git CLI (`git tag -l --format`, `git stash list`,
 `git reflog`, `git log --graph --oneline`, `git blame --porcelain`, `git check-ignore -v`,
 `git rev-list --left-right --count`, `git log -S`, `git shortlog -sn`).

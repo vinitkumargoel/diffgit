@@ -322,7 +322,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": false
+      "graphAvailable": true,
+      "laneOverflow": false
     },
     "first-parent": {
       "commits": [
@@ -406,7 +407,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": false
+      "graphAvailable": true,
+      "laneOverflow": false
     },
     "all": {
       "commits": [
@@ -579,7 +581,8 @@
           "edges": []
         }
       ],
-      "graphAvailable": false
+      "graphAvailable": true,
+      "laneOverflow": false
     }
   },
   "commits": {
@@ -790,12 +793,12 @@
       },
       "vsUpstream": null,
       "vsDefault": {
-        "ahead": 0,
+        "ahead": 2,
         "behind": 3,
         "mergeBase": "03da552045a219cc82af159e96297d44fa7d5548",
         "capped": false
       },
-      "merged": true,
+      "merged": false,
       "tags": []
     },
     {
@@ -816,12 +819,12 @@
       },
       "vsUpstream": null,
       "vsDefault": {
-        "ahead": 0,
+        "ahead": 2,
         "behind": 3,
         "mergeBase": "211e73063ddab46dfada551deea6befb5f18ea16",
         "capped": false
       },
-      "merged": true,
+      "merged": false,
       "tags": []
     }
   ],
@@ -834,5 +837,6 @@
     "f569837e45cb7b03d48190e1b540d75d59348b42": true
   },
   "pathHistories": {},
-  "blames": {}
+  "blames": {},
+  "secrets": []
 }

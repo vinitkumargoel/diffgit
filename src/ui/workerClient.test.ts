@@ -179,7 +179,23 @@ describe("mock worker client: v2 sources (T10.1)", () => {
     const client = createMockWorkerClient();
     await client.open({ name: "tags" }, sink());
     const tags = await client.listTags();
-    expect(tags.map((x) => x.name)).toEqual(["v0.1.0", "v0.2.0", "v1.0.0", "v1.1.0"]);
+    // `blob-tag` / `tree-tag` are the T10.5b B1 fixtures: refs that do not name a commit.
+    expect(tags.map((x) => x.name)).toEqual([
+      "blob-tag",
+      "tree-tag",
+      "v0.1.0",
+      "v0.2.0",
+      "v1.0.0",
+      "v1.1.0",
+    ]);
+    expect(tags.map((x) => x.targetType)).toEqual([
+      "blob",
+      "tree",
+      "commit",
+      "commit",
+      "commit",
+      "commit",
+    ]);
     expect(tags.find((x) => x.name === "v1.0.0")?.annotated).toBe(true);
     expect(await client.resolveRevision("v1.0.0")).toMatchObject({
       kind: "tag",
@@ -515,7 +531,8 @@ describe("mock worker client: history, lanes and branches (T10.5)", () => {
     const client = createMockWorkerClient();
     await client.open({ name: "octopus" }, sink());
     const page = await client.walkCommits({ from: [], firstParent: false, all: true, limit: 50 });
-    expect(page.graphAvailable).toBe(false);
+    expect(page.graphAvailable).toBe(true); // T10.5b nit 1: the fixture now carries a commit-graph
+    expect(page.laneOverflow).toBe(false);
     const merge = page.commits.find((c) => c.parents.length === 3);
     expect(merge).toBeDefined();
     expect(merge?.edges?.filter((e) => e.from === (merge?.lane as number))).toHaveLength(3);
@@ -525,7 +542,13 @@ describe("mock worker client: history, lanes and branches (T10.5)", () => {
     const client = createMockWorkerClient();
     await client.open({ name: "showcase" }, sink());
     const page = await client.walkCommits({ from: ["HEAD"], firstParent: false, limit: 50 });
-    expect(page).toEqual({ commits: [], cursor: null, graphAvailable: false, capped: false });
+    expect(page).toEqual({
+      commits: [],
+      cursor: null,
+      graphAvailable: false,
+      capped: false,
+      laneOverflow: false,
+    });
     expect(await client.branchOverview()).toEqual([]);
   });
 });
@@ -610,5 +633,50 @@ describe("mock worker client: file history and blame (T10.6)", () => {
         maxRevisions: 500,
       }),
     ).rejects.toMatchObject({ code: "REF_NOT_FOUND" });
+  });
+});
+
+describe("mock worker client: secret scan (T10.7)", () => {
+  async function openSecrets() {
+    const warnings: { code: string; detail?: string }[] = [];
+    const client = createMockWorkerClient();
+    const s = sink();
+    const info = await client.open(
+      { name: "secrets" },
+      { ...s, onWarning: (w) => void warnings.push(w) },
+    );
+    const src: DiffSource = {
+      kind: "branches",
+      source: info.headBranch ?? "HEAD",
+      target: info.defaultRef?.name ?? "main",
+      sourceRef: info.headBranch ? `refs/heads/${info.headBranch}` : "HEAD",
+      targetRef: info.defaultRef?.fullName ?? "refs/heads/main",
+      includeWorktree: true,
+    };
+    const diff = await client.computeDiff(src);
+    return { client, diff, warnings };
+  }
+
+  it("serves the recorded findings and the SECRETS_FOUND warning", async () => {
+    const { client, diff, warnings } = await openSecrets();
+    const findings = await client.scanSecrets(diff.generation);
+    expect(findings.map((f) => [f.path, f.line, f.rule, f.layer])).toEqual([
+      ["config/deploy.sh", 3, "anthropic-api-key", "staged"],
+      ["config/id_rsa", 1, "private-key-rsa", "staged"],
+      ["config/settings.ini", 4, "aws-access-key-id", "unstaged"],
+      ["config/settings.ini", 5, "github-personal-access-token", "unstaged"],
+    ]);
+    expect(findings.every((f) => f.masked.includes("…") || f.masked.includes("•"))).toBe(true);
+    expect(warnings.filter((w) => w.code === "SECRETS_FOUND")[0]?.detail).toBe("4");
+  });
+
+  it("rejects a stale generation and answers [] for a fixture with no recording", async () => {
+    const { client, diff } = await openSecrets();
+    await expect(client.scanSecrets(diff.generation + 1)).rejects.toMatchObject({ code: "STALE" });
+
+    const clean = createMockWorkerClient();
+    await clean.open({ name: "showcase" }, sink());
+    const cleanDiff = await clean.computeDiff(SRC);
+    expect(await clean.scanSecrets(cleanDiff.generation)).toEqual([]);
   });
 });

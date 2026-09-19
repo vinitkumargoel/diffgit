@@ -2,17 +2,20 @@
  * Commit walker, lanes, reachability and ahead/behind (T10.5; atlas tabs 03, 09, 20;
  * Design §14.5/§14.6).
  *
- * Ordering is git's own: a priority queue over commit dates, newest first, ties broken by insertion
- * order — exactly `prio_queue` + `compare_commits_by_commit_date` in revision.c, whose tie-break is
- * the queue's insertion counter. That is what `git log --date-order` prints, and the fixtures assert
- * it oid for oid.
+ * Ordering is git's own `--date-order`: topological order with a commit-date priority. git computes
+ * it in two passes (revision.c `limit_list`, then commit.c `sort_in_topological_order`): first the
+ * whole candidate list, then an indegree over that list, then a `prio_queue` keyed on commit date
+ * whose tie-break is the queue's insertion counter. T10.5b makes this walk do the same two passes
+ * over a **window**: at least `limit + LOOKAHEAD` commits are discovered before any of them is
+ * released, so a commit is never emitted before a child that a later discovery would have found
+ * (`docs/v2-contracts.md`, T10.5b, states the exact guarantee).
  *
  * Parents and commit times come from the commit-graph when there is one (`commitGraph.ts`); an oid
  * the graph does not list falls back to `ObjectDb.readCommit`, which is also the only read done for
- * the rows actually emitted (author, subject). A page is `limit` commits plus an opaque cursor that
- * carries the frontier, the oids already queued and the lane table, so the next page continues the
- * same graph drawing without recomputing anything.
+ * the rows actually emitted (author, subject). A page is `limit` commits plus a `WalkState` the
+ * session keeps under an opaque token (T10.5b S4) — the cursor the UI carries is that token.
  */
+import { EngineError } from "../errors";
 import type { CommitEdge, CommitSummary, Oid, RepoWarning, WalkPage, WalkRequest } from "../types";
 import { throwIfAborted } from "../util/concurrency";
 import type { CommitGraph } from "./commitGraph";
@@ -21,10 +24,17 @@ import { toSignature } from "./tags";
 
 /** Plan D11 / atlas tab 03: history is paged and capped, never unbounded. */
 export const MAX_WALK = 50_000;
-/** Each side of `aheadBehind` (docs/v2-contracts.md). */
+/** Each side of `aheadBehind` (docs/v2-contracts.md); overridable per call for the tests. */
 export const AHEAD_BEHIND_CAP = 10_000;
 /** Lanes beyond this are unreadable; the UI offers `first-parent` (atlas tab 03 "Risks"). */
 export const MAX_LANES = 12;
+/**
+ * How far ahead of the emission point the walk discovers commits (T10.5b S1). git discovers the
+ * whole list; a window of this many commits makes the streaming walk agree with it unless a commit
+ * is older than a parent by more than `limit + LOOKAHEAD` commits of history — far beyond the
+ * few-hour clock skew `git log` itself tolerates (revision.c's own `SLOP` is 5 commits).
+ */
+export const LOOKAHEAD = 512;
 
 /** What the walk needs about a commit before it decides to emit it. */
 export interface CommitMeta {
@@ -36,9 +46,13 @@ export interface CommitMeta {
 /**
  * Parents and commit time, from the commit-graph where possible. Memoised for the session: a walk
  * asks for the same commit once per page boundary and `aheadBehind` re-walks shared history.
+ *
+ * `meta` answers **null** for an oid that is not a commit (T10.5b B1): a lightweight tag can point
+ * at a blob or a tree — git.git's own `refs/tags/junio-gpg-pub` is a blob — and `git log --all`
+ * skips such a ref rather than failing on it.
  */
 export class CommitReader {
-  private readonly metas = new Map<Oid, CommitMeta>();
+  private readonly metas = new Map<Oid, CommitMeta | null>();
 
   constructor(
     private readonly db: ObjectDb,
@@ -50,18 +64,25 @@ export class CommitReader {
     return this.graph !== null;
   }
 
-  async meta(oid: Oid): Promise<CommitMeta> {
+  async meta(oid: Oid): Promise<CommitMeta | null> {
     const cached = this.metas.get(oid);
-    if (cached) return cached;
+    if (cached !== undefined) return cached;
     const fromGraph = this.graph?.get(oid);
-    const meta: CommitMeta = fromGraph
+    const meta: CommitMeta | null = fromGraph
       ? { parents: fromGraph.parents, time: fromGraph.commitTime }
       : await this.fromObject(oid);
     this.metas.set(oid, meta);
     return meta;
   }
 
-  private async fromObject(oid: Oid): Promise<CommitMeta> {
+  /** `meta(oid) !== null`, spelled for the places that only need the type check. */
+  async isCommit(oid: Oid): Promise<boolean> {
+    return (await this.meta(oid)) !== null;
+  }
+
+  private async fromObject(oid: Oid): Promise<CommitMeta | null> {
+    // A commit-graph never lists a non-commit, so the type check only costs the fallback path.
+    if ((await this.db.objectType(oid)) !== "commit") return null;
     const c = await this.db.readCommit(oid);
     return { parents: c.parents, time: c.committer.timestamp };
   }
@@ -74,7 +95,7 @@ export class CommitReader {
  * is currently reserved for. A commit takes the lane that was reserved for it (or the first free
  * one), hands that lane to its first parent, and opens a lane per further parent.
  *
- * Serialised into the walk cursor so page 2 draws the same picture page 1 would have.
+ * Carried in the session's `WalkState` so page 2 draws the same picture page 1 would have.
  */
 export type LaneTable = (Oid | null)[];
 
@@ -82,6 +103,18 @@ export interface LaneRow {
   lane: number;
   laneCount: number;
   edges: CommitEdge[];
+  /** A lane past `maxLanes` was folded into the last one (T10.5b nit 4). */
+  overflow: boolean;
+}
+
+export interface PlaceOptions {
+  /**
+   * Commits already emitted on this or an earlier page. A parent in this set gets no lane and no
+   * edge: its line closed rows ago, so an edge into it is one the SVG can never finish (T10.5b S1).
+   */
+  emitted?: ReadonlySet<Oid>;
+  /** Default `MAX_LANES`. */
+  maxLanes?: number;
 }
 
 function firstFree(lanes: LaneTable): number {
@@ -96,21 +129,41 @@ function trimLanes(lanes: LaneTable): void {
 /**
  * Places one commit in the lane table and returns the row the UI draws: the node's lane, the row
  * width, and the lines in the band **below** it (`from` is a lane at this row, `to` at the next).
+ *
+ * Lanes are capped at `maxLanes`: everything that would open lane 13 shares lane 12 instead and the
+ * row reports `overflow`, which `WalkPage.laneOverflow` surfaces so the UI can offer `first-parent`
+ * rather than drawing a picture nobody can read (atlas tab 03 "Risks").
  */
 export function placeCommit(
   lanes: LaneTable,
   commit: { oid: Oid; parents: Oid[] },
   firstParent: boolean,
+  opts: PlaceOptions = {},
 ): LaneRow {
-  let lane = lanes.indexOf(commit.oid);
-  if (lane === -1) {
-    lane = firstFree(lanes);
-    lanes[lane] = commit.oid; // a tip: nothing pointed at it yet
-  }
-  const before = lanes.slice();
-  const parents = firstParent ? commit.parents.slice(0, 1) : commit.parents;
+  const maxLanes = Math.max(1, opts.maxLanes ?? MAX_LANES);
+  const emitted = opts.emitted;
+  let overflow = false;
 
-  lanes[lane] = null; // the node consumes its lane; the first parent usually takes it straight back
+  /** The lane a new reservation goes in, folding everything past `maxLanes` into the last one. */
+  const reserve = (preferred: number, oid: Oid): number => {
+    if (preferred < maxLanes) {
+      lanes[preferred] = oid;
+      return preferred;
+    }
+    overflow = true;
+    const last = maxLanes - 1;
+    if (lanes[last] == null) lanes[last] = oid; // free: the fold gets a real reservation
+    return last; // otherwise the lane is shared and the line is drawn over its neighbour's
+  };
+
+  let lane = lanes.indexOf(commit.oid);
+  if (lane === -1) lane = reserve(firstFree(lanes), commit.oid); // a tip: nothing pointed at it yet
+  const before = lanes.slice();
+
+  const considered = firstParent ? commit.parents.slice(0, 1) : commit.parents;
+  const parents = emitted ? considered.filter((p) => !emitted.has(p)) : considered;
+
+  if (lanes[lane] === commit.oid) lanes[lane] = null; // the node consumes its lane …
   const parentLanes: number[] = [];
   const reused: boolean[] = [];
   for (let k = 0; k < parents.length; k++) {
@@ -121,9 +174,8 @@ export function placeCommit(
       reused[k] = true;
       continue;
     }
-    const target = k === 0 ? lane : firstFree(lanes);
-    lanes[target] = parent;
-    parentLanes[k] = target;
+    // … which the first parent usually takes straight back.
+    parentLanes[k] = reserve(k === 0 && lanes[lane] == null ? lane : firstFree(lanes), parent);
     reused[k] = false;
   }
   trimLanes(lanes);
@@ -145,48 +197,7 @@ export function placeCommit(
   }
   let laneCount = lane + 1;
   for (const e of edges) laneCount = Math.max(laneCount, e.from + 1, e.to + 1);
-  return { lane, laneCount, edges };
-}
-
-// ---- cursor -------------------------------------------------------------------------------
-
-interface CursorState {
-  v: 2;
-  /** Request signature: a cursor is only valid for the request that produced it. */
-  key: string;
-  /** The eligible queue, already ordered (newest first, ties by `ctr`). */
-  frontier: { oid: Oid; time: number; ctr: number }[];
-  ctr: number;
-  /** Every oid discovered so far, concatenated 40-hex (a separator would double the size). */
-  seen: string;
-  /** oid → how many discovered-but-unemitted commits still name it as a parent (git's indegree). */
-  blocked: Record<Oid, number>;
-  lanes: LaneTable;
-  walked: number;
-}
-
-function requestKey(req: WalkRequest, seeds: Oid[]): string {
-  return JSON.stringify([seeds, req.firstParent === true, req.all === true, req.path ?? null]);
-}
-
-function encodeCursor(state: CursorState): string {
-  return JSON.stringify(state);
-}
-
-function decodeCursor(text: string, key: string): CursorState | null {
-  try {
-    const parsed = JSON.parse(text) as CursorState;
-    if (parsed.v !== 2 || parsed.key !== key || !Array.isArray(parsed.frontier)) return null;
-    return parsed;
-  } catch {
-    return null; // a cursor from another request or another build: start over rather than throw
-  }
-}
-
-function seenSet(packed: string): Set<Oid> {
-  const out = new Set<Oid>();
-  for (let i = 0; i + 40 <= packed.length; i += 40) out.add(packed.slice(i, i + 40));
-  return out;
+  return { lane, laneCount: Math.min(laneCount, maxLanes), edges, overflow };
 }
 
 // ---- the walk -----------------------------------------------------------------------------
@@ -197,12 +208,12 @@ export interface WalkDeps {
   /** oid → the ref names that point at it, already in badge order. */
   refsByCommit: Map<Oid, string[]>;
   signal?: AbortSignal;
+  /** Called every `PROGRESS_EVERY` commits discovered, so a long walk is not silent (T10.5b S5). */
+  onProgress?: (walked: number) => void;
 }
 
-export interface WalkOutcome {
-  page: WalkPage;
-  warnings: RepoWarning[];
-}
+/** Commits discovered between two `"history"` progress messages (T10.5b S5). */
+export const PROGRESS_EVERY = 500;
 
 interface Entry {
   oid: Oid;
@@ -210,114 +221,212 @@ interface Entry {
   ctr: number;
 }
 
+interface WalkNode {
+  meta: CommitMeta;
+  follow: Oid[];
+  visible: boolean;
+}
+
+/**
+ * Everything a page boundary has to remember. T10.5b S4: this lives in the session under an opaque
+ * token instead of being serialised into the cursor, which was O(commits walked) bytes per page.
+ * It holds `Set`/`Map`s and is never structured-cloned.
+ */
+export interface WalkState {
+  /** Request signature: a token is only valid for the request that produced it. */
+  key: string;
+  ctr: number;
+  /** Eligible (indegree 0), date-ordered newest first, ties by `ctr`. */
+  frontier: Entry[];
+  /** Discovered but not yet expanded, same order — the discovery half of git's two passes. */
+  pending: Entry[];
+  seen: Set<Oid>;
+  explored: Set<Oid>;
+  queued: Set<Oid>;
+  emitted: Set<Oid>;
+  /** oid → how many explored-but-unemitted commits still name it as a parent (git's indegree). */
+  blocked: Map<Oid, number>;
+  nodes: Map<Oid, WalkNode>;
+  lanes: LaneTable;
+  capped: boolean;
+}
+
+export interface WalkOutcome {
+  page: WalkPage;
+  warnings: RepoWarning[];
+  /** Null when the walk is finished (or capped): there is no next page. */
+  state: WalkState | null;
+}
+
+/** The signature a `WalkState` is valid for; the session compares it before resuming a token. */
+export function walkRequestKey(req: WalkRequest, seeds: Oid[]): string {
+  return JSON.stringify([seeds, req.firstParent === true, req.all === true, req.path ?? null]);
+}
+
 /** Newest first; equal dates keep insertion order, which is git's `prio_queue` tie-break. */
-function insertEntry(frontier: Entry[], entry: Entry): void {
+function insertEntry(queue: Entry[], entry: Entry): void {
   let lo = 0;
-  let hi = frontier.length;
+  let hi = queue.length;
   while (lo < hi) {
     const mid = (lo + hi) >>> 1;
-    const other = frontier[mid] as Entry;
+    const other = queue[mid] as Entry;
     const before = other.time > entry.time || (other.time === entry.time && other.ctr < entry.ctr);
     if (before) lo = mid + 1;
     else hi = mid;
   }
-  frontier.splice(lo, 0, entry);
+  queue.splice(lo, 0, entry);
+}
+
+/** nit 5: a limit that is not a positive integer is a caller bug, not something to round away. */
+function checkedLimit(limit: number): number {
+  if (typeof limit !== "number" || !Number.isFinite(limit) || Math.floor(limit) !== limit)
+    throw new EngineError("INTERNAL", "walkCommits: limit must be an integer.", {
+      detail: String(limit),
+    });
+  if (limit <= 0)
+    throw new EngineError("INTERNAL", "walkCommits: limit must be greater than zero.", {
+      detail: String(limit),
+    });
+  return Math.min(limit, MAX_WALK);
 }
 
 /**
  * One page of history, ordered exactly like `git log --date-order`.
  *
  * `--date-order` is git's *topological* order with a commit-date tie-break (revision.c sets
- * `topo_order` for it), so a commit is never shown before all of its children: the queue only holds
- * commits whose discovered children have all been emitted (git's indegree, commit.c
- * `sort_in_topological_order`), and among those the newest wins, ties going to whichever became
- * eligible first — git's `prio_queue` insertion counter.
+ * `topo_order` for it), so a commit is never shown before all of its children. git gets that by
+ * building the whole candidate list first; this walk builds a window of it — `limit + LOOKAHEAD`
+ * commits are discovered (and their indegrees counted) before the first of them is released — and
+ * then releases exactly as git does: newest first, ties going to whichever became eligible first.
  *
  * `seeds` are already-resolved commit oids in the order git would list the refs (the session sorts
- * them by ref name for `all`). Streaming, so the indegree is over the commits discovered so far
- * rather than a whole pre-walk; the two agree whenever commit dates do not increase towards the
- * parents, which is every history git itself writes.
+ * them by ref name for `all`, and drops any that is not a commit — T10.5b B1).
  */
 export async function walkCommits(
   deps: WalkDeps,
   req: WalkRequest,
   seeds: Oid[],
+  resume?: WalkState | null,
 ): Promise<WalkOutcome> {
   const { db, reader, refsByCommit, signal } = deps;
-  const limit = Math.max(1, Math.min(req.limit, MAX_WALK));
-  const key = requestKey(req, seeds);
-  const restored = req.cursor ? decodeCursor(req.cursor, key) : null;
+  const limit = checkedLimit(req.limit);
+  const key = walkRequestKey(req, seeds);
 
-  let ctr = restored?.ctr ?? 0;
-  const frontier: Entry[] = restored ? restored.frontier.slice() : [];
-  const seen = seenSet(restored?.seen ?? "");
-  const blocked = new Map<Oid, number>(Object.entries(restored?.blocked ?? {}));
-  // Everything discovered that is no longer blocked has already been queued (and possibly emitted);
-  // deriving the set keeps the cursor to one copy of the oids.
-  const queued = new Set<Oid>([...seen].filter((oid) => !blocked.has(oid)));
-  const lanes: LaneTable = restored ? restored.lanes.slice() : [];
-  let walked = restored?.walked ?? 0;
+  const state: WalkState = resume ?? {
+    key,
+    ctr: 0,
+    frontier: [],
+    pending: [],
+    seen: new Set<Oid>(),
+    explored: new Set<Oid>(),
+    queued: new Set<Oid>(),
+    emitted: new Set<Oid>(),
+    blocked: new Map<Oid, number>(),
+    nodes: new Map<Oid, WalkNode>(),
+    lanes: [],
+    capped: false,
+  };
 
-  /** Parents to follow and whether the row is shown; pure, so it survives a cursor restore. */
-  const nodes = new Map<Oid, { meta: CommitMeta; follow: Oid[]; visible: boolean }>();
-  const nodeOf = async (oid: Oid) => {
-    const cached = nodes.get(oid);
+  /** Parents to follow and whether the row is shown; null when the oid is not a commit. */
+  const nodeOf = async (oid: Oid): Promise<WalkNode | null> => {
+    const cached = state.nodes.get(oid);
     if (cached) return cached;
     const meta = await reader.meta(oid);
+    if (meta === null) return null; // a tag on a blob or a tree: git log --all skips it
     const step = req.path
       ? await simplifyPath(db, oid, meta.parents, req.path, req.firstParent === true)
       : {
           visible: true,
           follow: req.firstParent === true ? meta.parents.slice(0, 1) : meta.parents,
         };
-    const node = { meta, ...step };
-    nodes.set(oid, node);
+    const node: WalkNode = { meta, ...step };
+    state.nodes.set(oid, node);
     return node;
   };
-  /** First sight of a commit: it now blocks every parent it will be followed into. */
-  const discover = async (oid: Oid): Promise<void> => {
-    if (seen.has(oid)) return;
-    seen.add(oid);
-    for (const parent of (await nodeOf(oid)).follow) {
-      // A parent already on its way out cannot be held back by a child found later; that is the
-      // one place a streaming indegree differs from git's pre-walk, and it keeps the walk finite.
-      if (queued.has(parent)) continue;
-      blocked.set(parent, (blocked.get(parent) ?? 0) + 1);
-    }
-  };
-  const enqueue = async (oid: Oid): Promise<void> => {
-    blocked.delete(oid);
-    queued.add(oid);
-    insertEntry(frontier, { oid, time: (await nodeOf(oid)).meta.time, ctr: ctr++ });
-  };
-  /** One child emitted: the parent joins the queue once nothing unemitted points at it any more. */
-  const release = async (oid: Oid): Promise<void> => {
-    if (queued.has(oid)) return;
-    const left = (blocked.get(oid) ?? 1) - 1;
-    if (left > 0) {
-      blocked.set(oid, left);
-      return;
-    }
-    await enqueue(oid);
+
+  /** False when the oid is not a commit (a tag on a blob or a tree): it never enters the walk. */
+  const discover = async (oid: Oid): Promise<boolean> => {
+    if (state.seen.has(oid)) return true;
+    const node = await nodeOf(oid);
+    if (node === null) return false; // git log --all skips such a ref
+    state.seen.add(oid);
+    insertEntry(state.pending, { oid, time: node.meta.time, ctr: state.ctr++ });
+    return true;
   };
 
-  if (!restored) {
-    // git's two passes: discover every tip first, then queue the ones nothing else points at.
+  /** A commit whose indegree has reached zero joins the release queue. */
+  const enqueue = (oid: Oid, node: WalkNode): void => {
+    if (state.queued.has(oid)) return;
+    state.queued.add(oid);
+    insertEntry(state.frontier, { oid, time: node.meta.time, ctr: state.ctr++ });
+  };
+  const maybeEnqueue = async (oid: Oid): Promise<void> => {
+    if (!state.explored.has(oid) || state.queued.has(oid)) return;
+    if ((state.blocked.get(oid) ?? 0) > 0) return;
+    const node = await nodeOf(oid);
+    if (node !== null) enqueue(oid, node);
+  };
+
+  let progressed = state.explored.size;
+  /** git's `limit_list`: expand one commit, counting the indegree of every parent it follows. */
+  const exploreOne = async (): Promise<void> => {
+    const entry = state.pending.shift() as Entry;
+    const oid = entry.oid;
+    state.explored.add(oid);
+    const node = await nodeOf(oid);
+    if (node !== null) {
+      for (const parent of node.follow) {
+        if (!(await discover(parent))) continue;
+        // A parent already emitted cannot be held back by a child found later; that is the one
+        // place a windowed indegree can still differ from git's whole-list one.
+        if (state.emitted.has(parent)) continue;
+        state.blocked.set(parent, (state.blocked.get(parent) ?? 0) + 1);
+      }
+    }
+    await maybeEnqueue(oid);
+    if (state.explored.size - progressed >= PROGRESS_EVERY) {
+      progressed = state.explored.size;
+      deps.onProgress?.(state.explored.size);
+    }
+  };
+
+  /**
+   * Keep at least `limit + LOOKAHEAD` discovered-but-unemitted commits ahead of the release point,
+   * and never release while the frontier is empty but discovery could still fill it.
+   */
+  const ensureWindow = async (): Promise<void> => {
+    while (state.pending.length > 0 && !state.capped) {
+      throwIfAborted(signal, "history walk");
+      const ahead = state.explored.size - state.emitted.size;
+      if (ahead >= limit + LOOKAHEAD && state.frontier.length > 0) return;
+      if (state.explored.size >= MAX_WALK) {
+        state.capped = true;
+        return;
+      }
+      await exploreOne();
+    }
+  };
+
+  if (!resume) {
     for (const oid of seeds) await discover(oid);
-    for (const oid of seeds) if ((blocked.get(oid) ?? 0) === 0) await enqueue(oid);
   }
 
   const commits: CommitSummary[] = [];
-  let capped = false;
-  while (commits.length < limit && frontier.length > 0) {
+  let laneOverflow = false;
+  while (commits.length < limit) {
     throwIfAborted(signal, "history walk");
-    if (walked >= MAX_WALK) {
-      capped = true;
-      break;
+    await ensureWindow();
+    if (state.frontier.length === 0) break;
+    const entry = state.frontier.shift() as Entry;
+    // A child discovered after this commit became eligible put it back under an indegree; git's
+    // whole-list pass would never have queued it, so neither do we (it returns when they release).
+    if ((state.blocked.get(entry.oid) ?? 0) > 0) {
+      state.queued.delete(entry.oid);
+      continue;
     }
-    const entry = frontier.shift() as Entry;
-    walked++;
+    state.emitted.add(entry.oid);
     const node = await nodeOf(entry.oid);
+    if (node === null) continue;
     if (node.visible) {
       // A path-filtered walk skips commits, so a lane reserved for a parent that is never emitted
       // would hang around for ever: the graph column belongs to the unfiltered list (Design §14.5),
@@ -325,27 +434,28 @@ export async function walkCommits(
       const row = req.path
         ? null
         : placeCommit(
-            lanes,
+            state.lanes,
             { oid: entry.oid, parents: node.meta.parents },
             req.firstParent === true,
+            { emitted: state.emitted, maxLanes: MAX_LANES },
           );
+      if (row?.overflow === true) laneOverflow = true;
       commits.push(await summarise(db, entry.oid, node.meta, refsByCommit, row));
     }
-    for (const parent of node.follow) await discover(parent);
-    for (const parent of node.follow) await release(parent);
+    for (const parent of node.follow) {
+      if (!state.seen.has(parent)) continue;
+      const left = state.blocked.get(parent);
+      if (left !== undefined) {
+        if (left > 1) state.blocked.set(parent, left - 1);
+        else state.blocked.delete(parent);
+      }
+      await maybeEnqueue(parent);
+    }
   }
+  deps.onProgress?.(state.explored.size);
 
-  const state: CursorState = {
-    v: 2,
-    key,
-    frontier,
-    ctr,
-    seen: [...seen].join(""),
-    blocked: Object.fromEntries(blocked),
-    lanes,
-    walked,
-  };
-  const warnings: RepoWarning[] = capped
+  const exhausted = state.frontier.length === 0 && state.pending.length === 0;
+  const warnings: RepoWarning[] = state.capped
     ? [
         {
           code: "HISTORY_CAPPED",
@@ -356,11 +466,13 @@ export async function walkCommits(
   return {
     page: {
       commits,
-      cursor: frontier.length === 0 || capped ? null : encodeCursor(state),
+      cursor: null, // the session replaces this with its token (T10.5b S4)
       graphAvailable: reader.graphAvailable,
-      capped,
+      capped: state.capped,
+      laneOverflow,
     },
     warnings,
+    state: exhausted || state.capped ? null : state,
   };
 }
 
@@ -441,7 +553,8 @@ export interface ReachableResult {
 }
 
 /**
- * Every commit reachable from `tips`, up to `cap`. Memoised by the caller (the session keys the
+ * Every commit reachable from `tips`, up to `cap`. A tip that is not a commit (a tag on a blob) is
+ * skipped, exactly as `git rev-list --all` skips it. Memoised by the caller (the session keys the
  * "reachable from any ref" set on the refs it was built from).
  */
 export async function reachableFrom(
@@ -453,7 +566,9 @@ export async function reachableFrom(
   const oids = new Set<Oid>();
   const stack: Oid[] = [];
   for (const tip of tips) {
+    throwIfAborted(signal, "reachability walk");
     if (oids.has(tip)) continue;
+    if (!(await reader.isCommit(tip))) continue;
     oids.add(tip);
     stack.push(tip);
   }
@@ -461,7 +576,9 @@ export async function reachableFrom(
     throwIfAborted(signal, "reachability walk");
     if (oids.size >= cap) return { oids, capped: true };
     const oid = stack.pop() as Oid;
-    for (const parent of (await reader.meta(oid)).parents) {
+    const meta = await reader.meta(oid);
+    if (meta === null) continue;
+    for (const parent of meta.parents) {
       if (oids.has(parent)) continue;
       oids.add(parent);
       stack.push(parent);
@@ -470,30 +587,89 @@ export async function reachableFrom(
   return { oids, capped: false };
 }
 
+export interface AheadBehindOptions {
+  /** Commits walked before the counts become lower bounds; default `AHEAD_BEHIND_CAP`. */
+  cap?: number;
+  signal?: AbortSignal;
+}
+
+const LEFT = 1;
+const RIGHT = 2;
+const BOTH = LEFT | RIGHT;
+
 /**
  * `git rev-list --left-right --count a...b`: `ahead` counts commits reachable from `a` and not from
- * `b`, `behind` the other way round. Both sides are bounded by `AHEAD_BEHIND_CAP`; when a cap is
- * hit the counts are lower bounds and `capped` says so (atlas tab 09 "Risks": cap at 1,000+ with a
- * hint rather than walking a stale remote forever).
+ * `b`, `behind` the other way round.
  *
- * The two full sets are computed rather than pruning at the merge base, because a commit reachable
- * from the base can also be reached on a path that never passes through it, and git counts it as
- * common either way.
+ * T10.5b S3: this is git's own algorithm, not two truncated reachability sets. One date-ordered
+ * priority queue is seeded `LEFT` and `RIGHT`; popping newest first means every flag a commit can
+ * get has arrived by the time it is popped (the invariant `--date-order` rests on), a commit that
+ * carries both flags is COMMON and is counted for neither side, and the walk stops the moment
+ * nothing but COMMON commits is left — revision.c's `still_interesting` /
+ * `everybody_uninteresting`. Two branches off a 10,000-commit trunk therefore cost a walk of their
+ * divergence, not of the trunk, and the counts are exact where the old version was arbitrary.
+ *
+ * `capped` means `cap` commits were walked before that happened; the counts are then lower bounds.
  */
 export async function aheadBehind(
   db: ObjectDb,
   reader: CommitReader,
   a: Oid,
   b: Oid,
-  signal?: AbortSignal,
+  opts: AheadBehindOptions = {},
 ): Promise<{ ahead: number; behind: number; mergeBase: Oid | null; capped: boolean }> {
+  const { signal } = opts;
+  const cap = opts.cap ?? AHEAD_BEHIND_CAP;
   const base = await db.findMergeBase(a, b);
   if (a === b) return { ahead: 0, behind: 0, mergeBase: base.oid, capped: false };
-  const left = await reachableFrom(reader, [a], AHEAD_BEHIND_CAP, signal);
-  const right = await reachableFrom(reader, [b], AHEAD_BEHIND_CAP, signal);
+
+  const flags = new Map<Oid, number>();
+  const queue: Entry[] = [];
+  const inQueue = new Set<Oid>();
+  let ctr = 0;
+  let interesting = 0;
+
+  const push = async (oid: Oid, flag: number): Promise<void> => {
+    const previous = flags.get(oid) ?? 0;
+    const next = previous | flag;
+    if (next === previous) return; // nothing new to propagate
+    flags.set(oid, next);
+    if (!inQueue.has(oid)) {
+      const meta = await reader.meta(oid);
+      if (meta === null) return; // not a commit: never a seed of a real range
+      inQueue.add(oid);
+      insertEntry(queue, { oid, time: meta.time, ctr: ctr++ });
+      if (next !== BOTH) interesting++;
+    } else if (next === BOTH) {
+      interesting--; // already queued on one side, now common: no longer worth walking for
+    }
+  };
+
+  await push(a, LEFT);
+  await push(b, RIGHT);
+
   let ahead = 0;
   let behind = 0;
-  for (const oid of left.oids) if (!right.oids.has(oid)) ahead++;
-  for (const oid of right.oids) if (!left.oids.has(oid)) behind++;
-  return { ahead, behind, mergeBase: base.oid, capped: left.capped || right.capped };
+  let walked = 0;
+  let capped = false;
+  while (queue.length > 0 && interesting > 0) {
+    throwIfAborted(signal, "ahead/behind");
+    if (walked >= cap) {
+      capped = true;
+      break;
+    }
+    const entry = queue.shift() as Entry;
+    walked++;
+    inQueue.delete(entry.oid);
+    const flag = flags.get(entry.oid) as number;
+    if (flag !== BOTH) {
+      interesting--;
+      if (flag === LEFT) ahead++;
+      else behind++;
+    }
+    const meta = await reader.meta(entry.oid);
+    if (meta === null) continue;
+    for (const parent of meta.parents) await push(parent, flag);
+  }
+  return { ahead, behind, mergeBase: base.oid, capped };
 }

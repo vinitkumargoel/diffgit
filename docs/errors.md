@@ -77,6 +77,7 @@ The registry is `src/engine/errors.ts`. Three tiers:
 | `INSIGHTS_CAPPED` | `insights` (T10.9: the walk limit was reached) | Insights capped | warning |
 | `HIDDEN_CAPPED` | `listHidden` (T10.4: more than 2,000 paths) | Hidden files capped | warning |
 | `COMMIT_GRAPH_STALE` | `walkCommits` (T10.5: the commit-graph predates the refs) | Commit graph out of date | warning |
+| `HISTORY_DEGRADED` | `walkCommits` / `commitStats` / `branchOverview` (T10.5b: an object read failed and the answer fell back instead of failing) | Part of the history could not be read | warning |
 | `SECRETS_FOUND` | `scanSecrets` (T10.7: a rule matched an added line) | Possible secret | error |
 | `OPERATION_IN_PROGRESS` | `operation` (T10.2: MERGE_HEAD / rebase-merge / CHERRY_PICK_HEAD / BISECT_LOG) | Operation in progress | info |
 | `SNAPSHOT_MODE` | `browserGate` (T11.15: Firefox/Safari read-once mode) | Snapshot mode | warning |

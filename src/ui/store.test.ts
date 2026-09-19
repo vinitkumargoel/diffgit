@@ -449,13 +449,14 @@ describe("store: compare anything (T11.2)", () => {
   const range = (s: DiffSource | null | undefined): RangeSource | null =>
     s && s.kind === "range" ? s : null;
 
-  it("loadPickerSources lists tags and stashes once per open", async () => {
+  it("loadPickerSources lists tags and stashes once per open; tags on a blob or a tree are not offered", async () => {
     await openTags();
     expect(useStore.getState().tags).toBeNull();
     await Promise.all([
       useStore.getState().loadPickerSources(),
       useStore.getState().loadPickerSources(),
     ]);
+    // The recording has `blob-tag` and `tree-tag` (T10.5b); neither can be a side of a diff.
     expect(useStore.getState().tags?.map((t) => t.name)).toEqual([
       "v0.1.0",
       "v0.2.0",
