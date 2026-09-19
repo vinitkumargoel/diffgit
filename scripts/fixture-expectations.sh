@@ -361,6 +361,14 @@ search_oracles() { # search_oracles <repo> <expected-dir>
   G -C "$r" grep -in -E 'moved [0-9]+' > "$exp/grep-i-regex-moved.txt" || [ $? -eq 1 ]
 }
 
+# T10.12: the three oracles for submodules, linked worktrees and a colocated jj repository.
+# `worktree list --porcelain` prints absolute paths, which differ per machine; they are rewritten
+# relative to fixtures/ so the recording is comparable (the engine reports the path the `gitdir`
+# file records, and the test strips the same prefix).
+worktree_oracles() { # worktree_oracles <repo> <expected-dir>
+  G -C "$1" worktree list --porcelain | sed "s#$FIX/##g" > "$2/worktree-list.txt"
+}
+
 dump_v2() { # dump_v2 <fixture-name>
   local name="$1" r="$FIX/$1" exp="$FIX/$1/expected" root
   case "$name" in
@@ -373,6 +381,29 @@ dump_v2() { # dump_v2 <fixture-name>
         > "$exp/rev-list-left-right-count.txt"
       return 0 ;;
     detached|perf-5k|perf-log|skew) log_orders "$r" "$exp"; return 0 ;;
+    # T10.12: recorded vs checked-out submodule commits. The fixture deinits `sub`, so git prints
+    # the `-<oid>` "not initialised" form — the case `listSubmodules` answers `checkedOut: null` for.
+    submodule)
+      G -C "$r" submodule status > "$exp/submodule-status.txt"
+      G -C "$r" ls-tree -r HEAD > "$exp/ls-tree-head.txt"
+      return 0 ;;
+    # T10.12: the main checkout plus the linked one. Run from the linked worktree, which is what
+    # this fixture directory is; git answers with both entries from either side.
+    worktree-gitdir)
+      worktree_oracles "$r" "$exp"
+      return 0 ;;
+    # T10.12: jj colocated — the detached HEAD whose sha7 `headDisplay` spells out.
+    jj)
+      G -C "$r" rev-parse HEAD > "$exp/rev-parse-head.txt"
+      G -C "$r" symbolic-ref -q HEAD > "$exp/symbolic-ref-head.txt" ||
+        echo "<detached>" > "$exp/symbolic-ref-head.txt"
+      return 0 ;;
+    # T10.12: the committed pointer blobs, so the LFS test names objects without re-hashing them.
+    lfs)
+      G -C "$r" ls-tree -r main > "$exp/ls-tree-main.txt"
+      G -C "$r" ls-tree -r feature > "$exp/ls-tree-feature.txt"
+      G -C "$r" check-attr -a assets/hero.psd data/table.dat notes.txt > "$exp/check-attr.txt"
+      return 0 ;;
     # T10.5 Branches table only: the three fixtures that configure an upstream.
     remote|remote-master|no-origin-head) branch_table "$r" "$exp"; return 0 ;;
     *) return 0 ;;

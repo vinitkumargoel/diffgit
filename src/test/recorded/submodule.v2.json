@@ -1,0 +1,562 @@
+{
+  "tags": [],
+  "stashes": [],
+  "reflog": [
+    {
+      "index": 0,
+      "expr": "HEAD@{0}",
+      "oldOid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+      "newOid": "0eaf57764b66bafb421ca0125b0594b0fe86007d",
+      "action": "commit",
+      "message": "commit: f1: bump submodule to s2",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    },
+    {
+      "index": 1,
+      "expr": "HEAD@{1}",
+      "oldOid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+      "newOid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+      "action": "checkout",
+      "message": "checkout: moving from main to feature",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    },
+    {
+      "index": 2,
+      "expr": "HEAD@{2}",
+      "oldOid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
+      "newOid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+      "action": "commit",
+      "message": "commit: c2: add submodule at s1",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    },
+    {
+      "index": 3,
+      "expr": "HEAD@{3}",
+      "oldOid": null,
+      "newOid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
+      "action": "commit (initial)",
+      "message": "commit (initial): c1: super",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    }
+  ],
+  "operation": null,
+  "conflicts": {},
+  "hidden": [
+    {
+      "path": "expected",
+      "kind": "ignored-dir",
+      "count": 14
+    }
+  ],
+  "explanations": {},
+  "revisions": {},
+  "ranges": [],
+  "walks": {
+    "default": {
+      "commits": [
+        {
+          "oid": "0eaf57764b66bafb421ca0125b0594b0fe86007d",
+          "parents": ["5007413e31013f59f929361c167ed0d6b698e6d5"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "f1: bump submodule to s2",
+          "refs": ["HEAD", "feature"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+          "parents": ["2f90b1a82c96123d74b40e58deb206479fd565e0"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: add submodule at s1",
+          "refs": ["main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: super",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false,
+      "laneOverflow": false
+    },
+    "first-parent": {
+      "commits": [
+        {
+          "oid": "0eaf57764b66bafb421ca0125b0594b0fe86007d",
+          "parents": ["5007413e31013f59f929361c167ed0d6b698e6d5"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "f1: bump submodule to s2",
+          "refs": ["HEAD", "feature"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+          "parents": ["2f90b1a82c96123d74b40e58deb206479fd565e0"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: add submodule at s1",
+          "refs": ["main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: super",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false,
+      "laneOverflow": false
+    },
+    "all": {
+      "commits": [
+        {
+          "oid": "0eaf57764b66bafb421ca0125b0594b0fe86007d",
+          "parents": ["5007413e31013f59f929361c167ed0d6b698e6d5"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "f1: bump submodule to s2",
+          "refs": ["HEAD", "feature"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+          "parents": ["2f90b1a82c96123d74b40e58deb206479fd565e0"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: add submodule at s1",
+          "refs": ["main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: super",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false,
+      "laneOverflow": false
+    }
+  },
+  "commits": {
+    "0eaf57764b66bafb421ca0125b0594b0fe86007d": {
+      "oid": "0eaf57764b66bafb421ca0125b0594b0fe86007d",
+      "parents": ["5007413e31013f59f929361c167ed0d6b698e6d5"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "f1: bump submodule to s2",
+      "refs": ["HEAD", "feature"],
+      "body": "",
+      "tree": "9450dbde080a9fb8a3bfcba132b4cb9c18fde1c7",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 1
+      }
+    },
+    "5007413e31013f59f929361c167ed0d6b698e6d5": {
+      "oid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+      "parents": ["2f90b1a82c96123d74b40e58deb206479fd565e0"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c2: add submodule at s1",
+      "refs": ["main"],
+      "body": "",
+      "tree": "e1915890742d3f6df2f890c6848178ca612ef36b",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 2,
+        "additions": 4,
+        "deletions": 0
+      }
+    },
+    "2f90b1a82c96123d74b40e58deb206479fd565e0": {
+      "oid": "2f90b1a82c96123d74b40e58deb206479fd565e0",
+      "parents": [],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c1: super",
+      "refs": [],
+      "body": "",
+      "tree": "9b94f00d2ec8210765b22bc41c77a350260013da",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 1,
+        "additions": 1,
+        "deletions": 0
+      }
+    }
+  },
+  "commitStats": {
+    "0eaf57764b66bafb421ca0125b0594b0fe86007d": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "5007413e31013f59f929361c167ed0d6b698e6d5": {
+      "files": 2,
+      "additions": 4,
+      "deletions": 0
+    },
+    "2f90b1a82c96123d74b40e58deb206479fd565e0": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    }
+  },
+  "branches": [
+    {
+      "ref": {
+        "name": "feature",
+        "fullName": "refs/heads/feature",
+        "kind": "local",
+        "oid": "0eaf57764b66bafb421ca0125b0594b0fe86007d",
+        "isDefault": false,
+        "isCheckedOut": true
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "0eaf57764b66bafb421ca0125b0594b0fe86007d",
+        "subject": "f1: bump submodule to s2",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": {
+        "ahead": 1,
+        "behind": 0,
+        "mergeBase": "5007413e31013f59f929361c167ed0d6b698e6d5",
+        "capped": false
+      },
+      "merged": false,
+      "tags": []
+    },
+    {
+      "ref": {
+        "name": "main",
+        "fullName": "refs/heads/main",
+        "kind": "local",
+        "oid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+        "isDefault": true,
+        "isCheckedOut": false
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+        "subject": "c2: add submodule at s1",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": null,
+      "merged": true,
+      "tags": []
+    }
+  ],
+  "aheadBehind": {},
+  "reachable": {
+    "0eaf57764b66bafb421ca0125b0594b0fe86007d": true,
+    "5007413e31013f59f929361c167ed0d6b698e6d5": true,
+    "2f90b1a82c96123d74b40e58deb206479fd565e0": true
+  },
+  "pathHistories": {},
+  "blames": {},
+  "secrets": [],
+  "searches": {},
+  "insights": {
+    "commits": 3,
+    "authors": [
+      {
+        "name": "test",
+        "commits": 3
+      }
+    ],
+    "hotspots": [
+      {
+        "path": ".gitmodules",
+        "commits": 1,
+        "size": 134,
+        "score": 7.066,
+        "manifest": false
+      },
+      {
+        "path": "README.md",
+        "commits": 1,
+        "size": 13,
+        "score": 3.7,
+        "manifest": false
+      },
+      {
+        "path": "sub",
+        "commits": 2,
+        "size": 0,
+        "score": 2,
+        "manifest": false
+      }
+    ],
+    "activity": [
+      {
+        "weekStart": 1703980800000,
+        "days": [0, 3, 0, 0, 0, 0, 0]
+      }
+    ],
+    "walked": 3,
+    "capped": false,
+    "bots": 0
+  },
+  "summary": {
+    "headBranch": "feature",
+    "headDisplay": "feature",
+    "counts": {
+      "staged": 0,
+      "unstaged": 0,
+      "untracked": 0,
+      "conflict": 0
+    },
+    "vsUpstream": null,
+    "lastCommit": {
+      "oid": "0eaf57764b66bafb421ca0125b0594b0fe86007d",
+      "subject": "f1: bump submodule to s2",
+      "timestamp": 1704067200000
+    },
+    "operation": null,
+    "indexMtimeMs": 0
+  },
+  "bisect": [],
+  "preflights": {},
+  "submodules": [
+    {
+      "path": "sub",
+      "url": "fixtures/_remotes/sub.git",
+      "recorded": "339e41b26a605a13b8170dd1eb84e9625955ccf6",
+      "checkedOut": null,
+      "dirty": null
+    }
+  ],
+  "worktrees": [
+    {
+      "name": "submodule",
+      "path": null,
+      "head": "0eaf57764b66bafb421ca0125b0594b0fe86007d",
+      "branch": "refs/heads/feature",
+      "prunable": false,
+      "isThis": true
+    }
+  ]
+}

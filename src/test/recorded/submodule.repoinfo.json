@@ -1,0 +1,46 @@
+{
+  "id": "recorded-submodule",
+  "name": "submodule",
+  "headBranch": "feature",
+  "headOid": "0eaf57764b66bafb421ca0125b0594b0fe86007d",
+  "detached": false,
+  "unborn": false,
+  "headDisplay": "feature",
+  "refs": [
+    {
+      "name": "feature",
+      "fullName": "refs/heads/feature",
+      "kind": "local",
+      "oid": "0eaf57764b66bafb421ca0125b0594b0fe86007d",
+      "isDefault": false,
+      "isCheckedOut": true
+    },
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+      "isDefault": true,
+      "isCheckedOut": false
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "5007413e31013f59f929361c167ed0d6b698e6d5",
+    "isDefault": true,
+    "isCheckedOut": false
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": [],
+  "operation": null,
+  "jj": false,
+  "hasCommitGraph": false
+}

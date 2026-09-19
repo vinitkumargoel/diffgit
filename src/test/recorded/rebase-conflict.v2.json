@@ -1083,5 +1083,16 @@
     "indexMtimeMs": 0
   },
   "bisect": [],
-  "preflights": {}
+  "preflights": {},
+  "submodules": [],
+  "worktrees": [
+    {
+      "name": "rebase-conflict",
+      "path": null,
+      "head": "218d0220b5269da447f36548bda58037e7cc8468",
+      "branch": null,
+      "prunable": false,
+      "isThis": true
+    }
+  ]
 }

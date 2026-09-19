@@ -1,0 +1,42 @@
+{
+  "source": {
+    "kind": "branches",
+    "source": "feature",
+    "target": "main",
+    "sourceRef": "refs/heads/feature",
+    "targetRef": "refs/heads/main",
+    "includeWorktree": true
+  },
+  "mergeBase": "5007413e31013f59f929361c167ed0d6b698e6d5",
+  "files": [
+    {
+      "id": "sub",
+      "oldPath": "sub",
+      "newPath": "sub",
+      "status": "modified",
+      "layers": ["committed"],
+      "oldOid": "03fb642decba932d52d1f223967dbedaa6af2118",
+      "newOid": "339e41b26a605a13b8170dd1eb84e9625955ccf6",
+      "oldMode": 57344,
+      "newMode": 57344,
+      "binary": false,
+      "image": false,
+      "oldSize": 0,
+      "newSize": 0,
+      "stats": {
+        "additions": 1,
+        "deletions": 1
+      },
+      "tooLarge": false
+    }
+  ],
+  "totals": {
+    "files": 1,
+    "additions": 1,
+    "deletions": 1
+  },
+  "computedAt": 1704067200000,
+  "durationMs": 0,
+  "generation": 1,
+  "warnings": []
+}

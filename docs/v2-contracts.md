@@ -396,6 +396,74 @@ the `--rebase-merges` case) into `<fixture>.v2.json`; the mock replays a recorde
 back to a linear midpoint over the recorded walk for a state the recording does not cover, so
 T11.13's strip keeps halving.
 
+<!-- T10.12 --> `listSubmodules()`, `listWorktrees()`, `FileClassification.lfs`, the jj `headDisplay`
+and `parsePatch(text)` (atlas tabs 19 and 17, Design §14.6).
+
+**Submodules** (`src/engine/git/submodules.ts`). One row per **gitlink at HEAD** (mode `160000` in
+`flattenTree`), sorted by path; a `.gitmodules` section whose path has no gitlink is configuration
+left behind, not a submodule of this commit, and is not listed. `recorded` is that gitlink,
+`url` the section's `url`, and `checkedOut` is `HEAD` of the repository at `<path>` — a `.git`
+**file** (`gitdir: ../.git/modules/<name>`) resolved against the submodule directory and followed
+into the module directory's own `HEAD`, loose ref and `packed-refs`, or an old-style `.git`
+directory. A gitdir that is absolute, or that `..`-walks out of the picked folder, is **not**
+followed: `FsaFs` cannot leave the root, so `checkedOut` is null — which is also what a deinit'd
+submodule answers, matching `git submodule status`'s `-<oid>` form. `dirty` is always **null**
+("not computed"): deciding it means a second index and a second worktree scan.
+
+**Worktrees** (`src/engine/git/worktrees.ts`). The main checkout first with `isThis: true`, then one
+entry per `.git/worktrees/<name>/`, sorted by name; `head` comes from that directory's `HEAD` (a
+bare oid, or the branch tip resolved through the shared object database) and `branch` is the full
+ref name or null when it is detached. Two honest limits, both forced by the File System Access API:
+`path` is **null for the main checkout** (a directory handle carries a name, not a path) and for a
+linked entry it is the directory the `gitdir` file records, **never verified** — reading it would
+mean leaving the granted folder. `prunable` is therefore true only for the case that is visible from
+inside the repository, a `.git/worktrees/<name>/` whose `gitdir` file cannot be read; git's own
+"gitdir file points to non-existent location" cannot be reproduced, and calling every linked
+worktree prunable would be worse than calling none. **Opening a linked checkout is still refused**
+with `WORKTREE_GITDIR` (T1.2, Plan §5.2), so the list is produced from the main checkout; the module
+handles a linked root as well — it answers a single `isThis: true` entry by name, everything else
+being outside the folder — so lifting that refusal later cannot silently produce a wrong list.
+
+**LFS.** `FileClassification.lfs?: { oid: string; size: number }` is set by `describeFile` from the
+pointer text (`version https://git-lfs.github.com/spec/v1`, `oid sha256:<64 hex>`, `size <n>`, under
+1 KiB) on **either** side, the new side winning. The sniff runs **before** the binary gate, so a row
+that `.gitattributes` marks `binary` is both a binary row and an LFS row, which is the card atlas
+tab 19 draws. `size` is what the pointer claims; the object is never fetched.
+
+**jj.** `checkLayout` reports `.jj/` beside `.git/` as `LayoutReport.jj` and raises `JJ_COLOCATED`
+(info) once per open; `RepoInfo.jj` carries it on, as T10.2 already specified. `loadRefs` takes
+`{ jj }` and, when HEAD is detached, spells `headDisplay` — and the synthetic `HEAD` ref's name —
+`jj working copy @ <sha7>` instead of `HEAD (detached @ <sha7>)`. `RefSnapshot.detached` stays
+**true**: it is a fact about `.git/HEAD` that the resolver, the operation detector and the branch
+table depend on. The engine emits no detached-HEAD information warning for any repository (there is
+no such code in `errors.ts`), which is what "no info banner about detachment" means here.
+
+**`parsePatch(text)`** (`src/engine/diff/parsePatch.ts`, pure) answers `PatchResult` (in `api.ts`):
+`files: FileDiff[]`, `hunks: Record<id, HunkModel>` keyed by the session's own id scheme
+(`newPath ?? oldPath`, so `FileCard` works unchanged), `stats` and `warnings`, which always carries
+`PATCH_ONLY`. It accepts git-format and plain unified diffs, CRLF throughout (a patch **of** a CRLF
+file keeps the `\r` at the end of its content lines — only the structural lines are trimmed),
+`--- /dev/null` / `+++ /dev/null`, `new file mode` / `deleted file mode` / `old mode` + `new mode`,
+`similarity index` (and `dissimilarity index`), `rename`/`copy from`/`to`, `index <a>..<b>[ <mode>]`,
+`Binary files … differ`, `GIT binary patch`, `quote_c_style` paths, `\ No newline at end of file`
+(which counts for no hunk line), and preamble of any kind — a `format-patch` mail header, a
+diffstat, the `# diffgit:` note `patchText` writes before a huge row, a trailing `-- ` signature.
+Two shapes a patch cannot carry are stated rather than guessed: `oldSize`/`newSize` are **0** and
+every row's `layers` is `["committed"]` (there is no index and no working tree). A type change,
+which git writes as a `deleted file mode` section followed by a `new file mode` one for the same
+path, is folded back into the single `typechange` row the diff engine emits. Text that holds no file
+section at all, and a hunk whose body does not match its `@@` header, are `NOT_A_PATCH` with the
+**first** offending line number in `detail` (`line <n>: <quoted text>`); an empty string is
+`NOT_A_PATCH` too, so `parsePatch(patchText(gen, []))` is not an identity. `parsePatch` is the one
+`EngineApi` method that answers with **no repository open**: `workerApi` routes it to
+`PatchSession` (`src/engine/patchSession.ts`), which keeps the same one-in-flight contract as
+`RepoSession.single` (`CANCELLED` on supersede). `bun run record` writes `submodules` and
+`worktrees` into `<fixture>.v2.json` and adds two recorded fixtures — `submodule` and, under the
+name `worktree-main`, the main checkout behind `worktree-gitdir`, so the mock has a *linked*
+worktree to list; the absolute `WorktreeInfo.path` and `SubmoduleInfo.url` are rewritten relative to
+`fixtures/` so the recording is the same on every machine. The mock parses patches with the real
+parser — patch-only mode needs no recording.
+
 ```ts
 export interface ResolvedRevision {
   expr: string; oid: Oid | null;                     // null only for "<root>^" → empty tree
@@ -462,6 +530,10 @@ export interface PathExplanation { path: string; shown: boolean;
 export interface HiddenEntry { path: string; kind: "ignored-dir" | "ignored" | "skip-worktree" | "assume-unchanged" | "too-large" | "sparse"; count?: number }
 export interface SubmoduleInfo { path: string; url: string | null; recorded: Oid | null; checkedOut: Oid | null; dirty: boolean | null }
 export interface WorktreeInfo { name: string; path: string | null; head: Oid | null; branch: string | null; prunable: boolean; isThis: boolean }
+// T10.12, in `api.ts` beside `ConflictPayload` (it names `HunkModel`):
+export interface PatchResult { files: FileDiff[]; hunks: Record<string, HunkModel>;
+  stats: { files: number; additions: number; deletions: number }; warnings: RepoWarning[] }
+// T10.12, on `FileClassification`:  lfs?: { oid: string; size: number }
 ```
 
 <!-- T10.10 --> `patchText(generation, ids)` renders the rows of the **current** `DiffResult` with
@@ -567,7 +639,9 @@ file), `merge-conflict` (merge stopped, `MERGE_HEAD` present, one deleted-by-the
 rename, a whitespace-only commit, a `.mailmap`, one `[bot]` author, `git commit-graph write`),
 `secrets` (planted fake keys in unstaged hunks, one allowlisted), `hidden` (ignored dir, ignored file,
 `skip-worktree` file, `assume-unchanged` file, 11 MB file), `octopus` (three-parent merge, plus a commit-graph from T10.5b), `skew` (T10.5b: committer dates
-that do not decrease toward the parents), and under `FIXTURES_PERF=1` `perf-log` (T10.5b: 2,000
+that do not decrease toward the parents), `jj` (T10.12: an empty `.jj/` beside `.git/` and a detached
+HEAD, built with git alone), `lfs` (T10.12: committed LFS pointer text, `filter=lfs` in
+`.gitattributes`, no `git lfs` binary), and under `FIXTURES_PERF=1` `perf-log` (T10.5b: 2,000
 linear commits + 50 branches). Each with
 `fixture-expectations.sh` output from the real git CLI (`git tag -l --format`, `git stash list`,
 `git reflog`, `git log --graph --oneline`, `git blame --porcelain`, `git check-ignore -v`,

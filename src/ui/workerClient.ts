@@ -17,6 +17,7 @@ import type {
   FileStats,
   InvalidateScope,
   OpenOptions,
+  PatchResult,
   PathHistoryOptions,
   ProbeTier,
   ProgressSink,
@@ -46,9 +47,11 @@ import type {
   SearchResult,
   SecretFinding,
   StashInfo,
+  SubmoduleInfo,
   TagInfo,
   WalkPage,
   WalkRequest,
+  WorktreeInfo,
 } from "../engine/types";
 import { toUiError, type UiError } from "./errors";
 
@@ -150,6 +153,12 @@ export interface WorkerClient {
   bisectStep(state: BisectState): Promise<BisectStep>;
   /** Which commits a rebase would replay and which would conflict (T10.11); a report only. */
   rebasePreflight(branchRef: string, ontoRef: string): Promise<PreflightResult>;
+  /** Recorded vs checked-out commit per submodule (T10.12); `dirty` is always null. */
+  listSubmodules(): Promise<SubmoduleInfo[]>;
+  /** `git worktree list` (T10.12): the main checkout first, then the linked ones. */
+  listWorktrees(): Promise<WorktreeInfo[]>;
+  /** One unified diff as diff rows (T10.12); answers with no repository open (patch-only mode). */
+  parsePatch(text: string): Promise<PatchResult>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
   prioritise(ids: string[]): Promise<void>;
   probe(tier: ProbeTier): Promise<string>;
@@ -306,6 +315,9 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     bisectStep: (state) => call((r) => r.bisectStep(state), "bisectStep"),
     rebasePreflight: (branchRef, ontoRef) =>
       call((r) => r.rebasePreflight(branchRef, ontoRef), "rebasePreflight"),
+    listSubmodules: () => call((r) => r.listSubmodules(), "listSubmodules"),
+    listWorktrees: () => call((r) => r.listWorktrees(), "listWorktrees"),
+    parsePatch: (text) => call((r) => r.parsePatch(text), "parsePatch"),
     fileBytes: (generation, id, side) =>
       call((r) => r.fileBytes(generation, id, side), "fileBytes"),
     patchText: (generation, ids) => call((r) => r.patchText(generation, ids), "patchText"),

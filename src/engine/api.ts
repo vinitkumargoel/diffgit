@@ -33,9 +33,11 @@ import type {
   SearchResult,
   SecretFinding,
   StashInfo,
+  SubmoduleInfo,
   TagInfo,
   WalkPage,
   WalkRequest,
+  WorktreeInfo,
 } from "./types";
 
 export type ProgressPhase =
@@ -118,6 +120,12 @@ export interface FileClassification {
   oldSize: number;
   newSize: number;
   changedLines: number | null; // additions + deletions when known
+  /**
+   * T10.12: the file is a Git LFS pointer on at least one side, and this is what the pointer names
+   * (the new side when both are pointers). The object itself is never fetched — nothing leaves the
+   * machine — so `size` is what the pointer claims, not anything this application measured.
+   */
+  lfs?: { oid: string; size: number };
 }
 
 export interface FileDiffPayload {
@@ -134,6 +142,20 @@ export interface FileDiffPayload {
   newMode: number | null;
   /** For gitlinks: the two commit oids. */
   submodule?: { oldOid: string | null; newOid: string | null };
+}
+
+/**
+ * What `EngineApi.parsePatch` makes of a unified diff (T10.12, Design §14.6 "patch-only").
+ *
+ * The rows are ordinary `FileDiff`s with the same id scheme the session uses (`newPath ?? oldPath`)
+ * so `FileCard` works unchanged, and `hunks` is keyed by that id. `warnings` always carries
+ * `PATCH_ONLY`: there is no repository behind these rows and the banner has to say so.
+ */
+export interface PatchResult {
+  files: FileDiff[];
+  hunks: Record<string, HunkModel>;
+  stats: { files: number; additions: number; deletions: number };
+  warnings: RepoWarning[];
 }
 
 export interface FileDiffOptions {
@@ -406,6 +428,25 @@ export interface EngineApi {
    * `CANCELLED` when a newer call supersedes it.
    */
   rebasePreflight(branchRef: string, ontoRef: string): Promise<PreflightResult>;
+  /**
+   * Every submodule of the open repository (T10.12, atlas tab 19): the commit HEAD records, the
+   * commit actually checked out under the picked folder, and the `.gitmodules` URL.
+   * `SubmoduleInfo.dirty` is always null — see the type.
+   */
+  listSubmodules(): Promise<SubmoduleInfo[]>;
+  /**
+   * `git worktree list` (T10.12, atlas tab 19): the main checkout first, marked `isThis`, then one
+   * entry per `.git/worktrees/<name>/`. A linked checkout's `path` is what its `gitdir` file
+   * records and is never verified — it lies outside the folder the browser was given.
+   */
+  listWorktrees(): Promise<WorktreeInfo[]>;
+  /**
+   * One unified diff (git-format or plain) as diff rows and hunks (T10.12, Design §14.6). The only
+   * method that answers **without an open repository** — a `.patch` opened through the OS or
+   * dropped on the page is served by `PatchSession`. `NOT_A_PATCH` when the text is not a unified
+   * diff, with the first offending line number in `detail`.
+   */
+  parsePatch(text: string): Promise<PatchResult>;
   /** Move these files to the front of the background stats queue (visible sidebar rows). */
   prioritise(ids: string[]): Promise<void>;
   /** Cheap change signature per tier for the polling fallback (T6.3). */

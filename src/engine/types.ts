@@ -626,3 +626,38 @@ export interface PreflightResult {
   command: string;
   todo: string;
 }
+
+// ---- submodules and linked worktrees (T10.12, atlas tab 19) -----------------------------------
+
+/**
+ * One submodule of the open repository, the way `git submodule status` describes it.
+ *
+ * `recorded` is the gitlink the superproject's HEAD tree holds; `checkedOut` is `HEAD` of the
+ * repository actually sitting at `path` — null when the submodule was never initialised, was
+ * `deinit`ed, or keeps its git directory outside the folder the user picked (the browser cannot
+ * follow it there). `dirty` is always null: deciding it means scanning a second working tree, and
+ * the contract records the field as "not computed" rather than guessed.
+ */
+export interface SubmoduleInfo {
+  path: string;
+  url: string | null;
+  recorded: Oid | null;
+  checkedOut: Oid | null;
+  dirty: boolean | null;
+}
+
+/**
+ * One worktree of the open repository (`git worktree list`). The main checkout is first and is the
+ * one marked `isThis`. `path` is the directory `.git/worktrees/<name>/gitdir` names — never
+ * verified, because it is outside the picked folder — and null for the main checkout (a directory
+ * handle has a name, not a path) and for an entry whose `gitdir` file cannot be read, which is
+ * also the only case this can report as `prunable`. See `docs/v2-contracts.md` `<!-- T10.12 -->`.
+ */
+export interface WorktreeInfo {
+  name: string;
+  path: string | null;
+  head: Oid | null;
+  branch: string | null;
+  prunable: boolean;
+  isThis: boolean;
+}

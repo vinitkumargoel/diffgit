@@ -716,5 +716,16 @@
     "indexMtimeMs": 0
   },
   "bisect": [],
-  "preflights": {}
+  "preflights": {},
+  "submodules": [],
+  "worktrees": [
+    {
+      "name": "stash",
+      "path": null,
+      "head": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "branch": "refs/heads/main",
+      "prunable": false,
+      "isThis": true
+    }
+  ]
 }

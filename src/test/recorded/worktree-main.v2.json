@@ -5,10 +5,10 @@
     {
       "index": 0,
       "expr": "HEAD@{0}",
-      "oldOid": "265c23779d5c82d8b5a22d512179cc001e68e60b",
-      "newOid": "e2643f5226e94c51e72a615953567c325f89f7c1",
-      "action": "merge side-a side-b",
-      "message": "merge side-a side-b: Merge made by the 'octopus' strategy.",
+      "oldOid": "2fa7483f994102c1a5e24f0395417df61a3cc2c2",
+      "newOid": "e6474f9260bfa645409b38281946467ac0c34ed3",
+      "action": "checkout",
+      "message": "checkout: moving from feature to main",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -20,10 +20,10 @@
     {
       "index": 1,
       "expr": "HEAD@{1}",
-      "oldOid": "f569837e45cb7b03d48190e1b540d75d59348b42",
-      "newOid": "265c23779d5c82d8b5a22d512179cc001e68e60b",
-      "action": "commit",
-      "message": "commit: c2: main moves on",
+      "oldOid": "e6474f9260bfa645409b38281946467ac0c34ed3",
+      "newOid": "2fa7483f994102c1a5e24f0395417df61a3cc2c2",
+      "action": "checkout",
+      "message": "checkout: moving from main to feature",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -35,10 +35,10 @@
     {
       "index": 2,
       "expr": "HEAD@{2}",
-      "oldOid": "211e73063ddab46dfada551deea6befb5f18ea16",
-      "newOid": "f569837e45cb7b03d48190e1b540d75d59348b42",
-      "action": "checkout",
-      "message": "checkout: moving from side-b to main",
+      "oldOid": "9e438e85b2580a1b97594e0725393881f57029d3",
+      "newOid": "e6474f9260bfa645409b38281946467ac0c34ed3",
+      "action": "commit",
+      "message": "commit: c4: main moves on",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -50,10 +50,10 @@
     {
       "index": 3,
       "expr": "HEAD@{3}",
-      "oldOid": "f569837e45cb7b03d48190e1b540d75d59348b42",
-      "newOid": "211e73063ddab46dfada551deea6befb5f18ea16",
-      "action": "commit",
-      "message": "commit: b1: side-b commit",
+      "oldOid": "2fa7483f994102c1a5e24f0395417df61a3cc2c2",
+      "newOid": "9e438e85b2580a1b97594e0725393881f57029d3",
+      "action": "checkout",
+      "message": "checkout: moving from feature to main",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -65,10 +65,10 @@
     {
       "index": 4,
       "expr": "HEAD@{4}",
-      "oldOid": "f569837e45cb7b03d48190e1b540d75d59348b42",
-      "newOid": "f569837e45cb7b03d48190e1b540d75d59348b42",
-      "action": "checkout",
-      "message": "checkout: moving from main to side-b",
+      "oldOid": "a934c97ff2c94a684e79b9ef1edeaffc307d3e57",
+      "newOid": "2fa7483f994102c1a5e24f0395417df61a3cc2c2",
+      "action": "commit",
+      "message": "commit: f2: guide + util",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -80,10 +80,10 @@
     {
       "index": 5,
       "expr": "HEAD@{5}",
-      "oldOid": "03da552045a219cc82af159e96297d44fa7d5548",
-      "newOid": "f569837e45cb7b03d48190e1b540d75d59348b42",
-      "action": "checkout",
-      "message": "checkout: moving from side-a to main",
+      "oldOid": "9e438e85b2580a1b97594e0725393881f57029d3",
+      "newOid": "a934c97ff2c94a684e79b9ef1edeaffc307d3e57",
+      "action": "commit",
+      "message": "commit: f1: modify a, delete b, add new",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -95,10 +95,10 @@
     {
       "index": 6,
       "expr": "HEAD@{6}",
-      "oldOid": "f569837e45cb7b03d48190e1b540d75d59348b42",
-      "newOid": "03da552045a219cc82af159e96297d44fa7d5548",
-      "action": "commit",
-      "message": "commit: a1: side-a commit",
+      "oldOid": "9e438e85b2580a1b97594e0725393881f57029d3",
+      "newOid": "9e438e85b2580a1b97594e0725393881f57029d3",
+      "action": "checkout",
+      "message": "checkout: moving from main to feature",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -110,10 +110,10 @@
     {
       "index": 7,
       "expr": "HEAD@{7}",
-      "oldOid": "f569837e45cb7b03d48190e1b540d75d59348b42",
-      "newOid": "f569837e45cb7b03d48190e1b540d75d59348b42",
-      "action": "checkout",
-      "message": "checkout: moving from main to side-a",
+      "oldOid": "bcbf59cd9556f0173ef058736efd530a7138acc9",
+      "newOid": "9e438e85b2580a1b97594e0725393881f57029d3",
+      "action": "commit",
+      "message": "commit: c3: add c.txt",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -125,10 +125,25 @@
     {
       "index": 8,
       "expr": "HEAD@{8}",
+      "oldOid": "488ece7488f8691318f71526c77da131786e4265",
+      "newOid": "bcbf59cd9556f0173ef058736efd530a7138acc9",
+      "action": "commit",
+      "message": "commit: c2: edit a.txt",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": true
+    },
+    {
+      "index": 9,
+      "expr": "HEAD@{9}",
       "oldOid": null,
-      "newOid": "f569837e45cb7b03d48190e1b540d75d59348b42",
+      "newOid": "488ece7488f8691318f71526c77da131786e4265",
       "action": "commit (initial)",
-      "message": "commit (initial): c1: root",
+      "message": "commit (initial): c1: initial files",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -140,13 +155,7 @@
   ],
   "operation": null,
   "conflicts": {},
-  "hidden": [
-    {
-      "path": "expected",
-      "kind": "ignored-dir",
-      "count": 13
-    }
-  ],
+  "hidden": [],
   "explanations": {},
   "revisions": {},
   "ranges": [],
@@ -154,12 +163,8 @@
     "default": {
       "commits": [
         {
-          "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
-          "parents": [
-            "265c23779d5c82d8b5a22d512179cc001e68e60b",
-            "03da552045a219cc82af159e96297d44fa7d5548",
-            "211e73063ddab46dfada551deea6befb5f18ea16"
-          ],
+          "oid": "e6474f9260bfa645409b38281946467ac0c34ed3",
+          "parents": ["9e438e85b2580a1b97594e0725393881f57029d3"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -172,31 +177,21 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c3: octopus merge of side-a and side-b",
+          "subject": "c4: main moves on",
           "refs": ["HEAD", "main"],
           "lane": 0,
-          "laneCount": 3,
+          "laneCount": 1,
           "edges": [
             {
               "from": 0,
               "to": 0,
               "kind": "straight"
-            },
-            {
-              "from": 0,
-              "to": 1,
-              "kind": "fork"
-            },
-            {
-              "from": 0,
-              "to": 2,
-              "kind": "fork"
             }
           ]
         },
         {
-          "oid": "265c23779d5c82d8b5a22d512179cc001e68e60b",
-          "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
+          "oid": "9e438e85b2580a1b97594e0725393881f57029d3",
+          "parents": ["bcbf59cd9556f0173ef058736efd530a7138acc9"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -209,31 +204,21 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c2: main moves on",
+          "subject": "c3: add c.txt",
           "refs": [],
           "lane": 0,
-          "laneCount": 3,
+          "laneCount": 1,
           "edges": [
             {
               "from": 0,
               "to": 0,
               "kind": "straight"
-            },
-            {
-              "from": 1,
-              "to": 1,
-              "kind": "straight"
-            },
-            {
-              "from": 2,
-              "to": 2,
-              "kind": "straight"
             }
           ]
         },
         {
-          "oid": "03da552045a219cc82af159e96297d44fa7d5548",
-          "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
+          "oid": "bcbf59cd9556f0173ef058736efd530a7138acc9",
+          "parents": ["488ece7488f8691318f71526c77da131786e4265"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -246,53 +231,11 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "a1: side-a commit",
-          "refs": ["side-a"],
-          "lane": 1,
-          "laneCount": 3,
+          "subject": "c2: edit a.txt",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
           "edges": [
-            {
-              "from": 1,
-              "to": 0,
-              "kind": "merge"
-            },
-            {
-              "from": 0,
-              "to": 0,
-              "kind": "straight"
-            },
-            {
-              "from": 2,
-              "to": 2,
-              "kind": "straight"
-            }
-          ]
-        },
-        {
-          "oid": "211e73063ddab46dfada551deea6befb5f18ea16",
-          "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
-          "author": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "committer": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "subject": "b1: side-b commit",
-          "refs": ["side-b"],
-          "lane": 2,
-          "laneCount": 3,
-          "edges": [
-            {
-              "from": 2,
-              "to": 0,
-              "kind": "merge"
-            },
             {
               "from": 0,
               "to": 0,
@@ -301,7 +244,7 @@
           ]
         },
         {
-          "oid": "f569837e45cb7b03d48190e1b540d75d59348b42",
+          "oid": "488ece7488f8691318f71526c77da131786e4265",
           "parents": [],
           "author": {
             "name": "test",
@@ -315,25 +258,21 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c1: root",
+          "subject": "c1: initial files",
           "refs": [],
           "lane": 0,
           "laneCount": 1,
           "edges": []
         }
       ],
-      "graphAvailable": true,
+      "graphAvailable": false,
       "laneOverflow": false
     },
     "first-parent": {
       "commits": [
         {
-          "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
-          "parents": [
-            "265c23779d5c82d8b5a22d512179cc001e68e60b",
-            "03da552045a219cc82af159e96297d44fa7d5548",
-            "211e73063ddab46dfada551deea6befb5f18ea16"
-          ],
+          "oid": "e6474f9260bfa645409b38281946467ac0c34ed3",
+          "parents": ["9e438e85b2580a1b97594e0725393881f57029d3"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -346,7 +285,7 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c3: octopus merge of side-a and side-b",
+          "subject": "c4: main moves on",
           "refs": ["HEAD", "main"],
           "lane": 0,
           "laneCount": 1,
@@ -359,8 +298,8 @@
           ]
         },
         {
-          "oid": "265c23779d5c82d8b5a22d512179cc001e68e60b",
-          "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
+          "oid": "9e438e85b2580a1b97594e0725393881f57029d3",
+          "parents": ["bcbf59cd9556f0173ef058736efd530a7138acc9"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -373,7 +312,7 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c2: main moves on",
+          "subject": "c3: add c.txt",
           "refs": [],
           "lane": 0,
           "laneCount": 1,
@@ -386,7 +325,34 @@
           ]
         },
         {
-          "oid": "f569837e45cb7b03d48190e1b540d75d59348b42",
+          "oid": "bcbf59cd9556f0173ef058736efd530a7138acc9",
+          "parents": ["488ece7488f8691318f71526c77da131786e4265"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: edit a.txt",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "488ece7488f8691318f71526c77da131786e4265",
           "parents": [],
           "author": {
             "name": "test",
@@ -400,25 +366,21 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c1: root",
+          "subject": "c1: initial files",
           "refs": [],
           "lane": 0,
           "laneCount": 1,
           "edges": []
         }
       ],
-      "graphAvailable": true,
+      "graphAvailable": false,
       "laneOverflow": false
     },
     "all": {
       "commits": [
         {
-          "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
-          "parents": [
-            "265c23779d5c82d8b5a22d512179cc001e68e60b",
-            "03da552045a219cc82af159e96297d44fa7d5548",
-            "211e73063ddab46dfada551deea6befb5f18ea16"
-          ],
+          "oid": "2fa7483f994102c1a5e24f0395417df61a3cc2c2",
+          "parents": ["a934c97ff2c94a684e79b9ef1edeaffc307d3e57"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -431,31 +393,21 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c3: octopus merge of side-a and side-b",
-          "refs": ["HEAD", "main"],
+          "subject": "f2: guide + util",
+          "refs": ["feature"],
           "lane": 0,
-          "laneCount": 3,
+          "laneCount": 1,
           "edges": [
             {
               "from": 0,
               "to": 0,
               "kind": "straight"
-            },
-            {
-              "from": 0,
-              "to": 1,
-              "kind": "fork"
-            },
-            {
-              "from": 0,
-              "to": 2,
-              "kind": "fork"
             }
           ]
         },
         {
-          "oid": "265c23779d5c82d8b5a22d512179cc001e68e60b",
-          "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
+          "oid": "e6474f9260bfa645409b38281946467ac0c34ed3",
+          "parents": ["9e438e85b2580a1b97594e0725393881f57029d3"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -468,31 +420,58 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c2: main moves on",
+          "subject": "c4: main moves on",
+          "refs": ["HEAD", "main"],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "a934c97ff2c94a684e79b9ef1edeaffc307d3e57",
+          "parents": ["9e438e85b2580a1b97594e0725393881f57029d3"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "f1: modify a, delete b, add new",
           "refs": [],
           "lane": 0,
-          "laneCount": 3,
+          "laneCount": 2,
           "edges": [
             {
               "from": 0,
-              "to": 0,
-              "kind": "straight"
+              "to": 1,
+              "kind": "merge"
             },
             {
               "from": 1,
               "to": 1,
               "kind": "straight"
-            },
-            {
-              "from": 2,
-              "to": 2,
-              "kind": "straight"
             }
           ]
         },
         {
-          "oid": "03da552045a219cc82af159e96297d44fa7d5548",
-          "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
+          "oid": "9e438e85b2580a1b97594e0725393881f57029d3",
+          "parents": ["bcbf59cd9556f0173ef058736efd530a7138acc9"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -505,31 +484,21 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "a1: side-a commit",
-          "refs": ["side-a"],
+          "subject": "c3: add c.txt",
+          "refs": [],
           "lane": 1,
-          "laneCount": 3,
+          "laneCount": 2,
           "edges": [
             {
               "from": 1,
-              "to": 0,
-              "kind": "merge"
-            },
-            {
-              "from": 0,
-              "to": 0,
-              "kind": "straight"
-            },
-            {
-              "from": 2,
-              "to": 2,
+              "to": 1,
               "kind": "straight"
             }
           ]
         },
         {
-          "oid": "211e73063ddab46dfada551deea6befb5f18ea16",
-          "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
+          "oid": "bcbf59cd9556f0173ef058736efd530a7138acc9",
+          "parents": ["488ece7488f8691318f71526c77da131786e4265"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -542,25 +511,20 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "b1: side-b commit",
-          "refs": ["side-b"],
-          "lane": 2,
-          "laneCount": 3,
+          "subject": "c2: edit a.txt",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
           "edges": [
             {
-              "from": 2,
-              "to": 0,
-              "kind": "merge"
-            },
-            {
-              "from": 0,
-              "to": 0,
+              "from": 1,
+              "to": 1,
               "kind": "straight"
             }
           ]
         },
         {
-          "oid": "f569837e45cb7b03d48190e1b540d75d59348b42",
+          "oid": "488ece7488f8691318f71526c77da131786e4265",
           "parents": [],
           "author": {
             "name": "test",
@@ -574,25 +538,21 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c1: root",
+          "subject": "c1: initial files",
           "refs": [],
-          "lane": 0,
-          "laneCount": 1,
+          "lane": 1,
+          "laneCount": 2,
           "edges": []
         }
       ],
-      "graphAvailable": true,
+      "graphAvailable": false,
       "laneOverflow": false
     }
   },
   "commits": {
-    "e2643f5226e94c51e72a615953567c325f89f7c1": {
-      "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
-      "parents": [
-        "265c23779d5c82d8b5a22d512179cc001e68e60b",
-        "03da552045a219cc82af159e96297d44fa7d5548",
-        "211e73063ddab46dfada551deea6befb5f18ea16"
-      ],
+    "e6474f9260bfa645409b38281946467ac0c34ed3": {
+      "oid": "e6474f9260bfa645409b38281946467ac0c34ed3",
+      "parents": ["9e438e85b2580a1b97594e0725393881f57029d3"],
       "author": {
         "name": "test",
         "email": "test@example.com",
@@ -605,10 +565,10 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "subject": "c3: octopus merge of side-a and side-b",
+      "subject": "c4: main moves on",
       "refs": ["HEAD", "main"],
       "body": "",
-      "tree": "aa0103fa7403488091e47daff64c62836b2d0057",
+      "tree": "902d48b672da1c12edef97457a24c8e9ef69bc77",
       "signed": false,
       "note": null,
       "stats": {
@@ -617,9 +577,9 @@
         "deletions": 0
       }
     },
-    "265c23779d5c82d8b5a22d512179cc001e68e60b": {
-      "oid": "265c23779d5c82d8b5a22d512179cc001e68e60b",
-      "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
+    "9e438e85b2580a1b97594e0725393881f57029d3": {
+      "oid": "9e438e85b2580a1b97594e0725393881f57029d3",
+      "parents": ["bcbf59cd9556f0173ef058736efd530a7138acc9"],
       "author": {
         "name": "test",
         "email": "test@example.com",
@@ -632,21 +592,21 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "subject": "c2: main moves on",
+      "subject": "c3: add c.txt",
       "refs": [],
       "body": "",
-      "tree": "7e87ed9237b89a40fafcbe8d725f22c93df3e069",
+      "tree": "0d1c14adcdbba01d28a1631c66cbe7dc9fc736cc",
       "signed": false,
       "note": null,
       "stats": {
         "files": 1,
-        "additions": 1,
+        "additions": 3,
         "deletions": 0
       }
     },
-    "03da552045a219cc82af159e96297d44fa7d5548": {
-      "oid": "03da552045a219cc82af159e96297d44fa7d5548",
-      "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
+    "bcbf59cd9556f0173ef058736efd530a7138acc9": {
+      "oid": "bcbf59cd9556f0173ef058736efd530a7138acc9",
+      "parents": ["488ece7488f8691318f71526c77da131786e4265"],
       "author": {
         "name": "test",
         "email": "test@example.com",
@@ -659,47 +619,20 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "subject": "a1: side-a commit",
-      "refs": ["side-a"],
+      "subject": "c2: edit a.txt",
+      "refs": [],
       "body": "",
-      "tree": "8d2dc8df40cc0336037f8f8f6473d42eb8ff6738",
+      "tree": "6d5e4334ca9caaaf528b434346bf532dcc361448",
       "signed": false,
       "note": null,
       "stats": {
         "files": 1,
         "additions": 1,
-        "deletions": 0
+        "deletions": 1
       }
     },
-    "211e73063ddab46dfada551deea6befb5f18ea16": {
-      "oid": "211e73063ddab46dfada551deea6befb5f18ea16",
-      "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
-      "author": {
-        "name": "test",
-        "email": "test@example.com",
-        "timestamp": 1704067200000,
-        "tzOffsetMin": 0
-      },
-      "committer": {
-        "name": "test",
-        "email": "test@example.com",
-        "timestamp": 1704067200000,
-        "tzOffsetMin": 0
-      },
-      "subject": "b1: side-b commit",
-      "refs": ["side-b"],
-      "body": "",
-      "tree": "f02321790fa12dd2f84511eaa99bd49d19e43299",
-      "signed": false,
-      "note": null,
-      "stats": {
-        "files": 1,
-        "additions": 1,
-        "deletions": 0
-      }
-    },
-    "f569837e45cb7b03d48190e1b540d75d59348b42": {
-      "oid": "f569837e45cb7b03d48190e1b540d75d59348b42",
+    "488ece7488f8691318f71526c77da131786e4265": {
+      "oid": "488ece7488f8691318f71526c77da131786e4265",
       "parents": [],
       "author": {
         "name": "test",
@@ -713,44 +646,103 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "subject": "c1: root",
+      "subject": "c1: initial files",
       "refs": [],
       "body": "",
-      "tree": "4b36dfd79db36d8c59d1fb032de66b57f0457b65",
+      "tree": "d29edf73571c65d21867d0a2c22106311a722f3e",
       "signed": false,
       "note": null,
       "stats": {
-        "files": 1,
-        "additions": 1,
+        "files": 4,
+        "additions": 20,
         "deletions": 0
+      }
+    },
+    "2fa7483f994102c1a5e24f0395417df61a3cc2c2": {
+      "oid": "2fa7483f994102c1a5e24f0395417df61a3cc2c2",
+      "parents": ["a934c97ff2c94a684e79b9ef1edeaffc307d3e57"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "f2: guide + util",
+      "refs": ["feature"],
+      "body": "",
+      "tree": "e1173602bd3b278882fcb14686bcf31cbc8ca3ca",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 2,
+        "additions": 4,
+        "deletions": 1
+      }
+    },
+    "a934c97ff2c94a684e79b9ef1edeaffc307d3e57": {
+      "oid": "a934c97ff2c94a684e79b9ef1edeaffc307d3e57",
+      "parents": ["9e438e85b2580a1b97594e0725393881f57029d3"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "f1: modify a, delete b, add new",
+      "refs": [],
+      "body": "",
+      "tree": "6a430e6fb4a6d7761da87b22588ee8ffd1b79212",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 3,
+        "additions": 2,
+        "deletions": 5
       }
     }
   },
   "commitStats": {
-    "e2643f5226e94c51e72a615953567c325f89f7c1": {
+    "e6474f9260bfa645409b38281946467ac0c34ed3": {
       "files": 2,
       "additions": 2,
       "deletions": 0
     },
-    "265c23779d5c82d8b5a22d512179cc001e68e60b": {
+    "9e438e85b2580a1b97594e0725393881f57029d3": {
       "files": 1,
-      "additions": 1,
+      "additions": 3,
       "deletions": 0
     },
-    "03da552045a219cc82af159e96297d44fa7d5548": {
+    "bcbf59cd9556f0173ef058736efd530a7138acc9": {
       "files": 1,
       "additions": 1,
+      "deletions": 1
+    },
+    "488ece7488f8691318f71526c77da131786e4265": {
+      "files": 4,
+      "additions": 20,
       "deletions": 0
     },
-    "211e73063ddab46dfada551deea6befb5f18ea16": {
-      "files": 1,
-      "additions": 1,
-      "deletions": 0
+    "2fa7483f994102c1a5e24f0395417df61a3cc2c2": {
+      "files": 2,
+      "additions": 4,
+      "deletions": 1
     },
-    "f569837e45cb7b03d48190e1b540d75d59348b42": {
-      "files": 1,
-      "additions": 1,
-      "deletions": 0
+    "a934c97ff2c94a684e79b9ef1edeaffc307d3e57": {
+      "files": 3,
+      "additions": 2,
+      "deletions": 5
     }
   },
   "branches": [
@@ -759,14 +751,14 @@
         "name": "main",
         "fullName": "refs/heads/main",
         "kind": "local",
-        "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
+        "oid": "e6474f9260bfa645409b38281946467ac0c34ed3",
         "isDefault": true,
         "isCheckedOut": true
       },
       "upstream": null,
       "lastCommit": {
-        "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
-        "subject": "c3: octopus merge of side-a and side-b",
+        "oid": "e6474f9260bfa645409b38281946467ac0c34ed3",
+        "subject": "c4: main moves on",
         "author": "test",
         "timestamp": 1704067200000
       },
@@ -777,51 +769,25 @@
     },
     {
       "ref": {
-        "name": "side-a",
-        "fullName": "refs/heads/side-a",
+        "name": "feature",
+        "fullName": "refs/heads/feature",
         "kind": "local",
-        "oid": "03da552045a219cc82af159e96297d44fa7d5548",
+        "oid": "2fa7483f994102c1a5e24f0395417df61a3cc2c2",
         "isDefault": false,
         "isCheckedOut": false
       },
       "upstream": null,
       "lastCommit": {
-        "oid": "03da552045a219cc82af159e96297d44fa7d5548",
-        "subject": "a1: side-a commit",
+        "oid": "2fa7483f994102c1a5e24f0395417df61a3cc2c2",
+        "subject": "f2: guide + util",
         "author": "test",
         "timestamp": 1704067200000
       },
       "vsUpstream": null,
       "vsDefault": {
         "ahead": 2,
-        "behind": 3,
-        "mergeBase": "03da552045a219cc82af159e96297d44fa7d5548",
-        "capped": false
-      },
-      "merged": false,
-      "tags": []
-    },
-    {
-      "ref": {
-        "name": "side-b",
-        "fullName": "refs/heads/side-b",
-        "kind": "local",
-        "oid": "211e73063ddab46dfada551deea6befb5f18ea16",
-        "isDefault": false,
-        "isCheckedOut": false
-      },
-      "upstream": null,
-      "lastCommit": {
-        "oid": "211e73063ddab46dfada551deea6befb5f18ea16",
-        "subject": "b1: side-b commit",
-        "author": "test",
-        "timestamp": 1704067200000
-      },
-      "vsUpstream": null,
-      "vsDefault": {
-        "ahead": 2,
-        "behind": 3,
-        "mergeBase": "211e73063ddab46dfada551deea6befb5f18ea16",
+        "behind": 1,
+        "mergeBase": "9e438e85b2580a1b97594e0725393881f57029d3",
         "capped": false
       },
       "merged": false,
@@ -830,61 +796,76 @@
   ],
   "aheadBehind": {},
   "reachable": {
-    "e2643f5226e94c51e72a615953567c325f89f7c1": true,
-    "265c23779d5c82d8b5a22d512179cc001e68e60b": true,
-    "03da552045a219cc82af159e96297d44fa7d5548": true,
-    "211e73063ddab46dfada551deea6befb5f18ea16": true,
-    "f569837e45cb7b03d48190e1b540d75d59348b42": true
+    "e6474f9260bfa645409b38281946467ac0c34ed3": true,
+    "9e438e85b2580a1b97594e0725393881f57029d3": true,
+    "bcbf59cd9556f0173ef058736efd530a7138acc9": true,
+    "488ece7488f8691318f71526c77da131786e4265": true,
+    "2fa7483f994102c1a5e24f0395417df61a3cc2c2": true,
+    "a934c97ff2c94a684e79b9ef1edeaffc307d3e57": true
   },
   "pathHistories": {},
   "blames": {},
   "secrets": [],
   "searches": {},
   "insights": {
-    "commits": 3,
+    "commits": 4,
     "authors": [
       {
         "name": "test",
-        "commits": 3
+        "commits": 4
       }
     ],
     "hotspots": [
       {
-        "path": "a.txt",
-        "commits": 1,
-        "size": 7,
-        "score": 2.807,
+        "path": "src/a.txt",
+        "commits": 2,
+        "size": 88,
+        "score": 12.919,
         "manifest": false
       },
       {
-        "path": "b.txt",
-        "commits": 1,
-        "size": 7,
-        "score": 2.807,
+        "path": "README.md",
+        "commits": 2,
+        "size": 82,
+        "score": 12.715,
         "manifest": false
       },
       {
-        "path": "base.txt",
+        "path": "src/b.txt",
         "commits": 1,
-        "size": 5,
-        "score": 2.322,
+        "size": 35,
+        "score": 5.129,
         "manifest": false
       },
       {
-        "path": "main.txt",
+        "path": "docs/guide.md",
         "commits": 1,
-        "size": 5,
-        "score": 2.322,
+        "size": 28,
+        "score": 4.807,
+        "manifest": false
+      },
+      {
+        "path": "src/c.txt",
+        "commits": 1,
+        "size": 24,
+        "score": 4.585,
+        "manifest": false
+      },
+      {
+        "path": "src/main-only.txt",
+        "commits": 1,
+        "size": 13,
+        "score": 3.7,
         "manifest": false
       }
     ],
     "activity": [
       {
         "weekStart": 1703980800000,
-        "days": [0, 3, 0, 0, 0, 0, 0]
+        "days": [0, 4, 0, 0, 0, 0, 0]
       }
     ],
-    "walked": 3,
+    "walked": 4,
     "capped": false,
     "bots": 0
   },
@@ -899,8 +880,8 @@
     },
     "vsUpstream": null,
     "lastCommit": {
-      "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
-      "subject": "c3: octopus merge of side-a and side-b",
+      "oid": "e6474f9260bfa645409b38281946467ac0c34ed3",
+      "subject": "c4: main moves on",
       "timestamp": 1704067200000
     },
     "operation": null,
@@ -911,12 +892,20 @@
   "submodules": [],
   "worktrees": [
     {
-      "name": "octopus",
+      "name": "_worktree-main",
       "path": null,
-      "head": "e2643f5226e94c51e72a615953567c325f89f7c1",
+      "head": "e6474f9260bfa645409b38281946467ac0c34ed3",
       "branch": "refs/heads/main",
       "prunable": false,
       "isThis": true
+    },
+    {
+      "name": "worktree-gitdir",
+      "path": "fixtures/worktree-gitdir",
+      "head": "2fa7483f994102c1a5e24f0395417df61a3cc2c2",
+      "branch": "refs/heads/feature",
+      "prunable": false,
+      "isThis": false
     }
   ]
 }

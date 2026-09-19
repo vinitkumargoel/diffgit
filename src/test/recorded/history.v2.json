@@ -11506,5 +11506,16 @@
       "command": "git rebase -i --rebase-merges preflight/base",
       "todo": "pick ff4cd35 c05: rework the top of hot.txt\npick ae9b4a4 c06: add the guide (second email, mapped by .mailmap)\npick c513f47 c07: chore(deps): bump manifest to 0.0.2\npick 6b9edc8 c08: iterate on modules and the guide\npick 0e378a8 c09: iterate on modules and the guide\npick c1b0f38 c10: iterate on modules and the guide\npick a0a0c78 c11: iterate on modules and the guide\npick 375ca4e c12: iterate on modules and the guide\npick 9c0a0ea c13: iterate on modules and the guide\npick e93098b c14: iterate on modules and the guide\npick d9459d1 c15: iterate on modules and the guide\npick 2c4af75 t16: topic step 1\npick d297039 t17: topic step 2\npick 4c3adf6 t18: topic step 3\npick e66b609 t19: topic step 4\npick fba3390 t20: topic step 5\npick 9807480 t21: topic step 6\npick 8862721 t22: topic step 7\npick cd5a8be t23: topic step 8\npick 3bf1ccf t24: topic step 9\npick 2abe1b4 t25: topic step 10\npick 140a173 t26: topic step 11\npick d1d9c0c t27: topic step 12\npick 52052fc c28: merge topic into main\npick a734180 c29: rework the middle of hot.txt\npick 5e1b4e4 c30: git mv renamed-from.txt and touch one line\npick e9f12c9 c31: reindent indent.txt (whitespace only)\npick f2b242b c32: chore(deps): bump manifest to 0.0.3\npick d591508 c33: chore(deps): bump manifest to 0.0.4\npick e8e51a9 c34: extend mod4\npick 82bed60 c35: extend mod1\npick 8d363ef c36: extend mod2\npick 760c968 c37: extend mod3\npick 9ee57b4 c38: chore(deps): bump manifest to 0.0.5\npick 8946f98 c39: extend mod4\npick bfdc9b7 c40: extend mod1\npick d35a4cf c41: extend mod2\npick 472d458 c42: extend mod3\npick 69859ea c43: chore(deps): bump manifest to 0.0.6\npick 0bea629 c44: extend mod4\npick b92c275 c45: extend mod1\npick 931eea0 c46: extend mod2\npick 6a7fd24 c47: extend mod3\npick 2c6f8fe c48: chore(deps): bump manifest to 0.0.7\npick 70703c5 c49: extend mod4\npick 261e0b9 c50: extend mod1\npick 31891cd c51: extend mod2\npick 2e318a8 c52: extend mod3\npick 155507f c53: chore(deps): bump manifest to 0.0.8\npick 10f27d5 c54: extend mod4\npick 87a3a12 c55: extend mod1\npick 8295928 c56: extend mod2\npick fb9edcd c57: extend mod3\npick 82bc6c6 c58: chore(deps): bump manifest to 0.0.9\npick 822313f c59: extend mod4\n"
     }
-  }
+  },
+  "submodules": [],
+  "worktrees": [
+    {
+      "name": "history",
+      "path": null,
+      "head": "822313f6746d7982943f0d59fc5e09b626769141",
+      "branch": "refs/heads/main",
+      "prunable": false,
+      "isThis": true
+    }
+  ]
 }

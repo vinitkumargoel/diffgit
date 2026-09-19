@@ -655,5 +655,16 @@
     "indexMtimeMs": 0
   },
   "bisect": [],
-  "preflights": {}
+  "preflights": {},
+  "submodules": [],
+  "worktrees": [
+    {
+      "name": "cherry-pick-conflict",
+      "path": null,
+      "head": "95ec07d57af52aec6119ee26472419a17689b490",
+      "branch": "refs/heads/main",
+      "prunable": false,
+      "isThis": true
+    }
+  ]
 }

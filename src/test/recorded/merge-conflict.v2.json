@@ -765,5 +765,16 @@
     "indexMtimeMs": 0
   },
   "bisect": [],
-  "preflights": {}
+  "preflights": {},
+  "submodules": [],
+  "worktrees": [
+    {
+      "name": "merge-conflict",
+      "path": null,
+      "head": "16f51344344e6f834075a8271c0288be58add6cf",
+      "branch": "refs/heads/main",
+      "prunable": false,
+      "isThis": true
+    }
+  ]
 }
