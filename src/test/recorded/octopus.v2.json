@@ -838,5 +838,54 @@
   },
   "pathHistories": {},
   "blames": {},
-  "secrets": []
+  "secrets": [],
+  "searches": {},
+  "insights": {
+    "commits": 3,
+    "authors": [
+      {
+        "name": "test",
+        "commits": 3
+      }
+    ],
+    "hotspots": [
+      {
+        "path": "a.txt",
+        "commits": 1,
+        "size": 7,
+        "score": 2.807,
+        "manifest": false
+      },
+      {
+        "path": "b.txt",
+        "commits": 1,
+        "size": 7,
+        "score": 2.807,
+        "manifest": false
+      },
+      {
+        "path": "base.txt",
+        "commits": 1,
+        "size": 5,
+        "score": 2.322,
+        "manifest": false
+      },
+      {
+        "path": "main.txt",
+        "commits": 1,
+        "size": 5,
+        "score": 2.322,
+        "manifest": false
+      }
+    ],
+    "activity": [
+      {
+        "weekStart": 1703980800000,
+        "days": [0, 3, 0, 0, 0, 0, 0]
+      }
+    ],
+    "walked": 3,
+    "capped": false,
+    "bots": 0
+  }
 }

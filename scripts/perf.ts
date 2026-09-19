@@ -11,7 +11,7 @@ import type { Progress, ProgressSink, StatsBatch } from "../src/engine/api";
 import { defaultDiffSource } from "../src/engine/diffSource";
 import { NodeDirHandle } from "../src/engine/fs/nodeDirHandle";
 import { RepoSession } from "../src/engine/session";
-import type { RepoWarning } from "../src/engine/types";
+import type { RepoWarning, SearchRequest } from "../src/engine/types";
 import { fixturePath, hasFixture } from "../src/test/fixtures";
 
 const STRICT = process.env.PERF_STRICT === "1";
@@ -266,6 +266,74 @@ try {
       `pathHistory --follow src/renamed-to.txt: ${hist.entries.length} entries in ${(performance.now() - th).toFixed(1)} ms`,
     );
     await blameSession.close();
+  }
+  for (const [fixture, id] of [
+    ["history", "history-insights"],
+    ["perf-log", "perf-log-insights"],
+  ] as const) {
+    const s2 = await RepoSession.open(await NodeDirHandle.open(fixturePath(fixture)), sink, {
+      id,
+    });
+    try {
+      const tCold = performance.now();
+      const cold = await s2.insights({ limit: 10 });
+      const coldMs = performance.now() - tCold;
+      const tWarm = performance.now();
+      await s2.insights({ limit: 10 });
+      const warmMs = performance.now() - tWarm;
+      console.log(
+        `insights ${fixture}: ${cold.walked} first-parent commits, ${cold.authors.length} authors, ` +
+          `${cold.hotspots.length} hotspots, ${cold.activity.length} weeks — ` +
+          `${coldMs.toFixed(0)} ms cold, ${warmMs.toFixed(0)} ms warm ` +
+          `(${((coldMs / Math.max(1, cold.walked)) * 1000).toFixed(0)} µs per commit cold)`,
+      );
+      budget(
+        `insights ${fixture} (cold)`,
+        coldMs / Math.max(1, cold.walked),
+        2,
+        " ms/commit",
+        true,
+      );
+    } finally {
+      await s2.close();
+    }
+  }
+
+  // ---- search (T10.8) -------------------------------------------------------------------------
+  // The three palette scopes on the biggest history fixture available (`perf-log` under
+  // FIXTURES_PERF=1, `history` otherwise). Atlas tab 05 budgets: commit search well under 100 ms,
+  // grep ≈ 1.5 s for 5k files, pickaxe ≈ 1 s for 200 commits.
+  {
+    const searchFixture = hasFixture("perf-log") ? "perf-log" : "history";
+    const searchSession = await RepoSession.open(
+      await NodeDirHandle.open(fixturePath(searchFixture)),
+      sink,
+      { id: "search-perf" },
+    );
+    const runs: { label: string; req: SearchRequest; limitMs: number }[] = [
+      {
+        label: "commits",
+        req: { scope: "commits", query: "extend", limit: 200, commits: 2000 },
+        limitMs: 2000,
+      },
+      { label: "worktree", req: { scope: "worktree", query: "module", limit: 200 }, limitMs: 3000 },
+      {
+        label: "pickaxe",
+        req: { scope: "pickaxe", query: "module", limit: 200, commits: 200 },
+        limitMs: 5000,
+      },
+    ];
+    for (const { label, req, limitMs } of runs) {
+      const t = performance.now();
+      const out = await searchSession.search(req);
+      const ms = performance.now() - t;
+      console.log(
+        `search ${label} (${searchFixture}): ${out.hits.length} hits, ${out.scanned} scanned, ` +
+          `capped ${out.capped} in ${ms.toFixed(1)} ms`,
+      );
+      budget(`search ${label} (${searchFixture})`, ms, limitMs, " ms", true);
+    }
+    await searchSession.close();
   }
 
   const m = await session.metrics();

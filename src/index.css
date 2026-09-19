@@ -551,6 +551,16 @@
   .dg-diff .diff-split td:nth-child(3) {
     border-left: 1px solid var(--line);
   }
+  /* §14.3 secret scan (T11.9): the flagged line gets a 3 px --danger left rule, and the marker
+     row under it inherits the line's own background so the annotation reads as part of it. */
+  .dg-diff tr.dg-secret-line > :first-child {
+    box-shadow: inset 3px 0 0 var(--danger);
+  }
+  .dg-diff tr.diff-widget > .diff-widget-content {
+    padding: 2px 8px 4px 22px;
+    box-shadow: inset 3px 0 0 var(--danger);
+    white-space: normal;
+  }
   .dg-diff .diff-decoration {
     color: var(--diff-hunk-ink);
     background: var(--diff-hunk-bg);

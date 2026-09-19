@@ -455,3 +455,92 @@ export interface SecretFinding {
   full: string;
   layer: "staged" | "unstaged";
 }
+
+// ---- v2 search (T10.8, docs/v2-contracts.md, atlas tab 05) -------------------------------------
+
+/**
+ * One search, in one of the palette's three scopes (atlas tab 05):
+ *
+ * - `commits` — `git log --grep` / `--author` / a SHA prefix, over a capped walk from `from`.
+ * - `worktree` — `git grep -n` over the tracked and untracked text files.
+ * - `pickaxe` — `git log -S` over the last `commits` commits of the first-parent chain.
+ *
+ * `query` is a **literal substring** unless `regex` is set (`REGEX_MAX_LENGTH`, the `u` flag, and a
+ * per-file time budget; see `src/engine/search/query.ts`). Matching is case-insensitive in both
+ * modes. `path` scopes the two content scopes to a file or a directory prefix and is what keeps
+ * the pickaxe affordable. `limit` bounds the hits, `commits` the commits walked.
+ */
+export interface SearchRequest {
+  scope: "commits" | "worktree" | "pickaxe";
+  query: string;
+  regex?: boolean;
+  path?: string;
+  limit: number;
+  /** Commits to walk: the pickaxe's range size (default 200) and the commit scope's cap. */
+  commits?: number;
+}
+
+/**
+ * One result row. `kind: "commit"` carries `oid`, `subject` and — for the pickaxe — `delta`, how
+ * many more (or fewer) occurrences of the query the commit left behind. The pickaxe's working-tree
+ * row is a commit hit with **no** `oid`: uncommitted work has no commit to point at.
+ * `kind: "file"` carries `path`, the 1-based `line` and the line's `text`, trimmed to
+ * `HIT_TEXT_MAX` characters.
+ */
+export interface SearchHit {
+  kind: "commit" | "file";
+  oid?: Oid;
+  subject?: string;
+  path?: string;
+  line?: number;
+  text?: string;
+  delta?: number;
+}
+
+/**
+ * `hits` are in a deterministic order (walk order for commits, path then line for files).
+ * `scanned` is what the scope counts: commits for `commits`/`pickaxe`, files read for `worktree`.
+ * `capped` means the answer is **incomplete** — `limit` was reached, the commit cap bit, or a file
+ * was abandoned on its regex budget — and is what raises `SEARCH_CAPPED`.
+ */
+export interface SearchResult {
+  hits: SearchHit[];
+  scanned: number;
+  capped: boolean;
+  durationMs: number;
+}
+
+// ---- v2 insights (T10.9, docs/v2-contracts.md) ------------------------------------------------
+
+/**
+ * What the Insights mode asks for (`EngineApi.insights`, atlas tab 13).
+ *
+ * `sinceMs` is the period chip (`Prefs.insightsPeriod`: `90d` / `1y` / `all`) resolved to an epoch
+ * millisecond by the UI; leaving it out means the whole first-parent history. `limit` is how many
+ * hotspot rows to rank — manifests are ranked separately and get up to `limit` rows of their own.
+ */
+export interface InsightsRequest {
+  sinceMs?: number;
+  limit: number;
+}
+
+/**
+ * Everything the Insights page draws, from one first-parent walk (`src/engine/insights`).
+ *
+ * `commits` counts the in-window commits, `walked` every first-parent commit the walk visited
+ * (`capped` when that hit the 50,000 cap and `INSIGHTS_CAPPED` went to the sink). `bots` is how
+ * many of the in-window commits a bot authored; those are **not** in `authors`, which is keyed by
+ * the author name after `.mailmap`, newest-heavy first. `hotspots` is the top `limit` real files by
+ * `commits × log2(size)` followed by the top `limit` manifests, which the UI greys out. `activity`
+ * is at most 52 weeks of per-day commit counts, oldest week first, `weekStart` the local midnight
+ * of that week's Sunday and `days[0]` that Sunday.
+ */
+export interface InsightsResult {
+  commits: number;
+  authors: { name: string; commits: number }[];
+  hotspots: { path: string; commits: number; size: number; score: number; manifest: boolean }[];
+  activity: { weekStart: number; days: number[] }[];
+  walked: number;
+  capped: boolean;
+  bots: number;
+}

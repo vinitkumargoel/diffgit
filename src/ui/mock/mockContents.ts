@@ -105,6 +105,23 @@ export function mockTexts(file: FileDiff): [string | null, string | null] {
       ];
     case "untracked.txt":
       return [null, "not tracked\n"];
+    // T11.9: the `secrets` fixture verbatim (`scripts/make-fixtures.sh` `build_secrets`), so the
+    // mock's line numbers are the ones the recorded `SecretFinding`s point at (3 · 1 · 4 and 5).
+    case "config/deploy.sh":
+      return [
+        "#!/bin/sh\necho deploying\n",
+        "#!/bin/sh\necho deploying\nexport ANTHROPIC_API_KEY=sk-ant-api03-7hQ2vLp9XcR4mZ0tK6yB3nW1dS8fA5gJ2eU7iO4rT9qY6xC3vN0bM8kH5lP2zD7wG4jF1sR6tY3uI9oA-QwErTyB\n",
+      ];
+    case "config/id_rsa":
+      return [
+        null,
+        "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAJ9y7hQ2vLp9XcR4mZ0tK6yB3nW1dS8fA5gJ2eU7iO4rT9qY6xC3\nvN0bM8kH5lP2zD7wG4jF1sR6tY3uI9oAQwErTyBhZ0kCAwEAAQJATl1vZmFrZWtl\n-----END RSA PRIVATE KEY-----\n",
+      ];
+    case "config/settings.ini":
+      return [
+        "[app]\nname = diffgit\ndebug = false\n",
+        "[app]\nname = diffgit\ndebug = false\naws_access_key_id = AKIAIOSFODNN7EXAMPLE\ngithub_token = ghp_0oP3xQz7LmT4vB9kY2wR6sN1dF8hJ5cA3eG0\nrelease_commit = 9f2c0a1b7d4e6c8a3b5d7f9e1c2a4b6d8e0f2a4c\nlegacy_token = ghp_1aB2cD3eF4gH5iJ6kL7mN8oP9qR0sT1uV2wX # diffgit:allow-secret\n",
+      ];
     case "file.txt":
       return [
         "line1\nline2\nline3\n",

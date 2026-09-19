@@ -868,5 +868,40 @@
   },
   "pathHistories": {},
   "blames": {},
-  "secrets": []
+  "secrets": [],
+  "searches": {},
+  "insights": {
+    "commits": 4,
+    "authors": [
+      {
+        "name": "test",
+        "commits": 4
+      }
+    ],
+    "hotspots": [
+      {
+        "path": "file.txt",
+        "commits": 4,
+        "size": 13,
+        "score": 14.802,
+        "manifest": false
+      },
+      {
+        "path": "CHANGELOG.md",
+        "commits": 1,
+        "size": 12,
+        "score": 3.585,
+        "manifest": false
+      }
+    ],
+    "activity": [
+      {
+        "weekStart": 1703980800000,
+        "days": [0, 4, 0, 0, 0, 0, 0]
+      }
+    ],
+    "walked": 4,
+    "capped": false,
+    "bots": 0
+  }
 }

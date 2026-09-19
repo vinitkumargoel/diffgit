@@ -268,6 +268,85 @@ escape hatch. Findings are sorted by path, line, rule, masked and capped at `SEC
 `commitStats` now keys its record in the caller's order rather than the order the batch finished
 in, which is what made `bun run record` drift between runs.
 
+<!-- T10.8 --> `search(req)` is one method for the palette's three scopes, each its own module
+under `src/engine/search/`. `SearchRequest.query` is a **literal substring** unless `regex` is set:
+exact mode builds no regular expression at all (`indexOf` on a case-folded copy), so a query full of
+metacharacters is text and there is nothing to inject into. Regex mode is capped at
+`REGEX_MAX_LENGTH` (200), compiled with the `u` flag inside a `try`/`catch`, and given a
+`REGEX_FILE_BUDGET_MS` (50 ms) budget per file in the `worktree` scope — a file that outruns it is
+abandoned and counted as skipped. Matching is **case-insensitive in both modes**, which is why the
+`git grep` oracle is `-in` and the case-sensitive `-n` answer is asserted only as a subset. An
+empty, over-long or uncompilable query is refused with `INTERNAL` plus a hint (phase 10 spells bad
+input that way; there is no public code for "you typed something we cannot use").
+`SearchResult.capped` means the answer is **incomplete** for any reason — the hit limit, the commit
+cap, or a skipped file — and is exactly when `SEARCH_CAPPED` is raised, with the reason in `detail`.
+`scanned` counts commits for `commits`/`pickaxe` and files read for `worktree`.
+
+The `commits` scope asks T10.5's `walkCommits` for **one** capped page (`req.commits`, default
+1,000) and matches, in this order, an object-name prefix (4–40 hex, exact mode only), the subject,
+the author's name and email, and only then `%B` — the one step that costs an object read. It is
+therefore `git log --grep` ∪ `--author` ∪ a SHA lookup in one box, and it reads the **raw** author
+header: `git log`'s own `--author` applies `.mailmap` by default, so the parity oracle passes
+`--no-use-mailmap`; folding the two addresses together is T10.9's, which owns `.mailmap`.
+The `worktree` scope greps the stage-0 index entries that exist on disk plus the untracked files the
+scanner's ignore rules let through (so it is a superset of `git grep`, which only looks at tracked
+files), skipping `generated` rows, binary files and anything over 1 MB; files are read in path order
+in batches of `GREP_BATCH` through the session's stats limiter, so the hit list is already sorted by
+(path, line) and a `limit` keeps the head git would have printed first.
+The `pickaxe` scope walks the **first-parent** chain (`req.commits`, default 200, mandatory in the
+UI), tree-diffs each commit against its first parent restricted to `path`, and reports a commit when
+the occurrence count differs for **at least one** changed file — git's own `diffcore-pickaxe` rule —
+with `delta` as the total change for the row. Under `--first-parent` git diffs a merge against its
+mainline and can report it, and so does this. Two documented divergences from `git log -S`: rename
+detection is not run before the count (a `git mv` is a delete plus an add, which differs only for a
+rename that leaves the count untouched), and binary or over-1-MB blobs are skipped rather than
+byte-counted (each skip sets `capped`). The working tree is one extra hit with **no** `oid` and
+`subject: "Uncommitted changes"` when the uncommitted work changes the count.
+`ProgressPhase` gains `"search"`. `bun run record` writes `searches` (the `worktree` and `pickaxe`
+answers for a few queries per fixture, keyed by `searchKey`, `durationMs` pinned to 0) into
+`<fixture>.v2.json`; the mock runs the `commits` scope live against the recorded walk instead, so
+T11.8 can type anything into the palette.
+<!-- T10.9 --> `insights(req)` is **one first-parent walk from `HEAD`** (`walkCommits({ firstParent:
+true })`, so it shares the commit-graph reader, the 50,000-commit cap and `single()`'s abort signal)
+plus a **path-level** tree diff of every in-window commit against its first parent — no blob reads,
+which is what makes a whole-history pass affordable (atlas tab 13). Exactly what each field means,
+and the `fixture-expectations.sh` oracle that pins it:
+
+| field | definition | oracle on `history` |
+|---|---|---|
+| `walked` | first-parent commits visited, before `sinceMs` | `git rev-list --count --first-parent main` = 48 |
+| `commits` | of those, the ones with **author date** ≥ `sinceMs` | the same, `--since` applied |
+| `authors` | commits per author **name** after `.mailmap`, bots removed, commits desc then name | `git log --first-parent --format='%aN <%aE>'`, folded by name |
+| `bots` | in-window commits by a bot; `authors.commits + bots === commits` | the same list, filtered |
+| `hotspots` | per-path commit counts scored `commits × log2(max(size, 2))`, rounded to 3 decimals | `git log --first-parent --no-renames --format= --name-only` + `git ls-tree -r -l main` |
+| `activity` | commits per **local** day, in weeks of 7 | `git log --first-parent --date=format-local:'%Y-%m-%d' --format=%ad` |
+
+`sinceMs` and `activity` both use the **author** date — the brief fixes it for `activity`, and one
+clock for both is what makes `activity` sum to `commits`. A merge counts, and its first-parent tree
+diff is everything it brought in, exactly as `git log --first-parent --name-only` prints it. The
+per-commit diff runs **without rename detection** (pairing a rename costs blob reads per commit,
+the one cost this walk exists to avoid), so a `git mv` counts against both names. `activity` is at
+most 52 weeks ending at the week of the **newest commit in range**, not at the wall clock: the
+engine has no clock input here and a result keyed on `Date.now()` could not be asserted against git;
+an idle repository shows its last 52 active weeks instead of 52 empty ones. `weekStart` is the local
+midnight of that week's **Sunday** and `days[0]` is that Sunday. `hotspots` is the top `limit` real
+files followed by the top `limit` **manifests** (`isManifestPath`: `package.json`, lockfiles,
+`go.sum`, `Cargo.lock`, … matched on the basename) — manifests are excluded from the ranking, not
+from the answer, so the UI can grey them out. `size` is the blob size at the walk tip (0 for a path
+that is no longer there, which scores its commit count); sizes are read for at most
+`HOTSPOT_SIZE_READS` (2,000) paths, in commit-count order. `isBotIdentity` is `/\[bot\]$/i` or
+`/^(?:dependabot|renovate)/i` against the mapped name **and** the email's local part — the brief's
+`/^dependabot|renovate/i` is read as an anchored alternation, which is plainly what it meant.
+`src/engine/git/mailmap.ts` follows **`mailmap.c`**, not the prose of `gitmailmap(5)`: all four line
+forms, case-insensitive email and commit-name lookup, field-by-field override by later lines, and a
+comment only when `#` is the **first** character of the line (`Mid # hash <a@b>` really does define
+a name containing a `#` — verified with `git check-mailmap`). `ProgressPhase` gains `"insights"`
+(`done` = first-parent commits processed, every 500). `bun run record` writes `insights` (the
+whole-history pass, `limit: 25`) into `<fixture>.v2.json` and now runs under **`TZ=UTC`**, because
+`activity` buckets at local midnight and the recording has to be the same on every machine; the
+`insights-days.txt` oracle is recorded under `TZ=UTC` for the same reason (`bun test` pins its
+process to UTC). `summarise()` / `RepoSummary` stay with T10.10, as the EngineApi table says.
+
 ```ts
 export interface ResolvedRevision {
   expr: string; oid: Oid | null;                     // null only for "<root>^" → empty tree
@@ -358,7 +437,7 @@ export interface WorktreeInfo { name: string; path: string | null; head: Oid | n
 | `pathHistory(ref: string, path: string, opts: { follow: boolean; limit: number; cursor?: string }): Promise<{ entries: PathHistoryEntry[]; cursor: string \| null }>` | T10.6 | |
 | `blame(ref: string, path: string, opts: { ignoreWhitespace: boolean; includeWorktree: boolean; maxRevisions: number }): Promise<BlamePayload>` | T10.6 | progress phase `"blame"`. |
 | `scanSecrets(generation: number): Promise<SecretFinding[]>` | T10.7 | added lines of staged+unstaged hunks only. |
-| `search(req: SearchRequest): Promise<SearchResult>` | T10.8 | |
+| `search(req: SearchRequest): Promise<SearchResult>` | T10.8 | three scopes, literal by default, `SEARCH_CAPPED` when partial; progress phase `"search"`. |
 | `insights(req: InsightsRequest): Promise<InsightsResult>` | T10.9 | progress phase `"insights"`. |
 | `patchText(generation: number, ids: string[] \| null): Promise<string>` | T10.10 | git-apply-compatible unified diff. |
 | `summarise(): Promise<RepoSummary>` | T10.10 | cheap: refs + index + counts-only scan. |
@@ -548,6 +627,34 @@ is shown as one inline line above the table, driven by the rows themselves (`bra
 back a row with `lastCommit: null` for a tip it could not read) rather than by the warning, which
 `recompute()` replaces on the next diff. `MenuItem` moved out of `CommitCard.tsx` into
 `components/MenuItem.tsx` and gained a `disabled` + `title` pair, so both `…` menus share one row.
+<!-- T11.9 --> `StoreState.secrets` is now the real `SecretFinding[] | null` (the
+`PendingEngineType` annotation T11.1 left is gone). `null` means "this diff has not been scanned",
+`[]` is a real answer, and the two are different things: an export (T11.10) must treat `null` as
+unknown, not as clean. Every `recompute()` resets it to `null` and arms the scan for that
+generation; the scan fires from the **stats sink** once that generation's stats have settled — the
+scan and the stats pump both read file content in the engine, so the banner waits for the counts
+instead of racing them — and immediately when the result already carried every `FileStats`.
+"Settled" is `statsSettled(files, stats)`: every row has an answer (a number, or the explicit
+`null` the engine streams for a file it could not count) or is one that never gets a `+n −m`
+(binary, over the gate), so one unreadable file cannot hold a safety check back forever. A diff with no `staged`/`unstaged` row never reaches the engine at all: the new action
+`scanSecrets(opts?: { announce?: boolean })` answers `[]` itself, which is the "not called for
+committed-only diffs" rule. `announce` is the palette's `Re-scan for secrets`, which toasts all
+three outcomes (found / nothing to scan / `NO_FINDINGS_NOTE`); `STALE` and `CANCELLED` go through
+`ignoreStale` and leave the banner alone. Selectors: `selectSecrets`, `selectSecretCounts`
+(file id → count, the sidebar chip), `selectFileSecrets(s, id)` (one card, memoised on the list)
+and **`selectSecretGate`** → `{ scanned, findings, count, total }`, which is the gate T11.10's
+export flow calls before it writes anything; `total` reads `SECRETS_FOUND.detail`, so it counts
+past the 500-finding cap. `SECRETS_FOUND` is filtered out of `WarningBanners` (like
+`OPERATION_IN_PROGRESS` and `BLAME_CAPPED`): the `SecretBanner` is the surface, and the cap
+sentence is printed inside its finding list. `src/ui/scrollBus.ts` gained an optional new-side
+line: `requestScrollTo(id, line?)` plus `takePendingLine(id)`, which the card claims when it mounts
+after the jump (the pane is virtualised, so the target card is usually not mounted yet). New pure
+module `src/ui/secrets.ts` (`SECRET_TAG`, `ALLOW_LINE_COMMENT`, `ALLOWLIST_FILE`, `RULESET_DATE`,
+`hasUncommittedLayer`, `bannerCopy`, `cappedLine`, `byLine`, `entropyLabel`, `whereLine`,
+`whyFlagged`, `findingLabel`, `locationLabel`, `displayValue`, `rotateChecklist`, `RULES_HELP`,
+`NO_FINDINGS_NOTE`, `NOTHING_TO_SCAN_NOTE`, `foundNote`, `redactFindings`) owns every string; it
+imports `ALLOW_COMMENT` / `SECRET_ALLOWLIST_FILE` / `RULESET_DATE` from
+`src/engine/scan/secretRules.ts` (pure data, no imports of its own) so the spellings cannot drift.
 
 ## Persistence additions
 

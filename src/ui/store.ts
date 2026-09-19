@@ -45,6 +45,7 @@ import type {
   RepoRef,
   RepoWarning,
   ResolvedRevision,
+  SecretFinding,
   StashInfo,
   TagInfo,
   WalkRequest,
@@ -67,6 +68,7 @@ import {
 import { Lru } from "./lru";
 import { derivedKey, getDerived, setDerived } from "./persistence/derived";
 import { revisionOfRef } from "./refGroups";
+import { foundNote, hasUncommittedLayer, NO_FINDINGS_NOTE, NOTHING_TO_SCAN_NOTE } from "./secrets";
 import {
   buildTree,
   type FileGroup,
@@ -332,8 +334,8 @@ export interface OpenOptions {
 
 /**
  * Stands in for an engine type that `docs/v2-contracts.md` names but a later phase-10 task still
- * has to add to `src/engine/types.ts` (`SecretFinding` T10.7, `BisectState & BisectStep` T10.11 —
- * `RepoOperation` was widened by T11.3, `HiddenEntry` by T11.4 and `CommitSummary` by T11.5).
+ * has to add to `src/engine/types.ts` (`BisectState & BisectStep` T10.11 — `RepoOperation` was
+ * widened by T11.3, `HiddenEntry` by T11.4, `CommitSummary` by T11.5 and `SecretFinding` by T11.9).
  * `never` keeps the field honest: it exists and the shell can switch on it, but nothing can put
  * data in it until the task that owns the type widens this one annotation.
  */
@@ -517,8 +519,13 @@ export interface StoreState {
   reflog: ReflogEntry[] | null;
   /** Three-way payloads of the conflicted files of the current diff, keyed by file id (T11.3). */
   conflicts: Record<string, ConflictEntry>;
-  /** Secret-scan findings for the current diff; null = not scanned (T11.9). */
-  secrets: PendingEngineType[] | null;
+  /**
+   * Secret-scan findings for the current diff (T11.9, Design §14.3); null = not scanned yet.
+   * Reset to null by every compute and filled by `scanSecrets()` once the stats of that diff are
+   * in; `[]` is a real answer ("scanned, nothing found") and is what a committed-only diff gets
+   * without the engine being asked at all.
+   */
+  secrets: SecretFinding[] | null;
   /**
    * The sidebar's Hidden group (T11.4, Design §14.4); null = not listed. Filled lazily the first
    * time `showHidden` turns on and refreshed after every recompute while it stays on; cleared back
@@ -691,6 +698,15 @@ export interface StoreState {
   compareBranchWithBase(fullName: string): void;
   /** Tags table action `Compare with previous tag`: the range `prev…this`, in Files mode. */
   compareTags(previous: TagInfo, tag: TagInfo): void;
+  // ---- Secret scan (T11.9, Design §14.3) ----
+  /**
+   * Scans the added lines of the staged and unstaged hunks of the current diff and fills
+   * `secrets`. Called by `recompute` once that diff's stats are in, and by the palette's
+   * `Re-scan for secrets`, which passes `announce` so the outcome is toasted (a re-scan that finds
+   * nothing has to say so — a silent no-op reads like a broken button). A diff with no uncommitted
+   * layer never reaches the engine: it answers `[]` directly. `STALE` / `CANCELLED` are ignored.
+   */
+  scanSecrets(opts?: { announce?: boolean }): Promise<void>;
 }
 
 let toastSeq = 0;
@@ -863,7 +879,33 @@ function cacheKey(id: string, ignoreWhitespace: boolean): string {
   return `${id}|${ignoreWhitespace ? "w" : "x"}`;
 }
 
+/**
+ * T11.9: "stats complete" for the purpose of the secret scan. Every row either has an answer — a
+ * number, or the explicit `null` the engine streams for a file it could not count — or is one that
+ * never gets a `+n −m` at all. A single unreadable file must not hold a safety check back forever.
+ */
+function statsSettled(files: readonly FileDiff[], stats: Record<string, FileStats>): boolean {
+  return files.every((f) => f.id in stats || f.stats !== null || f.binary || f.tooLarge);
+}
+
 export const useStore = create<StoreState>()((set, get) => {
+  /**
+   * T11.9: the generation whose secret scan is still waiting for its stats, or null. The scan and
+   * the stats pump both read file content in the engine, so the banner waits for the counts rather
+   * than racing them (the brief: "after stats complete").
+   */
+  let secretsAfterStats: number | null = null;
+  function maybeScanSecrets(
+    files: readonly FileDiff[],
+    stats: Record<string, FileStats>,
+    generation: number,
+  ): void {
+    if (secretsAfterStats !== generation) return;
+    if (!statsSettled(files, stats)) return;
+    secretsAfterStats = null;
+    void get().scanSecrets();
+  }
+
   const sink: ProgressSink = {
     onProgress(p: Progress) {
       if (p.durationMs !== undefined && p.phase !== "probe") {
@@ -919,7 +961,9 @@ export const useStore = create<StoreState>()((set, get) => {
     onStats(batch: StatsBatch) {
       const s = get();
       if (s.diff && batch.generation === s.diff.generation) {
-        set({ stats: { ...s.stats, ...batch.stats }, statsLastAt: Date.now() });
+        const stats = { ...s.stats, ...batch.stats };
+        set({ stats, statsLastAt: Date.now() });
+        maybeScanSecrets(s.diff.files, stats, batch.generation);
         return;
       }
       if (s.diff && batch.generation < s.diff.generation) return; // stale generation
@@ -1213,6 +1257,7 @@ export const useStore = create<StoreState>()((set, get) => {
       pickerSources = null;
       commitStatsQueue.clear();
       branchCellQueue.clear();
+      secretsAfterStats = null;
     },
 
     setSource(refOrName) {
@@ -1391,6 +1436,9 @@ export const useStore = create<StoreState>()((set, get) => {
           warnings: merged,
           fileDiffs: new Lru(200),
           conflicts: {},
+          // T11.9: findings belong to one generation; the new diff is unscanned until the scan
+          // below answers, so the banner can never describe a diff that is no longer on screen.
+          secrets: null,
           screen: s.screen === "loading" || s.screen === "repo" ? "repo" : s.screen,
           refresh: {
             ...s.refresh,
@@ -1413,6 +1461,10 @@ export const useStore = create<StoreState>()((set, get) => {
         for (const f of conflicted) void get().loadConflict(f.id);
         // T11.4: while the Hidden group is up it follows the working tree, like every other group.
         if (get().prefs.showHidden) void get().loadHidden();
+        // T11.9: arm the scan for this generation; it runs as soon as the stats of that diff are
+        // in — immediately when the result already carried them all.
+        secretsAfterStats = result.generation;
+        maybeScanSecrets(result.files, stats, result.generation);
       } catch (e) {
         const err = toUiError(e);
         if (err.code === "CANCELLED" || err.code === "STALE" || err.code === "WORKER_CRASHED") {
@@ -2172,6 +2224,41 @@ export const useStore = create<StoreState>()((set, get) => {
       get().setMode("files");
     },
 
+    async scanSecrets(opts = {}) {
+      const s = get();
+      if (!s.diff) return;
+      const generation = s.diff.generation;
+      // T10.7 skips these rows without reading a byte; the store skips the round trip as well, so
+      // a committed-only diff never wakes the scanner (the task's "scan is not called" case).
+      if (!s.diff.files.some(hasUncommittedLayer)) {
+        secretsAfterStats = null;
+        set({ secrets: [] });
+        if (opts.announce) get().addToast({ level: "info", message: NOTHING_TO_SCAN_NOTE });
+        return;
+      }
+      try {
+        const found = await client().scanSecrets(generation);
+        const cur = get();
+        if (!cur.diff || cur.diff.generation !== generation) return;
+        set({ secrets: found });
+        if (opts.announce) {
+          get().addToast(
+            found.length === 0
+              ? { level: "info", message: NO_FINDINGS_NOTE }
+              : { level: "warning", message: foundNote(found.length) },
+          );
+        }
+      } catch (e) {
+        const err = toUiError(e);
+        // A superseded or stale scan is normal (one call in flight per method): the next compute
+        // asks again and the banner keeps whatever it had.
+        ignoreStale(e);
+        if (opts.announce && err.code !== "STALE" && err.code !== "CANCELLED") {
+          get().addToast({ level: "warning", message: `Secret scan failed: ${err.message}` });
+        }
+      }
+    },
+
     async fileBytes(id, side) {
       const s = get();
       if (!s.diff) return null;
@@ -2429,4 +2516,86 @@ export function selectConflictKinds(
   for (const [id, entry] of Object.entries(s.conflicts))
     if (entry.status === "ready") out[id] = entry.data.kind;
   return out;
+}
+
+// ---- Secret scan selectors (T11.9, Design §14.3) ----
+
+const NO_SECRETS: readonly SecretFinding[] = [];
+
+/** Findings of the current diff, in the engine's order; empty while nothing has been scanned. */
+export function selectSecrets(s: Pick<StoreState, "secrets">): readonly SecretFinding[] {
+  return s.secrets ?? NO_SECRETS;
+}
+
+/** File id → number of findings in it, for the sidebar's `secret` chip (shallow-compared). */
+let secretCountCache: {
+  findings: readonly SecretFinding[];
+  result: Record<string, number>;
+} | null = null;
+export function selectSecretCounts(s: Pick<StoreState, "secrets">): Record<string, number> {
+  const findings = selectSecrets(s);
+  if (secretCountCache && secretCountCache.findings === findings) return secretCountCache.result;
+  const result: Record<string, number> = {};
+  for (const f of findings) result[f.fileId] = (result[f.fileId] ?? 0) + 1;
+  secretCountCache = { findings, result };
+  return result;
+}
+
+/** Findings of one file card, memoised on the list so a re-render never re-filters. */
+let secretByFileCache: {
+  findings: readonly SecretFinding[];
+  result: Map<string, SecretFinding[]>;
+} | null = null;
+export function selectFileSecrets(
+  s: Pick<StoreState, "secrets">,
+  id: string,
+): readonly SecretFinding[] {
+  const findings = selectSecrets(s);
+  if (!secretByFileCache || secretByFileCache.findings !== findings) {
+    const result = new Map<string, SecretFinding[]>();
+    for (const f of findings) {
+      const bucket = result.get(f.fileId);
+      if (bucket) bucket.push(f);
+      else result.set(f.fileId, [f]);
+    }
+    secretByFileCache = { findings, result };
+  }
+  return secretByFileCache.result.get(id) ?? NO_SECRETS;
+}
+
+/**
+ * The gate T11.10's export flow asks before it writes anything ("there are N secrets in this diff
+ * — export anyway?"). `total` is `SECRETS_FOUND.detail`, which counts past the 500-finding cap, so
+ * the dialog can say how many exist and how many it can list. `scanned` is false while the current
+ * diff has not been scanned at all, which an export must treat as "unknown", not as "clean".
+ */
+export interface SecretGate {
+  scanned: boolean;
+  findings: readonly SecretFinding[];
+  /** Findings listed (capped at `SECRET_FINDING_CAP`). */
+  count: number;
+  /** Findings the engine actually saw; equals `count` unless the list was cut. */
+  total: number;
+}
+let gateCache: {
+  secrets: SecretFinding[] | null;
+  warnings: RepoWarning[];
+  result: SecretGate;
+} | null = null;
+export function selectSecretGate(s: Pick<StoreState, "secrets" | "warnings">): SecretGate {
+  // Memoised on identity like `selectVisibleFiles`: the banner subscribes to it, and a fresh
+  // object every render is an infinite `useSyncExternalStore` loop.
+  if (gateCache && gateCache.secrets === s.secrets && gateCache.warnings === s.warnings)
+    return gateCache.result;
+  const findings = selectSecrets(s);
+  const detail = s.warnings.find((w) => w.code === "SECRETS_FOUND")?.detail;
+  const reported = detail === undefined ? Number.NaN : Number.parseInt(detail, 10);
+  const result: SecretGate = {
+    scanned: s.secrets !== null,
+    findings,
+    count: findings.length,
+    total: Number.isFinite(reported) ? Math.max(reported, findings.length) : findings.length,
+  };
+  gateCache = { secrets: s.secrets, warnings: s.warnings, result };
+  return result;
 }

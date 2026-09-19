@@ -483,5 +483,40 @@
   },
   "pathHistories": {},
   "blames": {},
-  "secrets": []
+  "secrets": [],
+  "searches": {},
+  "insights": {
+    "commits": 3,
+    "authors": [
+      {
+        "name": "test",
+        "commits": 3
+      }
+    ],
+    "hotspots": [
+      {
+        "path": "c.txt",
+        "commits": 1,
+        "size": 21,
+        "score": 4.392,
+        "manifest": false
+      },
+      {
+        "path": "a.txt",
+        "commits": 2,
+        "size": 4,
+        "score": 4,
+        "manifest": false
+      }
+    ],
+    "activity": [
+      {
+        "weekStart": 1703980800000,
+        "days": [0, 3, 0, 0, 0, 0, 0]
+      }
+    ],
+    "walked": 3,
+    "capped": false,
+    "bots": 0
+  }
 }

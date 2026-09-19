@@ -56,6 +56,7 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
   const setActiveFile = useStore((s) => s.setActiveFile);
   const addToast = useStore((s) => s.addToast);
   const requestRefresh = useStore((s) => s.requestRefresh);
+  const scanSecrets = useStore((s) => s.scanSecrets);
   const files = useStore(useShallow(selectVisibleFiles));
   const ref = useRef<HTMLDialogElement>(null);
   const returnTo = useRef<HTMLElement | null>(null);
@@ -161,6 +162,14 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
         },
       },
       {
+        // T11.9: the scan runs itself after every compute; this is the "look again" for a working
+        // tree that changed outside a refresh, and the only way to hear "nothing found".
+        id: "scan-secrets",
+        label: "Re-scan for secrets",
+        keywords: ["credential", "key", "token", "leak", "password"],
+        run: () => void scanSecrets({ announce: true }),
+      },
+      {
         id: "help",
         label: "Show keyboard shortcuts",
         keywords: ["help", "keys"],
@@ -181,7 +190,17 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
       },
     ];
     return list;
-  }, [prefs, cache, setMode, setHistoryTab, setPref, requestRefresh, addToast, onHelp]);
+  }, [
+    prefs,
+    cache,
+    setMode,
+    setHistoryTab,
+    setPref,
+    requestRefresh,
+    scanSecrets,
+    addToast,
+    onHelp,
+  ]);
 
   // Pre-narrowed so a 5,000-file diff never renders 5,000 rows; cmdk ranks the survivors.
   const fileRows = useMemo(

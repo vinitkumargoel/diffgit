@@ -4,7 +4,15 @@ import type { FileDiffPayload } from "../../engine/api";
 import type { FileDiff } from "../../engine/types";
 import { hasCollapsedContext } from "../diff/toHunkData";
 import { describeError, errorReport, type UiError } from "../errors";
-import { type CardMode, isViewed, selectConflictKind, selectFileDiff, useStore } from "../store";
+import { redactFindings } from "../secrets";
+import {
+  type CardMode,
+  isViewed,
+  selectConflictKind,
+  selectFileDiff,
+  selectFileSecrets,
+  useStore,
+} from "../store";
 import { filePathOf } from "../treeModel";
 import { BinaryNotice, RawTextView, rawSideFor, useRawText } from "./BinaryNotice";
 import { BlameBody } from "./BlameBody";
@@ -33,6 +41,12 @@ interface BoundaryProps {
   children: ReactNode;
   raw: string | null;
   resetKey: unknown;
+  /**
+   * T11.9: masks any secret value this card knows about before the report reaches the clipboard.
+   * A crash report is text diffgit writes *about* the file, so Design §14.3's "masked everywhere
+   * including copy" applies to it; the raw view below is the file itself, shown as it is on disk.
+   */
+  redact?: (text: string) => string;
 }
 interface BoundaryState {
   error: Error | null;
@@ -66,7 +80,8 @@ export class CardErrorBoundary extends Component<BoundaryProps, BoundaryState> {
   }
 
   private copyReport = async (): Promise<void> => {
-    const text = errorReport({ code: "INTERNAL", message: String(this.state.error) });
+    const raw = errorReport({ code: "INTERNAL", message: String(this.state.error) });
+    const text = this.props.redact ? this.props.redact(raw) : raw;
     try {
       if (!navigator.clipboard) throw new Error("clipboard unavailable");
       await navigator.clipboard.writeText(text);
@@ -208,6 +223,8 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
   const setCollapsed = useStore((s) => s.setCollapsed);
   const toggleViewed = useStore((s) => s.toggleViewed);
   const setPref = useStore((s) => s.setPref);
+  /** T11.9: findings of this file (Design §14.3); empty until the scan answers. */
+  const secrets = useStore((s) => selectFileSecrets(s, id));
   const committed = hasCommittedSide(file);
   const cardMode: CardMode = useStore((s) => (committed ? (s.cardModes[id] ?? "diff") : "diff"));
   const setCardMode = useStore((s) => s.setCardMode);
@@ -289,12 +306,17 @@ export function FileCard({ file, index, measureRef, style }: FileCardProps) {
       return wrap(<Notice>{modeOnly ? "Mode change only" : "No content changes"}</Notice>);
     }
     return wrap(
-      <CardErrorBoundary resetKey={p} raw={p.newText ?? p.oldText}>
+      <CardErrorBoundary
+        resetKey={p}
+        raw={p.newText ?? p.oldText}
+        redact={(text) => redactFindings(text, secrets)}
+      >
         <DiffBody
           file={file}
           payload={{ ...p, hunks: p.hunks }}
           viewType={viewMode}
           expandAllToken={expandAllToken}
+          secrets={secrets}
         />
       </CardErrorBoundary>,
     );

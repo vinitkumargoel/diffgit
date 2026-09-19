@@ -288,6 +288,54 @@ log_orders() { # log_orders <repo> <expected-dir>
   G -C "$r" log --date-order --first-parent --format=%H HEAD > "$exp/log-head-first-parent.txt"
 }
 
+# T10.8: the search parity oracles. Every one is git's own answer for a query the engine's
+# `search()` is asked for verbatim in `src/engine/search/*.test.ts`.
+#
+#  * commit scope  — `--grep` / `--author` with `-i -F` (case-insensitive fixed strings), which is
+#    exactly what the engine's default literal mode does, plus one `-E` regex pair for regex mode.
+#  * pickaxe scope — `--first-parent -S`, because the engine walks the first-parent chain and git
+#    diffs a merge against its mainline under that flag; `--pickaxe-regex` for regex mode, and one
+#    `-G` recording, which is always a superset of `-S` (a changed count implies a changed line).
+#  * grep scope    — `git grep -n` (case-sensitive) and `git grep -in`; the engine is always
+#    case-insensitive, so `-in` is the equality oracle and `-n` the subset one.
+search_oracles() { # search_oracles <repo> <expected-dir>
+  local r="$1" exp="$2"
+  G -C "$r" log -i -F --grep='extend mod' --format=%H main > "$exp/log-grep-extend-mod.txt"
+  G -C "$r" log -i -F --grep='CHORE(DEPS)' --format=%H main > "$exp/log-grep-chore-deps.txt"
+  G -C "$r" log -i -E --grep='^c[0-9]+: extend mod[13]$' --format=%H main \
+    > "$exp/log-grep-regex-extend.txt"
+  # --no-use-mailmap: `log.mailmap` defaults to true, and the fixture's .mailmap folds a second
+  # address onto the first. The walker reports the raw author header (mailmap is T10.9's), so the
+  # oracle has to ask git for the raw one too.
+  G -C "$r" log -i -F --no-use-mailmap --author='ada@example.com' --format=%H main \
+    > "$exp/log-author-ada.txt"
+  G -C "$r" log -i -F --no-use-mailmap --author='[bot]' --format=%H main \
+    > "$exp/log-author-bot.txt"
+  G -C "$r" log -i -F --no-use-mailmap --author='Grace Hopper' --format=%H main \
+    > "$exp/log-author-grace.txt"
+  # The mailmapped answer, for the T10.9 follow-up: the same query finds six more commits.
+  G -C "$r" log -i -F --use-mailmap --author='ada@example.com' --format=%H main \
+    > "$exp/log-author-ada-mailmap.txt"
+  G -C "$r" log --first-parent -S'module' --format=%H main > "$exp/log-S-fp-module.txt"
+  G -C "$r" log --first-parent -S'guide note' --format=%H main > "$exp/log-S-fp-guide-note.txt"
+  G -C "$r" log --first-parent -S'topic work' --format=%H main > "$exp/log-S-fp-topic-work.txt"
+  G -C "$r" log --first-parent -S'moved' --format=%H main > "$exp/log-S-fp-moved.txt"
+  G -C "$r" log --first-parent -S'version' --format=%H main > "$exp/log-S-fp-version.txt"
+  G -C "$r" log --first-parent -G'version' --format=%H main > "$exp/log-G-fp-version.txt"
+  G -C "$r" log --first-parent -S'module [0-9]' --pickaxe-regex --format=%H main \
+    > "$exp/log-S-fp-regex-module.txt"
+  G -C "$r" log --first-parent -S'module' --format=%H main -- src/mod1.txt \
+    > "$exp/log-S-fp-module-mod1.txt"
+  G -C "$r" log --first-parent -S'module' --format=%H main -- src \
+    > "$exp/log-S-fp-module-src.txt"
+  G -C "$r" grep -n -F 'guide note' > "$exp/grep-guide-note.txt" || [ $? -eq 1 ]
+  G -C "$r" grep -n -F 'Guide' > "$exp/grep-Guide.txt" || [ $? -eq 1 ]
+  G -C "$r" grep -in -F 'guide' > "$exp/grep-i-guide.txt" || [ $? -eq 1 ]
+  G -C "$r" grep -in -F 'module' > "$exp/grep-i-module.txt" || [ $? -eq 1 ]
+  G -C "$r" grep -in -F 'hot' -- src > "$exp/grep-i-hot-src.txt" || [ $? -eq 1 ]
+  G -C "$r" grep -in -E 'moved [0-9]+' > "$exp/grep-i-regex-moved.txt" || [ $? -eq 1 ]
+}
+
 dump_v2() { # dump_v2 <fixture-name>
   local name="$1" r="$FIX/$1" exp="$FIX/$1/expected" root
   case "$name" in
@@ -362,8 +410,32 @@ dump_v2() { # dump_v2 <fixture-name>
         done; } | sed '/^$/d' > "$exp/commit-numstat.txt"
       G -C "$r" log -S'hot-main' --format=%H main > "$exp/log-S-hot-main.txt"
       G -C "$r" log -S'renamed payload marker' --format=%H main > "$exp/log-S-payload.txt"
+      search_oracles "$r" "$exp"
       G -C "$r" shortlog -sn --no-merges main > "$exp/shortlog.txt"
       G -C "$r" shortlog -sne --no-merges main > "$exp/shortlog-email.txt"
+      # T10.9 insights oracles. Everything the insights pass reports comes from one **first-parent**
+      # walk of `main`, so every oracle here is `--first-parent` too: `shortlog --no-merges` above is
+      # T10.5's, and counts a different set of commits.
+      G -C "$r" rev-list --count --first-parent main > "$exp/insights-count.txt"
+      # `%aN <%aE>` is git applying .mailmap itself; `%an <%ae>` is the same list unmapped, which is
+      # what proves the fixture exercises the mapping at all (Ada's two addresses fold into one).
+      G -C "$r" log --first-parent --format='%aN <%aE>' main | sort | uniq -c \
+        > "$exp/insights-authors.txt"
+      G -C "$r" log --first-parent --format='%an <%ae>' main | sort | uniq -c \
+        > "$exp/insights-authors-raw.txt"
+      G -C "$r" shortlog -sne --first-parent main > "$exp/insights-shortlog.txt"
+      # `--no-renames`: the per-commit diff is path-level and reads no blobs, so a `git mv` counts
+      # against both names (docs/v2-contracts.md, T10.9).
+      G -C "$r" log --first-parent --no-renames --format= --name-only main | sed '/^$/d' \
+        | sort | uniq -c > "$exp/insights-name-only.txt"
+      # Author date, bucketed at **local** midnight, which is what `activity` buckets by. Recorded
+      # under TZ=UTC because `bun test` pins its process to UTC (Bun does that for determinism), and
+      # "local midnight" has to mean the same thing on both sides of the assertion.
+      ( export TZ=UTC
+        G -C "$r" log --first-parent --format='%ad' --date=format-local:'%Y-%m-%d' main \
+          | sort | uniq -c > "$exp/insights-days.txt" )
+      # `<mode> <type> <oid> <size>\t<path>` — the blob size at the tip, for `hotspots.size`.
+      G -C "$r" ls-tree -r -l main > "$exp/insights-ls-tree.txt"
       G -C "$r" tag -l --format="$TAG_FMT" > "$exp/tag-list.txt"
       G -C "$r" log --format= --name-only main | sed '/^$/d' | sort | uniq -c | sort -rn > "$exp/name-only-counts.txt"
       bisect_sequence "$r" "$root" "$(G -C "$r" rev-parse main)" > "$exp/rev-list-bisect.txt"
