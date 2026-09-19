@@ -69,6 +69,7 @@ export function createEngineApi(
     markReachable: (oids) => guard(() => need().markReachable(oids)),
     pathHistory: (ref, path, o) => guard(() => need().pathHistory(ref, path, o)),
     blame: (ref, path, o) => guard(() => need().blame(ref, path, o)),
+    scanSecrets: (generation) => guard(() => need().scanSecrets(generation)),
     fileBytes: (generation, id, side) => guard(() => need().fileBytes(generation, id, side)),
     prioritise: (ids) => guard(() => need().prioritise(ids)),
     probe: (tier) => guard(() => need().probe(tier)),

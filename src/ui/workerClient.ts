@@ -36,6 +36,7 @@ import type {
   RepoInfo,
   RepoOperation,
   ResolvedRevision,
+  SecretFinding,
   StashInfo,
   TagInfo,
   WalkPage,
@@ -127,6 +128,8 @@ export interface WorkerClient {
   ): Promise<{ entries: PathHistoryEntry[]; cursor: string | null }>;
   /** Who wrote each line of one file, renames followed (T10.6); progress phase `"blame"`. */
   blame(ref: string, path: string, opts: BlameRequest): Promise<BlamePayload>;
+  /** Token shapes in the added lines of the uncommitted layers (T10.7); `SECRETS_FOUND` on the sink. */
+  scanSecrets(generation: number): Promise<SecretFinding[]>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
   prioritise(ids: string[]): Promise<void>;
   probe(tier: ProbeTier): Promise<string>;
@@ -277,6 +280,7 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     markReachable: (oids) => call((r) => r.markReachable(oids), "markReachable"),
     pathHistory: (ref, path, opts) => call((r) => r.pathHistory(ref, path, opts), "pathHistory"),
     blame: (ref, path, opts) => call((r) => r.blame(ref, path, opts), "blame"),
+    scanSecrets: (generation) => call((r) => r.scanSecrets(generation), "scanSecrets"),
     fileBytes: (generation, id, side) =>
       call((r) => r.fileBytes(generation, id, side), "fileBytes"),
     prioritise: (ids) => call((r) => r.prioritise(ids), "prioritise"),

@@ -635,3 +635,48 @@ describe("mock worker client: file history and blame (T10.6)", () => {
     ).rejects.toMatchObject({ code: "REF_NOT_FOUND" });
   });
 });
+
+describe("mock worker client: secret scan (T10.7)", () => {
+  async function openSecrets() {
+    const warnings: { code: string; detail?: string }[] = [];
+    const client = createMockWorkerClient();
+    const s = sink();
+    const info = await client.open(
+      { name: "secrets" },
+      { ...s, onWarning: (w) => void warnings.push(w) },
+    );
+    const src: DiffSource = {
+      kind: "branches",
+      source: info.headBranch ?? "HEAD",
+      target: info.defaultRef?.name ?? "main",
+      sourceRef: info.headBranch ? `refs/heads/${info.headBranch}` : "HEAD",
+      targetRef: info.defaultRef?.fullName ?? "refs/heads/main",
+      includeWorktree: true,
+    };
+    const diff = await client.computeDiff(src);
+    return { client, diff, warnings };
+  }
+
+  it("serves the recorded findings and the SECRETS_FOUND warning", async () => {
+    const { client, diff, warnings } = await openSecrets();
+    const findings = await client.scanSecrets(diff.generation);
+    expect(findings.map((f) => [f.path, f.line, f.rule, f.layer])).toEqual([
+      ["config/deploy.sh", 3, "anthropic-api-key", "staged"],
+      ["config/id_rsa", 1, "private-key-rsa", "staged"],
+      ["config/settings.ini", 4, "aws-access-key-id", "unstaged"],
+      ["config/settings.ini", 5, "github-personal-access-token", "unstaged"],
+    ]);
+    expect(findings.every((f) => f.masked.includes("…") || f.masked.includes("•"))).toBe(true);
+    expect(warnings.filter((w) => w.code === "SECRETS_FOUND")[0]?.detail).toBe("4");
+  });
+
+  it("rejects a stale generation and answers [] for a fixture with no recording", async () => {
+    const { client, diff } = await openSecrets();
+    await expect(client.scanSecrets(diff.generation + 1)).rejects.toMatchObject({ code: "STALE" });
+
+    const clean = createMockWorkerClient();
+    await clean.open({ name: "showcase" }, sink());
+    const cleanDiff = await clean.computeDiff(SRC);
+    expect(await clean.scanSecrets(cleanDiff.generation)).toEqual([]);
+  });
+});

@@ -241,6 +241,32 @@ stats could not be computed). `detail` is `IO_ERROR: <what>`. `bun run record` w
 `WalkPage.laneOverflow` into `walks`; the `tags` fixture gains a blob tag and a tree tag, `octopus`
 gains a commit-graph (so the EDGE chunk is exercised), and `FIXTURES_PERF=1` also builds `perf-log`
 (2,000 linear commits + 50 branches) for `docs/perf.md`.
+<!-- T10.7 --> `scanSecrets(generation)` reuses `describeFile` on every row of the current diff
+whose `layers` include `staged` or `unstaged`, and reads the **added** lines of its hunks — so the
+scan costs what the change costs, not what the repository costs, and never looks at committed
+history. Skipped without reading a byte: rows with no uncommitted layer, `generated` rows and paths
+matched by `.diffgitignore-secrets` (gitignore syntax, repository root, re-read on every scan);
+skipped after loading: binary and `tooLarge` rows. `SecretFinding.layer` is `unstaged` whenever the
+row has unstaged work, because that is where the line is now. `SecretFinding.masked` is the
+redaction the UI shows by default — first 8 characters, `…`, last 4, or `•` per character for a
+value of 12 or fewer — and `SecretFinding.full` is the matched value itself, which only the card's
+explicit **Reveal** click renders (atlas tab 14); nothing else in the payload carries it and the
+engine never logs it. `SecretFinding.entropy` is `shannonEntropy` of the matched value in bits/char,
+rounded to two decimals, reported for every finding even when its rule did not gate on entropy.
+The rule table is `src/engine/scan/secretRules.ts` — `{ id, description, regex, group?, entropyMin? }`
+plus `RULESET_DATE`, `ALLOW_COMMENT`, `SECRET_ALLOWLIST_FILE`, `ENTROPY_FLOOR = 3.8` — ordered by
+precedence, vendor shapes first and the four generic assignment rules last, so a value matched by
+two rules produces **one** finding under the more specific rule (overlapping spans are deduped).
+Dropped before reporting: allowlisted lines (`# diffgit:allow-secret` / `// …` / `-- …` / `<!-- … -->`
+at the end of the line), bare 40/64-hex digests, and values that merely *name* a secret
+(`process.env.API_KEY`, `${TOKEN}`, `{{ vault_x }}`, `<your-token>`). A documentation key such as
+`AKIAIOSFODNN7EXAMPLE` **is** reported: the shape is unambiguous and the two allowlists are the
+escape hatch. Findings are sorted by path, line, rule, masked and capped at `SECRET_FINDING_CAP`
+(500); one `SECRETS_FOUND` warning carries the total in `detail` and says when the list was cut.
+`ProgressPhase` gains `"secrets"` (`done`/`total` = files scanned). `bun run record` records the
+`secrets` fixture and writes `secrets` (the whole finding list) into `<fixture>.v2.json`.
+`commitStats` now keys its record in the caller's order rather than the order the batch finished
+in, which is what made `bun run record` drift between runs.
 
 ```ts
 export interface ResolvedRevision {
