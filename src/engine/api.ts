@@ -7,6 +7,9 @@
  */
 import type { EngineErrorJSON, PublicCode } from "./errors";
 import type {
+  AheadBehind,
+  BranchRow,
+  CommitDetails,
   DiffResult,
   DiffSource,
   FileDiff,
@@ -20,6 +23,8 @@ import type {
   ResolvedRevision,
   StashInfo,
   TagInfo,
+  WalkPage,
+  WalkRequest,
 } from "./types";
 
 export type ProgressPhase =
@@ -31,7 +36,9 @@ export type ProgressPhase =
   | "diff"
   | "renames"
   | "stats"
-  | "probe";
+  | "probe"
+  /** T10.5: a page of `walkCommits` (`done` = rows emitted). */
+  | "history";
 
 export interface Progress {
   phase: ProgressPhase;
@@ -268,6 +275,27 @@ export interface EngineApi {
    * diff found to be over 10 MB. Runs only on demand; capped at 2,000 rows (`HIDDEN_CAPPED`).
    */
   listHidden(): Promise<HiddenEntry[]>;
+  /**
+   * One page of history (T10.5), ordered exactly like `git log --date-order`. `from` holds
+   * revision expressions (`all: true` seeds from every ref, tag and stash as well); `cursor`
+   * continues the previous page and carries the lane table so the graph column stays continuous.
+   * Progress phase `"history"`.
+   */
+  walkCommits(req: WalkRequest): Promise<WalkPage>;
+  /** The CommitCard payload: body, tree, signed, note and stats vs the first parent (T10.5). */
+  commitDetails(oid: Oid): Promise<CommitDetails>;
+  /** `{ files, additions, deletions }` per commit vs its first parent, batched 16 at a time. */
+  commitStats(oids: Oid[]): Promise<Record<Oid, CommitDetails["stats"]>>;
+  /** `git rev-list --left-right --count a...b`, capped at 10,000 per side (T10.5). */
+  aheadBehind(a: string, b: string): Promise<AheadBehind>;
+  /** One row per ref; `vsUpstream`/`vsDefault`/`merged` are null until `branchCells` (T10.5). */
+  branchOverview(): Promise<BranchRow[]>;
+  /** The three expensive cells for the rows the Branches table is showing (T10.5). */
+  branchCells(
+    fullNames: string[],
+  ): Promise<Record<string, Pick<BranchRow, "vsUpstream" | "vsDefault" | "merged">>>;
+  /** Which of these commits are reachable from any ref — the reflog's "unreachable" badge. */
+  markReachable(oids: Oid[]): Promise<Record<Oid, boolean>>;
   /** Move these files to the front of the background stats queue (visible sidebar rows). */
   prioritise(ids: string[]): Promise<void>;
   /** Cheap change signature per tier for the polling fallback (T6.3). */

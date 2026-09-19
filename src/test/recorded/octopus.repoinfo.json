@@ -1,0 +1,54 @@
+{
+  "id": "recorded-octopus",
+  "name": "octopus",
+  "headBranch": "main",
+  "headOid": "e2643f5226e94c51e72a615953567c325f89f7c1",
+  "detached": false,
+  "unborn": false,
+  "headDisplay": "main",
+  "refs": [
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
+      "isDefault": true,
+      "isCheckedOut": true
+    },
+    {
+      "name": "side-a",
+      "fullName": "refs/heads/side-a",
+      "kind": "local",
+      "oid": "03da552045a219cc82af159e96297d44fa7d5548",
+      "isDefault": false,
+      "isCheckedOut": false
+    },
+    {
+      "name": "side-b",
+      "fullName": "refs/heads/side-b",
+      "kind": "local",
+      "oid": "211e73063ddab46dfada551deea6befb5f18ea16",
+      "isDefault": false,
+      "isCheckedOut": false
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
+    "isDefault": true,
+    "isCheckedOut": true
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": [],
+  "operation": null,
+  "jj": false,
+  "hasCommitGraph": false
+}

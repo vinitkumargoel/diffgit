@@ -20,9 +20,13 @@ import type {
   ProgressSink,
 } from "../engine/api";
 import type {
+  AheadBehind,
+  BranchRow,
+  CommitDetails,
   DiffResult,
   DiffSource,
   HiddenEntry,
+  Oid,
   PathExplanation,
   ReflogEntry,
   RepoInfo,
@@ -30,6 +34,8 @@ import type {
   ResolvedRevision,
   StashInfo,
   TagInfo,
+  WalkPage,
+  WalkRequest,
 } from "../engine/types";
 import { toUiError, type UiError } from "./errors";
 
@@ -94,6 +100,21 @@ export interface WorkerClient {
   explainPath(path: string): Promise<PathExplanation>;
   /** The sidebar's Hidden group, on demand (T10.4); capped at 2,000 (`HIDDEN_CAPPED`). */
   listHidden(): Promise<HiddenEntry[]>;
+  /** One page of `git log --date-order` with lanes and refs per row (T10.5). */
+  walkCommits(req: WalkRequest): Promise<WalkPage>;
+  /** The CommitCard payload for one commit (T10.5). */
+  commitDetails(oid: Oid): Promise<CommitDetails>;
+  /** `+n −m` per commit against its first parent, batched (T10.5). */
+  commitStats(oids: Oid[]): Promise<Record<Oid, CommitDetails["stats"]>>;
+  /** `git rev-list --left-right --count a...b` (T10.5). */
+  aheadBehind(a: string, b: string): Promise<AheadBehind>;
+  /** The Branches table, with the expensive cells null until `branchCells` (T10.5). */
+  branchOverview(): Promise<BranchRow[]>;
+  branchCells(
+    fullNames: string[],
+  ): Promise<Record<string, Pick<BranchRow, "vsUpstream" | "vsDefault" | "merged">>>;
+  /** Which commits are reachable from any ref — the reflog's `unreachable` badge (T10.5). */
+  markReachable(oids: Oid[]): Promise<Record<Oid, boolean>>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
   prioritise(ids: string[]): Promise<void>;
   probe(tier: ProbeTier): Promise<string>;
@@ -235,6 +256,13 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     conflict: (generation, id) => call((r) => r.conflict(generation, id), "conflict"),
     explainPath: (path) => call((r) => r.explainPath(path), "explainPath"),
     listHidden: () => call((r) => r.listHidden(), "listHidden"),
+    walkCommits: (req) => call((r) => r.walkCommits(req), "walkCommits"),
+    commitDetails: (oid) => call((r) => r.commitDetails(oid), "commitDetails"),
+    commitStats: (oids) => call((r) => r.commitStats(oids), "commitStats"),
+    aheadBehind: (a, b) => call((r) => r.aheadBehind(a, b), "aheadBehind"),
+    branchOverview: () => call((r) => r.branchOverview(), "branchOverview"),
+    branchCells: (fullNames) => call((r) => r.branchCells(fullNames), "branchCells"),
+    markReachable: (oids) => call((r) => r.markReachable(oids), "markReachable"),
     fileBytes: (generation, id, side) =>
       call((r) => r.fileBytes(generation, id, side), "fileBytes"),
     prioritise: (ids) => call((r) => r.prioritise(ids), "prioritise"),

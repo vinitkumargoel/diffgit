@@ -24,6 +24,24 @@ and sink message counts, DiffResult payload size, handle-cache size and pack byt
 | Handle-cache evictions per single-path refresh | ≤ paths reported | 1 for 1 path | always |
 | Pack bytes held (R3 guard) | warn > 300 MB | 480 kB, no warning | `RepoSession.checkMemory` |
 
+## History walk (T10.5, same machine, 2026-09-19)
+
+`walkCommits` pages by 50 and reads parents + commit times from `.git/objects/info/commit-graph`
+when there is one, falling back to `ObjectDb.readCommit` per commit when there is not (atlas tab 20).
+The emitted rows always cost one `readCommit` each, for the author and subject.
+
+| Metric | Budget | Measured | Where asserted |
+|---|---|---|---|
+| First page (`limit: 50`) on `perf-5k`, straight after open | < 100 ms | 8 ms (2 commits; the fixture's HEAD is two deep, so this is the fixed cost: parse + verify the commit-graph, build the refs-by-commit index, one `readCommit` per row on a 5,000-file repository) | `scripts/perf.ts`, strict only |
+| Full `--all` walk of `history` (63 commits, pages of 50) **with** the commit-graph | – | 13 ms | `scripts/perf.ts` (printed) |
+| Full `--all` walk of `history` **without** it (the file removed from a copy) | – | 25 ms | `scripts/perf.ts` (printed) |
+| Commit-graph speed-up on that walk | – | **1.9×** (the atlas estimated 2–5× on bigger histories, where the per-commit object inflation dominates rather than the 63 `readCommit` calls both paths still pay for the rows) | – |
+
+`markReachable` is one walk from every ref, cached per refs snapshot, so the reflog panel's
+`unreachable` badges cost one traversal for the whole list. `aheadBehind` builds both reachability
+sets (capped at 10,000 each) rather than pruning at the merge base, because a commit reachable from
+the base can also be reached on a path that never passes through it.
+
 Earlier per-phase engine numbers (T1–T3, same machine): `flattenTree` on perf-5k 30–150 ms,
 index parse 28 ms, worktree scan ≈ 0.5 s cold, probes git 0.2 ms / index 6 ms / untracked 24 ms.
 Rename detection on the `renames` fixture 50–75 ms.

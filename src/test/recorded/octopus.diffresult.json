@@ -1,0 +1,21 @@
+{
+  "source": {
+    "kind": "branches",
+    "source": "main",
+    "target": "main",
+    "sourceRef": "refs/heads/main",
+    "targetRef": "refs/heads/main",
+    "includeWorktree": true
+  },
+  "mergeBase": "e2643f5226e94c51e72a615953567c325f89f7c1",
+  "files": [],
+  "totals": {
+    "files": 0,
+    "additions": 0,
+    "deletions": 0
+  },
+  "computedAt": 1704067200000,
+  "durationMs": 0,
+  "generation": 1,
+  "warnings": []
+}

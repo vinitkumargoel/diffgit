@@ -13,6 +13,11 @@
  *
  * T10.4 adds the `hidden` fixture with `hidden` (the whole Hidden group) and `explanations` (one
  * `PathExplanation` per interesting path), so T11.4 can build the popover against real data.
+ *
+ * T10.5 adds `walks` (the whole history per variant — default, first-parent, all, per path — which
+ * the mock pages itself), `commits` (`CommitDetails`), `commitStats`, `branches` (the Branches
+ * table with its cells filled), `aheadBehind` and `reachable`, plus the `octopus` fixture so the
+ * lane column has a three-parent merge to draw.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import type { ConflictPayload } from "../src/engine/api";
@@ -20,13 +25,19 @@ import { defaultDiffSource } from "../src/engine/diffSource";
 import { NodeDirHandle } from "../src/engine/fs/nodeDirHandle";
 import { RepoSession } from "../src/engine/session";
 import type {
+  AheadBehind,
+  BranchRow,
+  CommitDetails,
+  CommitSummary,
   DiffResult,
+  Oid,
   PathExplanation,
   RangeSource,
   RepoOperation,
   ResolvedRevision,
+  WalkRequest,
 } from "../src/engine/types";
-import { fixturePath, hasExpected, loadExpectedLines } from "../src/test/fixtures";
+import { fixturePath, HISTORY_FIXTURE, hasExpected, loadExpectedLines } from "../src/test/fixtures";
 
 const OUT = new URL("../src/test/recorded/", import.meta.url).pathname;
 mkdirSync(OUT, { recursive: true });
@@ -59,6 +70,40 @@ const EXPLAIN_PATHS: Record<string, string[]> = {
     "src/app.txt",
     "README.md",
     "notes.txt",
+  ],
+};
+
+/**
+ * T10.5: the walks the mock replays. The key is derived from the request the same way
+ * `workerClient.mock.ts` derives it, so the UI's own `WalkRequest` finds its recording. The limit
+ * is deliberately huge — the whole history is recorded once and the mock pages it itself, so
+ * T11.5 can scroll a real list without a repository on disk.
+ */
+const WALK_LIMIT = 5000;
+
+function walkVariants(name: string): { key: string; req: WalkRequest }[] {
+  const out: { key: string; req: WalkRequest }[] = [
+    { key: "default", req: { from: ["HEAD"], firstParent: false, limit: WALK_LIMIT } },
+    { key: "first-parent", req: { from: ["HEAD"], firstParent: true, limit: WALK_LIMIT } },
+    { key: "all", req: { from: [], firstParent: false, all: true, limit: WALK_LIMIT } },
+  ];
+  if (name === HISTORY_FIXTURE.name) {
+    for (const path of [HISTORY_FIXTURE.hotPath, HISTORY_FIXTURE.renamedTo]) {
+      out.push({
+        key: `path:${path}`,
+        req: { from: ["HEAD"], firstParent: false, limit: WALK_LIMIT, path },
+      });
+    }
+  }
+  return out;
+}
+
+/** Ahead/behind pairs worth recording, by fixture (the ones T10.0 recorded git's counts for). */
+const AHEAD_BEHIND: Record<string, [string, string][]> = {
+  history: [
+    ["main", "topic"],
+    ["main", "preflight/a"],
+    ["preflight/a", "main"],
   ],
 };
 
@@ -145,6 +190,30 @@ async function record(name: string, v2: boolean): Promise<void> {
     }
     const explanations: Record<string, PathExplanation> = {};
     for (const p of EXPLAIN_PATHS[name] ?? []) explanations[p] = await session.explainPath(p);
+
+    // ---- T10.5: history pages, commit payloads and the Branches table ------------------------
+    const walks: Record<string, { commits: CommitSummary[]; graphAvailable: boolean }> = {};
+    for (const variant of walkVariants(name)) {
+      const page = await session.walkCommits(variant.req);
+      walks[variant.key] = { commits: page.commits, graphAvailable: page.graphAvailable };
+    }
+    const walkedOids = [
+      ...new Set(Object.values(walks).flatMap((w) => w.commits.map((c) => c.oid))),
+    ];
+    const commits: Record<Oid, CommitDetails> = {};
+    for (const oid of walkedOids.slice(0, 12)) commits[oid] = await session.commitDetails(oid);
+    const commitStats = await session.commitStats(walkedOids);
+    const branches: BranchRow[] = await session.branchOverview();
+    const cells = await session.branchCells(branches.map((b) => b.ref.fullName));
+    for (const row of branches) Object.assign(row, cells[row.ref.fullName] ?? {});
+    const aheadBehind: Record<string, AheadBehind> = {};
+    for (const [a, b] of AHEAD_BEHIND[name] ?? []) {
+      aheadBehind[`${a}...${b}`] = await session.aheadBehind(a, b);
+    }
+    const reachable = await session.markReachable([
+      ...new Set([...walkedOids, ...(await session.reflog("HEAD", 200)).map((e) => e.newOid)]),
+    ]);
+
     const payload = {
       tags: await session.listTags(),
       stashes: await session.listStashes(),
@@ -159,6 +228,13 @@ async function record(name: string, v2: boolean): Promise<void> {
       explanations,
       revisions,
       ranges,
+      // T10.5: the history list, the CommitCard payloads, the Branches table and reachability.
+      walks,
+      commits,
+      commitStats,
+      branches,
+      aheadBehind,
+      reachable,
     };
     writeFileSync(`${OUT}${name}.v2.json`, `${JSON.stringify(payload, null, 2)}\n`);
     console.log(
@@ -166,7 +242,9 @@ async function record(name: string, v2: boolean): Promise<void> {
         `${payload.reflog.length} reflog entries, operation ${payload.operation?.kind ?? "none"}, ` +
         `${Object.keys(revisions).length} revisions, ${ranges.length} ranges, ` +
         `${Object.keys(conflicts).length} conflicts, ${payload.hidden.length} hidden, ` +
-        `${Object.keys(explanations).length} explanations`,
+        `${Object.keys(explanations).length} explanations, ` +
+        `${walks.all?.commits.length ?? 0} commits (graph ${walks.all?.graphAvailable ?? false}), ` +
+        `${branches.length} branches`,
     );
   }
   await session.close();
@@ -184,5 +262,7 @@ for (const name of [
   "cherry-pick-conflict",
   // T10.4: the Hidden group, the rule attribution and the index flags.
   "hidden",
+  // T10.5: the three-parent merge, so the lane column has an octopus to draw.
+  "octopus",
 ])
   await record(name, true);

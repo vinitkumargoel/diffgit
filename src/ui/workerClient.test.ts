@@ -249,7 +249,8 @@ describe("mock worker client: reflog and operation (T10.2)", () => {
     expect(entries.length).toBe(3);
     expect(entries.map((e) => e.expr)).toEqual(["HEAD@{0}", "HEAD@{1}", "HEAD@{2}"]);
     expect(entries.map((e) => e.action)).toEqual(["rebase (pick)", "rebase (start)", "checkout"]);
-    expect(entries[0]?.reachable).toBeNull();
+    // T10.5: `reflog()` now fills `reachable` itself, so the recording carries it too.
+    expect(entries.every((e) => typeof e.reachable === "boolean")).toBe(true);
   });
 
   it("the merge fixture reports a merge with its conflicts", async () => {
@@ -409,5 +410,122 @@ describe("mock worker client: why hidden (T10.4)", () => {
     await client.open({ name: "x" }, sink(), { builtinExcludes: false });
     expect(seen).toEqual([{ builtinExcludes: false }]);
     client.terminate();
+  });
+});
+
+describe("mock worker client: history, lanes and branches (T10.5)", () => {
+  it("pages the recorded history with lanes, refs and a continuing cursor", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "history" }, sink());
+
+    const first = await client.walkCommits({ from: ["HEAD"], firstParent: false, limit: 10 });
+    expect(first.commits.length).toBe(10);
+    expect(first.graphAvailable).toBe(true);
+    expect(first.capped).toBe(false);
+    expect(first.cursor).not.toBeNull();
+    for (const row of first.commits) {
+      expect(row.lane).toBeGreaterThanOrEqual(0);
+      expect(row.laneCount).toBeGreaterThan(row.lane as number);
+      expect(row.edges).toBeDefined();
+      expect(row.subject.length).toBeGreaterThan(0);
+    }
+    expect(first.commits[0]?.refs).toContain("HEAD");
+
+    const second = await client.walkCommits({
+      from: ["HEAD"],
+      firstParent: false,
+      limit: 10,
+      cursor: first.cursor as string,
+    });
+    expect(second.commits.length).toBe(10);
+    const seen = new Set([...first.commits, ...second.commits].map((c) => c.oid));
+    expect(seen.size).toBe(20);
+  });
+
+  it("serves the first-parent, --all and path variants separately", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "history" }, sink());
+    const plain = await client.walkCommits({ from: ["HEAD"], firstParent: false, limit: 500 });
+    const firstParent = await client.walkCommits({ from: ["HEAD"], firstParent: true, limit: 500 });
+    const all = await client.walkCommits({ from: [], firstParent: false, all: true, limit: 500 });
+    const path = await client.walkCommits({
+      from: ["HEAD"],
+      firstParent: false,
+      limit: 500,
+      path: "src/hot.txt",
+    });
+    expect(firstParent.commits.length).toBeLessThan(plain.commits.length);
+    expect(all.commits.length).toBeGreaterThan(plain.commits.length);
+    expect(path.commits.length).toBe(3);
+    expect(path.cursor).toBeNull();
+  });
+
+  it("serves commit details and batched stats for the rows it walked", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "history" }, sink());
+    const page = await client.walkCommits({ from: ["HEAD"], firstParent: false, limit: 5 });
+    const oids = page.commits.map((c) => c.oid);
+    const details = await client.commitDetails(oids[0] as string);
+    expect(details.oid).toBe(oids[0] as string);
+    expect(details.tree).toMatch(/^[0-9a-f]{40}$/);
+    expect(details.signed).toBe(false);
+    expect(details.note).toBeNull();
+    expect(details.stats?.files).toBeGreaterThan(0);
+    const stats = await client.commitStats(oids);
+    expect(Object.keys(stats).sort()).toEqual([...oids].sort());
+    expect(stats[oids[0] as string]).toEqual(details.stats);
+    await expect(client.commitDetails("0".repeat(40))).rejects.toMatchObject({
+      code: "REV_NOT_FOUND",
+    });
+  });
+
+  it("serves the Branches table with lazily filled cells", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "history" }, sink());
+    const rows = await client.branchOverview();
+    expect(rows.map((r) => r.ref.name).sort()).toEqual([
+      "main",
+      "preflight/a",
+      "preflight/base",
+      "topic",
+    ]);
+    for (const row of rows) {
+      expect(row.vsUpstream).toBeNull();
+      expect(row.vsDefault).toBeNull();
+      expect(row.merged).toBeNull();
+    }
+    const cells = await client.branchCells(rows.map((r) => r.ref.fullName));
+    expect(cells["refs/heads/topic"]?.merged).toBe(true);
+    expect(cells["refs/heads/preflight/a"]?.merged).toBe(false);
+    expect(cells["refs/heads/preflight/a"]?.vsDefault?.ahead).toBe(3);
+  });
+
+  it("serves ahead/behind and reachability", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "history" }, sink());
+    expect(await client.aheadBehind("main", "topic")).toMatchObject({ ahead: 36, behind: 0 });
+    const page = await client.walkCommits({ from: ["HEAD"], firstParent: false, limit: 3 });
+    const oids = page.commits.map((c) => c.oid);
+    const reachable = await client.markReachable([...oids, "0".repeat(40)]);
+    for (const oid of oids) expect(reachable[oid]).toBe(true);
+    expect(reachable["0".repeat(40)]).toBe(false);
+  });
+
+  it("the octopus fixture draws a three-parent merge", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "octopus" }, sink());
+    const page = await client.walkCommits({ from: [], firstParent: false, all: true, limit: 50 });
+    expect(page.graphAvailable).toBe(false);
+    const merge = page.commits.find((c) => c.parents.length === 3);
+    expect(merge).toBeDefined();
+    expect(merge?.edges?.filter((e) => e.from === (merge?.lane as number))).toHaveLength(3);
+  });
+
+  it("a fixture with no v2 recording answers an empty history", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "showcase" }, sink());
+    const page = await client.walkCommits({ from: ["HEAD"], firstParent: false, limit: 50 });
+    expect(page).toEqual({ commits: [], cursor: null, graphAvailable: false, capped: false });
+    expect(await client.branchOverview()).toEqual([]);
   });
 });

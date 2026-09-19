@@ -63,6 +63,17 @@ try {
   );
   console.log(`open: ${openMs.toFixed(0)} ms`, phases);
 
+  // ---- history walk (T10.5) -------------------------------------------------------------------
+  // First page on the 5,000-file repository (atlas tab 03: "< 100 ms first page"), then the whole
+  // `history` fixture with and without its commit-graph — the file tab 20 exists to justify.
+  const t4 = performance.now();
+  const firstPage = await session.walkCommits({ from: ["HEAD"], firstParent: false, limit: 50 });
+  const firstPageMs = performance.now() - t4;
+  console.log(
+    `perf-5k first page: ${firstPage.commits.length} commits in ${firstPageMs.toFixed(1)} ms (commit-graph ${firstPage.graphAvailable})`,
+  );
+  budget("history first page of 50 (perf-5k)", firstPageMs, 100, " ms", true);
+
   // first compute (cold caches) → file list visible
   progress.length = 0;
   const t1 = performance.now();
@@ -114,6 +125,47 @@ try {
   );
   budget("3000-line hunk model", hunkMs, 300, " ms", true);
   await large.close();
+
+  const fullWalk = async (dir: string, id: string) => {
+    const s = await RepoSession.open(await NodeDirHandle.open(dir), sink, { id });
+    const t = performance.now();
+    let cursor: string | null = null;
+    let n = 0;
+    let graph = false;
+    do {
+      const page = await s.walkCommits({
+        from: [],
+        firstParent: false,
+        all: true,
+        limit: 50,
+        ...(cursor === null ? {} : { cursor }),
+      });
+      n += page.commits.length;
+      graph = page.graphAvailable;
+      cursor = page.cursor;
+    } while (cursor !== null);
+    const ms = performance.now() - t;
+    await s.close();
+    return { ms, n, graph };
+  };
+
+  const withGraph = await fullWalk(fixturePath("history"), "history-graph");
+  const noGraphDir = mkdtempSync(join(tmpdir(), "diffgit-nograph-"));
+  let withoutGraph: { ms: number; n: number; graph: boolean };
+  try {
+    cpSync(fixturePath("history"), noGraphDir, { recursive: true });
+    rmSync(join(noGraphDir, ".git/objects/info/commit-graph"), { force: true });
+    withoutGraph = await fullWalk(noGraphDir, "history-nograph");
+  } finally {
+    rmSync(noGraphDir, { recursive: true, force: true });
+  }
+  console.log(
+    `history full walk --all (${withGraph.n} commits, pages of 50): ` +
+      `${withGraph.ms.toFixed(0)} ms with the commit-graph (graphAvailable ${withGraph.graph}), ` +
+      `${withoutGraph.ms.toFixed(0)} ms without it (graphAvailable ${withoutGraph.graph})`,
+  );
+  if (withGraph.n !== withoutGraph.n)
+    failures.push("history walk length differs without the graph");
 
   const m = await session.metrics();
   console.log("metrics:", { ...m, lastCompute: m.lastCompute });

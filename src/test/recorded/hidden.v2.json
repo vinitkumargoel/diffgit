@@ -15,7 +15,7 @@
         "timestamp": 1704067200000,
         "tzOffsetMin": 0
       },
-      "reachable": null
+      "reachable": true
     }
   ],
   "operation": null,
@@ -159,5 +159,148 @@
     }
   },
   "revisions": {},
-  "ranges": []
+  "ranges": [],
+  "walks": {
+    "default": {
+      "commits": [
+        {
+          "oid": "c5d61a4e4036296631abfb307bfc988db8e3d062",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: tracked files including an 11 MB one",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    },
+    "first-parent": {
+      "commits": [
+        {
+          "oid": "c5d61a4e4036296631abfb307bfc988db8e3d062",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: tracked files including an 11 MB one",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    },
+    "all": {
+      "commits": [
+        {
+          "oid": "c5d61a4e4036296631abfb307bfc988db8e3d062",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: tracked files including an 11 MB one",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
+        }
+      ],
+      "graphAvailable": false
+    }
+  },
+  "commits": {
+    "c5d61a4e4036296631abfb307bfc988db8e3d062": {
+      "oid": "c5d61a4e4036296631abfb307bfc988db8e3d062",
+      "parents": [],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "c1: tracked files including an 11 MB one",
+      "refs": ["HEAD", "main"],
+      "body": "",
+      "tree": "c574679365c30f450084be66b8ab56b045be7886",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 6,
+        "additions": 18,
+        "deletions": 0
+      }
+    }
+  },
+  "commitStats": {
+    "c5d61a4e4036296631abfb307bfc988db8e3d062": {
+      "files": 6,
+      "additions": 18,
+      "deletions": 0
+    }
+  },
+  "branches": [
+    {
+      "ref": {
+        "name": "main",
+        "fullName": "refs/heads/main",
+        "kind": "local",
+        "oid": "c5d61a4e4036296631abfb307bfc988db8e3d062",
+        "isDefault": true,
+        "isCheckedOut": true
+      },
+      "upstream": null,
+      "lastCommit": {
+        "oid": "c5d61a4e4036296631abfb307bfc988db8e3d062",
+        "subject": "c1: tracked files including an 11 MB one",
+        "author": "test",
+        "timestamp": 1704067200000
+      },
+      "vsUpstream": null,
+      "vsDefault": null,
+      "merged": true,
+      "tags": []
+    }
+  ],
+  "aheadBehind": {},
+  "reachable": {
+    "c5d61a4e4036296631abfb307bfc988db8e3d062": true
+  }
 }
