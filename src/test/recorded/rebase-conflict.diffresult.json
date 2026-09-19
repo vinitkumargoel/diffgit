@@ -1,0 +1,82 @@
+{
+  "source": {
+    "kind": "branches",
+    "source": "HEAD",
+    "target": "main",
+    "sourceRef": "HEAD",
+    "targetRef": "refs/heads/main",
+    "includeWorktree": true
+  },
+  "mergeBase": "59c04da5585a06a77afc3d679253ad9f7f044978",
+  "files": [
+    {
+      "id": "both-added.txt",
+      "oldPath": "both-added.txt",
+      "newPath": "both-added.txt",
+      "status": "modified",
+      "layers": ["conflict"],
+      "oldOid": "f8dd506c72847878c12496fa5e761a8f7a3ee601",
+      "newOid": null,
+      "oldMode": 33188,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 25,
+      "newSize": 134,
+      "stats": {
+        "additions": 4,
+        "deletions": 0
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "file.txt",
+      "oldPath": "file.txt",
+      "newPath": "file.txt",
+      "status": "modified",
+      "layers": ["conflict"],
+      "oldOid": "d941f5e5752df0ae61ccc7a23d6c576b9d86ec62",
+      "newOid": null,
+      "oldMode": 33188,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 52,
+      "newSize": 153,
+      "stats": {
+        "additions": 4,
+        "deletions": 0
+      },
+      "tooLarge": false
+    },
+    {
+      "id": "one.txt",
+      "oldPath": null,
+      "newPath": "one.txt",
+      "status": "added",
+      "layers": ["committed"],
+      "oldOid": null,
+      "newOid": "e4c447f8143587bf1bdf98bfaf1b22ce1aa36918",
+      "oldMode": null,
+      "newMode": 33188,
+      "binary": false,
+      "image": false,
+      "oldSize": 0,
+      "newSize": 19,
+      "stats": {
+        "additions": 1,
+        "deletions": 0
+      },
+      "tooLarge": false
+    }
+  ],
+  "totals": {
+    "files": 3,
+    "additions": 9,
+    "deletions": 0
+  },
+  "computedAt": 1704067200000,
+  "durationMs": 0,
+  "generation": 1,
+  "warnings": []
+}

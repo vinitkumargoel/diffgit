@@ -17,6 +17,7 @@ import { EngineError, errorCode } from "../errors";
 import type { FsaFs } from "../fs/fsaFs";
 import type { Oid, StashInfo } from "../types";
 import type { ObjectDb } from "./objectDb";
+import { parseReflogLines } from "./reflog";
 
 /** Path of the stash reflog, relative to `.git/`. */
 export const STASH_LOG_PATH = "logs/refs/stash";
@@ -29,27 +30,18 @@ export interface StashLogEntry {
   timestamp: number; // epoch ms
 }
 
-const LINE_RE = /^([0-9a-f]{40}) ([0-9a-f]{40}) (.*?) <([^>]*)> (\d+) ([+-]\d{4})\t(.*)$/;
-
 /**
- * Parses `.git/logs/refs/stash` newest-first. Lines git cannot have written are skipped rather
- * than throwing: a half-written reflog must not break the picker.
+ * Parses `.git/logs/refs/stash` newest-first. The stash stack is an ordinary reflog, so this is
+ * `parseReflogLines` (T10.2) narrowed to the three fields a stash entry needs; lines git cannot
+ * have written are skipped rather than throwing: a half-written reflog must not break the picker.
  */
 export function parseStashLog(text: string | null): StashLogEntry[] {
-  if (text === null) return [];
-  const lines = text.split("\n").filter((l) => l.length > 0);
-  const out: StashLogEntry[] = [];
-  for (let i = lines.length - 1; i >= 0; i--) {
-    const m = LINE_RE.exec(lines[i] as string);
-    if (!m) continue;
-    out.push({
-      index: out.length,
-      oid: m[2] as string,
-      message: m[7] as string,
-      timestamp: Number.parseInt(m[5] as string, 10) * 1000,
-    });
-  }
-  return out;
+  return parseReflogLines(text).map((l, index) => ({
+    index,
+    oid: l.newOid,
+    message: l.message,
+    timestamp: l.who.timestamp,
+  }));
 }
 
 /** The three commits a stash entry is built from. */

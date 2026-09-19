@@ -46,6 +46,69 @@
     }
   ],
   "stashes": [],
+  "reflog": [
+    {
+      "index": 0,
+      "expr": "HEAD@{0}",
+      "oldOid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "newOid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+      "action": "commit",
+      "message": "commit: c4: fourth release",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 1,
+      "expr": "HEAD@{1}",
+      "oldOid": "7f276549ffed610f8419f52e68edadb1348b883b",
+      "newOid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "action": "commit",
+      "message": "commit: c3: third release",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 2,
+      "expr": "HEAD@{2}",
+      "oldOid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+      "newOid": "7f276549ffed610f8419f52e68edadb1348b883b",
+      "action": "commit",
+      "message": "commit: c2: second release",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 3,
+      "expr": "HEAD@{3}",
+      "oldOid": null,
+      "newOid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+      "action": "commit (initial)",
+      "message": "commit (initial): c1: first release",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    }
+  ],
+  "operation": null,
   "revisions": {
     "HEAD": {
       "expr": "HEAD",

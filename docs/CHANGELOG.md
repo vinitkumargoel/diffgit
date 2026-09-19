@@ -15,6 +15,18 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T10.2 — Reflog reader and operation detector (2026-09-19)
+
+- New `src/engine/git/reflog.ts` parses `.git/logs/HEAD` / `.git/logs/<fullRef>` newest-first with git's own line format, a 150 ms torn-read retry (the index reader's rule) and a `NO_REFLOG` warning + `[]` when a repository keeps no log; `stash.ts`'s `parseStashLog` is now a three-field view of `parseReflogLines` instead of a second copy of the regex.
+- New `src/engine/git/operation.ts` (`detectOperation`) reads `rebase-merge/`, `rebase-apply/`, `MERGE_HEAD`, `CHERRY_PICK_HEAD`, `REVERT_HEAD` and `BISECT_LOG`/`BISECT_START`, counts conflicts from the index's stage > 0 paths, and resolves the `git-rebase-todo` / `done` oids. It exports `OPERATION_FILES`, which `probe("git")` now stats so the Design §14.3 banner follows git live.
+- **Decisions:** `ReflogEntry.message` stays git's `%gs` verbatim (byte parity with `git reflog --format='%H %gs'`) and `action` is the prefix before its first `:`; detection precedence is rebase → cherry-pick → revert → merge → bisect, because a rebase that stopped on a conflict also leaves `MERGE_HEAD` behind; `detectOperation` takes the session's already-loaded refs so `ontoDisplay` is `main`, not a short oid; an abbreviated todo oid that `git gc` pruned is kept as-is rather than dropping the step. Recorded in `docs/v2-contracts.md` under `<!-- T10.2 -->`.
+- `RepoInfo` gained `operation`, `jj` (`.jj/` exists) and `hasCommitGraph`; `reloadRefs()` refreshes the operation and `OPERATION_IN_PROGRESS` is recorded once per open. `EngineApi`/`RepoSession`/`WorkerClient` gained `reflog(expr, limit)` and `operation()`, both single-in-flight.
+- Tests: `reflog.test.ts` replays `expected/reflog.txt` on `reflog-orphan`, `rebase-conflict`, `merge-conflict`, `cherry-pick-conflict` and `history` (a `reflog.txt` recording was added to `fixture-expectations.sh` for `history`) plus the `%gd` selectors and the orphan list; `operation.test.ts` checks the three interrupted fixtures against `expected/operation.txt` + `ls-files-u.txt`, `rebase-detached`, and — with an in-memory `.git`, since git 2.50 always uses the merge backend — the `rebase-apply` layout, unknown layouts, revert, bisect and octopus `MERGE_HEAD`.
+- `bun run record` now writes `reflog` / `operation` into `<fixture>.v2.json` (with `startedAt` pinned so re-recording is a no-op) and records `rebase-conflict` and `merge-conflict`, which the mock serves for T11.3.
+- Checks: `bun run check` green — tsc, Biome (242 files), 300 engine tests (26 files), 297 UI tests (26 files), guards.
+
+---
+
 ## T10.1 — Range sources, revision resolver, tags, stashes (2026-09-19)
 
 - `DiffSource` is now `BranchesSource | RangeSource`. `DiffEngine.compute` takes a range: three-dot uses the merge base as before, two-dot uses the `from` tree directly (`mergeBase: null`), `fromOid: null`/`EMPTY_TREE_OID` is git's empty tree, and the working tree is layered only when `isWorktreeSource` says the compare side is HEAD. A stash as the compare side is layered like the working tree it came from — second parent's tree `staged`, the stash's own tree `unstaged`, third parent's tree `untracked` — which is what makes "2 files (1 untracked)" possible.

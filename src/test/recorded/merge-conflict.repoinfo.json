@@ -1,8 +1,8 @@
 {
-  "id": "recorded-tags",
-  "name": "tags",
+  "id": "recorded-merge-conflict",
+  "name": "merge-conflict",
   "headBranch": "main",
-  "headOid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+  "headOid": "16f51344344e6f834075a8271c0288be58add6cf",
   "detached": false,
   "unborn": false,
   "headDisplay": "main",
@@ -11,15 +11,15 @@
       "name": "main",
       "fullName": "refs/heads/main",
       "kind": "local",
-      "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+      "oid": "16f51344344e6f834075a8271c0288be58add6cf",
       "isDefault": true,
       "isCheckedOut": true
     },
     {
-      "name": "release",
-      "fullName": "refs/heads/release",
+      "name": "topic",
+      "fullName": "refs/heads/topic",
       "kind": "local",
-      "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      "oid": "fa386080e5fe2f64967f9c18fbe8d2e505dcb812",
       "isDefault": false,
       "isCheckedOut": false
     }
@@ -28,7 +28,7 @@
     "name": "main",
     "fullName": "refs/heads/main",
     "kind": "local",
-    "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+    "oid": "16f51344344e6f834075a8271c0288be58add6cf",
     "isDefault": true,
     "isCheckedOut": true
   },
@@ -39,8 +39,19 @@
     "isWorktreeGitdir": false,
     "hasReftable": false
   },
-  "warnings": [],
-  "operation": null,
+  "warnings": [
+    {
+      "code": "OPERATION_IN_PROGRESS",
+      "message": "A merge is in progress in this repository.",
+      "detail": "2 paths still conflict."
+    }
+  ],
+  "operation": {
+    "kind": "merge",
+    "conflicts": 2,
+    "current": "fa386080e5fe2f64967f9c18fbe8d2e505dcb812",
+    "startedAt": 1704067200000
+  },
   "jj": false,
   "hasCommitGraph": false
 }

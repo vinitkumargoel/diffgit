@@ -1,0 +1,74 @@
+{
+  "id": "recorded-rebase-conflict",
+  "name": "rebase-conflict",
+  "headBranch": null,
+  "headOid": "218d0220b5269da447f36548bda58037e7cc8468",
+  "detached": true,
+  "unborn": false,
+  "headDisplay": "HEAD (detached @ 218d022)",
+  "refs": [
+    {
+      "name": "HEAD (detached @ 218d022)",
+      "fullName": "HEAD",
+      "kind": "local",
+      "oid": "218d0220b5269da447f36548bda58037e7cc8468",
+      "isDefault": false,
+      "isCheckedOut": true,
+      "synthetic": true
+    },
+    {
+      "name": "main",
+      "fullName": "refs/heads/main",
+      "kind": "local",
+      "oid": "59c04da5585a06a77afc3d679253ad9f7f044978",
+      "isDefault": true,
+      "isCheckedOut": false
+    },
+    {
+      "name": "topic",
+      "fullName": "refs/heads/topic",
+      "kind": "local",
+      "oid": "83e12b7fa78ea58beb3434d25276f41fd1584444",
+      "isDefault": false,
+      "isCheckedOut": false
+    }
+  ],
+  "defaultRef": {
+    "name": "main",
+    "fullName": "refs/heads/main",
+    "kind": "local",
+    "oid": "59c04da5585a06a77afc3d679253ad9f7f044978",
+    "isDefault": true,
+    "isCheckedOut": false
+  },
+  "capabilities": {
+    "indexVersion": 2,
+    "hasSplitIndex": false,
+    "hasSparseIndex": false,
+    "isWorktreeGitdir": false,
+    "hasReftable": false
+  },
+  "warnings": [
+    {
+      "code": "OPERATION_IN_PROGRESS",
+      "message": "A rebase is in progress in this repository (step 2 of 3).",
+      "detail": "2 paths still conflict."
+    }
+  ],
+  "operation": {
+    "kind": "rebase",
+    "conflicts": 2,
+    "step": 2,
+    "total": 3,
+    "onto": "59c04da5585a06a77afc3d679253ad9f7f044978",
+    "ontoDisplay": "main",
+    "headName": "refs/heads/topic",
+    "startedAt": 1704067200000,
+    "interactive": true,
+    "current": "d424326b468f78a175aa69ff38d2e81cde985913",
+    "remaining": ["83e12b7fa78ea58beb3434d25276f41fd1584444"],
+    "done": ["e3c40a407beaf6e4a5105e4895545c7ff952672c", "d424326b468f78a175aa69ff38d2e81cde985913"]
+  },
+  "jj": false,
+  "hasCommitGraph": false
+}

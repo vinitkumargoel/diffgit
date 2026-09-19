@@ -11,7 +11,9 @@ import type {
   DiffResult,
   DiffSource,
   FileDiff,
+  ReflogEntry,
   RepoInfo,
+  RepoOperation,
   ResolvedRevision,
   StashInfo,
   TagInfo,
@@ -21,6 +23,12 @@ import realBasicInfo from "../test/recorded/basic.repoinfo.json";
 import historyDiff from "../test/recorded/history.diffresult.json";
 import historyInfo from "../test/recorded/history.repoinfo.json";
 import historyV2 from "../test/recorded/history.v2.json";
+import mergeDiff from "../test/recorded/merge-conflict.diffresult.json";
+import mergeInfo from "../test/recorded/merge-conflict.repoinfo.json";
+import mergeV2 from "../test/recorded/merge-conflict.v2.json";
+import rebaseDiff from "../test/recorded/rebase-conflict.diffresult.json";
+import rebaseInfo from "../test/recorded/rebase-conflict.repoinfo.json";
+import rebaseV2 from "../test/recorded/rebase-conflict.v2.json";
 import basicDiff from "../test/recorded/showcase.diffresult.json";
 import basicInfo from "../test/recorded/showcase.repoinfo.json";
 import worktreeDiff from "../test/recorded/showcase-worktree.diffresult.json";
@@ -48,6 +56,10 @@ import {
 interface RecordedV2 {
   tags: TagInfo[];
   stashes: StashInfo[];
+  /** T10.2: `HEAD`'s reflog, newest first. */
+  reflog: ReflogEntry[];
+  /** T10.2: what git was in the middle of when the fixture was recorded. */
+  operation: RepoOperation | null;
   revisions: Record<string, ResolvedRevision>;
   ranges: { source: DiffSource; result: DiffResult }[];
 }
@@ -92,6 +104,17 @@ const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult; v2?: Recorded
     info: historyInfo as RepoInfo,
     diff: historyDiff as DiffResult,
     v2: historyV2 as unknown as RecordedV2,
+  },
+  // T10.2: the two fixtures that are genuinely mid-operation (banner + reflog panel)
+  "rebase-conflict": {
+    info: rebaseInfo as RepoInfo,
+    diff: rebaseDiff as DiffResult,
+    v2: rebaseV2 as unknown as RecordedV2,
+  },
+  "merge-conflict": {
+    info: mergeInfo as RepoInfo,
+    diff: mergeDiff as DiffResult,
+    v2: mergeV2 as unknown as RecordedV2,
   },
   showcase: { info: basicInfo as RepoInfo, diff: basicDiff as DiffResult },
   "showcase-worktree": { info: worktreeInfo as RepoInfo, diff: worktreeDiff as DiffResult },
@@ -267,6 +290,20 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       await wait(client.latency);
       return v2.stashes;
     },
+    async reflog(expr, limit) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      // Only HEAD's reflog is recorded; any other ref behaves like a repository that keeps none.
+      const all = expr.trim() === "HEAD" || expr.trim() === "" ? v2.reflog : [];
+      if (all.length === 0)
+        sink?.onWarning({ code: "NO_REFLOG", message: `No reflog is kept for ${expr}.` });
+      return all.slice(0, limit);
+    },
+    async operation() {
+      const v2 = requireV2();
+      await wait(client.latency);
+      return v2.operation ?? current?.info.operation ?? null;
+    },
     async fileStats(gen, ids) {
       const files = requireGen(gen);
       const out: Record<string, FileStats> = {};
@@ -350,7 +387,16 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
   /** The v2 recording of the open handle; fixtures without one behave as an empty repository. */
   function requireV2(): RecordedV2 {
     if (!current) throw err("INTERNAL", "no repo open");
-    return current.v2 ?? { tags: [], stashes: [], revisions: {}, ranges: [] };
+    return (
+      current.v2 ?? {
+        tags: [],
+        stashes: [],
+        reflog: [],
+        operation: null,
+        revisions: {},
+        ranges: [],
+      }
+    );
   }
 
   /** The recorded result for this exact range, if `bun run record` captured it. */

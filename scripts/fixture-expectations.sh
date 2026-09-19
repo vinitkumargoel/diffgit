@@ -307,6 +307,7 @@ dump_v2() { # dump_v2 <fixture-name>
       ;;
     history)
       root=$(G -C "$r" rev-list --max-parents=0 main)
+      G -C "$r" reflog --format='%H %gs' > "$exp/reflog.txt"   # T10.2 parity oracle
       G -C "$r" log --graph --oneline --date-order --all > "$exp/log-graph.txt"
       G -C "$r" log --date-order --format=%H --all > "$exp/log-all-date-order.txt"
       G -C "$r" log --date-order --format=%H main > "$exp/log-main-date-order.txt"

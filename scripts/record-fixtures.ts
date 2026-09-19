@@ -11,8 +11,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { defaultDiffSource } from "../src/engine/diffSource";
 import { NodeDirHandle } from "../src/engine/fs/nodeDirHandle";
 import { RepoSession } from "../src/engine/session";
-import type { DiffResult, RangeSource, ResolvedRevision } from "../src/engine/types";
-import { fixturePath, loadExpectedLines } from "../src/test/fixtures";
+import type { DiffResult, RangeSource, RepoOperation, ResolvedRevision } from "../src/engine/types";
+import { fixturePath, hasExpected, loadExpectedLines } from "../src/test/fixtures";
 
 const OUT = new URL("../src/test/recorded/", import.meta.url).pathname;
 mkdirSync(OUT, { recursive: true });
@@ -32,6 +32,11 @@ const RANGES: Record<string, { from: string; to: string; threeDot: boolean }[]> 
   ],
 };
 
+/** Replaces the operation's real mtime with the fixed clock so re-recording is a no-op. */
+function pinStartedAt(op: RepoOperation | null): RepoOperation | null {
+  return op && op.startedAt !== undefined ? { ...op, startedAt: FIXED_COMPUTED_AT } : op;
+}
+
 async function record(name: string, v2: boolean): Promise<void> {
   const session = await RepoSession.open(
     await NodeDirHandle.open(fixturePath(name)),
@@ -39,6 +44,7 @@ async function record(name: string, v2: boolean): Promise<void> {
     { id: `recorded-${name}` },
   );
   const info = await session.info();
+  info.operation = pinStartedAt(info.operation);
   const result = await session.computeDiff(defaultDiffSource(info));
   const stats = await session.fileStats(
     result.generation,
@@ -60,7 +66,7 @@ async function record(name: string, v2: boolean): Promise<void> {
 
   if (v2) {
     const revisions: Record<string, ResolvedRevision> = {};
-    for (const line of loadExpectedLines(name, "rev-parse")) {
+    for (const line of hasExpected(name, "rev-parse") ? loadExpectedLines(name, "rev-parse") : []) {
       const expr = line.split("\t")[0] as string;
       try {
         revisions[expr] = await session.resolveRevision(expr);
@@ -104,12 +110,17 @@ async function record(name: string, v2: boolean): Promise<void> {
     const payload = {
       tags: await session.listTags(),
       stashes: await session.listStashes(),
+      // T10.2: the reflog panel and the operation banner replay these in the mock. `startedAt` is
+      // the state file's mtime, so it is pinned here to keep the recording byte-stable.
+      reflog: await session.reflog("HEAD", 200),
+      operation: pinStartedAt(await session.operation()),
       revisions,
       ranges,
     };
     writeFileSync(`${OUT}${name}.v2.json`, `${JSON.stringify(payload, null, 2)}\n`);
     console.log(
       `${name}: ${payload.tags.length} tags, ${payload.stashes.length} stashes, ` +
+        `${payload.reflog.length} reflog entries, operation ${payload.operation?.kind ?? "none"}, ` +
         `${Object.keys(revisions).length} revisions, ${ranges.length} ranges`,
     );
   }
@@ -117,4 +128,6 @@ async function record(name: string, v2: boolean): Promise<void> {
 }
 
 for (const name of ["basic", "worktree"]) await record(name, false);
-for (const name of ["tags", "stash", "history"]) await record(name, true);
+// T10.2 adds the two interrupted-operation fixtures so the mock can serve a real banner + reflog.
+for (const name of ["tags", "stash", "history", "rebase-conflict", "merge-conflict"])
+  await record(name, true);

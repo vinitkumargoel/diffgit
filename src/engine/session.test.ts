@@ -421,6 +421,22 @@ describe("RepoSession on memory repos (mutations)", () => {
     await session.close();
   });
 
+  test("the git tier hashes the operation files so the banner follows git live (T10.2)", async () => {
+    const { session, mem } = await openMemory("basic");
+    const before = await session.probe("git");
+    expect(await session.info().then((i) => i.operation)).toBeNull();
+    // git starting a cherry-pick writes one file; the tier must move for the banner to appear
+    mem.apply([{ op: "write", path: ".git/CHERRY_PICK_HEAD", text: `${"a".repeat(40)}\n` }]);
+    const during = await session.probe("git");
+    expect(during).not.toBe(before);
+    expect(await session.operation()).toMatchObject({ kind: "cherry-pick", conflicts: 0 });
+    // ...and back, when git finishes it
+    mem.apply([{ op: "remove", path: ".git/CHERRY_PICK_HEAD" }]);
+    expect(await session.probe("git")).toBe(before);
+    expect(await session.operation()).toBeNull();
+    await session.close();
+  });
+
   test("perf-5k probe timing per tier", async () => {
     if (!hasFixture("perf-5k")) return;
     const { session } = await openFixture("perf-5k");
@@ -536,5 +552,82 @@ describe("revisions, tags and stashes over the session (T10.1)", () => {
     await expect(first).rejects.toMatchObject({ code: "CANCELLED" });
     expect((await second).length).toBe(4);
     await session.close();
+  });
+});
+
+describe("reflog and in-progress operations (T10.2)", () => {
+  test("RepoInfo carries the operation, jj and commit-graph flags", async () => {
+    const rebase = await openFixture("rebase-conflict");
+    const info = await rebase.session.info();
+    expect(info.operation).toMatchObject({
+      kind: "rebase",
+      step: 2,
+      total: 3,
+      conflicts: 2,
+      headName: "refs/heads/topic",
+      ontoDisplay: "main",
+    });
+    expect(info.jj).toBe(false);
+    expect(info.hasCommitGraph).toBe(false);
+    // OPERATION_IN_PROGRESS is recorded exactly once per open
+    expect(info.warnings.filter((w) => w.code === "OPERATION_IN_PROGRESS").length).toBe(1);
+    expect(
+      (await rebase.session.reloadRefs()).warnings.filter((w) => w.code === "OPERATION_IN_PROGRESS")
+        .length,
+    ).toBe(1);
+    await rebase.session.close();
+
+    const history = await openFixture("history");
+    const clean = await history.session.info();
+    expect(clean.operation).toBeNull();
+    expect(clean.hasCommitGraph).toBe(true); // the fixture runs `git commit-graph write`
+    expect(clean.warnings.some((w) => w.code === "OPERATION_IN_PROGRESS")).toBe(false);
+    await history.session.close();
+  });
+
+  test("an operation that starts mid-session is picked up by reloadRefs and warned once", async () => {
+    const { session, mem, warnings } = await openMemory("basic");
+    expect((await session.info()).operation).toBeNull();
+    mem.apply([{ op: "write", path: ".git/MERGE_HEAD", text: `${"b".repeat(40)}\n` }]);
+    const info = await session.reloadRefs();
+    expect(info.operation).toMatchObject({ kind: "merge" });
+    expect(info.warnings.filter((w) => w.code === "OPERATION_IN_PROGRESS").length).toBe(1);
+    expect(warnings.filter((w) => w.code === "OPERATION_IN_PROGRESS").length).toBe(1);
+    await session.reloadRefs();
+    expect(warnings.filter((w) => w.code === "OPERATION_IN_PROGRESS").length).toBe(1);
+    await session.close();
+  });
+
+  test("session.reflog honours the limit and a newer call cancels the older one", async () => {
+    const { session } = await openFixture("history");
+    const entries = await session.reflog("HEAD", 5);
+    expect(entries.length).toBe(5);
+    expect(entries[0]?.expr).toBe("HEAD@{0}");
+    const first = session.reflog("HEAD", 5);
+    const second = session.reflog("HEAD", 2);
+    await expect(first).rejects.toMatchObject({ code: "CANCELLED" });
+    expect((await second).length).toBe(2);
+    await session.close();
+  });
+
+  test("a repository with no reflog answers [] and pushes NO_REFLOG to the sink", async () => {
+    const { session, warnings } = await openFixture("unborn");
+    expect(await session.reflog("HEAD", 50)).toEqual([]);
+    expect(warnings.filter((w) => w.code === "NO_REFLOG").length).toBe(1);
+    await session.close();
+  });
+
+  test("reflog and operation cross the worker boundary as plain data", async () => {
+    const api = createEngineApi({
+      resolve: async () => await NodeDirHandle.open(fixturePath("rebase-conflict")),
+    });
+    const k = sink();
+    const info = await api.open(null, k.s);
+    expect(info.operation?.kind).toBe("rebase");
+    const op = await api.operation();
+    const entries = await api.reflog("HEAD", 3);
+    expect(structuredClone({ op, entries })).toEqual({ op, entries });
+    expect(entries.map((e) => e.action)).toEqual(["rebase (pick)", "rebase (start)", "checkout"]);
+    await api.close();
   });
 });

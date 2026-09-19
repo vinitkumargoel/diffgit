@@ -20,7 +20,9 @@ import type {
 import type {
   DiffResult,
   DiffSource,
+  ReflogEntry,
   RepoInfo,
+  RepoOperation,
   ResolvedRevision,
   StashInfo,
   TagInfo,
@@ -76,6 +78,8 @@ export interface WorkerClient {
   resolveRevision(expr: string): Promise<ResolvedRevision>;
   listTags(): Promise<TagInfo[]>;
   listStashes(): Promise<StashInfo[]>;
+  reflog(expr: string, limit: number): Promise<ReflogEntry[]>;
+  operation(): Promise<RepoOperation | null>;
   fileStats(generation: number, ids: string[]): Promise<Record<string, FileStats>>;
   fileDiff(generation: number, id: string, opts: FileDiffOptions): Promise<FileDiffPayload>;
   cancelFileDiff(id: string): Promise<void>;
@@ -206,6 +210,8 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     resolveRevision: (expr) => call((r) => r.resolveRevision(expr), "resolveRevision"),
     listTags: () => call((r) => r.listTags(), "listTags"),
     listStashes: () => call((r) => r.listStashes(), "listStashes"),
+    reflog: (expr, limit) => call((r) => r.reflog(expr, limit), "reflog"),
+    operation: () => call((r) => r.operation(), "operation"),
     fileStats: (generation, ids) => call((r) => r.fileStats(generation, ids), "fileStats"),
     fileDiff: (generation, id, opts) => call((r) => r.fileDiff(generation, id, opts), "fileDiff"),
     cancelFileDiff: (id) => call((r) => r.cancelFileDiff(id), "cancelFileDiff"),

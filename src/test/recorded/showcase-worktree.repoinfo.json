@@ -40,6 +40,12 @@
     "hasReftable": false
   },
   "warnings": [
-    { "code": "AUTOCRLF", "message": "core.autocrlf is set; line-ending-only changes may appear." }
-  ]
+    {
+      "code": "AUTOCRLF",
+      "message": "core.autocrlf is set; line-ending-only changes may appear."
+    }
+  ],
+  "operation": null,
+  "jj": false,
+  "hasCommitGraph": false
 }

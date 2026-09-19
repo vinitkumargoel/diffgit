@@ -34,6 +34,8 @@ import { IgnoreRules } from "./git/ignoreRules";
 import { type IndexSnapshot, readIndex } from "./git/indexReader";
 import { checkLayout } from "./git/layoutChecks";
 import { ObjectDb } from "./git/objectDb";
+import { detectOperation, OPERATION_FILES } from "./git/operation";
+import { readReflog } from "./git/reflog";
 import { loadRefs } from "./git/refStore";
 import { resolveRevision } from "./git/revisions";
 import { countStashFiles, listStashes } from "./git/stash";
@@ -43,9 +45,11 @@ import type {
   DiffResult,
   DiffSource,
   FileDiff,
+  ReflogEntry,
   RefSnapshot,
   RepoCapabilities,
   RepoInfo,
+  RepoOperation,
   RepoWarning,
   ResolvedRevision,
   StashInfo,
@@ -138,6 +142,12 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   private statsStartedAt = 0;
   private memoryWarned = false;
   private readonly repoWarnings: RepoWarning[] = [];
+  /** T10.2: what git is in the middle of; refreshed on open and `reloadRefs()`. */
+  private operationState: RepoOperation | null = null;
+  /** T10.2: `.jj/` beside `.git/` (a colocated jujutsu repository). */
+  private jj = false;
+  /** T10.2: a commit-graph file or chain exists (T10.5 will read it). */
+  private hasCommitGraph = false;
   /** method name → token of the newest call (one in-flight per method, T10.1). */
   private readonly singleFlight = new Map<string, symbol>();
   private readonly statsLimit: <T>(fn: () => Promise<T>) => Promise<T>;
@@ -228,6 +238,12 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       opts.id ?? crypto.randomUUID(),
       opts,
     );
+    session.jj = await fs.exists("/.jj");
+    session.hasCommitGraph =
+      (await fs.exists("/.git/objects/info/commit-graph")) ||
+      (await fs.exists("/.git/objects/info/commit-graphs/commit-graph-chain"));
+    session.operationState = await detectOperation(fs, db, refs.refs);
+    if (session.operationState) warnings.push(operationWarning(session.operationState));
     session.repoWarnings.push(...dedupe(warnings));
     return session;
   }
@@ -269,6 +285,9 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       defaultRef: this.refs.defaultRef,
       capabilities: this.capabilities,
       warnings: this.repoWarnings.slice(),
+      operation: this.operationState,
+      jj: this.jj,
+      hasCommitGraph: this.hasCommitGraph,
     };
   }
 
@@ -279,6 +298,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     this.fs.invalidatePath("/.git");
     this.refs = await this.withRootCheck(() => loadRefs(this.db, this.cfg));
     this.engine.updateRefs(this.refs);
+    await this.refreshOperation();
     this.progress({ phase: "refs", durationMs: performance.now() - t0 });
     return this.buildInfo();
   }
@@ -375,6 +395,41 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       }
       return stashes;
     });
+  }
+
+  /**
+   * The reflog of `expr`, newest first (T10.2). A repository that keeps none answers with `[]` and
+   * a `NO_REFLOG` warning on the sink rather than an error.
+   */
+  async reflog(expr: string, limit: number): Promise<ReflogEntry[]> {
+    this.assertOpen();
+    return this.single("reflog", async () => {
+      const out = await readReflog(this.fs, expr, { limit });
+      for (const w of out.warnings) RepoSession.emitWarning(this.sink, w);
+      return out.entries;
+    });
+  }
+
+  /** What git is in the middle of, or null (T10.2). Also refreshes `RepoInfo.operation`. */
+  async operation(): Promise<RepoOperation | null> {
+    this.assertOpen();
+    return this.single("operation", () => this.refreshOperation());
+  }
+
+  /**
+   * Re-reads the state files and keeps `RepoInfo.operation` current. `OPERATION_IN_PROGRESS` is a
+   * repo warning, so it is recorded (and pushed to the sink) the first time it becomes true in this
+   * session — the banner itself is driven by `RepoInfo.operation`, not by the warning.
+   */
+  private async refreshOperation(): Promise<RepoOperation | null> {
+    const op = await this.withRootCheck(() => detectOperation(this.fs, this.db, this.refs.refs));
+    this.operationState = op;
+    if (op && !this.repoWarnings.some((w) => w.code === "OPERATION_IN_PROGRESS")) {
+      const w = operationWarning(op);
+      this.repoWarnings.push(w);
+      RepoSession.emitWarning(this.sink, w);
+    }
+    return op;
   }
 
   private async applyRenames(comp: DiffComputation, signal: AbortSignal): Promise<FileDiff[]> {
@@ -745,6 +800,8 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       "/.git/config",
       "/.git/info/exclude",
       "/.git/ORIG_HEAD",
+      // T10.2: the banner must follow git live, so every operation state file is in the signature
+      ...OPERATION_FILES.map((f) => `/.git/${f}`),
     ]);
     if (this.refs.headBranch) paths.add(`/.git/refs/heads/${this.refs.headBranch}`);
     const last = this.lastSource ? sourceRefs(this.lastSource) : null;
@@ -866,6 +923,18 @@ export class RepoSession implements Omit<EngineApi, "open"> {
 
 function isDiffComputation(v: unknown): v is DiffComputation {
   return typeof v === "object" && v !== null && Array.isArray((v as DiffComputation).warnings);
+}
+
+/** The one `OPERATION_IN_PROGRESS` warning a session records (docs/errors.md owns the UI copy). */
+function operationWarning(op: RepoOperation): RepoWarning {
+  const where = op.step && op.total ? ` (step ${op.step} of ${op.total})` : "";
+  return {
+    code: "OPERATION_IN_PROGRESS",
+    message: `A ${op.kind} is in progress in this repository${where}.`,
+    ...(op.conflicts > 0
+      ? { detail: `${op.conflicts} path${op.conflicts === 1 ? "" : "s"} still conflict.` }
+      : {}),
+  };
 }
 
 function dedupe(ws: RepoWarning[]): RepoWarning[] {

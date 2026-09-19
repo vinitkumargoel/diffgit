@@ -48,6 +48,8 @@ export function createEngineApi(
     resolveRevision: (expr) => guard(() => need().resolveRevision(expr)),
     listTags: () => guard(() => need().listTags()),
     listStashes: () => guard(() => need().listStashes()),
+    reflog: (expr, limit) => guard(() => need().reflog(expr, limit)),
+    operation: () => guard(() => need().operation()),
     fileStats: (generation, ids) => guard(() => need().fileStats(generation, ids)),
     fileDiff: (generation, id, o) => guard(() => need().fileDiff(generation, id, o)),
     cancelFileDiff: (id) => guard(() => need().cancelFileDiff(id)),
