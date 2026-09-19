@@ -31,7 +31,7 @@ export const V2_SHORTCUTS = [
   { key: "g", description: "Bisect: mark good", pending: true },
   { key: "x", description: "Bisect: mark bad", pending: true },
   { key: "e", description: "Export menu", pending: true },
-  { key: "H", label: "Shift+H", description: "Show hidden files", pending: true },
+  { key: "H", label: "Shift+H", description: "Show hidden files" },
 ] as const;
 
 /**

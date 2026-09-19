@@ -297,6 +297,24 @@ layer, capped at `CONFLICT_PRELOAD_LIMIT` (100), because only `ConflictPayload.k
 `operationSteps`, `describeConflictKind`, `conflictCommand`, `short`) owns every string the banner
 and the conflict card show.
 
+<!-- T11.4 --> `StoreState.hidden` is now the real `HiddenEntry[] | null` (the `PendingEngineType`
+annotation is gone) and is **lazy**: `setPref("showHidden", true)` calls the new `loadHidden()` once,
+`recompute()` refreshes it after every commit while the toggle is on (so the group follows the
+working tree like every other group), and turning the toggle off sets it back to `null` — nothing
+walks for a listing nobody is looking at. `StoreState` also gained `explainPath(path)` (a thin pass
+through to the engine; the popover keeps its own loading/error state) and `reopenSession()`, which
+re-opens the current handle on the same compare pair. `openRepo` now passes
+`{ builtinExcludes: prefs.builtinExcludes }` to `client().open`, and `setPref("builtinExcludes", …)`
+calls `reopenSession()`, closing backlog **B10** — the excludes are baked into `IgnoreRules` at open
+time, so the preference cannot be applied any other way. Selector `selectHiddenEntries(s)` returns
+the group's rows (null while it is not up) narrowed by the **path part** of the file filter only;
+`status:` / `layer:` tokens are meaningless for a hidden path and leave it alone. New pure module
+`src/ui/hidden.ts` (`HIDDEN_TAG`, `HIDDEN_SENTENCE`, `hiddenRowLabel`, `explanationTitle`,
+`describeReason`, `BUILTIN_SOURCE`, `GLOBAL_EXCLUDES_NOTE`, `AUTHORITY_NOTE`) owns every string the
+group and the popover show. `treeModel` gained `SidebarSectionId = SidebarGroupId | "hidden"`:
+`Hidden` is a sidebar *section*, never a group of the diff, so `groupOf` / `GROUP_ORDER` /
+`selectGroupTotals` are untouched.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).

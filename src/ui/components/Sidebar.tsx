@@ -1,3 +1,4 @@
+import { EyeOff } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   type SidebarGroup,
@@ -42,6 +43,7 @@ export function Sidebar({ initialRect }: { initialRect?: { width: number; height
   const total = useStore((s) => s.diff?.files.length ?? 0);
   const visible = useStore(selectVisibleFiles).length;
   const filtering = useStore((s) => s.filter.trim() !== "");
+  const showHidden = useStore((s) => s.prefs.showHidden);
 
   const [dragWidth, setDragWidth] = useState<number | null>(null);
   const startX = useRef(0);
@@ -82,7 +84,7 @@ export function Sidebar({ initialRect }: { initialRect?: { width: number; height
       style={{ width: shown }}
       aria-label="Changed files"
     >
-      <div className="flex h-9 shrink-0 items-center justify-between border-b border-line px-3">
+      <div className="flex h-9 shrink-0 items-center gap-2 border-b border-line px-3">
         <span className="text-xs font-semibold">
           {filtering ? (
             <>
@@ -94,7 +96,7 @@ export function Sidebar({ initialRect }: { initialRect?: { width: number; height
             </>
           )}
         </span>
-        <fieldset className="inline-flex rounded-[6px] border border-line bg-surface-raised p-0">
+        <fieldset className="ml-auto inline-flex rounded-[6px] border border-line bg-surface-raised p-0">
           <legend className="sr-only">Sidebar layout</legend>
           {LAYOUTS.map((l) => (
             <button
@@ -110,6 +112,18 @@ export function Sidebar({ initialRect }: { initialRect?: { width: number; height
             </button>
           ))}
         </fieldset>
+        <button
+          type="button"
+          aria-pressed={showHidden}
+          aria-label="Show hidden files"
+          title="Show hidden files (Shift+H)"
+          className={`inline-flex size-5 shrink-0 items-center justify-center rounded-[4px] ${
+            showHidden ? "pressed" : "text-muted hover:text-ink"
+          }`}
+          onClick={() => setPref("showHidden", !showHidden)}
+        >
+          <EyeOff size={13} aria-hidden />
+        </button>
       </div>
       {hasLayers && (
         <div className="flex h-[30px] shrink-0 items-center justify-between border-b border-line px-3">

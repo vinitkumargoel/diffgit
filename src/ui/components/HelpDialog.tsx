@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { formatBytes } from "../format";
 import { PALETTE_SHORTCUT, SHORTCUTS, V2_SHORTCUTS } from "../hooks/useShortcuts";
 import { clearDerived, type DerivedSize, derivedSize } from "../persistence/derived";
+import { useStore } from "../store";
 
 export const PRIVACY_SENTENCES = [
   "diffgit opens your folder read-only and never writes to it.",
@@ -41,6 +42,8 @@ function Shortcuts({ rows, caption }: { rows: readonly Row[]; caption: string })
 /** Design §7.9 + §14.1: native modal `<dialog>`, 520 px, shortcut tables, cache footer, privacy. */
 export function HelpDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const builtinExcludes = useStore((s) => s.prefs.builtinExcludes);
+  const setPref = useStore((s) => s.setPref);
   const [cache, setCache] = useState<DerivedSize | null>(null);
   useEffect(() => {
     const el = ref.current;
@@ -81,6 +84,22 @@ export function HelpDialog({ open, onClose }: { open: boolean; onClose: () => vo
       <Shortcuts rows={SHORTCUTS as readonly Row[]} caption="Shortcuts" />
       <h3 className="mt-5 text-sm font-semibold leading-5">Modes and the palette</h3>
       <Shortcuts rows={v2Rows} caption="Mode and palette shortcuts" />
+      <h3 className="mt-5 text-sm font-semibold leading-5">Settings</h3>
+      <label className="mt-2 flex items-start gap-2 text-[13px] leading-5">
+        <input
+          type="checkbox"
+          className="mt-1 size-3.5 shrink-0 accent-accent"
+          checked={builtinExcludes}
+          onChange={(e) => setPref("builtinExcludes", e.target.checked)}
+        />
+        <span>
+          Apply built-in excludes{" "}
+          <span className="text-muted">(.DS_Store, ._*, Thumbs.db, desktop.ini)</span>
+          <span className="block text-xs text-muted">
+            These sit below your own ignore rules. Changing this re-opens the repository.
+          </span>
+        </span>
+      </label>
       <h3 className="mt-5 text-sm font-semibold leading-5">Privacy</h3>
       <p className="mt-1 text-[13px] leading-5 text-muted">{PRIVACY_SENTENCES.join(" ")}</p>
       <p className="mt-3 flex items-center gap-2 text-xs leading-5 text-muted">

@@ -18,7 +18,7 @@ import {
 } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { sourceLabels } from "../../engine/diffSource";
-import type { FileDiff } from "../../engine/types";
+import type { FileDiff, HiddenEntry } from "../../engine/types";
 import { useShortcuts } from "../hooks/useShortcuts";
 import { requestScrollTo } from "../scrollBus";
 import {
@@ -29,6 +29,7 @@ import {
   selectGroupedModel,
   selectGroupTotals,
   selectHasLayers,
+  selectHiddenEntries,
   selectTreeModel,
   selectVisibleFiles,
   useStore,
@@ -36,13 +37,17 @@ import {
 import {
   dirSummary,
   type FileGroup,
+  filePathOf,
   flattenTree,
   type LayerCodeInfo,
   layerCode,
   type SidebarGroupId,
+  type SidebarSectionId,
   type TreeDir,
 } from "../treeModel";
 import { FileRow } from "./FileRow";
+import { HiddenRow } from "./HiddenRow";
+import { type PopoverAnchor, WhyHiddenPopover } from "./WhyHiddenPopover";
 
 /** Rows above this count are virtualised (T5.2; Plan §6.7). */
 const VIRTUALISE_ABOVE = 300;
@@ -72,7 +77,11 @@ const ACTION_CLASS =
 type Row =
   | { key: string; kind: "group"; group: FileGroup; depth: 0 }
   | { key: string; kind: "dir"; node: TreeDir; depth: number; dirKey: string }
-  | { key: string; kind: "file"; file: FileDiff; depth: number };
+  | { key: string; kind: "file"; file: FileDiff; depth: number }
+  /** T11.4: the Hidden section header and its rows (Design §14.4). */
+  | { key: string; kind: "hidden-group"; entries: HiddenEntry[]; total: number; depth: 0 }
+  | { key: string; kind: "hidden"; entry: HiddenEntry; depth: 0 }
+  | { key: string; kind: "hidden-empty"; depth: 0 };
 
 export interface FileTreeProps {
   layout: SidebarLayout;
@@ -106,6 +115,9 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
   const failedFiles = useStore(useShallow(selectFailedFiles));
   const conflictKinds = useStore(useShallow(selectConflictKinds));
   const loadFileDiff = useStore((s) => s.loadFileDiff);
+  /** T11.4: null while the toggle is off or the listing walk has not answered yet. */
+  const hiddenEntries = useStore(selectHiddenEntries);
+  const hiddenTotal = useStore((s) => s.hidden?.length ?? 0);
 
   /** D2: layout-independent — grouping needs a second layer *and* the pref. */
   const grouped = hasLayers && sidebarGroup === "layer";
@@ -113,11 +125,35 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
   const compare = diff ? sourceLabels(diff.source).source : "";
 
   const [collapsedDirs, setCollapsedDirs] = useState<ReadonlySet<string>>(() => new Set());
-  const [collapsedGroups, setCollapsedGroups] = useState<ReadonlySet<SidebarGroupId>>(
+  const [collapsedGroups, setCollapsedGroups] = useState<ReadonlySet<SidebarSectionId>>(
     () => new Set(),
   );
+  /** The open WhyHidden popover: which path, and the viewport box of the row it belongs to. */
+  const [explain, setExplain] = useState<{ path: string; anchor: PopoverAnchor } | null>(null);
 
   const rows = useMemo<Row[]>(() => {
+    /**
+     * Design §14.4: `Hidden` is appended after the last group — in Layer mode after
+     * `Committed on <compare>`, in Path mode after the plain tree — and exists only while the
+     * toggle is on. Its rows are `HiddenEntry`s, never files, so they are always flat: an ignored
+     * directory is one row and is never descended into.
+     */
+    const hidden = (out: Row[]): Row[] => {
+      if (hiddenEntries === null) return out;
+      out.push({
+        key: "g:hidden",
+        kind: "hidden-group",
+        entries: hiddenEntries,
+        total: hiddenTotal,
+        depth: 0,
+      });
+      if (collapsedGroups.has("hidden")) return out;
+      if (hiddenEntries.length === 0)
+        out.push({ key: "hidden:none", kind: "hidden-empty", depth: 0 });
+      for (const entry of hiddenEntries)
+        out.push({ key: `h:${entry.path}`, kind: "hidden", entry, depth: 0 });
+      return out;
+    };
     if (grouped) {
       const out: Row[] = [];
       for (const group of groups) {
@@ -141,16 +177,28 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
             out.push({ key: `${group.id}:${node.file.id}`, kind: "file", file: node.file, depth });
         }
       }
-      return out;
+      return hidden(out);
     }
     if (layout === "flat")
-      return files.map((f) => ({ key: f.id, kind: "file", file: f, depth: 0 }));
-    return flattenTree(tree, collapsedDirs).map(({ node, depth }) =>
-      node.kind === "dir"
-        ? { key: `d:${node.path}`, kind: "dir", node, depth, dirKey: node.path }
-        : { key: node.file.id, kind: "file", file: node.file, depth },
+      return hidden(files.map((f) => ({ key: f.id, kind: "file", file: f, depth: 0 })));
+    return hidden(
+      flattenTree(tree, collapsedDirs).map(({ node, depth }) =>
+        node.kind === "dir"
+          ? { key: `d:${node.path}`, kind: "dir", node, depth, dirKey: node.path }
+          : { key: node.file.id, kind: "file", file: node.file, depth },
+      ),
     );
-  }, [grouped, groups, collapsedGroups, layout, files, tree, collapsedDirs]);
+  }, [
+    grouped,
+    groups,
+    collapsedGroups,
+    layout,
+    files,
+    tree,
+    collapsedDirs,
+    hiddenEntries,
+    hiddenTotal,
+  ]);
   const fileRows = useMemo(() => rows.filter((r) => r.kind === "file"), [rows]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -160,7 +208,8 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
     getScrollElement: () => scrollRef.current,
     estimateSize: (i) => {
       const kind = rows[i]?.kind;
-      return kind === "group" ? GROUP_ROW : kind === "dir" ? DIR_ROW : FILE_ROW;
+      if (kind === "group" || kind === "hidden-group") return GROUP_ROW;
+      return kind === "dir" ? DIR_ROW : FILE_ROW;
     },
     overscan: 10,
     ...(initialRect ? { initialRect } : {}),
@@ -208,7 +257,7 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
    * that caused it, but only when focus really left the tree (a mouse click on the header or its
    * buttons already focuses them).
    */
-  const pendingGroupFocus = useRef<SidebarGroupId | null>(null);
+  const pendingGroupFocus = useRef<SidebarSectionId | null>(null);
   useEffect(() => {
     const id = pendingGroupFocus.current;
     if (id === null) return;
@@ -216,11 +265,13 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
     const container = scrollRef.current;
     const active = document.activeElement;
     if (!container || (active && active !== document.body && container.contains(active))) return;
-    const idx = rows.findIndex((r) => r.kind === "group" && r.group.id === id);
+    const idx = rows.findIndex((r) =>
+      r.kind === "hidden-group" ? id === "hidden" : r.kind === "group" && r.group.id === id,
+    );
     if (idx !== -1) focusRow(idx);
   }, [rows, focusRow]);
 
-  const toggleGroup = useCallback((id: SidebarGroupId) => {
+  const toggleGroup = useCallback((id: SidebarSectionId) => {
     pendingGroupFocus.current = id;
     setCollapsedGroups((prev) => {
       const next = new Set(prev);
@@ -232,11 +283,13 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
 
   /** Header action 2: collapse every other group and open this one. */
   const collapseOthers = useCallback(
-    (id: SidebarGroupId) => {
+    (id: SidebarSectionId) => {
       pendingGroupFocus.current = id;
-      setCollapsedGroups(new Set(groups.filter((g) => g.id !== id).map((g) => g.id)));
+      const all: SidebarSectionId[] = [...groups.map((g) => g.id)];
+      if (hiddenEntries !== null) all.push("hidden");
+      setCollapsedGroups(new Set(all.filter((g) => g !== id)));
     },
-    [groups],
+    [groups, hiddenEntries],
   );
 
   const activate = useCallback(
@@ -246,6 +299,29 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
     },
     [setActiveFile],
   );
+
+  /**
+   * Opens the WhyHidden popover (Design §14.3) under a row: a click on a Hidden row, `?` on any
+   * focused row, or a right-click. Anchored to the row's viewport box and rendered `fixed`, so the
+   * scrolling sidebar body never clips it.
+   */
+  const openExplain = useCallback((path: string, index: number) => {
+    const el = scrollRef.current?.querySelector<HTMLElement>(`[data-index="${index}"]`);
+    const box = el?.getBoundingClientRect();
+    setExplain({
+      path,
+      anchor: { left: box ? box.left : 0, bottom: box ? box.bottom : 0 },
+    });
+  }, []);
+  const closeExplain = useCallback(
+    (refocus: boolean) => {
+      setExplain(null);
+      if (refocus) focusRow(focusIndex);
+    },
+    [focusRow, focusIndex],
+  );
+  const pathOfRow = (row: Row | undefined): string | null =>
+    row?.kind === "hidden" ? row.entry.path : row?.kind === "file" ? filePathOf(row.file) : null;
 
   const statsOf = useCallback(
     (f: FileDiff): FileDiff["stats"] => statsMap[f.id] ?? f.stats,
@@ -337,7 +413,11 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
         focusRow(rows.length - 1);
         break;
       case "ArrowRight":
-        if (row?.kind === "group") {
+        if (row?.kind === "hidden-group") {
+          e.preventDefault();
+          if (collapsedGroups.has("hidden")) toggleGroup("hidden");
+          else focusRow(focusIndex + 1);
+        } else if (row?.kind === "group") {
           e.preventDefault();
           if (collapsedGroups.has(row.group.id)) toggleGroup(row.group.id);
           else focusRow(focusIndex + 1);
@@ -348,7 +428,12 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
         }
         break;
       case "ArrowLeft":
-        if (row?.kind === "group") {
+        if (row?.kind === "hidden-group") {
+          if (!collapsedGroups.has("hidden")) {
+            e.preventDefault();
+            toggleGroup("hidden");
+          }
+        } else if (row?.kind === "group") {
           if (!collapsedGroups.has(row.group.id)) {
             e.preventDefault();
             toggleGroup(row.group.id);
@@ -364,11 +449,12 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
               break;
             }
           }
-        } else if (grouped && row) {
+        } else if ((grouped || row?.kind === "hidden" || row?.kind === "hidden-empty") && row) {
           // a depth-0 row inside a group: its parent is the group header (P5)
           e.preventDefault();
           for (let i = focusIndex - 1; i >= 0; i--) {
-            if (rows[i]?.kind === "group") {
+            const above = rows[i];
+            if (above?.kind === "group" || above?.kind === "hidden-group") {
               focusRow(i);
               break;
             }
@@ -380,9 +466,20 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
         if (!row) break;
         e.preventDefault();
         if (row.kind === "group") toggleGroup(row.group.id);
+        else if (row.kind === "hidden-group") toggleGroup("hidden");
         else if (row.kind === "dir") toggleDir(row.dirKey);
-        else activate(row.file);
+        else if (row.kind === "hidden") openExplain(row.entry.path, focusIndex);
+        else if (row.kind === "file") activate(row.file);
         break;
+      case "?": {
+        // T11.4: "why is this not in the diff" for the focused row — a Hidden row or any file.
+        // preventDefault also stops the global `?` from opening the shortcuts dialog instead.
+        const path = pathOfRow(row);
+        if (path === null) break;
+        e.preventDefault();
+        openExplain(path, focusIndex);
+        break;
+      }
       case "v":
         // the group's own "mark all viewed"; preventDefault stops the global `v` as well
         if (row?.kind === "group") {
@@ -494,10 +591,94 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
     );
   };
 
+  /**
+   * Design §14.4: the Hidden header. No `+n −m` and no viewed count — a hidden path has no stats
+   * and cannot be reviewed — and no "mark all viewed" action for the same reason.
+   */
+  const renderHiddenGroup = (
+    entries: HiddenEntry[],
+    total: number,
+    index: number,
+    style?: CSSProperties,
+  ) => {
+    const open = !collapsedGroups.has("hidden");
+    return (
+      <div
+        key="g:hidden"
+        role="treeitem"
+        aria-level={1}
+        aria-expanded={open}
+        aria-selected={false}
+        aria-label={`Hidden, ${entries.length} ${entries.length === 1 ? "path" : "paths"}`}
+        data-index={index}
+        data-group="hidden"
+        tabIndex={index === focusIndex ? 0 : -1}
+        className="group sticky top-0 z-[1] flex h-7 cursor-pointer items-center gap-[6px] border-b border-line bg-surface-sunken pr-2 select-none"
+        style={{ ...style, paddingLeft: 10 }}
+        onFocus={() => setFocusIndex(index)}
+        onKeyDown={onKeyDown}
+        onClick={() => toggleGroup("hidden")}
+      >
+        {open ? (
+          <ChevronDown size={9} aria-hidden className="shrink-0 text-muted" />
+        ) : (
+          <ChevronRight size={9} aria-hidden className="shrink-0 text-muted" />
+        )}
+        <span aria-hidden className="size-[7px] shrink-0 rounded-full bg-muted" />
+        <span className="truncate text-xs font-semibold text-muted">Hidden</span>
+        <span className="shrink-0 rounded-full border border-line bg-surface-raised px-[5px] font-mono text-[10px] leading-[15px] font-semibold text-muted">
+          {filtering && entries.length !== total ? `${entries.length} of ${total}` : entries.length}
+        </span>
+        <span className="flex-1" />
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-label="Collapse other groups"
+          title="Collapse other groups"
+          className={ACTION_CLASS}
+          onClick={(e) => {
+            e.stopPropagation();
+            collapseOthers("hidden");
+          }}
+        >
+          <ListCollapse size={12} aria-hidden />
+        </button>
+      </div>
+    );
+  };
+
   const renderRow = (row: Row, index: number, style?: CSSProperties) => {
     const tabIndex = index === focusIndex ? 0 : -1;
     const onFocus = () => setFocusIndex(index);
     if (row.kind === "group") return renderGroup(row.group, index, style);
+    if (row.kind === "hidden-group") return renderHiddenGroup(row.entries, row.total, index, style);
+    if (row.kind === "hidden-empty") {
+      return (
+        <p
+          key={row.key}
+          data-index={index}
+          className="px-3 py-1 text-[11px] leading-5 text-muted"
+          style={style}
+        >
+          {filtering ? "No hidden path matches the filter" : "Nothing is hidden in this repository"}
+        </p>
+      );
+    }
+    if (row.kind === "hidden") {
+      return (
+        <HiddenRow
+          key={row.key}
+          entry={row.entry}
+          active={explain?.path === row.entry.path}
+          onExplain={() => openExplain(row.entry.path, index)}
+          index={index}
+          tabIndex={tabIndex}
+          onFocus={onFocus}
+          onKeyDown={onKeyDown}
+          {...(style ? { style } : {})}
+        />
+      );
+    }
     if (row.kind === "dir") {
       const open = !collapsedDirs.has(row.dirKey);
       const summary = open ? null : dirSummary(row.node, statsOf);
@@ -560,6 +741,7 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
         failed={failedFiles.has(f.id)}
         onRetry={() => void loadFileDiff(f.id)}
         onActivate={() => activate(f)}
+        onExplain={() => openExplain(filePathOf(f), index)}
         onToggleViewed={() => toggleViewed(f.id)}
         onFocus={onFocus}
         onKeyDown={onKeyDown}
@@ -600,14 +782,24 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
     "data-total": rows.length,
     "data-virtual": virtual ? "true" : "false",
   };
+  const popover =
+    explain === null ? null : (
+      <WhyHiddenPopover path={explain.path} anchor={explain.anchor} onClose={closeExplain} />
+    );
   // Grouped: always a tree, because the group headers are the level-1 treeitems (both layouts).
   return grouped || layout === "tree" ? (
-    <div role="tree" aria-label="Changed files tree" {...containerProps}>
-      {body}
-    </div>
+    <>
+      <div role="tree" aria-label="Changed files tree" {...containerProps}>
+        {body}
+      </div>
+      {popover}
+    </>
   ) : (
-    <div role="listbox" aria-label="Changed files" {...containerProps}>
-      {body}
-    </div>
+    <>
+      <div role="listbox" aria-label="Changed files" {...containerProps}>
+        {body}
+      </div>
+      {popover}
+    </>
   );
 }

@@ -19,6 +19,8 @@ export interface FileRowProps {
   failed?: boolean;
   onRetry?: () => void;
   onActivate: () => void;
+  /** T11.4: right-click asks "why is this in / not in the diff" (WhyHidden popover). */
+  onExplain?: () => void;
   onToggleViewed: () => void;
   /** Roving-tabindex plumbing from the tree. */
   role: "treeitem" | "option";
@@ -118,6 +120,7 @@ export function FileRow({
   failed,
   onRetry,
   onActivate,
+  onExplain,
   onToggleViewed,
   role,
   tabIndex,
@@ -143,6 +146,14 @@ export function FileRow({
     onFocus,
     onKeyDown,
     onClick: onActivate,
+    ...(onExplain
+      ? {
+          onContextMenu: (e: React.MouseEvent) => {
+            e.preventDefault();
+            onExplain();
+          },
+        }
+      : {}),
   };
   const content = (
     <>

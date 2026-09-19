@@ -25,7 +25,9 @@ import type {
   DiffResult,
   DiffSource,
   FileDiff,
+  HiddenEntry,
   Oid,
+  PathExplanation,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -48,6 +50,8 @@ import {
   groupFiles,
   groupOf,
   makeFileFilter,
+  makePathFilter,
+  parseFilter,
   type SidebarGroupId,
   type TreeNode,
 } from "./treeModel";
@@ -300,8 +304,9 @@ export interface OpenOptions {
 
 /**
  * Stands in for an engine type that `docs/v2-contracts.md` names but a later phase-10 task still
- * has to add to `src/engine/types.ts` (`SecretFinding` T10.7, `HiddenEntry` T10.4, `CommitSummary`
- * T10.5, `BisectState & BisectStep` T10.11 — `RepoOperation` was widened by T11.3). `never` keeps the
+ * has to add to `src/engine/types.ts` (`SecretFinding` T10.7, `CommitSummary`
+ * T10.5, `BisectState & BisectStep` T10.11 — `RepoOperation` was widened by T11.3 and
+ * `HiddenEntry` by T11.4). `never` keeps the
  * field honest: it exists and the shell can switch on it, but nothing can put data in it until the
  * task that owns the type widens this one annotation.
  */
@@ -384,8 +389,12 @@ export interface StoreState {
   conflicts: Record<string, ConflictEntry>;
   /** Secret-scan findings for the current diff; null = not scanned (T11.9). */
   secrets: PendingEngineType[] | null;
-  /** Hidden paths behind the "Show hidden files" toggle; null = not listed (T11.4). */
-  hidden: PendingEngineType[] | null;
+  /**
+   * The sidebar's Hidden group (T11.4, Design §14.4); null = not listed. Filled lazily the first
+   * time `showHidden` turns on and refreshed after every recompute while it stays on; cleared back
+   * to null when the toggle goes off, so nothing pays for a listing nobody is looking at.
+   */
+  hidden: HiddenEntry[] | null;
   history: HistoryState;
   /** Running bisect (T11.13). */
   bisect: PendingEngineType | null;
@@ -441,6 +450,15 @@ export interface StoreState {
   loadConflict(id: string): Promise<void>;
   /** T11.3: reads `HEAD`'s reflog once per open and fills `reachable` when the engine can. */
   loadReflog(): Promise<void>;
+  /** T11.4: the opt-in `listHidden()` walk behind the "Show hidden files" toggle. */
+  loadHidden(): Promise<void>;
+  /** T11.4: why one path is not in the diff — the WhyHidden popover's only engine call. */
+  explainPath(path: string): Promise<PathExplanation>;
+  /**
+   * Re-opens the current folder with the current preferences. `builtinExcludes` is an `open()`
+   * option (backlog B10), so changing it has to rebuild the session; the compare pair survives.
+   */
+  reopenSession(): Promise<void>;
   cancelFileDiff(id: string): void;
   toggleViewed(id: string): void;
   /** Batch form of `toggleViewed` (T9.1: the group header's "mark all viewed"). */
@@ -759,7 +777,10 @@ export const useStore = create<StoreState>()((set, get) => {
           }));
         }
         try {
-          const info = await client().open(handle, sink);
+          // B10 / T10.4: the only page preference the engine needs at open time.
+          const info = await client().open(handle, sink, {
+            builtinExcludes: get().prefs.builtinExcludes,
+          });
           let src = defaultDiffSource(info);
           let missingBranch: string | null = null;
           if (opts.lastTarget) {
@@ -1066,6 +1087,8 @@ export const useStore = create<StoreState>()((set, get) => {
           .filter((f) => f.layers.includes("conflict"))
           .slice(0, CONFLICT_PRELOAD_LIMIT);
         for (const f of conflicted) void get().loadConflict(f.id);
+        // T11.4: while the Hidden group is up it follows the working tree, like every other group.
+        if (get().prefs.showHidden) void get().loadHidden();
       } catch (e) {
         const err = toUiError(e);
         if (err.code === "CANCELLED" || err.code === "STALE" || err.code === "WORKER_CRASHED") {
@@ -1205,6 +1228,39 @@ export const useStore = create<StoreState>()((set, get) => {
       }
     },
 
+    async loadHidden() {
+      if (!get().repo) return;
+      try {
+        const entries = await client().listHidden();
+        // The toggle may have gone off (or the repo closed) while the walk was running.
+        if (!get().repo || !get().prefs.showHidden) return;
+        set({ hidden: entries });
+      } catch (e) {
+        // A superseded or stale call is normal (one in-flight per method); anything else leaves the
+        // group empty rather than blocking the sidebar — the toggle can be pressed again.
+        ignoreStale(e);
+        if (get().prefs.showHidden && get().hidden === null) set({ hidden: [] });
+      }
+    },
+
+    explainPath(path) {
+      return client().explainPath(path);
+    },
+
+    async reopenSession() {
+      const { handle, repoId, diffSource } = get();
+      if (!handle) return;
+      const pair =
+        diffSource?.kind === "branches"
+          ? { lastSource: diffSource.sourceRef, lastTarget: diffSource.targetRef }
+          : {};
+      await get().openRepo(handle, {
+        ...(repoId === null ? {} : { id: repoId }),
+        ...pair,
+        ...(diffSource && !diffSource.includeWorktree ? { skipWorktree: true } : {}),
+      });
+    },
+
     cancelFileDiff(id) {
       const s = get();
       const key = cacheKey(id, s.prefs.ignoreWhitespace);
@@ -1267,9 +1323,20 @@ export const useStore = create<StoreState>()((set, get) => {
     },
 
     setPref(key, value) {
-      const prefs = { ...get().prefs, [key]: value };
+      const previous = get().prefs;
+      const prefs = { ...previous, [key]: value };
       set({ prefs });
       persistence.savePrefs(prefs);
+      if (key === "showHidden" && value !== previous.showHidden) {
+        // T11.4: the listing is its own walk in the engine, so it runs only while the group is up.
+        if (value) {
+          if (get().hidden === null) void get().loadHidden();
+        } else set({ hidden: null });
+      }
+      if (key === "builtinExcludes" && value !== previous.builtinExcludes) {
+        // B10: the excludes are baked into `IgnoreRules` at open time; the session has to be rebuilt.
+        void get().reopenSession();
+      }
     },
 
     setActiveFile(id) {
@@ -1521,6 +1588,26 @@ export function selectGroupTotals(s: Pick<StoreState, "diff">): Record<SidebarGr
   >;
   for (const f of files) result[groupOf(f)]++;
   groupTotalsCache = { files, result };
+  return result;
+}
+
+/**
+ * T11.4: the rows of the Hidden group, or null while the group is not up (toggle off, or the
+ * listing walk has not answered yet). The path part of the file filter applies, so filtering
+ * narrows the Hidden group the same way it narrows the layer groups; the `status:` / `layer:`
+ * tokens do not, because a hidden path has neither.
+ */
+let hiddenCache: { entries: HiddenEntry[]; path: string; result: HiddenEntry[] } | null = null;
+export function selectHiddenEntries(
+  s: Pick<StoreState, "hidden" | "prefs" | "filter">,
+): HiddenEntry[] | null {
+  if (!s.prefs.showHidden || s.hidden === null) return null;
+  const path = parseFilter(s.filter).path;
+  if (hiddenCache && hiddenCache.entries === s.hidden && hiddenCache.path === path)
+    return hiddenCache.result;
+  const match = makePathFilter(path);
+  const result = path === "" ? s.hidden : s.hidden.filter((e) => match(e.path));
+  hiddenCache = { entries: s.hidden, path, result };
   return result;
 }
 

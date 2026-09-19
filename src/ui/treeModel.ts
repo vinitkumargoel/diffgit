@@ -100,6 +100,13 @@ export function flattenTree(
 
 export type SidebarGroupId = "conflict" | "staged" | "unstaged" | "untracked" | "committed";
 
+/**
+ * T11.4 (Design §14.4): the sidebar's sections are the five layer groups plus `Hidden`, which is
+ * appended only while the toggle is on. `Hidden` is deliberately not a `SidebarGroupId`: its rows
+ * are `HiddenEntry`s, not files of the diff, so nothing counts, groups or precedes them.
+ */
+export type SidebarSectionId = SidebarGroupId | "hidden";
+
 /** D1: display order. */
 export const GROUP_ORDER: readonly SidebarGroupId[] = [
   "conflict",

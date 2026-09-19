@@ -5,7 +5,7 @@
  * remote refs) under those handle names, computes hunks from deterministic texts, pushes stats over
  * the sink in batches, and exposes `mutate()` so `probe()` signatures change.
  */
-import type { ConflictPayload, FileStats, ProgressSink } from "../engine/api";
+import type { ConflictPayload, FileStats, OpenOptions, ProgressSink } from "../engine/api";
 import { isWorktreeSource, sourceRefs } from "../engine/diffSource";
 import type {
   DiffResult,
@@ -79,6 +79,8 @@ interface RecordedV2 {
 
 export interface MockWorkerClient extends WorkerClient {
   isMock: true;
+  /** What the last `open()` was given (T11.4 asserts the `builtinExcludes` preference travels). */
+  lastOpenOptions: OpenOptions | undefined;
   /** Simulates a change on disk: probe signatures change and the next compute bumps `computedAt`. */
   mutate(): void;
   /** Trigger crash-recovery listeners as the real client would. */
@@ -200,8 +202,10 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
   const clientMetricsState: ClientMetrics = newClientMetrics();
   const client: MockWorkerClient = {
     isMock: true,
+    lastOpenOptions: undefined,
     latency: opts.latency ?? 0,
-    async open(handle, s) {
+    async open(handle, s, openOpts) {
+      client.lastOpenOptions = openOpts;
       const name =
         typeof handle === "object" &&
         handle !== null &&

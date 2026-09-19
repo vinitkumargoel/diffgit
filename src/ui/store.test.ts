@@ -10,6 +10,7 @@ import {
   selectConflictKinds,
   selectGroupTotals,
   selectHasLayers,
+  selectHiddenEntries,
   selectSourceLabel,
   selectTotals,
   selectViewedCount,
@@ -617,5 +618,80 @@ describe("store: operation, conflicts and reflog (T11.3)", () => {
     await openBasic();
     await useStore.getState().loadReflog();
     expect(useStore.getState().reflog).toEqual([]);
+  });
+});
+
+describe("store: hidden paths and the built-in excludes (T11.4)", () => {
+  const openHidden = () => useStore.getState().openRepo({ name: "hidden" }, { id: "hidden" });
+
+  it("lists hidden paths lazily: only once the toggle turns on, and drops them when it goes off", async () => {
+    await openHidden();
+    expect(useStore.getState().hidden).toBeNull();
+    useStore.getState().setPref("showHidden", true);
+    await vi.waitFor(() => expect(useStore.getState().hidden).toHaveLength(7));
+    expect(useStore.getState().hidden?.map((e) => e.kind)).toContain("ignored-dir");
+    useStore.getState().setPref("showHidden", false);
+    expect(useStore.getState().hidden).toBeNull();
+  });
+
+  it("refreshes the listing on every recompute while the toggle is on, and not otherwise", async () => {
+    await openHidden();
+    let calls = 0;
+    setStoreClient({
+      ...mock,
+      listHidden: async () => {
+        calls++;
+        return [];
+      },
+    } as unknown as MockWorkerClient);
+    await useStore.getState().recompute("manual");
+    expect(calls).toBe(0);
+    useStore.setState((s) => ({ prefs: { ...s.prefs, showHidden: true } }));
+    await useStore.getState().recompute("poll:worktree");
+    await vi.waitFor(() => expect(calls).toBe(1));
+  });
+
+  it("selectHiddenEntries applies the path part of the filter and nothing else", async () => {
+    await openHidden();
+    useStore.getState().setPref("showHidden", true);
+    await vi.waitFor(() => expect(useStore.getState().hidden).toHaveLength(7));
+    expect(selectHiddenEntries(useStore.getState())).toHaveLength(7);
+    useStore.getState().setFilter("src/");
+    expect(selectHiddenEntries(useStore.getState())?.map((e) => e.path)).toEqual([
+      "src/assumed.txt",
+      "src/skipped.txt",
+    ]);
+    // `layer:` has no meaning for a hidden path, so it leaves the group alone
+    useStore.getState().setFilter("layer:staged");
+    expect(selectHiddenEntries(useStore.getState())).toHaveLength(7);
+    useStore.setState((s) => ({ prefs: { ...s.prefs, showHidden: false } }));
+    expect(selectHiddenEntries(useStore.getState())).toBeNull();
+  });
+
+  it("explainPath reaches the engine and closeRepo clears the listing", async () => {
+    await openHidden();
+    const explained = await useStore.getState().explainPath("src/skipped.txt");
+    expect(explained.shown).toBe(false);
+    expect(explained.reasons[0]?.kind).toBe("skip-worktree");
+    useStore.setState({ hidden: [] });
+    await useStore.getState().closeRepo();
+    expect(useStore.getState().hidden).toBeNull();
+  });
+
+  it("open() carries the builtinExcludes preference, and changing it re-opens the session (B10)", async () => {
+    await openHidden();
+    expect(mock.lastOpenOptions).toEqual({ builtinExcludes: true });
+    useStore.getState().setPref("builtinExcludes", false);
+    await vi.waitFor(() => expect(mock.lastOpenOptions).toEqual({ builtinExcludes: false }));
+    const after = useStore.getState();
+    // the folder is open again on the same compare pair, not thrown back to Home
+    expect(after.screen).toBe("repo");
+    expect(after.repoId).toBe("hidden");
+    expect(after.diff?.files).toHaveLength(2);
+    // an unchanged value never rebuilds the session
+    mock.lastOpenOptions = undefined;
+    useStore.getState().setPref("builtinExcludes", false);
+    await Promise.resolve();
+    expect(mock.lastOpenOptions).toBeUndefined();
   });
 });
