@@ -1,4 +1,4 @@
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import axe from "axe-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DiffResult, RepoInfo } from "../../engine/types";
@@ -6,6 +6,7 @@ import basicDiff from "../../test/recorded/showcase.diffresult.json";
 import basic from "../../test/recorded/showcase.repoinfo.json";
 import worktreeDiff from "../../test/recorded/showcase-worktree.diffresult.json";
 import { DEFAULT_PREFS, useStore } from "../store";
+import { BranchPicker } from "./BranchPicker";
 import { CommandPalette } from "./CommandPalette";
 import { EmptyState } from "./EmptyState";
 import ErrorScreen from "./ErrorScreen";
@@ -135,6 +136,55 @@ describe("axe (vitest, happy-dom)", () => {
     );
     await new Promise((r) => setTimeout(r, 10));
     expect(container.querySelector("[cmdk-item]")).toBeTruthy(); // sanity: the list is up
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it("the extended BranchPicker popover has no serious or critical issues (T11.2)", async () => {
+    const repo = basic as unknown as RepoInfo;
+    const { container } = render(
+      <BranchPicker
+        label="compare"
+        value="refs/heads/feature"
+        display="feature"
+        refs={repo.refs}
+        tags={[
+          {
+            name: "v1.0.0",
+            fullName: "refs/tags/v1.0.0",
+            oid: "1".repeat(40),
+            targetOid: "1".repeat(40),
+            annotated: true,
+          },
+        ]}
+        stashes={[
+          {
+            index: 0,
+            expr: "stash@{0}",
+            oid: "2".repeat(40),
+            message: "On main: wip",
+            timestamp: Date.now() - 60_000,
+            baseOid: "3".repeat(40),
+            indexOid: "4".repeat(40),
+            untrackedOid: null,
+            files: 2,
+          },
+        ]}
+        special
+        twoDot={false}
+        onTwoDot={() => {}}
+        onSelect={() => {}}
+        onSpecial={() => {}}
+        onResolve={async () => {
+          throw { code: "REV_NOT_FOUND", message: "no" };
+        }}
+      />,
+    );
+    fireEvent.click(container.querySelector("button") as HTMLButtonElement);
+    await new Promise((r) => setTimeout(r, 10));
+    // sanity: the three new groups are up before axe looks at them
+    expect(container.textContent).toContain("Tags · 1");
+    expect(container.textContent).toContain("Stashes · 1");
+    expect(container.textContent).toContain("Special");
     expect(await violations(container)).toEqual([]);
   });
 

@@ -201,6 +201,23 @@ always starts at `"files"` — the pref is never written back, per the contract'
 also gained `setMode(mode)` (closes the palette) and `setPalette(open)`; `closeRepo` resets every
 v2 field.
 
+<!-- T11.2 --> `StoreState` gained `tags: TagInfo[] | null` and `stashes: StashInfo[] | null` (null
+= not listed; filled once per open by `loadPickerSources()`, which the picker calls the first time
+it is opened) plus `setRevision(rev: ResolvedRevision, side: "source" | "target")`,
+`setSpecialSource("worktree" | "staged")`, `setTwoDot(on)`, `resolveRevision(expr)` and
+`applyCompare({ from, to, threeDot })`. `setSource`/`setTarget` keep their `RepoRef | string`
+signature and delegate to `setRevision`, so nothing else had to change. The selector is
+`selectSourceLabel(s)` → `"v2.3.0 … stash@{0}"` (`…` three-dot, `..` two-dot).
+New pure module `src/ui/compareSource.ts` (`SideRev`, `sideOf`, `revToSide`, `buildSource`,
+`labelOf`, `isRefExpr`) owns the single rule **two plain ref sides (`refs/heads/…`,
+`refs/remotes/…`, `HEAD`) compared three-dot stay a `BranchesSource`; anything else — a tag, a
+stash, a SHA, or two-dot — becomes a `RangeSource`**, so a `RangeSource` is never used where v1's
+shape still fits and `lastSource`/`lastTarget` keep their meaning. A range is not persisted as the
+remembered pair; `src/ui/compareHash.ts` (`compareSpecOf`, `formatCompareHash`, `parseCompareHash`,
+`installCompareHash`) is the only deep link: `#compare=<from>...<to>` (`..` = two-dot), written with
+`history.replaceState` on every source change and read once per page load, then applied to the first
+repository opened afterwards.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).

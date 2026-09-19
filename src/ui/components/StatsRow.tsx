@@ -8,6 +8,7 @@ import {
   breakdownOf,
   isViewed,
   selectFailedFiles,
+  selectSourceLabel,
   selectVisibleFiles,
   statsProgressOf,
   useStore,
@@ -138,6 +139,9 @@ export function StatsRow() {
   const setPref = useStore((s) => s.setPref);
   const setActiveFile = useStore((s) => s.setActiveFile);
   const requestRefresh = useStore((s) => s.requestRefresh);
+  // T11.2: printed only for a range — a branch pair is already spelled out by the two pickers, and
+  // Design §14 rule 1 keeps the bars looking like v1 until something unusual is being compared.
+  const rangeLabel = useStore((s) => (s.diffSource?.kind === "range" ? selectSourceLabel(s) : ""));
 
   const allFiles: readonly FileDiff[] = diff?.files ?? [];
   const filtering = filter.trim() !== "";
@@ -230,6 +234,15 @@ export function StatsRow() {
           : `${files.length === 1 ? "file" : "files"} changed`}
       </span>
       {totalsNode}
+      {rangeLabel !== "" && (
+        <span
+          data-testid="compare-label"
+          className={`shrink-0 font-mono text-[12px] ${dimCls}`}
+          title="What is being compared"
+        >
+          {rangeLabel}
+        </span>
+      )}
 
       {!progress.complete && !stalled && (
         <span className="inline-flex shrink-0 items-center gap-1.5 text-accent">

@@ -27,10 +27,16 @@ import type {
   RepoInfo,
   RepoRef,
   RepoWarning,
+  ResolvedRevision,
+  StashInfo,
+  TagInfo,
 } from "../engine/types";
+import type { CompareSpec } from "./compareHash";
+import { buildSource, labelOf, revToSide, type SideRev, sideOf } from "./compareSource";
 import { getWorkerClient } from "./engineClient";
 import { LOADING_INLINE_CODES, toUiError, type UiError } from "./errors";
 import { Lru } from "./lru";
+import { revisionOfRef } from "./refGroups";
 import {
   buildTree,
   type FileGroup,
@@ -356,12 +362,36 @@ export interface StoreState {
   snapshotMode: boolean;
   /** A `.patch` / `.diff` file is open, not a repository (T11.14). */
   patchOnly: boolean;
+  /** Tags for the picker's `Tags` group; null = not listed yet (T11.2, lazy on first open). */
+  tags: TagInfo[] | null;
+  /** Stashes for the picker's `Stashes` group; null = not listed yet (T11.2). */
+  stashes: StashInfo[] | null;
 
   // actions
   openRepo(handle: unknown, opts?: OpenOptions): Promise<void>;
   closeRepo(): Promise<void>;
   setSource(ref: RepoRef | string): void;
   setTarget(ref: RepoRef | string): void;
+  /**
+   * T11.2: the general form of `setSource`/`setTarget`. Puts any resolved revision on one side and
+   * rebuilds the source — a `BranchesSource` while both sides are plain refs compared three-dot, a
+   * `RangeSource` otherwise (`docs/v2-contracts.md`, `src/ui/compareSource.ts`).
+   */
+  setRevision(rev: ResolvedRevision, side: "source" | "target"): void;
+  /**
+   * The picker's `Special` group (Design §14.1). Both rows compare the checked-out commit with the
+   * working tree on top of it, i.e. "my uncommitted work"; `"staged"` additionally narrows the file
+   * filter to `layer:staged`, because `DiffSource` has no index-as-a-side kind to select.
+   */
+  setSpecialSource(kind: "worktree" | "staged"): void;
+  /** Picker footer `three-dot … | two-dot ..`: writes the pref and rebuilds the source (T11.2). */
+  setTwoDot(on: boolean): void;
+  /** Free-text row in the picker; rejects with a `UiError` (`REV_NOT_FOUND`, `REV_AMBIGUOUS`). */
+  resolveRevision(expr: string): Promise<ResolvedRevision>;
+  /** Fills `tags` / `stashes` once per open; called when a picker is opened for the first time. */
+  loadPickerSources(): Promise<void>;
+  /** Applies a `#compare=<from>...<to>` spec to the open repository (T11.2). */
+  applyCompare(spec: CompareSpec): Promise<void>;
   swapBranches(): void;
   setIncludeWorktree(on: boolean): void;
   /** Executor: calls the engine once. Everything else goes through `requestRefresh`. */
@@ -478,7 +508,10 @@ function findRef(repo: RepoInfo, nameOrRef: string): RepoRef | null {
   );
 }
 
-/** The pickers only ever move a branch source; a range is built by T11.2, not edited here. */
+/** The `listTags` + `listStashes` pass for the pickers; one per open (T11.2). */
+let pickerSources: Promise<void> | null = null;
+
+/** Only a v1 branch pair is remembered for the next open; a range is deep-linked by hash instead. */
 function withRef(src: BranchesSource, side: "source" | "target", ref: RepoRef): BranchesSource {
   return side === "source"
     ? { ...src, source: ref.name, sourceRef: ref.fullName }
@@ -574,6 +607,34 @@ export const useStore = create<StoreState>()((set, get) => {
     },
   };
 
+  /**
+   * The one place a new `DiffSource` is committed (T11.2): build → D6 worktree guard → remember the
+   * pair when it is still a v1 branch pair → recompute. Every picker action funnels through it, so
+   * ranges, branches, the two-dot toggle and swap can never drift apart.
+   */
+  function applySides(from: SideRev, to: SideRev, includeWorktree?: boolean): void {
+    const { repo, prefs } = get();
+    if (!repo) return;
+    const worktree = includeWorktree ?? get().diffSource?.includeWorktree ?? true;
+    const built = buildSource(from, to, !prefs.twoDot, worktree);
+    if (!built) {
+      get().addToast({
+        level: "warning",
+        message: `Cannot compare ${from.display} … ${to.display}: the compare side has no commit.`,
+      });
+      return;
+    }
+    const src = guardWorktree(built, repo);
+    set({ diffSource: src });
+    if (src.kind === "branches") {
+      void persistence.touchRepo(get().repoId ?? "", {
+        lastSource: src.sourceRef,
+        lastTarget: src.targetRef,
+      });
+    }
+    get().requestRefresh("branch-change");
+  }
+
   return {
     screen: "home",
     repo: null,
@@ -612,6 +673,8 @@ export const useStore = create<StoreState>()((set, get) => {
     palette: false,
     snapshotMode: false,
     patchOnly: false,
+    tags: null,
+    stashes: null,
 
     async openRepo(handle, opts = {}) {
       await get().closeRepo();
@@ -759,47 +822,114 @@ export const useStore = create<StoreState>()((set, get) => {
         palette: false,
         snapshotMode: false,
         patchOnly: false,
+        tags: null,
+        stashes: null,
       });
+      pickerSources = null;
     },
 
     setSource(refOrName) {
-      const { repo, diffSource } = get();
-      if (!repo || !diffSource || diffSource.kind !== "branches") return;
+      const { repo } = get();
+      if (!repo) return;
       const ref = typeof refOrName === "string" ? findRef(repo, refOrName) : refOrName;
-      if (!ref) return;
-      const src = guardWorktree(withRef(diffSource, "source", ref), repo);
-      set({ diffSource: src });
-      void persistence.touchRepo(get().repoId ?? "", { lastSource: ref.fullName });
-      get().requestRefresh("branch-change");
+      if (ref) get().setRevision(revisionOfRef(ref), "source");
     },
 
     setTarget(refOrName) {
-      const { repo, diffSource } = get();
-      if (!repo || !diffSource || diffSource.kind !== "branches") return;
+      const { repo } = get();
+      if (!repo) return;
       const ref = typeof refOrName === "string" ? findRef(repo, refOrName) : refOrName;
-      if (!ref) return;
-      set({ diffSource: withRef(diffSource, "target", ref) });
-      void persistence.touchRepo(get().repoId ?? "", { lastTarget: ref.fullName });
-      get().requestRefresh("branch-change");
+      if (ref) get().setRevision(revisionOfRef(ref), "target");
+    },
+
+    setRevision(rev, side) {
+      const { repo, diffSource } = get();
+      if (!repo || !diffSource) return;
+      const from = side === "target" ? revToSide(rev) : sideOf(diffSource, "target", repo);
+      const to = side === "source" ? revToSide(rev) : sideOf(diffSource, "source", repo);
+      applySides(from, to);
+    },
+
+    setSpecialSource(kind) {
+      const { repo, diffSource } = get();
+      if (!repo || !diffSource) return;
+      if (repo.headOid === null) {
+        get().addToast({ level: "warning", message: "This branch has no commits yet." });
+        return;
+      }
+      const head: SideRev = {
+        expr: "HEAD",
+        display: repo.headDisplay,
+        oid: repo.headOid,
+        branchRef: "HEAD",
+      };
+      applySides(head, head, true);
+      // `Staged only` is the staged layer of that comparison; `Working tree` undoes just that,
+      // never a filter the user typed.
+      if (kind === "staged") get().setFilter("layer:staged");
+      else if (get().filter === "layer:staged") get().setFilter("");
+    },
+
+    setTwoDot(on) {
+      get().setPref("twoDot", on);
+      const { repo, diffSource } = get();
+      if (!repo || !diffSource) return;
+      const already = diffSource.kind === "range" ? !diffSource.threeDot : false;
+      if (already === on) return;
+      applySides(sideOf(diffSource, "target", repo), sideOf(diffSource, "source", repo));
+    },
+
+    resolveRevision(expr) {
+      return client().resolveRevision(expr);
+    },
+
+    async loadPickerSources() {
+      if (!get().repo) return;
+      if (pickerSources) {
+        await pickerSources;
+        return;
+      }
+      pickerSources = (async () => {
+        try {
+          // One in-flight call per method (T4.1), so the two listings go one after the other.
+          const tags = await client().listTags();
+          const stashes = await client().listStashes();
+          set({ tags, stashes });
+        } catch (e) {
+          // Not fatal: the picker keeps its branch groups and says the others are empty.
+          ignoreStale(e);
+          set((s) => ({ tags: s.tags ?? [], stashes: s.stashes ?? [] }));
+        }
+      })();
+      await pickerSources;
+    },
+
+    async applyCompare(spec) {
+      const { repo, diffSource } = get();
+      if (!repo || !diffSource) return;
+      try {
+        const to = await client().resolveRevision(spec.to);
+        const from = await client().resolveRevision(spec.from);
+        // The link carries the dot mode, so `#compare=a..b` really shows a two-dot diff.
+        get().setPref("twoDot", !spec.threeDot);
+        applySides(revToSide(from), revToSide(to));
+      } catch (e) {
+        const err = toUiError(e);
+        if (err.code === "STALE" || err.code === "CANCELLED") return;
+        get().addToast({
+          level: "warning",
+          message: `Cannot compare ${spec.from} … ${spec.to}: ${err.message} Showing ${labelOf(diffSource)} instead.`,
+        });
+      }
     },
 
     swapBranches() {
       const { repo, diffSource } = get();
-      if (!repo || !diffSource || diffSource.kind !== "branches") return;
-      if (diffSource.sourceRef === diffSource.targetRef) return;
-      const swapped: BranchesSource = {
-        ...diffSource,
-        source: diffSource.target,
-        sourceRef: diffSource.targetRef,
-        target: diffSource.source,
-        targetRef: diffSource.sourceRef,
-      };
-      set({ diffSource: guardWorktree(swapped, repo) });
-      void persistence.touchRepo(get().repoId ?? "", {
-        lastSource: swapped.sourceRef,
-        lastTarget: swapped.targetRef,
-      });
-      get().requestRefresh("branch-change");
+      if (!repo || !diffSource) return;
+      const from = sideOf(diffSource, "source", repo);
+      const to = sideOf(diffSource, "target", repo);
+      if (from.expr === to.expr) return;
+      applySides(from, to);
     },
 
     setIncludeWorktree(on) {
@@ -1232,6 +1362,15 @@ export function selectViewedCount(s: Pick<StoreState, "diff" | "viewed" | "repoI
 
 export function selectCanIncludeWorktree(s: Pick<StoreState, "diffSource" | "repo">): boolean {
   return !!s.diffSource && !!s.repo && isWorktreeSource(s.diffSource, s.repo);
+}
+
+/**
+ * What is being compared, in one string: `v2.3.0 … stash@{0}` (three-dot) or `main .. feature`
+ * (two-dot). The StatsRow prints it for a range — a branch pair is already spelled out by the two
+ * pickers, and Design §14 rule 1 keeps the bars looking like v1 while nothing unusual is going on.
+ */
+export function selectSourceLabel(s: Pick<StoreState, "diffSource">): string {
+  return s.diffSource ? labelOf(s.diffSource) : "";
 }
 
 let treeCache: { files: FileDiff[]; result: TreeNode[] } | null = null;

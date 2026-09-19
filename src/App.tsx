@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import { installCompareHash } from "./ui/compareHash";
 import { BrowserGate } from "./ui/components/BrowserGate";
 import { HomeScreen } from "./ui/components/HomeScreen";
 import { LiveRegion } from "./ui/components/LiveRegion";
@@ -30,6 +31,9 @@ export function App() {
   const screen = useStore((s) => s.screen);
   const theme = useStore((s) => s.prefs.theme);
   useEffect(() => applyTheme(theme), [theme]);
+  // T11.2: `#compare=<from>...<to>` — written on every source change, applied to the first
+  // repository opened after a reload.
+  useEffect(() => installCompareHash(), []);
   const debug = useDebugHash();
 
   return (

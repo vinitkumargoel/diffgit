@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { BranchesSource, DiffSource, RepoInfo } from "../engine/types";
+import type { BranchesSource, DiffSource, RangeSource, RepoInfo } from "../engine/types";
 import basicInfo from "../test/recorded/showcase.repoinfo.json";
 import { Lru } from "./lru";
 import {
@@ -8,6 +8,7 @@ import {
   selectCanIncludeWorktree,
   selectGroupTotals,
   selectHasLayers,
+  selectSourceLabel,
   selectTotals,
   selectViewedCount,
   selectVisibleFiles,
@@ -415,5 +416,138 @@ describe("store", () => {
     expect(useStore.getState().toasts.some((t) => t.message.includes("Engine restarted"))).toBe(
       true,
     );
+  });
+});
+
+describe("store: compare anything (T11.2)", () => {
+  const openTags = () => useStore.getState().openRepo({ name: "tags" }, { id: "tags" });
+  const src = () => useStore.getState().diffSource;
+  const range = (s: DiffSource | null | undefined): RangeSource | null =>
+    s && s.kind === "range" ? s : null;
+
+  it("loadPickerSources lists tags and stashes once per open", async () => {
+    await openTags();
+    expect(useStore.getState().tags).toBeNull();
+    await Promise.all([
+      useStore.getState().loadPickerSources(),
+      useStore.getState().loadPickerSources(),
+    ]);
+    expect(useStore.getState().tags?.map((t) => t.name)).toEqual([
+      "v0.1.0",
+      "v0.2.0",
+      "v1.0.0",
+      "v1.1.0",
+    ]);
+    expect(useStore.getState().stashes).toEqual([]);
+    await useStore.getState().closeRepo();
+    expect(useStore.getState().tags).toBeNull();
+  });
+
+  it("a tag on one side turns the branch pair into a RangeSource and back", async () => {
+    await openTags();
+    const tag = await useStore.getState().resolveRevision("v0.1.0");
+    useStore.getState().setRevision(tag, "target");
+    expect(range(src())).toMatchObject({
+      kind: "range",
+      from: "v0.1.0",
+      fromRef: "refs/tags/v0.1.0",
+      fromOid: tag.oid,
+      to: "main",
+      toRef: "refs/heads/main",
+      threeDot: true,
+    });
+    expect(selectSourceLabel(useStore.getState())).toBe("v0.1.0 … main");
+    // …and a branch back on that side restores the v1 shape, so `lastTarget` is storable again
+    useStore.getState().setTarget("release");
+    expect(src()?.kind).toBe("branches");
+    expect(selectSourceLabel(useStore.getState())).toBe("release … main");
+  });
+
+  it("the two-dot toggle rewrites the source and the StatsRow label; swap works on a range", async () => {
+    await openTags();
+    expect(src()?.kind).toBe("branches");
+    useStore.getState().setTwoDot(true);
+    expect(useStore.getState().prefs.twoDot).toBe(true);
+    expect(range(src())).toMatchObject({
+      from: "main",
+      fromRef: "refs/heads/main",
+      to: "main",
+      toRef: "refs/heads/main",
+      threeDot: false,
+    });
+    const tag = await useStore.getState().resolveRevision("v1.0.0");
+    useStore.getState().setRevision(tag, "target");
+    expect(selectSourceLabel(useStore.getState())).toBe("v1.0.0 .. main");
+    useStore.getState().swapBranches();
+    expect(range(src())).toMatchObject({ from: "main", to: "v1.0.0", toRef: "refs/tags/v1.0.0" });
+    expect(selectSourceLabel(useStore.getState())).toBe("main .. v1.0.0");
+    // back to three-dot: both sides are plain refs again only when neither is a tag
+    useStore.getState().setTwoDot(false);
+    expect(range(src())?.threeDot).toBe(true);
+    expect(selectSourceLabel(useStore.getState())).toBe("main … v1.0.0");
+  });
+
+  it("a range off HEAD cannot include the working tree (D6)", async () => {
+    await openTags();
+    const tag = await useStore.getState().resolveRevision("v1.0.0");
+    useStore.getState().setRevision(tag, "source");
+    expect(src()?.includeWorktree).toBe(false);
+    expect(selectCanIncludeWorktree(useStore.getState())).toBe(false);
+    // HEAD back on the compare side and it is allowed again
+    useStore.getState().setSource("main");
+    useStore.getState().setIncludeWorktree(true);
+    expect(selectCanIncludeWorktree(useStore.getState())).toBe(true);
+    expect(src()?.includeWorktree).toBe(true);
+  });
+
+  it("the Special rows compare HEAD with the working tree; `staged` also sets the filter", async () => {
+    await openTags();
+    useStore.getState().setSpecialSource("staged");
+    expect(src()).toMatchObject({ sourceRef: "HEAD", targetRef: "HEAD", includeWorktree: true });
+    expect(useStore.getState().filter).toBe("layer:staged");
+    useStore.getState().setSpecialSource("worktree");
+    expect(useStore.getState().filter).toBe("");
+  });
+
+  it("applyCompare resolves a hash spec; an unresolvable one toasts and keeps the source", async () => {
+    await openTags();
+    await useStore.getState().applyCompare({ from: "v0.1.0", to: "v1.0.0", threeDot: true });
+    expect(range(src())).toMatchObject({
+      from: "v0.1.0",
+      to: "v1.0.0",
+      fromOid: "1e919f3681161418fef2e272272c9cb707fa65f6",
+      toOid: "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+      threeDot: true,
+    });
+    const before = src();
+    await useStore.getState().applyCompare({ from: "nope", to: "v1.0.0", threeDot: true });
+    expect(src()).toBe(before);
+    const toast = useStore.getState().toasts.at(-1);
+    expect(toast?.level).toBe("warning");
+    expect(toast?.message).toContain("Cannot compare nope … v1.0.0");
+    expect(toast?.message).toContain("Showing v0.1.0 … v1.0.0 instead.");
+  });
+
+  it("a stash is a first-class compare side (stash fixture)", async () => {
+    await useStore.getState().openRepo({ name: "stash" }, { id: "stash" });
+    await useStore.getState().loadPickerSources();
+    const stashes = useStore.getState().stashes ?? [];
+    expect(stashes.map((s) => s.expr)).toEqual(["stash@{0}", "stash@{1}"]);
+    const head = await useStore.getState().resolveRevision("HEAD");
+    const stash = await useStore.getState().resolveRevision("stash@{0}");
+    useStore.getState().setRevision(head, "target");
+    useStore.getState().setRevision(stash, "source");
+    useStore.getState().setTwoDot(true);
+    expect(range(src())).toMatchObject({
+      from: "HEAD",
+      to: "stash@{0}",
+      toRef: "stash@{0}",
+      toOid: stashes[0]?.oid,
+      threeDot: false,
+    });
+    // the recorded range replays, so the viewed key follows the expressions, not the branch names
+    await vi.waitFor(() => expect(useStore.getState().diff?.source.kind).toBe("range"));
+    const file = useStore.getState().diff?.files[0];
+    if (file) expect(viewedKey("stash", src() as DiffSource, file)).toContain("|stash@{0}|HEAD|");
   });
 });

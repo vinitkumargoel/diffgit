@@ -1,6 +1,7 @@
-import type { RepoRef } from "../engine/types";
+import type { RepoRef, ResolvedRevision } from "../engine/types";
 
-export type BadgeKind = "head" | "default" | "remote";
+/** `tag` / `stash` are T11.2's picker groups; Design §3.3 lends them the `M` and `T` palettes. */
+export type BadgeKind = "head" | "default" | "remote" | "tag" | "stash";
 
 export interface RemoteGroup {
   remote: string; // "origin"
@@ -57,4 +58,18 @@ export function refBadges(ref: RepoRef): BadgeKind[] {
 /** Finds a ref by full name ("refs/heads/x", "refs/remotes/o/x" or "HEAD"). */
 export function findRef(refs: readonly RepoRef[], fullName: string): RepoRef | undefined {
   return refs.find((r) => r.fullName === fullName);
+}
+
+/**
+ * A branch row as a revision (T11.2), without asking the engine to re-resolve what `RefStore`
+ * already read. `HEAD` is the synthetic detached entry; everything else is a branch or a remote.
+ */
+export function revisionOfRef(ref: RepoRef): ResolvedRevision {
+  return {
+    expr: ref.fullName,
+    oid: ref.oid,
+    kind: ref.fullName === "HEAD" ? "head" : ref.kind === "remote" ? "remote" : "branch",
+    display: ref.name,
+    fullRef: ref.fullName,
+  };
 }

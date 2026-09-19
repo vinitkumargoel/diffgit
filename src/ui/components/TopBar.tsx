@@ -1,5 +1,5 @@
 import { CircleHelp } from "lucide-react";
-import { sourceRefs } from "../../engine/diffSource";
+import { sourceLabels, sourceRefs } from "../../engine/diffSource";
 import { selectCanIncludeWorktree, useStore } from "../store";
 import { BranchPicker } from "./BranchPicker";
 import { PaletteButton } from "./CommandPalette";
@@ -21,16 +21,36 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
   const diffSource = useStore((s) => s.diffSource);
   const canIncludeWorktree = useStore(selectCanIncludeWorktree);
   const refresh = useStore((s) => s.refresh);
-  const setSource = useStore((s) => s.setSource);
-  const setTarget = useStore((s) => s.setTarget);
   const swapBranches = useStore((s) => s.swapBranches);
   const setIncludeWorktree = useStore((s) => s.setIncludeWorktree);
   const requestRefresh = useStore((s) => s.requestRefresh);
+  const setRevision = useStore((s) => s.setRevision);
+  const setSpecialSource = useStore((s) => s.setSpecialSource);
+  const resolveRevision = useStore((s) => s.resolveRevision);
+  const loadPickerSources = useStore((s) => s.loadPickerSources);
+  const setTwoDot = useStore((s) => s.setTwoDot);
+  // The footer states what *this* comparison is, not what the pref last was: a `BranchesSource` is
+  // always three-dot, so a stale `twoDot` pref can never light the wrong segment.
+  const twoDot = useStore((s) =>
+    s.diffSource ? s.diffSource.kind === "range" && !s.diffSource.threeDot : s.prefs.twoDot,
+  );
+  const tags = useStore((s) => s.tags);
+  const stashes = useStore((s) => s.stashes);
 
   if (!repo || !diffSource) return null;
 
-  // T10.1: the pickers still show refs; `sourceRefs` reads either DiffSource kind.
+  // T10.1/T11.2: either DiffSource kind names its two sides through these two helpers.
   const refs = sourceRefs(diffSource);
+  const labels = sourceLabels(diffSource);
+  const shared = {
+    refs: repo.refs,
+    tags,
+    stashes,
+    twoDot,
+    onTwoDot: setTwoDot,
+    onOpen: () => void loadPickerSources(),
+    onResolve: resolveRevision,
+  };
 
   return (
     <header className="shrink-0 border-b border-line text-[13px] leading-5 text-ink">
@@ -41,7 +61,13 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
         </span>
         <ModeSwitch />
         <span className="text-xs text-muted">base:</span>
-        <BranchPicker label="base" value={refs.targetRef} refs={repo.refs} onSelect={setTarget} />
+        <BranchPicker
+          label="base"
+          value={refs.targetRef}
+          display={labels.target}
+          onSelect={(rev) => setRevision(rev, "target")}
+          {...shared}
+        />
         <span
           role="img"
           aria-label="Shows what compare adds on top of base"
@@ -54,8 +80,11 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
         <BranchPicker
           label="compare"
           value={refs.sourceRef}
-          refs={repo.refs}
-          onSelect={setSource}
+          display={labels.source}
+          special
+          onSelect={(rev) => setRevision(rev, "source")}
+          onSpecial={setSpecialSource}
+          {...shared}
         />
         <SwapButton disabled={refs.sourceRef === refs.targetRef} onClick={swapBranches} />
         <Divider />
