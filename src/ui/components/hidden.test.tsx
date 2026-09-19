@@ -203,7 +203,11 @@ describe("Sidebar toggle and Shift+H (Design §14.1, §14.7)", () => {
 describe("WhyHiddenPopover (Design §14.3, atlas tab 08)", () => {
   const open = async (path: string) => {
     fireEvent.click(hiddenRow(path));
-    return await screen.findByTestId("why-hidden");
+    const pop = await screen.findByTestId("why-hidden");
+    // The popover mounts with a "Checking the rules…" placeholder until `explainPath` answers;
+    // wait for the explanation so the assertions below never race the mock's latency.
+    await waitFor(() => expect(pop.textContent).not.toContain("Checking the rules"));
+    return pop;
   };
 
   beforeEach(() => {
