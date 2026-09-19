@@ -398,6 +398,60 @@ exports[`BrowserGate > B1 and B4 look the same in both themes > B1 firefox (dark
         </button>
       </div>
       <div
+        class="rounded-xl border border-line bg-surface p-4 mt-[26px] max-w-[52ch]"
+      >
+        <div
+          class="mb-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-muted"
+        >
+          Read it once instead
+        </div>
+        <p
+          class="m-0 mb-3 text-[14px] leading-6 text-muted"
+        >
+          Firefox does not let a page keep access to a folder, so diffgit reads it a single time. You get the full diff; you do not get live refresh, recent repositories, or files over 1 MB. Chrome, Edge, Brave or Arc give you everything.
+        </p>
+        <div
+          class="flex flex-wrap items-center gap-3"
+        >
+          <input
+            class="peer sr-only"
+            id="_r_8_"
+            multiple=""
+            type="file"
+          />
+          <label
+            class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-ink bg-ink px-3.5 py-[9px] text-[14px] font-medium leading-5 text-bg hover:opacity-90 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent "
+            for="_r_8_"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-folder-open shrink-0"
+              fill="none"
+              height="15"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="15"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"
+              />
+            </svg>
+            Open a repository once
+          </label>
+          <button
+            aria-expanded="false"
+            class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-3.5 py-[9px] text-[14px] font-medium leading-5 text-ink hover:bg-surface-raised"
+            type="button"
+          >
+            What is different in snapshot mode
+          </button>
+        </div>
+      </div>
+      <div
         class="mt-[26px] flex flex-wrap gap-3.5 border-t border-line-subtle pt-3.5 text-[13px] text-muted/70"
       >
         <span
@@ -1124,6 +1178,60 @@ exports[`BrowserGate > B1 and B4 look the same in both themes > B1 firefox (ligh
           </svg>
           See the demo anyway
         </button>
+      </div>
+      <div
+        class="rounded-xl border border-line bg-surface p-4 mt-[26px] max-w-[52ch]"
+      >
+        <div
+          class="mb-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-muted"
+        >
+          Read it once instead
+        </div>
+        <p
+          class="m-0 mb-3 text-[14px] leading-6 text-muted"
+        >
+          Firefox does not let a page keep access to a folder, so diffgit reads it a single time. You get the full diff; you do not get live refresh, recent repositories, or files over 1 MB. Chrome, Edge, Brave or Arc give you everything.
+        </p>
+        <div
+          class="flex flex-wrap items-center gap-3"
+        >
+          <input
+            class="peer sr-only"
+            id="_r_7_"
+            multiple=""
+            type="file"
+          />
+          <label
+            class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-ink bg-ink px-3.5 py-[9px] text-[14px] font-medium leading-5 text-bg hover:opacity-90 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent "
+            for="_r_7_"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-folder-open shrink-0"
+              fill="none"
+              height="15"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="15"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"
+              />
+            </svg>
+            Open a repository once
+          </label>
+          <button
+            aria-expanded="false"
+            class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-3.5 py-[9px] text-[14px] font-medium leading-5 text-ink hover:bg-surface-raised"
+            type="button"
+          >
+            What is different in snapshot mode
+          </button>
+        </div>
       </div>
       <div
         class="mt-[26px] flex flex-wrap gap-3.5 border-t border-line-subtle pt-3.5 text-[13px] text-muted/70"

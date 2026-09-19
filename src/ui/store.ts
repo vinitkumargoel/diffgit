@@ -25,6 +25,7 @@ import {
   sourceRefs,
 } from "../engine/diffSource";
 import type { WarningCode } from "../engine/errors";
+import { isFileSnapshot } from "../engine/fs/fileSnapshot";
 import type {
   BlamePayload,
   BranchesSource,
@@ -550,6 +551,17 @@ export const INITIAL_INSIGHTS: InsightsState = {
   walked: 0,
 };
 
+/**
+ * T11.15: the banner that says this repository cannot refresh itself. It is not an engine warning —
+ * the engine cannot tell a snapshot from a handle — so the store adds it to `warnings` on open and
+ * `WarningBanners` renders it from `WARNING_COPY` like every other code.
+ */
+export const SNAPSHOT_WARNING: RepoWarning = {
+  code: "SNAPSHOT_MODE",
+  message:
+    "This browser can only read the folder once, so the diff cannot refresh itself. Re-open the folder to see newer changes.",
+};
+
 /** T11.10: one export the user asked for. `ids` is `patchText`'s second argument verbatim. */
 export interface ExportRequest {
   kind: ExportKind;
@@ -683,6 +695,8 @@ export interface StoreState {
   palette: boolean;
   /** Firefox/Safari read-once mode: the folder was read once and cannot refresh (T11.15). */
   snapshotMode: boolean;
+  /** T11.15: when that one read happened (epoch ms) — the StatsRow tag's "read at 14:02". */
+  snapshotReadAt: number | null;
   /** A `.patch` / `.diff` file is open, not a repository (T11.14). */
   patchOnly: boolean;
   /** Tags for the picker's `Tags` group; null = not listed yet (T11.2, lazy on first open). */
@@ -1293,6 +1307,7 @@ export const useStore = create<StoreState>()((set, get) => {
     bisect: null,
     palette: false,
     snapshotMode: false,
+    snapshotReadAt: null,
     patchOnly: false,
     tags: null,
     stashes: null,
@@ -1303,6 +1318,9 @@ export const useStore = create<StoreState>()((set, get) => {
 
     async openRepo(handle, opts = {}) {
       await get().closeRepo();
+      // T11.15: a read-once `FileSnapshot` instead of a directory handle — the folder was handed
+      // over whole and cannot be read again, so nothing here may schedule, remember or poll it.
+      const snapshot = isFileSnapshot(handle) ? handle : null;
       const name =
         typeof handle === "object" &&
         handle !== null &&
@@ -1315,6 +1333,8 @@ export const useStore = create<StoreState>()((set, get) => {
         screen: "loading",
         handle,
         repoId: opts.id ?? name,
+        snapshotMode: snapshot !== null,
+        snapshotReadAt: snapshot?.readAt ?? null,
         loading: initialLoading({
           step: "refs",
           startedAt,
@@ -1363,15 +1383,20 @@ export const useStore = create<StoreState>()((set, get) => {
           }
           if (opts.skipWorktree) src = { ...src, includeWorktree: false };
           src = guardWorktree(src, info);
+          // T11.15: the banner belongs to the repository for as long as it is open, so it rides on
+          // `RepoInfo.warnings`, which every `recompute()` merges back into `warnings`.
+          const shown = snapshot
+            ? { ...info, warnings: [...info.warnings, SNAPSHOT_WARNING] }
+            : info;
           set((s) => ({
-            repo: info,
+            repo: shown,
             diffSource: src,
             // T11.5: the base picker's side, remembered for `Compare with base…`.
             compareBase: { expr: src.targetRef, display: src.target },
             // Design §14.3: the operation banner is driven by `RepoInfo.operation`, which the
             // scheduler refreshes through `reloadRefs()` on every git-side tick.
             operation: info.operation,
-            warnings: [...info.warnings],
+            warnings: [...shown.warnings],
             loading: {
               ...s.loading,
               phases: {
@@ -1383,12 +1408,16 @@ export const useStore = create<StoreState>()((set, get) => {
           await get().recompute("initial");
           if (get().screen === "loading") set({ screen: "repo" });
           if (get().screen === "repo") {
-            refreshHooks?.start(handle);
-            void persistence.touchRepo(get().repoId ?? "", {
-              lastOpenMs: Date.now() - startedAt,
-              lastSource: src.sourceRef,
-              lastTarget: src.targetRef,
-            });
+            // T11.15: snapshot mode has no handle to observe, poll or store, so neither the
+            // scheduler nor Recent hears about it. Re-opening the folder is the only refresh.
+            if (!snapshot) {
+              refreshHooks?.start(handle);
+              void persistence.touchRepo(get().repoId ?? "", {
+                lastOpenMs: Date.now() - startedAt,
+                lastSource: src.sourceRef,
+                lastTarget: src.targetRef,
+              });
+            }
             if (missingBranch) {
               const short = missingBranch.replace(/^refs\/(heads|remotes)\//, "");
               get().addToast({
@@ -1462,6 +1491,7 @@ export const useStore = create<StoreState>()((set, get) => {
         bisect: null,
         palette: false,
         snapshotMode: false,
+        snapshotReadAt: null,
         patchOnly: false,
         tags: null,
         stashes: null,
@@ -1641,6 +1671,10 @@ export const useStore = create<StoreState>()((set, get) => {
         // engine warnings are per-result; keep repo-level ones and merge
         const repoWarnings = current.repo?.warnings ?? [];
         const merged: RepoWarning[] = [...repoWarnings];
+        // T11.15: snapshot mode's banner outlives every refresh — the scheduler's `reloadRefs()`
+        // and the restart listener both replace `repo` with a RepoInfo that cannot know about it.
+        if (current.snapshotMode && !merged.some((w) => w.code === "SNAPSHOT_MODE"))
+          merged.push(SNAPSHOT_WARNING);
         for (const w of result.warnings) if (!merged.some((x) => x.code === w.code)) merged.push(w);
         const complete = result.files.every((f) => stats[f.id] !== undefined);
         set((s) => ({

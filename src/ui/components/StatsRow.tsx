@@ -3,6 +3,7 @@ import { Fragment, type ReactNode } from "react";
 import { useShallow } from "zustand/react/shallow";
 import type { FileDiff, FileStatus } from "../../engine/types";
 import { useNow } from "../hooks/useNow";
+import { openRepoOnce } from "../openRepo";
 import { requestScrollTo } from "../scrollBus";
 import {
   breakdownOf,
@@ -24,6 +25,11 @@ import { ViewedCounter } from "./ViewedCounter";
 export const STALL_MS = 10_000;
 
 const n = (x: number) => x.toLocaleString("en-US");
+
+/** T11.15: "14:02" — the clock time the snapshot was read, 24 h so the tag stays one short line. */
+export function readAtLabel(at: number): string {
+  return new Date(at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
 
 function Divider() {
   return <span aria-hidden className="h-[18px] w-px shrink-0 bg-line" />;
@@ -140,6 +146,9 @@ export function StatsRow() {
   const setPref = useStore((s) => s.setPref);
   const setActiveFile = useStore((s) => s.setActiveFile);
   const requestRefresh = useStore((s) => s.requestRefresh);
+  // T11.15: null unless the folder was read once (Firefox/Safari, or the palette's snapshot action).
+  const snapshotReadAt = useStore((s) => s.snapshotReadAt);
+  const addToast = useStore((s) => s.addToast);
   // T11.2: printed only for a range — a branch pair is already spelled out by the two pickers, and
   // Design §14 rule 1 keeps the bars looking like v1 until something unusual is being compared.
   const rangeLabel = useStore((s) => (s.diffSource?.kind === "range" ? selectSourceLabel(s) : ""));
@@ -353,6 +362,30 @@ export function StatsRow() {
           <Divider />
           <span className="shrink-0 text-muted/70">nothing to view</span>
         </>
+      )}
+
+      {/* T11.15 / Design §14.6: snapshot mode says so in row 2, and re-opening is its refresh. */}
+      {snapshotReadAt !== null && (
+        <span className="inline-flex shrink-0 items-center gap-1.5" data-testid="snapshot-tag">
+          <span className="inline-flex h-4 items-center rounded-full border border-attention/40 bg-banner-warning-bg px-1.5 font-sans text-[11px] font-semibold leading-4 text-attention">
+            Snapshot mode
+          </span>
+          <span className="tabular-nums">{`read at ${readAtLabel(snapshotReadAt)} · `}</span>
+          <button
+            type="button"
+            className="text-accent hover:underline"
+            onClick={() =>
+              void openRepoOnce().catch((e: unknown) =>
+                addToast({
+                  level: "error",
+                  message: e instanceof Error ? e.message : "Couldn't read the folder.",
+                }),
+              )
+            }
+          >
+            Re-open to refresh
+          </button>
+        </span>
       )}
 
       <span className="flex-1" />

@@ -3,6 +3,12 @@
  * "Open a repository…" is the same flow as Home's CTA and the `o` key, not a second copy).
  * D16: the picker is always asked for read access.
  */
+import {
+  collectSnapshot,
+  promptForRepositoryFiles,
+  type SnapshotInputFile,
+  type SnapshotProgress,
+} from "./fs/memoryDirHandle";
 import { removeRepo, upsertRepo } from "./persistence";
 import { useStore } from "./store";
 
@@ -66,4 +72,23 @@ export async function pickAndOpenRepo(): Promise<void> {
       action: { label: "Retry", onClick: () => void pickAndOpenRepo() },
     });
   }
+}
+
+/**
+ * Snapshot mode's way in (T11.15, Design §14.6): the folder is read **once**, through
+ * `<input webkitdirectory>`, because Firefox and Safari have no directory handle to keep. The gate
+ * passes the files its own input collected (so it can draw the counter); the palette action passes
+ * nothing and a detached input is used instead. Nothing is remembered — there is no handle to
+ * remember — so this never touches Recent, and the store starts no scheduler for it.
+ *
+ * Rejects with `SnapshotTooLargeError` above 100,000 entries; the caller decides where to say so.
+ */
+export async function openRepoOnce(
+  files?: ArrayLike<SnapshotInputFile> | null,
+  onProgress?: (p: SnapshotProgress) => void,
+): Promise<void> {
+  const picked = files ?? (await promptForRepositoryFiles());
+  if (!picked || picked.length === 0) return; // dismissed, or an empty folder
+  const snapshot = await collectSnapshot(picked, { onProgress });
+  await useStore.getState().openRepo(snapshot, { id: snapshot.name });
 }

@@ -5,9 +5,13 @@
  * through. The E2E branch is behind a static guard so production builds tree-shake it away.
  */
 import type { DirHandleLike } from "./dirHandleLike";
+import { fileSnapshotHandle, isFileSnapshot } from "./fileSnapshot";
 import { isMemoryHandleMarker } from "./memoryDirHandle";
 
 export async function resolveHandle(value: unknown): Promise<DirHandleLike> {
+  // T11.15: Firefox and Safari have no directory handle to post, so snapshot mode posts the
+  // cloneable `File` list instead and the tree is laid out here, in the worker. Bytes stay unread.
+  if (isFileSnapshot(value)) return fileSnapshotHandle(value);
   if (isMemoryHandleMarker(value)) {
     if (import.meta.env.VITE_E2E === "1") {
       const { rehydrateMarker } = await import("../e2e/memoryChannel");
