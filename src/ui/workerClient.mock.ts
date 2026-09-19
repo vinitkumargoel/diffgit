@@ -5,7 +5,7 @@
  * remote refs) under those handle names, computes hunks from deterministic texts, pushes stats over
  * the sink in batches, and exposes `mutate()` so `probe()` signatures change.
  */
-import type { FileStats, ProgressSink } from "../engine/api";
+import type { ConflictPayload, FileStats, ProgressSink } from "../engine/api";
 import { isWorktreeSource, sourceRefs } from "../engine/diffSource";
 import type {
   DiffResult,
@@ -20,6 +20,9 @@ import type {
 } from "../engine/types";
 import realBasicDiff from "../test/recorded/basic.diffresult.json";
 import realBasicInfo from "../test/recorded/basic.repoinfo.json";
+import cherryDiff from "../test/recorded/cherry-pick-conflict.diffresult.json";
+import cherryInfo from "../test/recorded/cherry-pick-conflict.repoinfo.json";
+import cherryV2 from "../test/recorded/cherry-pick-conflict.v2.json";
 import historyDiff from "../test/recorded/history.diffresult.json";
 import historyInfo from "../test/recorded/history.repoinfo.json";
 import historyV2 from "../test/recorded/history.v2.json";
@@ -60,6 +63,8 @@ interface RecordedV2 {
   reflog: ReflogEntry[];
   /** T10.2: what git was in the middle of when the fixture was recorded. */
   operation: RepoOperation | null;
+  /** T10.3: file id → the three-way payload of that conflicted file. */
+  conflicts: Record<string, ConflictPayload>;
   revisions: Record<string, ResolvedRevision>;
   ranges: { source: DiffSource; result: DiffResult }[];
 }
@@ -115,6 +120,12 @@ const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult; v2?: Recorded
     info: mergeInfo as RepoInfo,
     diff: mergeDiff as DiffResult,
     v2: mergeV2 as unknown as RecordedV2,
+  },
+  // T10.3: the third interrupted fixture, so the conflict card has a cherry-pick to render too
+  "cherry-pick-conflict": {
+    info: cherryInfo as RepoInfo,
+    diff: cherryDiff as DiffResult,
+    v2: cherryV2 as unknown as RecordedV2,
   },
   showcase: { info: basicInfo as RepoInfo, diff: basicDiff as DiffResult },
   "showcase-worktree": { info: worktreeInfo as RepoInfo, diff: worktreeDiff as DiffResult },
@@ -321,6 +332,14 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       return mockPayload(f, gen, o.ignoreWhitespace, o.loadLarge === true);
     },
     async cancelFileDiff() {},
+    async conflict(gen, id) {
+      const files = requireGen(gen);
+      if (!files.some((x) => x.id === id)) throw err("INTERNAL", `unknown file ${id}`);
+      const recorded = requireV2().conflicts[id];
+      if (!recorded) throw err("INTERNAL", `${id} has no conflict stages in the index`);
+      await wait(client.latency);
+      return { ...recorded, generation: gen };
+    },
     async fileBytes(gen, id, side) {
       const files = requireGen(gen);
       const f = files.find((x) => x.id === id);
@@ -393,6 +412,7 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         stashes: [],
         reflog: [],
         operation: null,
+        conflicts: {},
         revisions: {},
         ranges: [],
       }

@@ -274,3 +274,72 @@ describe("mock worker client: reflog and operation (T10.2)", () => {
     expect(warnings.map((w) => w.code)).toContain("NO_REFLOG");
   });
 });
+
+describe("mock worker client: conflict payloads (T10.3)", () => {
+  /** The three interrupted fixtures are recorded with `includeWorktree`, like `bun run record`. */
+  async function openConflicted(name: string) {
+    const client = createMockWorkerClient();
+    const info = await client.open({ name }, sink());
+    const src: DiffSource = {
+      kind: "branches",
+      source: info.headBranch ?? "HEAD",
+      target: info.defaultRef?.name ?? "main",
+      sourceRef: info.headBranch ? `refs/heads/${info.headBranch}` : "HEAD",
+      targetRef: info.defaultRef?.fullName ?? "refs/heads/main",
+      includeWorktree: true,
+    };
+    const diff = await client.computeDiff(src);
+    return { client, diff };
+  }
+
+  it("serves the recorded three-way view of a both-modified file", async () => {
+    const { client, diff } = await openConflicted("merge-conflict");
+    const p = await client.conflict(diff.generation, "file.txt");
+    expect(p.generation).toBe(diff.generation);
+    expect(p.kind).toBe("both-modified");
+    expect(p.labels).toEqual({ ours: "main", theirs: "topic" });
+    expect(p.base?.oid).toBe("f98585722413e2775399bf49fd987a837d5aad5a");
+    expect(p.ours?.oid).toBe("d941f5e5752df0ae61ccc7a23d6c576b9d86ec62");
+    expect(p.theirs?.oid).toBe("52fb50c425d12a5d4111ba2e15e03075f2a19bbc");
+    expect(p.worktree?.markers).toEqual([{ start: 3, end: 7, oursEnd: 5 }]);
+    expect(p.resolvedInWorktree).toBe(false);
+    expect(p.oursHunks?.hunks.length).toBeGreaterThan(0);
+  });
+
+  it("a modify/delete conflict has no theirs side and reads as resolved on disk", async () => {
+    const { client, diff } = await openConflicted("merge-conflict");
+    const p = await client.conflict(diff.generation, "gone.txt");
+    expect(p.kind).toBe("deleted-by-them");
+    expect(p.theirs).toBeNull();
+    expect(p.worktree?.markers).toEqual([]);
+    expect(p.resolvedInWorktree).toBe(true);
+    expect(diff.files.find((f) => f.id === "gone.txt")?.status).toBe("deleted");
+  });
+
+  it("the rebase and cherry-pick fixtures carry their own labels and kinds", async () => {
+    const rebase = await openConflicted("rebase-conflict");
+    const added = await rebase.client.conflict(rebase.diff.generation, "both-added.txt");
+    expect(added.kind).toBe("both-added");
+    expect(added.base).toBeNull();
+    expect(added.labels).toEqual({ ours: "main", theirs: "d424326" });
+    expect(rebase.diff.files.find((f) => f.id === "both-added.txt")?.status).toBe("added");
+
+    const cherry = await openConflicted("cherry-pick-conflict");
+    const p = await cherry.client.conflict(cherry.diff.generation, "file.txt");
+    expect(p.kind).toBe("both-modified");
+    expect(p.worktree?.markers).toEqual([{ start: 4, end: 8, oursEnd: 6 }]);
+  });
+
+  it("rejects a stale generation, an unknown id and a file with no stages", async () => {
+    const { client, diff } = await openConflicted("rebase-conflict");
+    await expect(client.conflict(diff.generation - 1, "file.txt")).rejects.toMatchObject({
+      code: "STALE",
+    });
+    await expect(client.conflict(diff.generation, "nope.txt")).rejects.toMatchObject({
+      code: "INTERNAL",
+    });
+    await expect(client.conflict(diff.generation, "one.txt")).rejects.toMatchObject({
+      code: "INTERNAL",
+    });
+  });
+});

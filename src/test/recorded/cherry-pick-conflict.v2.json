@@ -5,10 +5,10 @@
     {
       "index": 0,
       "expr": "HEAD@{0}",
-      "oldOid": "33f345808dac1bafebdd232f563009133043fa79",
-      "newOid": "16f51344344e6f834075a8271c0288be58add6cf",
+      "oldOid": "51752472fde780630d63e468ef1a1653e3bb4fc4",
+      "newOid": "95ec07d57af52aec6119ee26472419a17689b490",
       "action": "commit",
-      "message": "commit: c2: edit file.txt and gone.txt",
+      "message": "commit: c2: main edits the same line",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -20,8 +20,8 @@
     {
       "index": 1,
       "expr": "HEAD@{1}",
-      "oldOid": "fa386080e5fe2f64967f9c18fbe8d2e505dcb812",
-      "newOid": "33f345808dac1bafebdd232f563009133043fa79",
+      "oldOid": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
+      "newOid": "51752472fde780630d63e468ef1a1653e3bb4fc4",
       "action": "checkout",
       "message": "checkout: moving from topic to main",
       "who": {
@@ -35,10 +35,10 @@
     {
       "index": 2,
       "expr": "HEAD@{2}",
-      "oldOid": "33f345808dac1bafebdd232f563009133043fa79",
-      "newOid": "fa386080e5fe2f64967f9c18fbe8d2e505dcb812",
+      "oldOid": "51752472fde780630d63e468ef1a1653e3bb4fc4",
+      "newOid": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
       "action": "commit",
-      "message": "commit: t1: edit file.txt, delete gone.txt",
+      "message": "commit: t1: the commit that gets cherry-picked",
       "who": {
         "name": "test",
         "email": "test@example.com",
@@ -50,8 +50,8 @@
     {
       "index": 3,
       "expr": "HEAD@{3}",
-      "oldOid": "33f345808dac1bafebdd232f563009133043fa79",
-      "newOid": "33f345808dac1bafebdd232f563009133043fa79",
+      "oldOid": "51752472fde780630d63e468ef1a1653e3bb4fc4",
+      "newOid": "51752472fde780630d63e468ef1a1653e3bb4fc4",
       "action": "checkout",
       "message": "checkout: moving from main to topic",
       "who": {
@@ -66,7 +66,7 @@
       "index": 4,
       "expr": "HEAD@{4}",
       "oldOid": null,
-      "newOid": "33f345808dac1bafebdd232f563009133043fa79",
+      "newOid": "51752472fde780630d63e468ef1a1653e3bb4fc4",
       "action": "commit (initial)",
       "message": "commit (initial): c1: base",
       "who": {
@@ -79,9 +79,9 @@
     }
   ],
   "operation": {
-    "kind": "merge",
-    "conflicts": 2,
-    "current": "fa386080e5fe2f64967f9c18fbe8d2e505dcb812",
+    "kind": "cherry-pick",
+    "conflicts": 1,
+    "current": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
     "startedAt": 1704067200000
   },
   "conflicts": {
@@ -95,14 +95,14 @@
         "binary": false
       },
       "ours": {
-        "oid": "d941f5e5752df0ae61ccc7a23d6c576b9d86ec62",
-        "text": "line 1\nline 2\nline 3 from main\nline 4\nline 5\nline 6\n",
+        "oid": "c81e403f6b84274673283437a68bc2cbb122ba99",
+        "text": "line 1\nline 2\nline 3\nline 4 from main\nline 5\nline 6\n",
         "size": 52,
         "binary": false
       },
       "theirs": {
-        "oid": "52fb50c425d12a5d4111ba2e15e03075f2a19bbc",
-        "text": "line 1\nline 2\nline 3 from topic\nline 4\nline 5\nline 6\n",
+        "oid": "63d465522b8d882c269cdb815f1c5bb574be3427",
+        "text": "line 1\nline 2\nline 3\nline 4 from topic\nline 5\nline 6\n",
         "size": 53,
         "binary": false
       },
@@ -129,20 +129,20 @@
                 "text": "line 2"
               },
               {
-                "type": "del",
+                "type": "ctx",
                 "old": 3,
+                "new": 3,
                 "text": "line 3"
               },
               {
-                "type": "add",
-                "new": 3,
-                "text": "line 3 from main"
+                "type": "del",
+                "old": 4,
+                "text": "line 4"
               },
               {
-                "type": "ctx",
-                "old": 4,
+                "type": "add",
                 "new": 4,
-                "text": "line 4"
+                "text": "line 4 from main"
               },
               {
                 "type": "ctx",
@@ -183,20 +183,20 @@
                 "text": "line 2"
               },
               {
-                "type": "del",
+                "type": "ctx",
                 "old": 3,
+                "new": 3,
                 "text": "line 3"
               },
               {
-                "type": "add",
-                "new": 3,
-                "text": "line 3 from topic"
+                "type": "del",
+                "old": 4,
+                "text": "line 4"
               },
               {
-                "type": "ctx",
-                "old": 4,
+                "type": "add",
                 "new": 4,
-                "text": "line 4"
+                "text": "line 4 from topic"
               },
               {
                 "type": "ctx",
@@ -215,120 +215,17 @@
         ]
       },
       "worktree": {
-        "text": "line 1\nline 2\n<<<<<<< HEAD\nline 3 from main\n=======\nline 3 from topic\n>>>>>>> topic\nline 4\nline 5\nline 6\n",
+        "text": "line 1\nline 2\nline 3\n<<<<<<< HEAD\nline 4 from main\n=======\nline 4 from topic\n>>>>>>> 77be65c (t1: the commit that gets cherry-picked)\nline 5\nline 6\n",
         "markers": [
           {
-            "start": 3,
-            "end": 7,
-            "oursEnd": 5
+            "start": 4,
+            "end": 8,
+            "oursEnd": 6
           }
         ]
       },
       "resolvedInWorktree": false,
       "kind": "both-modified",
-      "labels": {
-        "ours": "main",
-        "theirs": "topic"
-      }
-    },
-    "gone.txt": {
-      "id": "gone.txt",
-      "generation": 1,
-      "base": {
-        "oid": "21f56f2ddca0be9b6848ceb902e51fac06623cf8",
-        "text": "gone 1\ngone 2\ngone 3\ngone 4\n",
-        "size": 28,
-        "binary": false
-      },
-      "ours": {
-        "oid": "b7de1d2b085d62773583a6fbd0f5438e88d77fec",
-        "text": "gone 1\ngone 2\ngone 3\ngone 4 edited on main\n",
-        "size": 43,
-        "binary": false
-      },
-      "theirs": null,
-      "oursHunks": {
-        "oldLines": 4,
-        "newLines": 4,
-        "hunks": [
-          {
-            "oldStart": 1,
-            "oldCount": 4,
-            "newStart": 1,
-            "newCount": 4,
-            "lines": [
-              {
-                "type": "ctx",
-                "old": 1,
-                "new": 1,
-                "text": "gone 1"
-              },
-              {
-                "type": "ctx",
-                "old": 2,
-                "new": 2,
-                "text": "gone 2"
-              },
-              {
-                "type": "ctx",
-                "old": 3,
-                "new": 3,
-                "text": "gone 3"
-              },
-              {
-                "type": "del",
-                "old": 4,
-                "text": "gone 4"
-              },
-              {
-                "type": "add",
-                "new": 4,
-                "text": "gone 4 edited on main"
-              }
-            ]
-          }
-        ]
-      },
-      "theirsHunks": {
-        "oldLines": 4,
-        "newLines": 0,
-        "hunks": [
-          {
-            "oldStart": 1,
-            "oldCount": 4,
-            "newStart": 0,
-            "newCount": 0,
-            "lines": [
-              {
-                "type": "del",
-                "old": 1,
-                "text": "gone 1"
-              },
-              {
-                "type": "del",
-                "old": 2,
-                "text": "gone 2"
-              },
-              {
-                "type": "del",
-                "old": 3,
-                "text": "gone 3"
-              },
-              {
-                "type": "del",
-                "old": 4,
-                "text": "gone 4"
-              }
-            ]
-          }
-        ]
-      },
-      "worktree": {
-        "text": "gone 1\ngone 2\ngone 3\ngone 4 edited on main\n",
-        "markers": []
-      },
-      "resolvedInWorktree": true,
-      "kind": "deleted-by-them",
       "labels": {
         "ours": "main",
         "theirs": "topic"

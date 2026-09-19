@@ -15,6 +15,17 @@ Entries are per task (3–6 lines: what, notable decisions, follow-ups). Newest 
 
 ---
 
+## T10.3 — Conflict payload from index stages (2026-09-19)
+
+- New `src/engine/diff/conflict.ts` builds `ConflictPayload` from `IndexSnapshot.conflicts[path]`: the stage 1/2/3 blobs as `SideBlob`s, `computeHunks(base→ours)` and `computeHunks(base→theirs)`, and the working-tree file with every `<<<<<<< / ||||||| / ======= / >>>>>>>` block located. `EngineApi`/`RepoSession`/`WorkerClient` gained `conflict(generation, id)` with `fileDiff`'s `STALE` and per-id `CANCELLED` semantics; the index is re-read on every call so the card follows the file while the user resolves it in their editor.
+- **Decisions:** `ConflictKind` is structural (which stages exist), so git's `AU`/`UA` fold onto the side with no blob (`deleted-by-them` / `deleted-by-us`); `ConflictMarker` numbers are the 1-based lines of the markers themselves, with `oursEnd` at `|||||||` in `diff3`/`zdiff3` style and at `=======` otherwise and `baseEnd` set only when a `|||||||` was found; marker parsing never throws — a nested opener, a stray closer, a missing separator and an unterminated block each report what was actually found. `labels.ours` is the checked-out branch (or what a rebase replays onto while HEAD is detached) and `labels.theirs` is `RepoOperation.current` as a ref name or short oid, which is exactly what git writes in the `>>>>>>>` line. Recorded in `docs/v2-contracts.md` under `<!-- T10.3 -->`.
+- `DiffEngine` now reads the stage bits it already has in hand, so a conflicted row's `FileDiff.status` follows its kind (`AA` → added, `UD`/`DU` → deleted, else modified) — the tree-versus-worktree comparison alone cannot see that "deleted by them" still leaves our copy on disk. Sides are gated like a large file: binary or > 1 MB → `text: null` and no hunks; a file that could not be decoded is never reported as `resolvedInWorktree`.
+- Tests: `conflict.test.ts` checks every stage oid against `expected/ls-files-u.txt` and every marker line against the checked-out file on `rebase-conflict`, `merge-conflict` and `cherry-pick-conflict`, plus `both-added` with no base, `merge-conflict`'s modify/delete (`deleted-by-them`, `theirs: null`), `STALE`/`INTERNAL`/`CANCELLED`, and the `resolvedInWorktree` flip on an in-memory overlay of the fixture (never on disk). `workerClient.test.ts` covers the same payloads through the mock.
+- `bun run record` now records `cherry-pick-conflict` too and writes `conflicts` into `<fixture>.v2.json`; the mock serves them with the requested generation.
+- Checks: `bun run check` green — tsc, Biome (247 files), 318 engine tests (27 files), 304 UI tests (26 files), guards.
+
+---
+
 ## T10.2 — Reflog reader and operation detector (2026-09-19)
 
 - New `src/engine/git/reflog.ts` parses `.git/logs/HEAD` / `.git/logs/<fullRef>` newest-first with git's own line format, a 150 ms torn-read retry (the index reader's rule) and a `NO_REFLOG` warning + `[]` when a repository keeps no log; `stash.ts`'s `parseStashLog` is now a three-field view of `parseReflogLines` instead of a second copy of the regex.
