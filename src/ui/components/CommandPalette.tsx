@@ -57,6 +57,7 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
   const addToast = useStore((s) => s.addToast);
   const requestRefresh = useStore((s) => s.requestRefresh);
   const scanSecrets = useStore((s) => s.scanSecrets);
+  const setExportOpen = useStore((s) => s.setExportOpen);
   const files = useStore(useShallow(selectVisibleFiles));
   const ref = useRef<HTMLDialogElement>(null);
   const returnTo = useRef<HTMLElement | null>(null);
@@ -170,6 +171,14 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
         run: () => void scanSecrets({ announce: true }),
       },
       {
+        // T11.10: Design §14.6's menu is in the StatsRow; the palette is how it opens from anywhere.
+        id: "export",
+        label: "Export…",
+        keywords: ["patch", "diff", "snapshot", "download", "save", "copy", "markdown"],
+        hint: "e",
+        run: () => setExportOpen(true),
+      },
+      {
         id: "help",
         label: "Show keyboard shortcuts",
         keywords: ["help", "keys"],
@@ -198,6 +207,7 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
     setPref,
     requestRefresh,
     scanSecrets,
+    setExportOpen,
     addToast,
     onHelp,
   ]);

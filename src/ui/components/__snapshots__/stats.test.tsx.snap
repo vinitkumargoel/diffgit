@@ -302,6 +302,42 @@ exports[`S1 ready > snapshots both themes > S1 ready (dark) 1`] = `
       </svg>
     </button>
   </div>
+  <div
+    class="relative"
+  >
+    <button
+      aria-expanded="false"
+      aria-haspopup="menu"
+      aria-label="Export"
+      class="btn btn-icon"
+      title="Export (e)"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-download"
+        fill="none"
+        height="14"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="14"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 15V3"
+        />
+        <path
+          d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+        />
+        <path
+          d="m7 10 5 5 5-5"
+        />
+      </svg>
+    </button>
+  </div>
 </div>
 `;
 
@@ -603,6 +639,42 @@ exports[`S1 ready > snapshots both themes > S1 ready (light) 1`] = `
       >
         <path
           d="M22 17v1c0 .5-.5 1-1 1H3c-.5 0-1-.5-1-1v-1"
+        />
+      </svg>
+    </button>
+  </div>
+  <div
+    class="relative"
+  >
+    <button
+      aria-expanded="false"
+      aria-haspopup="menu"
+      aria-label="Export"
+      class="btn btn-icon"
+      title="Export (e)"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-download"
+        fill="none"
+        height="14"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="14"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 15V3"
+        />
+        <path
+          d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+        />
+        <path
+          d="m7 10 5 5 5-5"
         />
       </svg>
     </button>
@@ -947,6 +1019,42 @@ exports[`S3 partial > snapshots both themes > S3 partial (dark) 1`] = `
       </svg>
     </button>
   </div>
+  <div
+    class="relative"
+  >
+    <button
+      aria-expanded="false"
+      aria-haspopup="menu"
+      aria-label="Export"
+      class="btn btn-icon"
+      title="Export (e)"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-download"
+        fill="none"
+        height="14"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="14"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 15V3"
+        />
+        <path
+          d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+        />
+        <path
+          d="m7 10 5 5 5-5"
+        />
+      </svg>
+    </button>
+  </div>
 </div>
 `;
 
@@ -1283,6 +1391,42 @@ exports[`S3 partial > snapshots both themes > S3 partial (light) 1`] = `
       >
         <path
           d="M22 17v1c0 .5-.5 1-1 1H3c-.5 0-1-.5-1-1v-1"
+        />
+      </svg>
+    </button>
+  </div>
+  <div
+    class="relative"
+  >
+    <button
+      aria-expanded="false"
+      aria-haspopup="menu"
+      aria-label="Export"
+      class="btn btn-icon"
+      title="Export (e)"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-download"
+        fill="none"
+        height="14"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="14"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 15V3"
+        />
+        <path
+          d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+        />
+        <path
+          d="m7 10 5 5 5-5"
         />
       </svg>
     </button>
