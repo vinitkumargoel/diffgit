@@ -509,3 +509,38 @@ export interface SearchResult {
   capped: boolean;
   durationMs: number;
 }
+
+// ---- v2 insights (T10.9, docs/v2-contracts.md) ------------------------------------------------
+
+/**
+ * What the Insights mode asks for (`EngineApi.insights`, atlas tab 13).
+ *
+ * `sinceMs` is the period chip (`Prefs.insightsPeriod`: `90d` / `1y` / `all`) resolved to an epoch
+ * millisecond by the UI; leaving it out means the whole first-parent history. `limit` is how many
+ * hotspot rows to rank — manifests are ranked separately and get up to `limit` rows of their own.
+ */
+export interface InsightsRequest {
+  sinceMs?: number;
+  limit: number;
+}
+
+/**
+ * Everything the Insights page draws, from one first-parent walk (`src/engine/insights`).
+ *
+ * `commits` counts the in-window commits, `walked` every first-parent commit the walk visited
+ * (`capped` when that hit the 50,000 cap and `INSIGHTS_CAPPED` went to the sink). `bots` is how
+ * many of the in-window commits a bot authored; those are **not** in `authors`, which is keyed by
+ * the author name after `.mailmap`, newest-heavy first. `hotspots` is the top `limit` real files by
+ * `commits × log2(size)` followed by the top `limit` manifests, which the UI greys out. `activity`
+ * is at most 52 weeks of per-day commit counts, oldest week first, `weekStart` the local midnight
+ * of that week's Sunday and `days[0]` that Sunday.
+ */
+export interface InsightsResult {
+  commits: number;
+  authors: { name: string; commits: number }[];
+  hotspots: { path: string; commits: number; size: number; score: number; manifest: boolean }[];
+  activity: { weekStart: number; days: number[] }[];
+  walked: number;
+  capped: boolean;
+  bots: number;
+}

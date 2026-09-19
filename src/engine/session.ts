@@ -42,6 +42,7 @@ import { sha1, toHex } from "./git/hash";
 import { IgnoreRules } from "./git/ignoreRules";
 import { emptySnapshot, type IndexSnapshot, readIndex } from "./git/indexReader";
 import { checkLayout } from "./git/layoutChecks";
+import { MAILMAP_FILE, Mailmap } from "./git/mailmap";
 import { ObjectDb } from "./git/objectDb";
 import { detectOperation, OPERATION_FILES } from "./git/operation";
 import { pathHistory as runPathHistory } from "./git/pathHistory";
@@ -61,6 +62,7 @@ import {
   walkRequestKey,
 } from "./git/walk";
 import { type ScannerOptions, WorktreeScanner } from "./git/worktree";
+import { computeInsights } from "./insights/insights";
 import { SECRET_ALLOWLIST_FILE } from "./scan/secretRules";
 import {
   addedLines,
@@ -84,6 +86,8 @@ import {
   type DiffSource,
   type FileDiff,
   type HiddenEntry,
+  type InsightsRequest,
+  type InsightsResult,
   MODE_GITLINK,
   type Oid,
   type PathExplanation,
@@ -1124,6 +1128,47 @@ export class RepoSession implements Omit<EngineApi, "open"> {
           hint: "Pick commits, worktree or pickaxe",
         });
     }
+  }
+
+  // ---- insights (T10.9, atlas tab 13) ----------------------------------------------------------
+
+  /**
+   * Activity, contributors and hotspots from one first-parent walk of `HEAD` (`src/engine/insights`).
+   *
+   * `.mailmap` is re-read on every call, as `scanSecrets` re-reads its allowlist: it is a
+   * working-tree file the user may be editing, and it costs one small read. The walk itself goes
+   * through `walkCommits`, so it shares the commit-graph reader, the cap and the cancellation the
+   * history list already has; only the per-commit path-level tree diff is new work.
+   */
+  async insights(req: InsightsRequest): Promise<InsightsResult> {
+    this.assertOpen();
+    return this.single("insights", async (signal) => {
+      const t0 = performance.now();
+      const reader = await this.commitReader();
+      const seeds = await this.walkSeeds({ from: ["HEAD"], firstParent: true, limit: 1 }, reader);
+      const mailmap = Mailmap.parse(await this.readTextOrNull(MAILMAP_FILE));
+      this.progress({ phase: "insights", done: 0 });
+      const out = await computeInsights(
+        {
+          db: this.db,
+          reader,
+          mailmap,
+          refsByCommit: await this.refsByCommit(),
+          signal,
+          onProgress: (walked) => this.progress({ phase: "insights", done: walked }),
+        },
+        seeds,
+        req,
+      );
+      for (const w of out.warnings) RepoSession.emitWarning(this.sink, w);
+      this.progress({
+        phase: "insights",
+        done: out.result.walked,
+        total: out.result.walked,
+        durationMs: performance.now() - t0,
+      });
+      return out.result;
+    });
   }
 
   /** A repo-root text file, or null when it does not exist (`.diffgitignore-secrets`). */

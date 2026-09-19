@@ -742,3 +742,42 @@ describe("mock worker client: search (T10.8)", () => {
     ).rejects.toMatchObject({ code: "INTERNAL" });
   });
 });
+
+describe("mock worker client: insights (T10.9)", () => {
+  it("serves the recorded whole-history pass and honours `limit`", async () => {
+    const progress: { phase: string }[] = [];
+    const client = createMockWorkerClient();
+    const s = sink();
+    await client.open({ name: "history" }, { ...s, onProgress: (p) => void progress.push(p) });
+
+    const out = await client.insights({ limit: 3 });
+    expect(out.walked).toBe(48);
+    expect(out.commits).toBe(48);
+    expect(out.capped).toBe(false);
+    expect(out.bots).toBe(8);
+    expect(out.authors.map((a) => a.name)).toEqual(["Ada Lovelace", "Grace Hopper", "test"]);
+    expect(out.authors.some((a) => a.name === "renovate[bot]")).toBe(false);
+    // Three real hotspots, then the manifests, which the UI greys out.
+    expect(out.hotspots.filter((h) => !h.manifest)).toHaveLength(3);
+    expect(out.hotspots.filter((h) => h.manifest).map((h) => h.path)).toEqual(["package.json"]);
+    expect(out.activity.every((w) => w.days.length === 7)).toBe(true);
+    expect(out.activity.reduce((n, w) => n + w.days.reduce((a, b) => a + b, 0), 0)).toBe(
+      out.commits,
+    );
+    expect(progress.some((p) => p.phase === "insights")).toBe(true);
+  });
+
+  it("answers an empty result for a fixture with no v2 recording", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "showcase" }, sink());
+    expect(await client.insights({ limit: 10 })).toEqual({
+      commits: 0,
+      authors: [],
+      hotspots: [],
+      activity: [],
+      walked: 0,
+      capped: false,
+      bots: 0,
+    });
+  });
+});

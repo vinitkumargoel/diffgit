@@ -267,6 +267,37 @@ try {
     );
     await blameSession.close();
   }
+  for (const [fixture, id] of [
+    ["history", "history-insights"],
+    ["perf-log", "perf-log-insights"],
+  ] as const) {
+    const s2 = await RepoSession.open(await NodeDirHandle.open(fixturePath(fixture)), sink, {
+      id,
+    });
+    try {
+      const tCold = performance.now();
+      const cold = await s2.insights({ limit: 10 });
+      const coldMs = performance.now() - tCold;
+      const tWarm = performance.now();
+      await s2.insights({ limit: 10 });
+      const warmMs = performance.now() - tWarm;
+      console.log(
+        `insights ${fixture}: ${cold.walked} first-parent commits, ${cold.authors.length} authors, ` +
+          `${cold.hotspots.length} hotspots, ${cold.activity.length} weeks — ` +
+          `${coldMs.toFixed(0)} ms cold, ${warmMs.toFixed(0)} ms warm ` +
+          `(${((coldMs / Math.max(1, cold.walked)) * 1000).toFixed(0)} µs per commit cold)`,
+      );
+      budget(
+        `insights ${fixture} (cold)`,
+        coldMs / Math.max(1, cold.walked),
+        2,
+        " ms/commit",
+        true,
+      );
+    } finally {
+      await s2.close();
+    }
+  }
 
   // ---- search (T10.8) -------------------------------------------------------------------------
   // The three palette scopes on the biggest history fixture available (`perf-log` under

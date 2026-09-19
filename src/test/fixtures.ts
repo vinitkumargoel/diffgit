@@ -56,6 +56,32 @@ export function loadExpectedLines(name: string, file: string): string[] {
     .filter((l) => l.length > 0);
 }
 
+/**
+ * The `sort | uniq -c` shape (`  12 some text`) as a record. T10.9's author, path and day oracles
+ * are all written that way; the ordering of equal counts is not stable in `sort -rn`, so the tests
+ * compare the map rather than the lines.
+ */
+export function loadExpectedCounts(name: string, file: string): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const line of loadExpectedLines(name, file)) {
+    const m = /^\s*(\d+)\s(.*)$/.exec(line);
+    if (!m) throw new Error(`${name}/${file}: not a "uniq -c" line: ${JSON.stringify(line)}`);
+    out[m[2] as string] = Number(m[1]);
+  }
+  return out;
+}
+
+/** `git ls-tree -r -l` (`<mode> <type> <oid> <size>\t<path>`) as path → blob size (T10.9). */
+export function loadExpectedBlobSizes(name: string, file: string): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const line of loadExpectedLines(name, file)) {
+    const m = /^(\d+) (\w+) ([0-9a-f]+)\s+(\S+)\t(.*)$/.exec(line);
+    if (!m) throw new Error(`${name}/${file}: not an ls-tree -l line: ${JSON.stringify(line)}`);
+    if (m[2] === "blob") out[m[5] as string] = Number(m[4]);
+  }
+  return out;
+}
+
 // ---- v2 fixtures (T10.0); see docs/v2-contracts.md § "Fixtures to add" ----
 
 /** Fixture repositories added for the phase-10 engine. */

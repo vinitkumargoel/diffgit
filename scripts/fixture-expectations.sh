@@ -413,6 +413,29 @@ dump_v2() { # dump_v2 <fixture-name>
       search_oracles "$r" "$exp"
       G -C "$r" shortlog -sn --no-merges main > "$exp/shortlog.txt"
       G -C "$r" shortlog -sne --no-merges main > "$exp/shortlog-email.txt"
+      # T10.9 insights oracles. Everything the insights pass reports comes from one **first-parent**
+      # walk of `main`, so every oracle here is `--first-parent` too: `shortlog --no-merges` above is
+      # T10.5's, and counts a different set of commits.
+      G -C "$r" rev-list --count --first-parent main > "$exp/insights-count.txt"
+      # `%aN <%aE>` is git applying .mailmap itself; `%an <%ae>` is the same list unmapped, which is
+      # what proves the fixture exercises the mapping at all (Ada's two addresses fold into one).
+      G -C "$r" log --first-parent --format='%aN <%aE>' main | sort | uniq -c \
+        > "$exp/insights-authors.txt"
+      G -C "$r" log --first-parent --format='%an <%ae>' main | sort | uniq -c \
+        > "$exp/insights-authors-raw.txt"
+      G -C "$r" shortlog -sne --first-parent main > "$exp/insights-shortlog.txt"
+      # `--no-renames`: the per-commit diff is path-level and reads no blobs, so a `git mv` counts
+      # against both names (docs/v2-contracts.md, T10.9).
+      G -C "$r" log --first-parent --no-renames --format= --name-only main | sed '/^$/d' \
+        | sort | uniq -c > "$exp/insights-name-only.txt"
+      # Author date, bucketed at **local** midnight, which is what `activity` buckets by. Recorded
+      # under TZ=UTC because `bun test` pins its process to UTC (Bun does that for determinism), and
+      # "local midnight" has to mean the same thing on both sides of the assertion.
+      ( export TZ=UTC
+        G -C "$r" log --first-parent --format='%ad' --date=format-local:'%Y-%m-%d' main \
+          | sort | uniq -c > "$exp/insights-days.txt" )
+      # `<mode> <type> <oid> <size>\t<path>` — the blob size at the tip, for `hotspots.size`.
+      G -C "$r" ls-tree -r -l main > "$exp/insights-ls-tree.txt"
       G -C "$r" tag -l --format="$TAG_FMT" > "$exp/tag-list.txt"
       G -C "$r" log --format= --name-only main | sed '/^$/d' | sort | uniq -c | sort -rn > "$exp/name-only-counts.txt"
       bisect_sequence "$r" "$root" "$(G -C "$r" rev-parse main)" > "$exp/rev-list-bisect.txt"
