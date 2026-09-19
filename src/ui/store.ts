@@ -35,6 +35,7 @@ import type {
   DiffSource,
   FileDiff,
   HiddenEntry,
+  InsightsResult,
   Oid,
   PathExplanation,
   PathHistoryEntry,
@@ -66,6 +67,7 @@ import {
   shortOid,
   spanRange,
 } from "./history";
+import { EMPTY_RESULT, INSIGHTS_LIMIT, sinceMsFor } from "./insights";
 import { Lru } from "./lru";
 import { derivedKey, getDerived, setDerived } from "./persistence/derived";
 import { revisionOfRef } from "./refGroups";
@@ -499,6 +501,33 @@ export const INITIAL_SEARCH: SearchState = {
   error: null,
 };
 
+/**
+ * Insights-mode state (T11.12, Design §14.6). One `InsightsResult` at a time: the page asks for
+ * the tip it is looking at and the period the chips are on, and `tip` + `period` say which question
+ * `result` is the answer to, so a chip switch or a new commit is visibly a different answer rather
+ * than a silent one. `cached` means the answer came out of `diffgit-derived` instead of the engine,
+ * and `walked` is the live progress the skeleton counts up while the walk runs.
+ */
+export interface InsightsState {
+  result: InsightsResult | null;
+  loading: boolean;
+  error: UiError | null;
+  tip: Oid | null;
+  period: InsightsPeriod | null;
+  cached: boolean;
+  walked: number;
+}
+
+export const INITIAL_INSIGHTS: InsightsState = {
+  result: null,
+  loading: false,
+  error: null,
+  tip: null,
+  period: null,
+  cached: false,
+  walked: 0,
+};
+
 export interface StoreState {
   screen: Screen;
   repo: RepoInfo | null;
@@ -595,6 +624,8 @@ export interface StoreState {
   branches: BranchesState;
   /** The palette's search scopes (T11.8, Design §14.1 rule 2, atlas tab 05). */
   search: SearchState;
+  /** Insights mode (T11.12, Design §14.6). */
+  insights: InsightsState;
 
   // actions
   openRepo(handle: unknown, opts?: OpenOptions): Promise<void>;
@@ -765,6 +796,20 @@ export interface StoreState {
   widenSearch(): Promise<void>;
   /** `Escape` on a running search, and every close of the palette: forget it and stop listening. */
   cancelSearch(): void;
+  // ---- Insights mode (T11.12, Design §14.6) ----
+  /**
+   * Activity, contributors and hotspots for the current tip and `prefs.insightsPeriod`. Answered
+   * from `diffgit-derived` (`insights:<repoId>:<tipOid>:<period>`) when that key is there and from
+   * one `insights()` walk otherwise; a repository with no commits is answered without the engine.
+   * A no-op while the slice already holds this tip + period, so the page may call it on every
+   * render. `force` skips both caches (the palette's `Clear cache` and a manual refresh).
+   * `STALE` / `CANCELLED` drop silently, as everywhere else.
+   */
+  loadInsights(opts?: { force?: boolean }): Promise<void>;
+  /** The header's `90 d | 1 y | All` chips: writes the pref and re-asks (Design §14.6). */
+  setInsightsPeriod(period: InsightsPeriod): void;
+  /** Clicking a hotspot: filter Files mode down to that path (T11.12 Deliverables). */
+  showHotspot(path: string): void;
 }
 
 let toastSeq = 0;
@@ -974,6 +1019,11 @@ export const useStore = create<StoreState>()((set, get) => {
 
   const sink: ProgressSink = {
     onProgress(p: Progress) {
+      // T11.12: the insights walk reports every 500 commits and the skeleton counts them up.
+      if (p.phase === "insights" && p.done !== undefined) {
+        const done = p.done;
+        set((s) => (s.insights.loading ? { insights: { ...s.insights, walked: done } } : {}));
+      }
       if (p.durationMs !== undefined && p.phase !== "probe") {
         set((s) => ({
           perf: { ...s.perf, phases: { ...s.perf.phases, [p.phase]: p.durationMs } },
@@ -1154,6 +1204,7 @@ export const useStore = create<StoreState>()((set, get) => {
     stashes: null,
     branches: INITIAL_BRANCHES,
     search: INITIAL_SEARCH,
+    insights: INITIAL_INSIGHTS,
 
     async openRepo(handle, opts = {}) {
       await get().closeRepo();
@@ -1321,6 +1372,7 @@ export const useStore = create<StoreState>()((set, get) => {
         stashes: null,
         branches: INITIAL_BRANCHES,
         search: INITIAL_SEARCH,
+        insights: INITIAL_INSIGHTS,
       });
       pickerSources = null;
       commitStatsQueue.clear();
@@ -2407,8 +2459,98 @@ export const useStore = create<StoreState>()((set, get) => {
       if (get().search === INITIAL_SEARCH) return;
       set({ search: INITIAL_SEARCH });
     },
+
+    // ---- Insights mode (T11.12, Design §14.6) ---------------------------------------------------
+
+    async loadInsights(opts = {}) {
+      const s = get();
+      const { repo, repoId } = s;
+      if (!repo || repoId === null) return;
+      const period = s.prefs.insightsPeriod;
+      const tip = repo.headOid;
+      const { insights } = s;
+      if (insights.loading) return;
+      if (
+        !opts.force &&
+        insights.result !== null &&
+        insights.tip === tip &&
+        insights.period === period
+      )
+        return;
+      // A repository with no commits: nothing to walk, and no oid to key a cache entry by.
+      if (tip === null) {
+        set({ insights: { ...INITIAL_INSIGHTS, result: EMPTY_RESULT, tip: null, period } });
+        return;
+      }
+      set({ insights: { ...INITIAL_INSIGHTS, loading: true, tip, period } });
+      /** The request this call is the answer to; a later chip click makes it stale. */
+      const current = () => {
+        const cur = get().insights;
+        return cur.loading && cur.tip === tip && cur.period === period;
+      };
+      const key = derivedKey.insights(repoId, tip, period);
+      if (!opts.force) {
+        const hit = await getDerived<InsightsResult>(key);
+        if (hit) {
+          if (!current()) return;
+          set({ insights: { ...INITIAL_INSIGHTS, result: hit, tip, period, cached: true } });
+          if (hit.capped) get().dismissWarning("INSIGHTS_CAPPED");
+          return;
+        }
+      }
+      try {
+        const sinceMs = sinceMsFor(period, selectInsightsAnchor(get()));
+        const result = await client().insights({
+          limit: INSIGHTS_LIMIT,
+          ...(sinceMs === undefined ? {} : { sinceMs }),
+        });
+        if (!current()) return;
+        set({ insights: { ...INITIAL_INSIGHTS, result, tip, period } });
+        void setDerived(key, result);
+        // The page prints the cap as one inline line (Design §14, rule 2), so the engine's one-shot
+        // `INSIGHTS_CAPPED` never also gets a banner of its own.
+        if (result.capped) get().dismissWarning("INSIGHTS_CAPPED");
+      } catch (e) {
+        const err = toUiError(e);
+        const stale = err.code === "STALE" || err.code === "CANCELLED";
+        if (stale) ignoreStale(e);
+        if (!current()) return;
+        set({
+          insights: { ...INITIAL_INSIGHTS, tip, period, error: stale ? null : err },
+        });
+      }
+    },
+
+    setInsightsPeriod(period) {
+      if (get().prefs.insightsPeriod === period) return;
+      get().setPref("insightsPeriod", period);
+      void get().loadInsights();
+    },
+
+    showHotspot(path) {
+      get().setFilter(path);
+      get().setMode("files");
+    },
   };
 });
+
+/**
+ * The instant the period chips count back from (T11.12): the newest commit date the store already
+ * knows — the tip of the commit list, or the newest branch tip the overview carries — and the wall
+ * clock only when it knows none. The engine has no clock of its own (contracts `<!-- T10.9 -->`:
+ * `activity` ends at the week of the newest commit), and the derived cache is keyed by tip oid and
+ * period, so anchoring on a commit keeps `90 d` meaning the same window for as long as that key is
+ * valid, and gives a repository whose last commit is a year old something to show.
+ */
+export function selectInsightsAnchor(
+  s: Pick<StoreState, "history" | "branches">,
+  now = Date.now(),
+): number {
+  let newest = 0;
+  for (const c of s.history.commits) newest = Math.max(newest, c.author.timestamp);
+  for (const r of s.branches.rows ?? []) newest = Math.max(newest, r.lastCommit?.timestamp ?? 0);
+  return newest > 0 ? newest : now;
+}
 
 // ---- Selectors (memoised on input identity) ----
 

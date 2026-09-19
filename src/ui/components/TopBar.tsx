@@ -34,9 +34,9 @@ export function TopBar({ onHelp }: { onHelp?: () => void } = {}) {
   const twoDot = useStore((s) =>
     s.diffSource ? s.diffSource.kind === "range" && !s.diffSource.threeDot : s.prefs.twoDot,
   );
-  // Design §14.1: in Branches (and, from T11.12, Insights) the StatsRow is replaced by the page's
-  // own header — same height, same border — so row 2 is not drawn twice.
-  const ownHeader = useStore((s) => s.mode === "branches");
+  // Design §14.1: in Branches and Insights the StatsRow is replaced by the page's own header —
+  // same height, same border — so row 2 is not drawn twice (T11.7, T11.12).
+  const ownHeader = useStore((s) => s.mode === "branches" || s.mode === "insights");
   const tags = useStore((s) => s.tags);
   const stashes = useStore((s) => s.stashes);
 
