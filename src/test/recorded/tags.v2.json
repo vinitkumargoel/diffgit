@@ -923,5 +923,16 @@
     "indexMtimeMs": 0
   },
   "bisect": [],
-  "preflights": {}
+  "preflights": {},
+  "submodules": [],
+  "worktrees": [
+    {
+      "name": "tags",
+      "path": null,
+      "head": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+      "branch": "refs/heads/main",
+      "prunable": false,
+      "isThis": true
+    }
+  ]
 }

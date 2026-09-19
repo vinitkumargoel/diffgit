@@ -25,6 +25,13 @@ export interface LayoutReport {
   warnings: RepoWarning[];
   /** Total bytes of `.git/objects/pack/*.pack` (0 when none). */
   packBytes: number;
+  /**
+   * T10.12: `.jj/` sits beside `.git/` — a colocated jujutsu workspace. jj writes the same `.git`,
+   * so everything is readable; what changes is the *reading*: jj leaves git's HEAD detached at the
+   * working-copy commit, which is normal there and must not be reported as a detached checkout.
+   * `RepoSession` passes this to `loadRefs` for `headDisplay`, and `RepoInfo.jj` carries it on.
+   */
+  jj: boolean;
 }
 
 export interface LayoutOptions {
@@ -119,6 +126,7 @@ export async function checkLayout(
     isWorktreeGitdir: false,
     hasReftable: false,
   };
+  let jj = false;
   const report = (fatal?: LayoutFatalCode, packBytes = 0): LayoutReport =>
     fatal
       ? {
@@ -127,8 +135,9 @@ export async function checkLayout(
           capabilities,
           warnings,
           packBytes,
+          jj,
         }
-      : { ok: true, capabilities, warnings, packBytes };
+      : { ok: true, capabilities, warnings, packBytes, jj };
 
   const dotGit = await kindOf(fs, ".git");
   if (dotGit === null) {
@@ -220,6 +229,15 @@ export async function checkLayout(
     warnings.push({
       code: "SHALLOW",
       message: "Shallow clone: the merge base may be missing from history.",
+    });
+  }
+
+  // T10.12: a colocated jj workspace. Reported once per open as an info banner (docs/errors.md).
+  jj = (await kindOf(fs, ".jj")) === "dir";
+  if (jj) {
+    warnings.push({
+      code: "JJ_COLOCATED",
+      message: "This repository is also a jj workspace; git's HEAD is jj's working copy.",
     });
   }
 

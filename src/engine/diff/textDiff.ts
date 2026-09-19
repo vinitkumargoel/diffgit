@@ -18,6 +18,7 @@ import type { FileContents, FileDiff, RepoWarning } from "../types";
 import { isBinary, isImagePath } from "./binary";
 import type { LoadedSides } from "./contentLoader";
 import { languageFor } from "./language";
+import { parseLfsPointer } from "./lfs";
 import { myersDiff } from "./myers";
 
 export const LARGE_FILE_BYTES = 1024 * 1024; // > 1 MB either side → tooLarge (UI gates)
@@ -260,6 +261,10 @@ export function describeFile(
 ): FileDescription {
   const path = (file.newPath ?? file.oldPath) as string;
   const language = languageFor(path);
+  // T10.12: sniffed before anything else, because a real `.gitattributes` LFS line carries `-text`
+  // and the pointer would otherwise disappear behind the binary gate. The new side wins when both
+  // sides are pointers: the card describes the object the file points at *now*.
+  const lfs = parseLfsPointer(loaded.new) ?? parseLfsPointer(loaded.old);
   const base: FileClassification = {
     binary: false,
     image: isImagePath(path),
@@ -272,6 +277,7 @@ export function describeFile(
     oldSize: loaded.old?.length ?? 0,
     newSize: loaded.new?.length ?? 0,
     changedLines: null,
+    ...(lfs !== null ? { lfs } : {}),
   };
   let contents: FileContents = loaded;
   if (loaded.kind === "submodule") {

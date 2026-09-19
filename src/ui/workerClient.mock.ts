@@ -12,6 +12,7 @@ import type {
   OpenOptions,
   ProgressSink,
 } from "../engine/api";
+import { parsePatch as runParsePatch } from "../engine/diff/parsePatch";
 import { type PatchRow, patchText as renderPatch } from "../engine/diff/patchText";
 import { isWorktreeSource, sourceRefs } from "../engine/diffSource";
 import { secretsWarning } from "../engine/scan/secrets";
@@ -43,9 +44,11 @@ import type {
   SearchResult,
   SecretFinding,
   StashInfo,
+  SubmoduleInfo,
   TagInfo,
   WalkPage,
   WalkRequest,
+  WorktreeInfo,
 } from "../engine/types";
 import realBasicDiff from "../test/recorded/basic.diffresult.json";
 import realBasicInfo from "../test/recorded/basic.repoinfo.json";
@@ -80,12 +83,18 @@ import worktreeInfo from "../test/recorded/showcase-worktree.repoinfo.json";
 import stashDiff from "../test/recorded/stash.diffresult.json";
 import stashInfo from "../test/recorded/stash.repoinfo.json";
 import stashV2 from "../test/recorded/stash.v2.json";
+import submoduleDiff from "../test/recorded/submodule.diffresult.json";
+import submoduleInfo from "../test/recorded/submodule.repoinfo.json";
+import submoduleV2 from "../test/recorded/submodule.v2.json";
 import tagsDiff from "../test/recorded/tags.diffresult.json";
 import tagsInfo from "../test/recorded/tags.repoinfo.json";
 import tagsV2 from "../test/recorded/tags.v2.json";
 import realWorktreeDiff from "../test/recorded/worktree.diffresult.json";
 import realWorktreeInfo from "../test/recorded/worktree.repoinfo.json";
-import type { UiError } from "./errors";
+import worktreeMainDiff from "../test/recorded/worktree-main.diffresult.json";
+import worktreeMainInfo from "../test/recorded/worktree-main.repoinfo.json";
+import worktreeMainV2 from "../test/recorded/worktree-main.v2.json";
+import { toUiError, type UiError } from "./errors";
 import { mockPayload, mockTexts } from "./mock/mockContents";
 import { syntheticLarge } from "./mock/syntheticLarge";
 import {
@@ -136,6 +145,10 @@ interface RecordedV2 {
   bisect: { state: BisectState; step: BisectStep }[];
   /** T10.11: one preflight report per recorded `<branch> onto <onto>` pair (`preflightKey`). */
   preflights: Record<string, PreflightResult>;
+  /** T10.12: the submodules of the recorded fixture (`submodule` is the only one that has any). */
+  submodules?: SubmoduleInfo[];
+  /** T10.12: `git worktree list`, with the recorded paths rewritten relative to `fixtures/`. */
+  worktrees?: WorktreeInfo[];
 }
 
 /** `preflights` is keyed the same way `scripts/record-fixtures.ts` keys it. */
@@ -287,6 +300,18 @@ const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult; v2?: Recorded
     info: hiddenInfo as RepoInfo,
     diff: hiddenDiff as DiffResult,
     v2: hiddenV2 as unknown as RecordedV2,
+  },
+  // T10.12: a gitlink recorded at HEAD with a deinit'd checkout, and a repository whose worktree
+  // list holds a linked entry — the two halves of atlas tab 19 (T11.16).
+  submodule: {
+    info: submoduleInfo as RepoInfo,
+    diff: submoduleDiff as DiffResult,
+    v2: submoduleV2 as unknown as RecordedV2,
+  },
+  "worktree-main": {
+    info: worktreeMainInfo as RepoInfo,
+    diff: worktreeMainDiff as DiffResult,
+    v2: worktreeMainV2 as unknown as RecordedV2,
   },
   showcase: { info: basicInfo as RepoInfo, diff: basicDiff as DiffResult },
   "showcase-worktree": { info: worktreeInfo as RepoInfo, diff: worktreeDiff as DiffResult },
@@ -741,6 +766,40 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       if (!hit)
         throw err("REV_NOT_FOUND", `no recorded preflight for ${branchRef} onto ${ontoRef}`);
       return hit;
+    },
+    async listSubmodules() {
+      const v2 = requireV2();
+      await wait(client.latency);
+      return v2.submodules ?? [];
+    },
+    async listWorktrees() {
+      const v2 = requireV2();
+      await wait(client.latency);
+      if (v2.worktrees) return v2.worktrees;
+      // Every repository has at least the checkout it was opened at.
+      const info = current?.info;
+      return [
+        {
+          name: info?.name ?? "repository",
+          path: null,
+          head: info?.headOid ?? null,
+          branch:
+            info?.headBranch === undefined || info.headBranch === null
+              ? null
+              : `refs/heads/${info.headBranch}`,
+          prunable: false,
+          isThis: true,
+        },
+      ];
+    },
+    /** The real parser: patch-only mode needs no recording and no repository (T10.12). */
+    async parsePatch(text) {
+      await wait(client.latency);
+      try {
+        return runParsePatch(text);
+      } catch (e) {
+        throw toUiError(e);
+      }
     },
     async fileBytes(gen, id, side) {
       const files = requireGen(gen);
