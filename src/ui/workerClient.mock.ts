@@ -6,6 +6,7 @@
  * the sink in batches, and exposes `mutate()` so `probe()` signatures change.
  */
 import type { BlameRequest, ConflictPayload, FileStats, ProgressSink } from "../engine/api";
+import { type PatchRow, patchText as renderPatch } from "../engine/diff/patchText";
 import { isWorktreeSource, sourceRefs } from "../engine/diffSource";
 import { secretsWarning } from "../engine/scan/secrets";
 import { createMatcher, isOidPrefix, searchKey } from "../engine/search/query";
@@ -25,6 +26,7 @@ import type {
   ReflogEntry,
   RepoInfo,
   RepoOperation,
+  RepoSummary,
   ResolvedRevision,
   SearchHit,
   SearchRequest,
@@ -113,6 +115,8 @@ interface RecordedV2 {
   secrets: SecretFinding[];
   /** T10.8: recorded `worktree` / `pickaxe` answers, keyed by `searchKey`. */
   searches: Record<string, SearchResult>;
+  /** T10.10: the dashboard card, `indexMtimeMs` pinned to 0 so re-recording is byte-stable. */
+  summary?: RepoSummary;
 }
 
 /** `blames` is keyed by path, `w:` prefixed for the `-w` recording (see `scripts/record-fixtures.ts`). */
@@ -533,6 +537,54 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       sink?.onProgress({ phase: "secrets", done: files.length, total: files.length });
       if (found.length > 0) sink?.onWarning(secretsWarning(found.length, found.length));
       return found;
+    },
+    async patchText(gen, ids) {
+      const files = requireGen(gen);
+      await wait(client.latency);
+      const wanted = ids === null ? null : new Set(ids);
+      const picked = wanted === null ? files : files.filter((f) => wanted.has(f.id));
+      // The mock renders with the engine's own writer, off the same deterministic mock texts the
+      // diff pane shows, so T11.10's export menu sees a real patch rather than a recorded blob.
+      const rows: PatchRow[] = picked.map((f) => {
+        const p = mockPayload(f, gen, false, true);
+        return {
+          file: f,
+          description: {
+            classification: p.classification,
+            hunks: p.hunks,
+            oldText: p.oldText,
+            newText: p.newText,
+            stats: p.stats,
+            language: p.language,
+          },
+          oldOid: f.oldOid,
+          newOid: f.newOid,
+        };
+      });
+      return renderPatch(rows);
+    },
+    async summarise() {
+      const v2 = requireV2();
+      await wait(client.latency);
+      if (v2.summary) return v2.summary;
+      const info = current?.info;
+      const files = lastResult?.files ?? [];
+      const count = (layer: string) =>
+        files.filter((f) => f.layers.includes(layer as never)).length;
+      return {
+        headBranch: info?.headBranch ?? null,
+        headDisplay: info?.headDisplay ?? "HEAD",
+        counts: {
+          staged: count("staged"),
+          unstaged: count("unstaged"),
+          untracked: count("untracked"),
+          conflict: count("conflict"),
+        },
+        vsUpstream: null,
+        lastCommit: null,
+        operation: info?.operation ?? null,
+        indexMtimeMs: 0,
+      };
     },
     async search(req) {
       const v2 = requireV2();

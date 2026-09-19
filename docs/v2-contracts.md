@@ -375,6 +375,40 @@ export interface SubmoduleInfo { path: string; url: string | null; recorded: Oid
 export interface WorktreeInfo { name: string; path: string | null; head: Oid | null; branch: string | null; prunable: boolean; isThis: boolean }
 ```
 
+<!-- T10.10 --> `patchText(generation, ids)` renders the rows of the **current** `DiffResult` with
+`src/engine/diff/patchText.ts` (pure; the session loads the sides and runs `describeFile` with
+`loadLarge: true`, so a `tooLarge` row still carries real hunks). Output is deterministic: rows come
+out in `DiffResult` order whatever order `ids` lists them in, an empty `ids` array is `""`, and an id
+the generation does not hold is `INTERNAL`. Object names are written **in full** (git's
+`--full-index`): `git apply` refuses a binary row "without full index line", and a binary row is how
+both a binary file and a `huge` (> 10 MB) one are carried — git rebuilds the postimage by reading the
+blob out of the object database, so the row applies whenever that blob exists. A `huge` row is
+preceded by a `# diffgit: …` note, which `git apply`'s header scan skips. Header forms follow git
+exactly: `new file mode` / `deleted file mode` / `old mode` + `new mode` (before `similarity index`,
+as `fill_metainfo` emits them), `similarity index N%` + `rename from`/`rename to` (`copy from`/`copy
+to` for a copy), no `index`/`---`/`+++`/hunks at all for a pure rename or a pure mode change, the
+mode suffix on `index` only when both modes are equal, `/dev/null` for an absent side, `@@ -a,b +c,d
+@@` with git's `,1` elision, `\ No newline at end of file` after the last line of whichever side
+lacks it, and `quote_c_style` path quoting (non-ASCII as `\ooo`, `core.quotepath`'s default).
+**Hunk boundaries are not git's** — `tasks/README.md` "Parity scope" already excludes them — so the
+patch is asserted by `git apply --check` plus a full replay on a temp copy of the fixture, never by
+byte-equality with `git diff`.
+
+`summarise()` is the dashboard card and is deliberately **generation-free**: it calls no
+`computeDiff`, changes no generation and never reassigns `RepoSession.refs`, so an open diff keeps
+resolving its ids while it runs. It re-reads refs with `loadRefs`, re-runs `detectOperation`, re-reads
+`.git/index`, and runs `WorktreeScanner.scan` with the new fourth argument `ScanOptions`
+(`{ hashes: false }`), which drops the untracked hashing budget to nothing — the unstaged pass still
+hashes what git's own racy-clean stat check cannot settle, or the counts would be wrong.
+`RepoSummary.counts` are per layer and a path that is both staged and unstaged counts in both, which
+is what `git status --porcelain=v2`'s two columns say. `vsUpstream` is `aheadBehind(HEAD,
+upstreamOf(headBranch))` through the same memo `branchCells` uses, null when HEAD is detached or the
+branch tracks nothing; `lastCommit.timestamp` is the **committer** date in ms, like
+`BranchRow.lastCommit`. `indexMtimeMs` is the cache key atlas tab 11 asks for. `bun run record`
+writes `summary` into `<fixture>.v2.json` with `indexMtimeMs` and the operation's `startedAt` pinned;
+the patch is not recorded — the mock renders it with this same writer off the recorded rows, so a
+subset by id works there too.
+
 ## `src/engine/api.ts` additions (`EngineApi`)
 
 | Method | Task | Notes |

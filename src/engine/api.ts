@@ -21,6 +21,7 @@ import type {
   ReflogEntry,
   RepoInfo,
   RepoOperation,
+  RepoSummary,
   RepoWarning,
   ResolvedRevision,
   SearchRequest,
@@ -359,6 +360,22 @@ export interface EngineApi {
    * Progress phase `"search"`; `CANCELLED` when a newer `search()` supersedes this one.
    */
   search(req: SearchRequest): Promise<SearchResult>;
+  /**
+   * The current diff as one git-format unified patch (T10.10, atlas tab 12): `git apply` accepts
+   * it, `ids` picks a subset (null = every row) and the rows always come out in `DiffResult`
+   * order, so the same generation always exports the same bytes. Object names are spelled in full
+   * (`--full-index`), which is what makes a binary row appliable; a file over 10 MB is a binary row
+   * with a `#` note instead of hunks. `STALE` when `generation` is not current, `CANCELLED` when a
+   * newer `patchText()` supersedes this one.
+   */
+  patchText(generation: number, ids: string[] | null): Promise<string>;
+  /**
+   * The dashboard card for this repository (T10.10, atlas tab 11): refs, the operation in progress,
+   * the index, a counts-only working-tree scan (nothing is hashed beyond the stat check) and
+   * ahead/behind for the checked-out branch. Cheap enough to run across twenty repositories, and it
+   * never disturbs an open diff generation.
+   */
+  summarise(): Promise<RepoSummary>;
   /** Move these files to the front of the background stats queue (visible sidebar rows). */
   prioritise(ids: string[]): Promise<void>;
   /** Cheap change signature per tier for the polling fallback (T6.3). */

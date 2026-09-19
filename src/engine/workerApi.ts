@@ -72,6 +72,8 @@ export function createEngineApi(
     scanSecrets: (generation) => guard(() => need().scanSecrets(generation)),
     search: (req) => guard(() => need().search(req)),
     fileBytes: (generation, id, side) => guard(() => need().fileBytes(generation, id, side)),
+    patchText: (generation, ids) => guard(() => need().patchText(generation, ids)),
+    summarise: () => guard(() => need().summarise()),
     prioritise: (ids) => guard(() => need().prioritise(ids)),
     probe: (tier) => guard(() => need().probe(tier)),
     invalidate: (scope, paths) => guard(() => need().invalidate(scope, paths)),

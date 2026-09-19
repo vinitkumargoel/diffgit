@@ -681,6 +681,46 @@ describe("mock worker client: secret scan (T10.7)", () => {
   });
 });
 
+describe("mock worker client: patch text and summary (T10.10)", () => {
+  it("renders a git-format patch for the recorded rows, and a subset for ids", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "showcase" }, sink());
+    const diff = await client.computeDiff(SRC);
+    const patch = await client.patchText(diff.generation, null);
+    expect(patch.endsWith("\n")).toBe(true);
+    const headers = patch.split("\n").filter((l) => l.startsWith("diff --git "));
+    expect(headers.length).toBe(diff.files.length);
+
+    const first = diff.files[0]?.id as string;
+    const subset = await client.patchText(diff.generation, [first]);
+    expect(subset.split("\n").filter((l) => l.startsWith("diff --git ")).length).toBe(1);
+    expect(subset).toContain(first);
+    expect(await client.patchText(diff.generation, [])).toBe("");
+    await expect(client.patchText(diff.generation + 1, null)).rejects.toMatchObject({
+      code: "STALE",
+    });
+  });
+
+  it("serves the recorded dashboard card, operation and all", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "rebase-conflict" }, sink());
+    const summary = await client.summarise();
+    expect(summary.operation?.kind).toBe("rebase");
+    expect(summary.counts.conflict).toBe(2);
+    expect(summary.lastCommit?.subject).toContain("rebase step 1 of 3");
+  });
+
+  it("derives a card for a handle with no v2 recording", async () => {
+    const client = createMockWorkerClient();
+    const info = await client.open({ name: "showcase-worktree" }, sink());
+    await client.computeDiff(SRC);
+    const summary = await client.summarise();
+    expect(summary.headBranch).toBe(info.headBranch);
+    expect(summary.counts.untracked).toBeGreaterThan(0);
+    expect(summary.vsUpstream).toBeNull();
+  });
+});
+
 describe("mock worker client: search (T10.8)", () => {
   async function openHistory() {
     const warnings: { code: string; detail?: string }[] = [];

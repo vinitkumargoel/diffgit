@@ -839,5 +839,23 @@
   "pathHistories": {},
   "blames": {},
   "secrets": [],
-  "searches": {}
+  "searches": {},
+  "summary": {
+    "headBranch": "main",
+    "headDisplay": "main",
+    "counts": {
+      "staged": 0,
+      "unstaged": 0,
+      "untracked": 0,
+      "conflict": 0
+    },
+    "vsUpstream": null,
+    "lastCommit": {
+      "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
+      "subject": "c3: octopus merge of side-a and side-b",
+      "timestamp": 1704067200000
+    },
+    "operation": null,
+    "indexMtimeMs": 0
+  }
 }

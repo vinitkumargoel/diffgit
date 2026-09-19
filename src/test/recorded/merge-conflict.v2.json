@@ -699,5 +699,28 @@
   "pathHistories": {},
   "blames": {},
   "secrets": [],
-  "searches": {}
+  "searches": {},
+  "summary": {
+    "headBranch": "main",
+    "headDisplay": "main",
+    "counts": {
+      "staged": 0,
+      "unstaged": 0,
+      "untracked": 0,
+      "conflict": 2
+    },
+    "vsUpstream": null,
+    "lastCommit": {
+      "oid": "16f51344344e6f834075a8271c0288be58add6cf",
+      "subject": "c2: edit file.txt and gone.txt",
+      "timestamp": 1704067200000
+    },
+    "operation": {
+      "kind": "merge",
+      "conflicts": 2,
+      "current": "fa386080e5fe2f64967f9c18fbe8d2e505dcb812",
+      "startedAt": 1704067200000
+    },
+    "indexMtimeMs": 0
+  }
 }

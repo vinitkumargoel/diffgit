@@ -25,6 +25,10 @@
  * is not recorded — the mock runs it live against the recorded walk. `durationMs` is pinned to 0
  * so re-recording is byte-stable.
  *
+ * T10.10 adds `summary`: the `RepoSummary` the multi-repo dashboard draws a card from, with
+ * `indexMtimeMs` and the operation's `startedAt` pinned so re-recording is byte-stable. The patch text is not recorded — the
+ * mock renders it with the engine's own writer off the recorded rows.
+ *
  * T10.5 adds `walks` (the whole history per variant — default, first-parent, all, per path — which
  * the mock pages itself), `commits` (`CommitDetails`), `commitStats`, `branches` (the Branches
  * table with its cells filled), `aheadBehind` and `reachable`, plus the `octopus` fixture so the
@@ -48,6 +52,7 @@ import type {
   PathHistoryEntry,
   RangeSource,
   RepoOperation,
+  RepoSummary,
   ResolvedRevision,
   SearchRequest,
   SearchResult,
@@ -282,6 +287,8 @@ async function record(name: string, v2: boolean): Promise<void> {
       searches[searchKey(req)] = { ...(await session.search(req)), durationMs: 0 };
     }
 
+    const summary: RepoSummary = await session.summarise();
+
     const reachable = await session.markReachable([
       ...new Set([...walkedOids, ...(await session.reflog("HEAD", 200)).map((e) => e.newOid)]),
     ]);
@@ -314,6 +321,8 @@ async function record(name: string, v2: boolean): Promise<void> {
       secrets,
       // T10.8: the recorded `worktree` / `pickaxe` answers, keyed by `searchKey`.
       searches,
+      // T10.10: the dashboard card. `indexMtimeMs` is the file's mtime, so it is pinned here.
+      summary: { ...summary, operation: pinStartedAt(summary.operation), indexMtimeMs: 0 },
     };
     writeFileSync(`${OUT}${name}.v2.json`, `${JSON.stringify(payload, null, 2)}\n`);
     console.log(
@@ -325,7 +334,9 @@ async function record(name: string, v2: boolean): Promise<void> {
         `${walks.all?.commits.length ?? 0} commits (graph ${walks.all?.graphAvailable ?? false}), ` +
         `${branches.length} branches, ${Object.keys(pathHistories).length} path histories, ` +
         `${Object.keys(blames).length} blames, ${secrets.length} secret findings, ` +
-        `${Object.keys(searches).length} searches`,
+        `${Object.keys(searches).length} searches, ` +
+        `summary ${summary.counts.staged}/${summary.counts.unstaged}/${summary.counts.untracked}` +
+        `/${summary.counts.conflict}`,
     );
   }
   await session.close();

@@ -662,5 +662,23 @@
   "pathHistories": {},
   "blames": {},
   "secrets": [],
-  "searches": {}
+  "searches": {},
+  "summary": {
+    "headBranch": "main",
+    "headDisplay": "main",
+    "counts": {
+      "staged": 0,
+      "unstaged": 1,
+      "untracked": 1,
+      "conflict": 0
+    },
+    "vsUpstream": null,
+    "lastCommit": {
+      "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "subject": "c1: base",
+      "timestamp": 1704067200000
+    },
+    "operation": null,
+    "indexMtimeMs": 0
+  }
 }
