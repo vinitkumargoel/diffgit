@@ -87,6 +87,34 @@ Earlier per-phase engine numbers (T1–T3, same machine): `flattenTree` on perf-
 index parse 28 ms, worktree scan ≈ 0.5 s cold, probes git 0.2 ms / index 6 ms / untracked 24 ms.
 Rename detection on the `renames` fixture 50–75 ms.
 
+## Insights (T10.9, same machine, 2026-09-19)
+
+`insights` is one first-parent `walkCommits` plus a **path-level** tree diff per in-window commit —
+`ObjectDb.flattenTree` on the commit and on its first parent, no blob reads — and then one
+`readBlob` per hotspot candidate, for the current size the score needs (`HOTSPOT_SIZE_READS` = 2,000
+blobs at most). The whole pass is bounded by the walker's own 50,000-commit cap (`INSIGHTS_CAPPED`).
+
+| Metric | Budget | Measured | Where asserted |
+|---|---|---|---|
+| `history` (48 first-parent commits, a commit-graph), cold session | – | **28 ms** (0.6 ms per commit) | `scripts/perf.ts` (printed) |
+| `history`, second call on the same session (trees cached) | – | 6 ms | `scripts/perf.ts` (printed) |
+| `perf-log` (2,000 linear commits, a commit-graph), cold session | – | **557 ms** (0.28 ms per commit) | `scripts/perf.ts` (printed) |
+| `perf-log`, second call (trees cached) | – | 194 ms (0.10 ms per commit) | `scripts/perf.ts` (printed) |
+| Cold cost per first-parent commit, either fixture | < 2 ms | 0.6 / 0.3 ms | `scripts/perf.ts`, strict only |
+
+The atlas estimated "1,000 commits ≈ 1 s, path-level tree diff ≈ 1 ms per commit on cached trees";
+the measured 0.28 ms per commit cold on `perf-log` is inside that. What dominates is
+`flattenTree` — two per commit, memoised by `ObjectDb`, so a linear first-parent walk pays for each
+tree once. Changed-path Bloom filters from the commit-graph (atlas tab 20) would remove the tree
+reads for commits that touch nothing the ranking cares about; they are **not** implemented here,
+because the hotspot tally needs the actual changed-path set of every commit, not a membership test
+for one path. The one thing they would buy is the `sinceMs` case, where commits outside the window
+are already skipped without any tree read at all.
+
+At the 50,000-commit cap that extrapolates to ≈ 14 s, which is why the result is meant to be cached
+in `diffgit-derived` under `insights:<repoId>:<tipOid>:<period>` (T11.1) and why the walk reports
+`{ phase: "insights", done }` every 500 commits.
+
 ## Browser-side (Chromium, production build)
 
 | Metric | Budget | Status |

@@ -1055,7 +1055,7 @@
     {
       "path": "expected",
       "kind": "ignored-dir",
-      "count": 35
+      "count": 42
     }
   ],
   "explanations": {},
@@ -8815,5 +8815,167 @@
       "capped": false
     }
   },
-  "secrets": []
+  "secrets": [],
+  "insights": {
+    "commits": 48,
+    "authors": [
+      {
+        "name": "Ada Lovelace",
+        "commits": 19
+      },
+      {
+        "name": "Grace Hopper",
+        "commits": 15
+      },
+      {
+        "name": "test",
+        "commits": 6
+      }
+    ],
+    "hotspots": [
+      {
+        "path": "src/mod4.txt",
+        "commits": 9,
+        "size": 631,
+        "score": 83.713,
+        "manifest": false
+      },
+      {
+        "path": "src/mod3.txt",
+        "commits": 8,
+        "size": 611,
+        "score": 74.04,
+        "manifest": false
+      },
+      {
+        "path": "src/mod2.txt",
+        "commits": 8,
+        "size": 601,
+        "score": 73.85,
+        "manifest": false
+      },
+      {
+        "path": "src/mod1.txt",
+        "commits": 8,
+        "size": 591,
+        "score": 73.656,
+        "manifest": false
+      },
+      {
+        "path": "docs/guide.md",
+        "commits": 9,
+        "size": 138,
+        "score": 63.977,
+        "manifest": false
+      },
+      {
+        "path": "src/hot.txt",
+        "commits": 3,
+        "size": 462,
+        "score": 26.555,
+        "manifest": false
+      },
+      {
+        "path": "src/renamed-to.txt",
+        "commits": 2,
+        "size": 203,
+        "score": 15.331,
+        "manifest": false
+      },
+      {
+        "path": "src/indent.txt",
+        "commits": 2,
+        "size": 159,
+        "score": 14.626,
+        "manifest": false
+      },
+      {
+        "path": "src/topic.txt",
+        "commits": 1,
+        "size": 168,
+        "score": 7.392,
+        "manifest": false
+      },
+      {
+        "path": "README.md",
+        "commits": 1,
+        "size": 102,
+        "score": 6.672,
+        "manifest": false
+      },
+      {
+        "path": ".mailmap",
+        "commits": 1,
+        "size": 63,
+        "score": 5.977,
+        "manifest": false
+      },
+      {
+        "path": "src/stable.txt",
+        "commits": 1,
+        "size": 33,
+        "score": 5.044,
+        "manifest": false
+      },
+      {
+        "path": "src/renamed-from.txt",
+        "commits": 3,
+        "size": 0,
+        "score": 3,
+        "manifest": false
+      },
+      {
+        "path": "package.json",
+        "commits": 9,
+        "size": 50,
+        "score": 50.795,
+        "manifest": true
+      }
+    ],
+    "activity": [
+      {
+        "weekStart": 1703980800000,
+        "days": [0, 1, 1, 1, 1, 1, 1]
+      },
+      {
+        "weekStart": 1704585600000,
+        "days": [1, 1, 1, 1, 1, 1, 1]
+      },
+      {
+        "weekStart": 1705190400000,
+        "days": [1, 1, 1, 0, 0, 0, 0]
+      },
+      {
+        "weekStart": 1705795200000,
+        "days": [0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "weekStart": 1706400000000,
+        "days": [0, 0, 0, 0, 1, 1, 1]
+      },
+      {
+        "weekStart": 1707004800000,
+        "days": [1, 1, 1, 1, 1, 1, 1]
+      },
+      {
+        "weekStart": 1707609600000,
+        "days": [1, 1, 1, 1, 1, 1, 1]
+      },
+      {
+        "weekStart": 1708214400000,
+        "days": [1, 1, 1, 1, 1, 1, 1]
+      },
+      {
+        "weekStart": 1708819200000,
+        "days": [1, 1, 1, 1, 0, 1, 1]
+      },
+      {
+        "weekStart": 1709424000000,
+        "days": [1, 1, 0, 0, 0, 0, 0]
+      }
+    ],
+    "walked": 48,
+    "capped": false,
+    "bots": 8
+  }
 }

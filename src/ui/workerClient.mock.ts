@@ -18,6 +18,7 @@ import type {
   DiffSource,
   FileDiff,
   HiddenEntry,
+  InsightsResult,
   Oid,
   PathExplanation,
   PathHistoryEntry,
@@ -107,7 +108,20 @@ interface RecordedV2 {
   blames: Record<string, BlamePayload>;
   /** T10.7: every finding of the secret scan on the recorded working tree. */
   secrets: SecretFinding[];
+  /** T10.9: the whole-history (`sinceMs` unset) insights pass. */
+  insights: InsightsResult;
 }
+
+/** An empty `InsightsResult`, for a fixture with no recording (and the mock's empty repository). */
+const EMPTY_INSIGHTS: InsightsResult = {
+  commits: 0,
+  authors: [],
+  hotspots: [],
+  activity: [],
+  walked: 0,
+  capped: false,
+  bots: 0,
+};
 
 /** `blames` is keyed by path, `w:` prefixed for the `-w` recording (see `scripts/record-fixtures.ts`). */
 function blameKey(path: string, opts: BlameRequest): string {
@@ -528,6 +542,27 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       if (found.length > 0) sink?.onWarning(secretsWarning(found.length, found.length));
       return found;
     },
+    /**
+     * The recording is the whole-history pass (`sinceMs` unset), so the mock honours `limit` — it
+     * re-slices the two hotspot groups — and ignores `sinceMs`: a period recorded relative to a
+     * wall clock would not survive `bun run record` being byte-idempotent. T11.12 drives the period
+     * chips against a real engine.
+     */
+    async insights(req) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const recorded = v2.insights ?? EMPTY_INSIGHTS;
+      const limit = Math.max(1, req.limit);
+      const real = recorded.hotspots.filter((h) => !h.manifest).slice(0, limit);
+      const manifests = recorded.hotspots.filter((h) => h.manifest).slice(0, limit);
+      sink?.onProgress({
+        phase: "insights",
+        done: recorded.walked,
+        total: recorded.walked,
+        durationMs: 1,
+      });
+      return { ...recorded, hotspots: [...real, ...manifests] };
+    },
     async fileBytes(gen, id, side) {
       const files = requireGen(gen);
       const f = files.find((x) => x.id === id);
@@ -614,6 +649,7 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         pathHistories: {},
         blames: {},
         secrets: [],
+        insights: EMPTY_INSIGHTS,
       }
     );
   }

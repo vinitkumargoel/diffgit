@@ -14,7 +14,7 @@
     "format": "biome format --write .",
     "typecheck": "tsc -b",
     "fixtures": "bash scripts/make-fixtures.sh && bash scripts/fixture-expectations.sh",
-    "record": "bun run scripts/record-fixtures.ts && biome format --write src/test/recorded",
+    "record": "TZ=UTC bun run scripts/record-fixtures.ts && biome format --write src/test/recorded",
     "deploy": "bun run build && scripts/check-dist.sh && bunx wrangler pages deploy dist --project-name diffgoel --force",
     "check:prod": "bash scripts/check-prod.sh",
     "e2e": "playwright test",

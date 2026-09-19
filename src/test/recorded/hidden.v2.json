@@ -308,5 +308,67 @@
   },
   "pathHistories": {},
   "blames": {},
-  "secrets": []
+  "secrets": [],
+  "insights": {
+    "commits": 1,
+    "authors": [
+      {
+        "name": "test",
+        "commits": 1
+      }
+    ],
+    "hotspots": [
+      {
+        "path": "big.txt",
+        "commits": 1,
+        "size": 11130000,
+        "score": 23.408,
+        "manifest": false
+      },
+      {
+        "path": "src/assumed.txt",
+        "commits": 1,
+        "size": 50,
+        "score": 5.644,
+        "manifest": false
+      },
+      {
+        "path": "src/skipped.txt",
+        "commits": 1,
+        "size": 50,
+        "score": 5.644,
+        "manifest": false
+      },
+      {
+        "path": "src/app.txt",
+        "commits": 1,
+        "size": 30,
+        "score": 4.907,
+        "manifest": false
+      },
+      {
+        "path": ".gitignore",
+        "commits": 1,
+        "size": 17,
+        "score": 4.087,
+        "manifest": false
+      },
+      {
+        "path": "README.md",
+        "commits": 1,
+        "size": 17,
+        "score": 4.087,
+        "manifest": false
+      }
+    ],
+    "activity": [
+      {
+        "weekStart": 1703980800000,
+        "days": [0, 1, 0, 0, 0, 0, 0]
+      }
+    ],
+    "walked": 1,
+    "capped": false,
+    "bots": 0
+  }
 }

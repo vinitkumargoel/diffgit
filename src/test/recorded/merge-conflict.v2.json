@@ -698,5 +698,46 @@
   },
   "pathHistories": {},
   "blames": {},
-  "secrets": []
+  "secrets": [],
+  "insights": {
+    "commits": 2,
+    "authors": [
+      {
+        "name": "test",
+        "commits": 2
+      }
+    ],
+    "hotspots": [
+      {
+        "path": "file.txt",
+        "commits": 2,
+        "size": 52,
+        "score": 11.401,
+        "manifest": false
+      },
+      {
+        "path": "gone.txt",
+        "commits": 2,
+        "size": 43,
+        "score": 10.853,
+        "manifest": false
+      },
+      {
+        "path": "keep.txt",
+        "commits": 1,
+        "size": 25,
+        "score": 4.644,
+        "manifest": false
+      }
+    ],
+    "activity": [
+      {
+        "weekStart": 1703980800000,
+        "days": [0, 2, 0, 0, 0, 0, 0]
+      }
+    ],
+    "walked": 2,
+    "capped": false,
+    "bots": 0
+  }
 }

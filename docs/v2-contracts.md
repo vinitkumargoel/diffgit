@@ -268,6 +268,47 @@ escape hatch. Findings are sorted by path, line, rule, masked and capped at `SEC
 `commitStats` now keys its record in the caller's order rather than the order the batch finished
 in, which is what made `bun run record` drift between runs.
 
+<!-- T10.9 --> `insights(req)` is **one first-parent walk from `HEAD`** (`walkCommits({ firstParent:
+true })`, so it shares the commit-graph reader, the 50,000-commit cap and `single()`'s abort signal)
+plus a **path-level** tree diff of every in-window commit against its first parent — no blob reads,
+which is what makes a whole-history pass affordable (atlas tab 13). Exactly what each field means,
+and the `fixture-expectations.sh` oracle that pins it:
+
+| field | definition | oracle on `history` |
+|---|---|---|
+| `walked` | first-parent commits visited, before `sinceMs` | `git rev-list --count --first-parent main` = 48 |
+| `commits` | of those, the ones with **author date** ≥ `sinceMs` | the same, `--since` applied |
+| `authors` | commits per author **name** after `.mailmap`, bots removed, commits desc then name | `git log --first-parent --format='%aN <%aE>'`, folded by name |
+| `bots` | in-window commits by a bot; `authors.commits + bots === commits` | the same list, filtered |
+| `hotspots` | per-path commit counts scored `commits × log2(max(size, 2))`, rounded to 3 decimals | `git log --first-parent --no-renames --format= --name-only` + `git ls-tree -r -l main` |
+| `activity` | commits per **local** day, in weeks of 7 | `git log --first-parent --date=format-local:'%Y-%m-%d' --format=%ad` |
+
+`sinceMs` and `activity` both use the **author** date — the brief fixes it for `activity`, and one
+clock for both is what makes `activity` sum to `commits`. A merge counts, and its first-parent tree
+diff is everything it brought in, exactly as `git log --first-parent --name-only` prints it. The
+per-commit diff runs **without rename detection** (pairing a rename costs blob reads per commit,
+the one cost this walk exists to avoid), so a `git mv` counts against both names. `activity` is at
+most 52 weeks ending at the week of the **newest commit in range**, not at the wall clock: the
+engine has no clock input here and a result keyed on `Date.now()` could not be asserted against git;
+an idle repository shows its last 52 active weeks instead of 52 empty ones. `weekStart` is the local
+midnight of that week's **Sunday** and `days[0]` is that Sunday. `hotspots` is the top `limit` real
+files followed by the top `limit` **manifests** (`isManifestPath`: `package.json`, lockfiles,
+`go.sum`, `Cargo.lock`, … matched on the basename) — manifests are excluded from the ranking, not
+from the answer, so the UI can grey them out. `size` is the blob size at the walk tip (0 for a path
+that is no longer there, which scores its commit count); sizes are read for at most
+`HOTSPOT_SIZE_READS` (2,000) paths, in commit-count order. `isBotIdentity` is `/\[bot\]$/i` or
+`/^(?:dependabot|renovate)/i` against the mapped name **and** the email's local part — the brief's
+`/^dependabot|renovate/i` is read as an anchored alternation, which is plainly what it meant.
+`src/engine/git/mailmap.ts` follows **`mailmap.c`**, not the prose of `gitmailmap(5)`: all four line
+forms, case-insensitive email and commit-name lookup, field-by-field override by later lines, and a
+comment only when `#` is the **first** character of the line (`Mid # hash <a@b>` really does define
+a name containing a `#` — verified with `git check-mailmap`). `ProgressPhase` gains `"insights"`
+(`done` = first-parent commits processed, every 500). `bun run record` writes `insights` (the
+whole-history pass, `limit: 25`) into `<fixture>.v2.json` and now runs under **`TZ=UTC`**, because
+`activity` buckets at local midnight and the recording has to be the same on every machine; the
+`insights-days.txt` oracle is recorded under `TZ=UTC` for the same reason (`bun test` pins its
+process to UTC). `summarise()` / `RepoSummary` stay with T10.10, as the EngineApi table says.
+
 ```ts
 export interface ResolvedRevision {
   expr: string; oid: Oid | null;                     // null only for "<root>^" → empty tree
