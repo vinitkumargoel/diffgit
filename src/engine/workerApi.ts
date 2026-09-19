@@ -70,6 +70,7 @@ export function createEngineApi(
     pathHistory: (ref, path, o) => guard(() => need().pathHistory(ref, path, o)),
     blame: (ref, path, o) => guard(() => need().blame(ref, path, o)),
     scanSecrets: (generation) => guard(() => need().scanSecrets(generation)),
+    search: (req) => guard(() => need().search(req)),
     fileBytes: (generation, id, side) => guard(() => need().fileBytes(generation, id, side)),
     prioritise: (ids) => guard(() => need().prioritise(ids)),
     probe: (tier) => guard(() => need().probe(tier)),

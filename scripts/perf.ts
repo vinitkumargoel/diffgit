@@ -11,7 +11,7 @@ import type { Progress, ProgressSink, StatsBatch } from "../src/engine/api";
 import { defaultDiffSource } from "../src/engine/diffSource";
 import { NodeDirHandle } from "../src/engine/fs/nodeDirHandle";
 import { RepoSession } from "../src/engine/session";
-import type { RepoWarning } from "../src/engine/types";
+import type { RepoWarning, SearchRequest } from "../src/engine/types";
 import { fixturePath, hasFixture } from "../src/test/fixtures";
 
 const STRICT = process.env.PERF_STRICT === "1";
@@ -202,6 +202,43 @@ try {
       `pathHistory --follow src/renamed-to.txt: ${hist.entries.length} entries in ${(performance.now() - th).toFixed(1)} ms`,
     );
     await blameSession.close();
+  }
+
+  // ---- search (T10.8) -------------------------------------------------------------------------
+  // The three palette scopes on the biggest history fixture available (`perf-log` under
+  // FIXTURES_PERF=1, `history` otherwise). Atlas tab 05 budgets: commit search well under 100 ms,
+  // grep ≈ 1.5 s for 5k files, pickaxe ≈ 1 s for 200 commits.
+  {
+    const searchFixture = hasFixture("perf-log") ? "perf-log" : "history";
+    const searchSession = await RepoSession.open(
+      await NodeDirHandle.open(fixturePath(searchFixture)),
+      sink,
+      { id: "search-perf" },
+    );
+    const runs: { label: string; req: SearchRequest; limitMs: number }[] = [
+      {
+        label: "commits",
+        req: { scope: "commits", query: "extend", limit: 200, commits: 2000 },
+        limitMs: 2000,
+      },
+      { label: "worktree", req: { scope: "worktree", query: "module", limit: 200 }, limitMs: 3000 },
+      {
+        label: "pickaxe",
+        req: { scope: "pickaxe", query: "module", limit: 200, commits: 200 },
+        limitMs: 5000,
+      },
+    ];
+    for (const { label, req, limitMs } of runs) {
+      const t = performance.now();
+      const out = await searchSession.search(req);
+      const ms = performance.now() - t;
+      console.log(
+        `search ${label} (${searchFixture}): ${out.hits.length} hits, ${out.scanned} scanned, ` +
+          `capped ${out.capped} in ${ms.toFixed(1)} ms`,
+      );
+      budget(`search ${label} (${searchFixture})`, ms, limitMs, " ms", true);
+    }
+    await searchSession.close();
   }
 
   const m = await session.metrics();

@@ -305,5 +305,6 @@
   },
   "pathHistories": {},
   "blames": {},
-  "secrets": []
+  "secrets": [],
+  "searches": {}
 }
