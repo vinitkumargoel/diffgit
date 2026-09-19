@@ -14,6 +14,9 @@
  * T10.4 adds the `hidden` fixture with `hidden` (the whole Hidden group) and `explanations` (one
  * `PathExplanation` per interesting path), so T11.4 can build the popover against real data.
  *
+ * T10.6 adds `pathHistories` and `blames` for the three `history` files the blame oracles cover, so
+ * T11.6 can build the Blame and History card modes against real attributions.
+ *
  * T10.5 adds `walks` (the whole history per variant — default, first-parent, all, per path — which
  * the mock pages itself), `commits` (`CommitDetails`), `commitStats`, `branches` (the Branches
  * table with its cells filled), `aheadBehind` and `reachable`, plus the `octopus` fixture so the
@@ -26,12 +29,14 @@ import { NodeDirHandle } from "../src/engine/fs/nodeDirHandle";
 import { RepoSession } from "../src/engine/session";
 import type {
   AheadBehind,
+  BlamePayload,
   BranchRow,
   CommitDetails,
   CommitSummary,
   DiffResult,
   Oid,
   PathExplanation,
+  PathHistoryEntry,
   RangeSource,
   RepoOperation,
   ResolvedRevision,
@@ -97,6 +102,15 @@ function walkVariants(name: string): { key: string; req: WalkRequest }[] {
   }
   return out;
 }
+
+/**
+ * T10.6: the paths whose file history and blame the mock serves. These are exactly the three files
+ * `fixtures/history/expected/blame-src-*.txt` records `git blame --porcelain` for — a hot file, a
+ * whitespace-only-touched file and one that was renamed.
+ */
+const BLAME_PATHS: Record<string, string[]> = {
+  history: [HISTORY_FIXTURE.hotPath, HISTORY_FIXTURE.indentPath, HISTORY_FIXTURE.renamedTo],
+};
 
 /** Ahead/behind pairs worth recording, by fixture (the ones T10.0 recorded git's counts for). */
 const AHEAD_BEHIND: Record<string, [string, string][]> = {
@@ -210,6 +224,22 @@ async function record(name: string, v2: boolean): Promise<void> {
     for (const [a, b] of AHEAD_BEHIND[name] ?? []) {
       aheadBehind[`${a}...${b}`] = await session.aheadBehind(a, b);
     }
+    // ---- T10.6: file history and blame for the card's Blame / History modes -------------------
+    const pathHistories: Record<string, PathHistoryEntry[]> = {};
+    const blames: Record<string, BlamePayload> = {};
+    for (const path of BLAME_PATHS[name] ?? []) {
+      pathHistories[path] = (
+        await session.pathHistory("HEAD", path, { follow: true, limit: WALK_LIMIT })
+      ).entries;
+      for (const ignoreWhitespace of [false, true]) {
+        blames[ignoreWhitespace ? `w:${path}` : path] = await session.blame("HEAD", path, {
+          ignoreWhitespace,
+          includeWorktree: false,
+          maxRevisions: 500,
+        });
+      }
+    }
+
     const reachable = await session.markReachable([
       ...new Set([...walkedOids, ...(await session.reflog("HEAD", 200)).map((e) => e.newOid)]),
     ]);
@@ -235,6 +265,9 @@ async function record(name: string, v2: boolean): Promise<void> {
       branches,
       aheadBehind,
       reachable,
+      // T10.6: `git log --follow` per path and one blame per path and `-w` setting.
+      pathHistories,
+      blames,
     };
     writeFileSync(`${OUT}${name}.v2.json`, `${JSON.stringify(payload, null, 2)}\n`);
     console.log(
@@ -244,7 +277,8 @@ async function record(name: string, v2: boolean): Promise<void> {
         `${Object.keys(conflicts).length} conflicts, ${payload.hidden.length} hidden, ` +
         `${Object.keys(explanations).length} explanations, ` +
         `${walks.all?.commits.length ?? 0} commits (graph ${walks.all?.graphAvailable ?? false}), ` +
-        `${branches.length} branches`,
+        `${branches.length} branches, ${Object.keys(pathHistories).length} path histories, ` +
+        `${Object.keys(blames).length} blames`,
     );
   }
   await session.close();

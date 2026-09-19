@@ -164,6 +164,36 @@ counts. `aheadBehind(a, b)` returns the left count as `ahead` and the right one 
 variant — default, first-parent, all, per path — which the mock pages itself), `commits`,
 `commitStats`, `branches`, `aheadBehind` and `reachable`, and now records the `octopus` fixture too.
 
+<!-- T10.6 --> `pathHistory` is a **first-parent** walk: git's own `--follow` is first-parent by
+construction (`try_to_follow_renames` runs on a one-parent tree diff) and the default simplification
+already collapses a merge that is TREESAME to its mainline, so the two agree on every history git
+writes — `expected/log-path-hot.txt`, `log-path-renamed.txt` and `log-follow-renamed.txt` are
+asserted oid for oid. `PathHistoryEntry.path` is the name the file had **at that commit** and
+`renamedFrom` the name at its first parent, found by running `detectRenames` between the two trees
+with only the followed path on the added side and only the paths the commit removed on the deleted
+side. `whitespaceOnly` is `computeStats({ ignoreWhitespace: true })` reporting no change.
+`pathHistory`'s cursor is a JSON blob carrying the next commit **and** the path at it, so a page
+boundary may fall in the middle of a rename chain. `src/engine/api.ts` gains `PathHistoryOptions`
+(`{ follow; limit; cursor? }`) and `BlameRequest` (`{ ignoreWhitespace; includeWorktree;
+maxRevisions }`) beside `FileDiffOptions`; `ProgressPhase` gains `"blame"`.
+
+`blame` starts from the newest content — the working-tree file when `includeWorktree` is set and it
+differs from the blob at `ref`, in which case the lines that diff introduces carry `oid: null` — and
+reverse-diffs the path history newest → oldest with `lineDiff`, attributing every added line to the
+revision that added it with the line number and path **that** revision had, and carrying the rest
+back to their position on the older side. It stops as soon as nothing is unassigned; the oldest
+revision it reaches keeps whatever is left, so every line always has an origin. `ignoreWhitespace`
+compares `-w` keys throughout (git's `-w`), which is why a whitespace-only revision attributes
+nothing and `blame-src-indent-w.txt` falls through to the root commit. `maxRevisions` is enforced by
+asking the history for `maxRevisions + 1` entries: more means the list was cut, the last entry
+examined keeps the remaining lines, `capped` is true and a `BLAME_CAPPED` warning goes to the sink.
+`BlamePayload.commits` holds only the commits a line actually points at. A file over 10 MB is
+`TOO_LARGE`; a path that is not in the ref is `REF_NOT_FOUND`. `RepoSession.single()` now hands its
+callback an `AbortSignal` that fires when a newer call of the same method supersedes it, so both
+methods stop reading objects instead of running to completion. `bun run record` writes
+`pathHistories` (follow-renames, per path) and `blames` (per path, `w:`-prefixed for the `-w`
+recording) into `<fixture>.v2.json` for the three `history` files the blame oracles cover.
+
 ```ts
 export interface ResolvedRevision {
   expr: string; oid: Oid | null;                     // null only for "<root>^" → empty tree

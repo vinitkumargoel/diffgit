@@ -374,3 +374,49 @@ export interface BranchRow {
   /** Tags pointing at the tip. */
   tags: string[];
 }
+
+// ---- v2 file history and blame (T10.6, docs/v2-contracts.md) -----------------------------------
+
+/**
+ * One commit that changed a path, as `git log --follow -- <path>` lists them (newest first).
+ *
+ * `path` is the name the file had **at this commit**; `renamedFrom` is the name it had at the
+ * commit's first parent, so a rename hop can be shown explicitly (atlas tab 02: "renamed from … in
+ * …"). `whitespaceOnly` is true when the `-w` diff against the parent is empty — a reindent that
+ * would otherwise steal the blame for every line.
+ */
+export interface PathHistoryEntry {
+  oid: Oid;
+  subject: string;
+  author: Signature;
+  path: string;
+  renamedFrom: string | null;
+  whitespaceOnly: boolean;
+  status: FileStatus;
+}
+
+/**
+ * Who last touched one line. `oid` is null for a line that only exists in the working tree
+ * ("you, uncommitted"); `origLine` is the 1-based line number in that commit's version of the file
+ * and `origPath` the name it had there — the two fields `git blame --porcelain` prints as the
+ * header's second number and its `filename` line.
+ */
+export interface BlameLine {
+  line: number;
+  oid: Oid | null;
+  origLine: number;
+  origPath: string;
+}
+
+/** The Blame card's payload (`EngineApi.blame`, Design §14.1 `Diff | Blame | History`). */
+export interface BlamePayload {
+  path: string;
+  ref: string;
+  lines: BlameLine[];
+  /** Every commit named in `lines`, so the gutter needs no second call. */
+  commits: Record<Oid, { author: Signature; subject: string }>;
+  /** How many revisions were examined before every line had an origin. */
+  revisions: number;
+  /** `maxRevisions` was reached; the remaining lines carry the oldest revision seen (`BLAME_CAPPED`). */
+  capped: boolean;
+}

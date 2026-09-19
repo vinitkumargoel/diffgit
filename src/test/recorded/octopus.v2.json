@@ -144,7 +144,7 @@
     {
       "path": "expected",
       "kind": "ignored-dir",
-      "count": 7
+      "count": 13
     }
   ],
   "explanations": {},
@@ -257,6 +257,11 @@
               "kind": "merge"
             },
             {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
               "from": 2,
               "to": 2,
               "kind": "straight"
@@ -287,6 +292,11 @@
               "from": 2,
               "to": 0,
               "kind": "merge"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
             }
           ]
         },
@@ -401,6 +411,84 @@
     "all": {
       "commits": [
         {
+          "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
+          "parents": [
+            "265c23779d5c82d8b5a22d512179cc001e68e60b",
+            "03da552045a219cc82af159e96297d44fa7d5548",
+            "211e73063ddab46dfada551deea6befb5f18ea16"
+          ],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c3: octopus merge of side-a and side-b",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 0,
+              "to": 1,
+              "kind": "fork"
+            },
+            {
+              "from": 0,
+              "to": 2,
+              "kind": "fork"
+            }
+          ]
+        },
+        {
+          "oid": "265c23779d5c82d8b5a22d512179cc001e68e60b",
+          "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c2: main moves on",
+          "refs": [],
+          "lane": 0,
+          "laneCount": 3,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
+            },
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
           "oid": "03da552045a219cc82af159e96297d44fa7d5548",
           "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
           "author": {
@@ -417,12 +505,22 @@
           },
           "subject": "a1: side-a commit",
           "refs": ["side-a"],
-          "lane": 0,
-          "laneCount": 1,
+          "lane": 1,
+          "laneCount": 3,
           "edges": [
+            {
+              "from": 1,
+              "to": 0,
+              "kind": "merge"
+            },
             {
               "from": 0,
               "to": 0,
+              "kind": "straight"
+            },
+            {
+              "from": 2,
+              "to": 2,
               "kind": "straight"
             }
           ]
@@ -444,54 +542,13 @@
           },
           "subject": "b1: side-b commit",
           "refs": ["side-b"],
-          "lane": 1,
-          "laneCount": 2,
+          "lane": 2,
+          "laneCount": 3,
           "edges": [
             {
-              "from": 1,
+              "from": 2,
               "to": 0,
               "kind": "merge"
-            }
-          ]
-        },
-        {
-          "oid": "e2643f5226e94c51e72a615953567c325f89f7c1",
-          "parents": [
-            "265c23779d5c82d8b5a22d512179cc001e68e60b",
-            "03da552045a219cc82af159e96297d44fa7d5548",
-            "211e73063ddab46dfada551deea6befb5f18ea16"
-          ],
-          "author": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "committer": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "subject": "c3: octopus merge of side-a and side-b",
-          "refs": ["HEAD", "main"],
-          "lane": 1,
-          "laneCount": 4,
-          "edges": [
-            {
-              "from": 1,
-              "to": 1,
-              "kind": "straight"
-            },
-            {
-              "from": 1,
-              "to": 2,
-              "kind": "fork"
-            },
-            {
-              "from": 1,
-              "to": 3,
-              "kind": "fork"
             },
             {
               "from": 0,
@@ -518,61 +575,8 @@
           "subject": "c1: root",
           "refs": [],
           "lane": 0,
-          "laneCount": 4,
-          "edges": [
-            {
-              "from": 1,
-              "to": 1,
-              "kind": "straight"
-            },
-            {
-              "from": 2,
-              "to": 2,
-              "kind": "straight"
-            },
-            {
-              "from": 3,
-              "to": 3,
-              "kind": "straight"
-            }
-          ]
-        },
-        {
-          "oid": "265c23779d5c82d8b5a22d512179cc001e68e60b",
-          "parents": ["f569837e45cb7b03d48190e1b540d75d59348b42"],
-          "author": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "committer": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "subject": "c2: main moves on",
-          "refs": [],
-          "lane": 1,
-          "laneCount": 4,
-          "edges": [
-            {
-              "from": 1,
-              "to": 1,
-              "kind": "straight"
-            },
-            {
-              "from": 2,
-              "to": 2,
-              "kind": "straight"
-            },
-            {
-              "from": 3,
-              "to": 3,
-              "kind": "straight"
-            }
-          ]
+          "laneCount": 1,
+          "edges": []
         }
       ],
       "graphAvailable": false
@@ -828,5 +832,7 @@
     "03da552045a219cc82af159e96297d44fa7d5548": true,
     "211e73063ddab46dfada551deea6befb5f18ea16": true,
     "f569837e45cb7b03d48190e1b540d75d59348b42": true
-  }
+  },
+  "pathHistories": {},
+  "blames": {}
 }

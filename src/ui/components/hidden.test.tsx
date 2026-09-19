@@ -131,12 +131,16 @@ describe("Hidden group (Design §14.4)", () => {
       kind: el.getAttribute("data-hidden-kind"),
       text: el.textContent,
     }));
+    // `expected/` holds the parity files the fixture scripts write; its count grows with every
+    // engine task, so read it from the recording rather than pinning a number.
+    const expectedDir = entries.find((e) => e.path === "expected");
+    expect(expectedDir?.kind).toBe("ignored-dir");
     expect(rows).toEqual([
       { kind: "ignored", text: "·.DS_Storeignored" },
       { kind: "ignored", text: "·.env.localignored" },
       { kind: "too-large", text: "·big.txt> 10 MB" },
       { kind: "ignored-dir", text: "·dist/3ignored" },
-      { kind: "ignored-dir", text: "·expected/8ignored" },
+      { kind: "ignored-dir", text: `·expected/${expectedDir?.count}ignored` },
       { kind: "assume-unchanged", text: "·src/assumed.txtassume-unchanged" },
       { kind: "skip-worktree", text: "·src/skipped.txtskip-worktree" },
     ]);
