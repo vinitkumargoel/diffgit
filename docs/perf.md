@@ -37,6 +37,27 @@ The emitted rows always cost one `readCommit` each, for the author and subject.
 | Full `--all` walk of `history` **without** it (the file removed from a copy) | – | 25 ms | `scripts/perf.ts` (printed) |
 | Commit-graph speed-up on that walk | – | **1.9×** (the atlas estimated 2–5× on bigger histories, where the per-commit object inflation dominates rather than the 63 `readCommit` calls both paths still pay for the rows) | – |
 
+## Blame and file history (T10.6, same machine, 2026-09-19)
+
+`blame` resolves the path history first (`pathHistory({ follow: true })`, one `flattenTree` per
+first-parent commit, memoised for the session) and then reverse-diffs consecutive revisions with the
+same `lineDiff` the diff pane uses, stopping as soon as no line is unassigned. Only two revisions are
+decoded at a time.
+
+| Metric | Budget | Measured | Where asserted |
+|---|---|---|---|
+| `blame src/hot.txt` (60 lines, 3 revisions) — first call on a cold session | < 200 ms | 21 ms (the first call pays for the whole first-parent tree walk; the memoised trees make every later blame on the same session ~2 ms) | `scripts/perf.ts`, strict only |
+| `blame src/hot.txt -w` (warm) | < 200 ms | 2.4 ms | strict only |
+| `blame src/indent.txt` / `-w` (12 lines, 1–2 revisions) | < 200 ms | 1.5 ms / 1.3 ms | strict only |
+| `blame src/renamed-to.txt` / `-w` (21 lines, 4 revisions, one rename hop) | < 200 ms | 2.7 ms / 2.2 ms | strict only |
+| `pathHistory --follow src/renamed-to.txt` (4 entries, one `detectRenames` step) | – | 1.8 ms | `scripts/perf.ts` (printed) |
+
+The atlas estimated ≈ 0.2 s for a typical file (30 revisions × ≈ 5 ms Myers on 400 lines) and ≈ 2.5 s
+for a 500-revision hot file; the fixture files are far smaller, so what these numbers pin down is the
+fixed cost — the tree walk and the per-revision blob reads — rather than the Myers time. The
+`maxRevisions` cap (default 500, `BLAME_CAPPED`) is what bounds the second case, and the early
+termination means a file whose lines were all rewritten recently never walks to its root.
+
 `markReachable` is one walk from every ref, cached per refs snapshot, so the reflog panel's
 `unreachable` badges cost one traversal for the whole list. `aheadBehind` builds both reachability
 sets (capped at 10,000 each) rather than pruning at the merge base, because a commit reachable from

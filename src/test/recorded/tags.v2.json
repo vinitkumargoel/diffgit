@@ -114,7 +114,7 @@
     {
       "path": "expected",
       "kind": "ignored-dir",
-      "count": 8
+      "count": 13
     }
   ],
   "explanations": {},
@@ -550,8 +550,8 @@
     "all": {
       "commits": [
         {
-          "oid": "1e919f3681161418fef2e272272c9cb707fa65f6",
-          "parents": [],
+          "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+          "parents": ["8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8"],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -564,11 +564,44 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c1: first release",
-          "refs": ["v0.1.0"],
+          "subject": "c4: fourth release",
+          "refs": ["HEAD", "main", "v1.1.0"],
           "lane": 0,
           "laneCount": 1,
-          "edges": []
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
+          "parents": ["7f276549ffed610f8419f52e68edadb1348b883b"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c3: third release",
+          "refs": ["release", "v1.0.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
         },
         {
           "oid": "7f276549ffed610f8419f52e68edadb1348b883b",
@@ -598,8 +631,8 @@
           ]
         },
         {
-          "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
-          "parents": ["8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8"],
+          "oid": "1e919f3681161418fef2e272272c9cb707fa65f6",
+          "parents": [],
           "author": {
             "name": "test",
             "email": "test@example.com",
@@ -612,54 +645,11 @@
             "timestamp": 1704067200000,
             "tzOffsetMin": 0
           },
-          "subject": "c4: fourth release",
-          "refs": ["HEAD", "main", "v1.1.0"],
-          "lane": 1,
-          "laneCount": 2,
-          "edges": [
-            {
-              "from": 1,
-              "to": 1,
-              "kind": "straight"
-            },
-            {
-              "from": 0,
-              "to": 0,
-              "kind": "straight"
-            }
-          ]
-        },
-        {
-          "oid": "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8",
-          "parents": ["7f276549ffed610f8419f52e68edadb1348b883b"],
-          "author": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "committer": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "subject": "c3: third release",
-          "refs": ["release", "v1.0.0"],
-          "lane": 1,
-          "laneCount": 2,
-          "edges": [
-            {
-              "from": 1,
-              "to": 1,
-              "kind": "straight"
-            },
-            {
-              "from": 0,
-              "to": 0,
-              "kind": "straight"
-            }
-          ]
+          "subject": "c1: first release",
+          "refs": ["v0.1.0"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
         }
       ],
       "graphAvailable": false
@@ -776,17 +766,12 @@
     }
   },
   "commitStats": {
-    "7f276549ffed610f8419f52e68edadb1348b883b": {
+    "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8": {
       "files": 1,
       "additions": 1,
       "deletions": 1
     },
-    "1e919f3681161418fef2e272272c9cb707fa65f6": {
-      "files": 2,
-      "additions": 2,
-      "deletions": 0
-    },
-    "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8": {
+    "7f276549ffed610f8419f52e68edadb1348b883b": {
       "files": 1,
       "additions": 1,
       "deletions": 1
@@ -795,6 +780,11 @@
       "files": 1,
       "additions": 1,
       "deletions": 1
+    },
+    "1e919f3681161418fef2e272272c9cb707fa65f6": {
+      "files": 2,
+      "additions": 2,
+      "deletions": 0
     }
   },
   "branches": [
@@ -852,5 +842,7 @@
     "8d071c323aa2f4d0c74a425f4105ef2d9d1b57c8": true,
     "7f276549ffed610f8419f52e68edadb1348b883b": true,
     "1e919f3681161418fef2e272272c9cb707fa65f6": true
-  }
+  },
+  "pathHistories": {},
+  "blames": {}
 }

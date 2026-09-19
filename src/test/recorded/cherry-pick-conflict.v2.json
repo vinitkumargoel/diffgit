@@ -236,7 +236,7 @@
     {
       "path": "expected",
       "kind": "ignored-dir",
-      "count": 8
+      "count": 13
     }
   ],
   "explanations": {},
@@ -352,33 +352,6 @@
     "all": {
       "commits": [
         {
-          "oid": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
-          "parents": ["51752472fde780630d63e468ef1a1653e3bb4fc4"],
-          "author": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "committer": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "subject": "t1: the commit that gets cherry-picked",
-          "refs": ["topic"],
-          "lane": 0,
-          "laneCount": 1,
-          "edges": [
-            {
-              "from": 0,
-              "to": 0,
-              "kind": "straight"
-            }
-          ]
-        },
-        {
           "oid": "95ec07d57af52aec6119ee26472419a17689b490",
           "parents": ["51752472fde780630d63e468ef1a1653e3bb4fc4"],
           "author": {
@@ -395,6 +368,33 @@
           },
           "subject": "c2: main edits the same line",
           "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": [
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
+          "parents": ["51752472fde780630d63e468ef1a1653e3bb4fc4"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "t1: the commit that gets cherry-picked",
+          "refs": ["topic"],
           "lane": 1,
           "laneCount": 2,
           "edges": [
@@ -402,6 +402,11 @@
               "from": 1,
               "to": 0,
               "kind": "merge"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
             }
           ]
         },
@@ -514,11 +519,6 @@
     }
   },
   "commitStats": {
-    "51752472fde780630d63e468ef1a1653e3bb4fc4": {
-      "files": 2,
-      "additions": 7,
-      "deletions": 0
-    },
     "95ec07d57af52aec6119ee26472419a17689b490": {
       "files": 1,
       "additions": 1,
@@ -528,6 +528,11 @@
       "files": 1,
       "additions": 1,
       "deletions": 1
+    },
+    "51752472fde780630d63e468ef1a1653e3bb4fc4": {
+      "files": 2,
+      "additions": 7,
+      "deletions": 0
     }
   },
   "branches": [
@@ -584,5 +589,7 @@
     "95ec07d57af52aec6119ee26472419a17689b490": true,
     "51752472fde780630d63e468ef1a1653e3bb4fc4": true,
     "77be65c35b440f0da7050c6b67f1fe1380d5676d": true
-  }
+  },
+  "pathHistories": {},
+  "blames": {}
 }

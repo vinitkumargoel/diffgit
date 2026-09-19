@@ -167,6 +167,43 @@ try {
   if (withGraph.n !== withoutGraph.n)
     failures.push("history walk length differs without the graph");
 
+  // ---- blame (T10.6) --------------------------------------------------------------------------
+  // The three `history` files the `git blame --porcelain` oracles cover: a hot file with three
+  // revisions, a file one whitespace-only commit touched, and one that was renamed (atlas tab 02:
+  // "≈ 0.2 s for a typical file", measured here on a warm session).
+  {
+    const blameSession = await RepoSession.open(
+      await NodeDirHandle.open(fixturePath("history")),
+      sink,
+      { id: "history-blame" },
+    );
+    for (const path of ["src/hot.txt", "src/indent.txt", "src/renamed-to.txt"]) {
+      for (const ignoreWhitespace of [false, true]) {
+        const t = performance.now();
+        const out = await blameSession.blame("main", path, {
+          ignoreWhitespace,
+          includeWorktree: false,
+          maxRevisions: 500,
+        });
+        const ms = performance.now() - t;
+        console.log(
+          `blame ${path}${ignoreWhitespace ? " -w" : "   "}: ${out.lines.length} lines, ` +
+            `${out.revisions} revisions in ${ms.toFixed(1)} ms`,
+        );
+        budget(`blame ${path}${ignoreWhitespace ? " -w" : ""}`, ms, 200, " ms", true);
+      }
+    }
+    const th = performance.now();
+    const hist = await blameSession.pathHistory("main", "src/renamed-to.txt", {
+      follow: true,
+      limit: 500,
+    });
+    console.log(
+      `pathHistory --follow src/renamed-to.txt: ${hist.entries.length} entries in ${(performance.now() - th).toFixed(1)} ms`,
+    );
+    await blameSession.close();
+  }
+
   const m = await session.metrics();
   console.log("metrics:", { ...m, lastCompute: m.lastCompute });
   console.log(

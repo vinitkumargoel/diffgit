@@ -67,6 +67,8 @@ export function createEngineApi(
     branchOverview: () => guard(() => need().branchOverview()),
     branchCells: (fullNames) => guard(() => need().branchCells(fullNames)),
     markReachable: (oids) => guard(() => need().markReachable(oids)),
+    pathHistory: (ref, path, o) => guard(() => need().pathHistory(ref, path, o)),
+    blame: (ref, path, o) => guard(() => need().blame(ref, path, o)),
     fileBytes: (generation, id, side) => guard(() => need().fileBytes(generation, id, side)),
     prioritise: (ids) => guard(() => need().prioritise(ids)),
     probe: (tier) => guard(() => need().probe(tier)),

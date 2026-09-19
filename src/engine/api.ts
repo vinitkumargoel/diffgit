@@ -8,6 +8,7 @@
 import type { EngineErrorJSON, PublicCode } from "./errors";
 import type {
   AheadBehind,
+  BlamePayload,
   BranchRow,
   CommitDetails,
   DiffResult,
@@ -16,6 +17,7 @@ import type {
   HiddenEntry,
   Oid,
   PathExplanation,
+  PathHistoryEntry,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -38,7 +40,9 @@ export type ProgressPhase =
   | "stats"
   | "probe"
   /** T10.5: a page of `walkCommits` (`done` = rows emitted). */
-  | "history";
+  | "history"
+  /** T10.6: one revision of `blame` (`done`/`total` = revisions reverse-diffed). */
+  | "blame";
 
 export interface Progress {
   phase: ProgressPhase;
@@ -195,6 +199,22 @@ export interface ConflictPayload {
  * What the page may set when it opens a repository (T10.4). Separate from `SessionOptions`, which
  * is the engine's own tuning: these are user preferences that travel across the worker boundary.
  */
+/** What `EngineApi.pathHistory` accepts (T10.6). */
+export interface PathHistoryOptions {
+  /** Follow the rename chain (`git log --follow`); off is plain `git log -- <path>`. */
+  follow: boolean;
+  limit: number;
+  /** Opaque continuation token from the previous page. */
+  cursor?: string;
+}
+
+/** What `EngineApi.blame` accepts (T10.6). */
+export interface BlameRequest {
+  ignoreWhitespace: boolean;
+  includeWorktree: boolean;
+  maxRevisions: number;
+}
+
 export interface OpenOptions {
   /**
    * Apply diffgit's built-in excludes (`.DS_Store`, `._*`, `Thumbs.db`, `desktop.ini`) at the
@@ -296,6 +316,24 @@ export interface EngineApi {
   ): Promise<Record<string, Pick<BranchRow, "vsUpstream" | "vsDefault" | "merged">>>;
   /** Which of these commits are reachable from any ref — the reflog's "unreachable" badge. */
   markReachable(oids: Oid[]): Promise<Record<Oid, boolean>>;
+  /**
+   * The commits that changed one path, newest first (T10.6) — `git log -- <path>`, and with
+   * `follow` the rename chain as `git log --follow` walks it, so `PathHistoryEntry.path` is the
+   * name the file had at that commit. `cursor` continues where the previous page stopped.
+   */
+  pathHistory(
+    ref: string,
+    path: string,
+    opts: PathHistoryOptions,
+  ): Promise<{ entries: PathHistoryEntry[]; cursor: string | null }>;
+  /**
+   * Who wrote each line of one file (T10.6), renames followed. `includeWorktree` starts from the
+   * working-tree file when it is dirty (those lines get `oid: null`), `ignoreWhitespace` applies
+   * git's `-w` keys so a reindent steals no attribution, and `maxRevisions` bounds the walk
+   * (`BLAME_CAPPED`, the remaining lines attributed to the oldest revision examined). Progress
+   * phase `"blame"`.
+   */
+  blame(ref: string, path: string, opts: BlameRequest): Promise<BlamePayload>;
   /** Move these files to the front of the background stats queue (visible sidebar rows). */
   prioritise(ids: string[]): Promise<void>;
   /** Cheap change signature per tier for the polling fallback (T6.3). */

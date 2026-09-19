@@ -77,7 +77,7 @@
     {
       "path": "expected",
       "kind": "ignored-dir",
-      "count": 9
+      "count": 14
     }
   ],
   "explanations": {},
@@ -275,27 +275,6 @@
     "all": {
       "commits": [
         {
-          "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
-          "parents": [],
-          "author": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "committer": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "subject": "c1: base",
-          "refs": ["HEAD", "main"],
-          "lane": 0,
-          "laneCount": 1,
-          "edges": []
-        },
-        {
           "oid": "632bf968606294738eb86e929596f787f04098e8",
           "parents": [
             "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
@@ -370,36 +349,14 @@
               "kind": "merge"
             },
             {
-              "from": 2,
-              "to": 2,
+              "from": 0,
+              "to": 0,
               "kind": "straight"
-            }
-          ]
-        },
-        {
-          "oid": "a079515024800fc009a37bbef87b3c01fda475f6",
-          "parents": ["2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa"],
-          "author": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "committer": {
-            "name": "test",
-            "email": "test@example.com",
-            "timestamp": 1704067200000,
-            "tzOffsetMin": 0
-          },
-          "subject": "index on main: 2f85b4d c1: base",
-          "refs": [],
-          "lane": 1,
-          "laneCount": 3,
-          "edges": [
+            },
             {
               "from": 1,
-              "to": 0,
-              "kind": "merge"
+              "to": 1,
+              "kind": "straight"
             },
             {
               "from": 2,
@@ -432,8 +389,66 @@
               "from": 0,
               "to": 0,
               "kind": "straight"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
             }
           ]
+        },
+        {
+          "oid": "a079515024800fc009a37bbef87b3c01fda475f6",
+          "parents": ["2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa"],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "index on main: 2f85b4d c1: base",
+          "refs": [],
+          "lane": 1,
+          "laneCount": 2,
+          "edges": [
+            {
+              "from": 1,
+              "to": 0,
+              "kind": "merge"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
+            }
+          ]
+        },
+        {
+          "oid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+          "parents": [],
+          "author": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "committer": {
+            "name": "test",
+            "email": "test@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c1: base",
+          "refs": ["HEAD", "main"],
+          "lane": 0,
+          "laneCount": 1,
+          "edges": []
         }
       ],
       "graphAvailable": false
@@ -528,33 +543,6 @@
         "deletions": 1
       }
     },
-    "a079515024800fc009a37bbef87b3c01fda475f6": {
-      "oid": "a079515024800fc009a37bbef87b3c01fda475f6",
-      "parents": ["2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa"],
-      "author": {
-        "name": "test",
-        "email": "test@example.com",
-        "timestamp": 1704067200000,
-        "tzOffsetMin": 0
-      },
-      "committer": {
-        "name": "test",
-        "email": "test@example.com",
-        "timestamp": 1704067200000,
-        "tzOffsetMin": 0
-      },
-      "subject": "index on main: 2f85b4d c1: base",
-      "refs": [],
-      "body": "",
-      "tree": "855b361a49656ad8cce32b0100426f2deadb3f6d",
-      "signed": false,
-      "note": null,
-      "stats": {
-        "files": 0,
-        "additions": 0,
-        "deletions": 0
-      }
-    },
     "1fb4409438c7e18a489aaac417327333a2b70f1f": {
       "oid": "1fb4409438c7e18a489aaac417327333a2b70f1f",
       "parents": [],
@@ -581,17 +569,44 @@
         "additions": 1,
         "deletions": 0
       }
+    },
+    "a079515024800fc009a37bbef87b3c01fda475f6": {
+      "oid": "a079515024800fc009a37bbef87b3c01fda475f6",
+      "parents": ["2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa"],
+      "author": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "committer": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "subject": "index on main: 2f85b4d c1: base",
+      "refs": [],
+      "body": "",
+      "tree": "855b361a49656ad8cce32b0100426f2deadb3f6d",
+      "signed": false,
+      "note": null,
+      "stats": {
+        "files": 0,
+        "additions": 0,
+        "deletions": 0
+      }
     }
   },
   "commitStats": {
-    "a079515024800fc009a37bbef87b3c01fda475f6": {
-      "files": 0,
-      "additions": 0,
-      "deletions": 0
-    },
     "1fb4409438c7e18a489aaac417327333a2b70f1f": {
       "files": 1,
       "additions": 1,
+      "deletions": 0
+    },
+    "a079515024800fc009a37bbef87b3c01fda475f6": {
+      "files": 0,
+      "additions": 0,
       "deletions": 0
     },
     "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa": {
@@ -638,7 +653,9 @@
     "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa": true,
     "632bf968606294738eb86e929596f787f04098e8": true,
     "6622462c5b8d28bc3773f3716bb08042cab077ba": true,
-    "a079515024800fc009a37bbef87b3c01fda475f6": true,
-    "1fb4409438c7e18a489aaac417327333a2b70f1f": true
-  }
+    "1fb4409438c7e18a489aaac417327333a2b70f1f": true,
+    "a079515024800fc009a37bbef87b3c01fda475f6": true
+  },
+  "pathHistories": {},
+  "blames": {}
 }

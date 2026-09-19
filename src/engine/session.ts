@@ -7,6 +7,7 @@
  * public code by `toPublicError` (used by the worker boundary).
  */
 import type {
+  BlameRequest,
   ConflictPayload,
   EngineApi,
   EngineMetrics,
@@ -14,12 +15,14 @@ import type {
   FileDiffPayload,
   FileStats,
   InvalidateScope,
+  PathHistoryOptions,
   ProbeTier,
   Progress,
   ProgressSink,
   PublicError,
 } from "./api";
 import { isImagePath } from "./diff/binary";
+import { blame as runBlame } from "./diff/blame";
 import { buildConflictPayload } from "./diff/conflict";
 import { loadSide, loadSides } from "./diff/contentLoader";
 import { type DiffComputation, DiffEngine } from "./diff/diffEngine";
@@ -41,6 +44,7 @@ import { emptySnapshot, type IndexSnapshot, readIndex } from "./git/indexReader"
 import { checkLayout } from "./git/layoutChecks";
 import { ObjectDb } from "./git/objectDb";
 import { detectOperation, OPERATION_FILES } from "./git/operation";
+import { pathHistory as runPathHistory } from "./git/pathHistory";
 import { readReflog } from "./git/reflog";
 import { loadRefs } from "./git/refStore";
 import { resolveRevision } from "./git/revisions";
@@ -57,6 +61,7 @@ import {
 import { type ScannerOptions, WorktreeScanner } from "./git/worktree";
 import type {
   AheadBehind,
+  BlamePayload,
   BranchRow,
   CommitDetails,
   DiffResult,
@@ -65,6 +70,7 @@ import type {
   HiddenEntry,
   Oid,
   PathExplanation,
+  PathHistoryEntry,
   ReflogEntry,
   RefSnapshot,
   RepoCapabilities,
@@ -185,6 +191,8 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   private reachable: { key: string; result: ReachableResult } | null = null;
   /** method name → token of the newest call (one in-flight per method, T10.1). */
   private readonly singleFlight = new Map<string, symbol>();
+  /** T10.6: the abort controller of the in-flight call per method name (see `single`). */
+  private readonly singleAborts = new Map<string, AbortController>();
   private readonly statsLimit: <T>(fn: () => Promise<T>) => Promise<T>;
 
   private constructor(
@@ -400,16 +408,27 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   /**
    * One in-flight call per method name (phase-10 convention): a newer call of the same method makes
    * the older one reject with `CANCELLED` instead of resolving with data the UI no longer wants.
+   *
+   * T10.6: the superseded call also gets its `AbortSignal` fired, so a long walk (`blame` on a hot
+   * file) stops reading objects the moment the user moves on, instead of finishing and throwing.
+   * Methods that ignore the signal behave exactly as before.
    */
-  private async single<T>(method: string, fn: () => Promise<T>): Promise<T> {
+  private async single<T>(method: string, fn: (signal: AbortSignal) => Promise<T>): Promise<T> {
     const token = Symbol(method);
+    this.singleAborts.get(method)?.abort();
+    const ac = new AbortController();
+    this.singleAborts.set(method, ac);
     this.singleFlight.set(method, token);
     try {
-      const out = await this.withRootCheck(fn);
+      const out = await this.withRootCheck(() => fn(ac.signal));
       if (this.singleFlight.get(method) !== token) throw new CancelledError(method);
       return out;
+    } catch (e) {
+      if (ac.signal.aborted && !(e instanceof CancelledError)) throw new CancelledError(method);
+      throw e;
     } finally {
       if (this.singleFlight.get(method) === token) this.singleFlight.delete(method);
+      if (this.singleAborts.get(method) === ac) this.singleAborts.delete(method);
     }
   }
 
@@ -669,6 +688,96 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     }
     this.reachable = { key, result };
     return result;
+  }
+
+  // ---- file history and blame (T10.6) ----------------------------------------------------------
+
+  /** What `pathHistory` and the rename-follow step need; the rename limit is git's own config. */
+  private async historyDeps(signal: AbortSignal) {
+    return {
+      db: this.db,
+      reader: await this.commitReader(),
+      ...(this.cfg.diff.renameLimit !== undefined
+        ? { renameLimit: this.cfg.diff.renameLimit }
+        : {}),
+      signal,
+    };
+  }
+
+  private async resolveCommit(ref: string): Promise<Oid> {
+    const resolved = await resolveRevision(this.db, this.refs, ref);
+    if (resolved.oid === null)
+      throw new EngineError("REV_NOT_FOUND", `"${ref}" does not name a commit.`, {
+        hint: "Pick a branch, tag or commit",
+      });
+    return resolved.oid;
+  }
+
+  /** `git log [--follow] -- <path>` for one path, newest first (T10.6). */
+  async pathHistory(
+    ref: string,
+    path: string,
+    opts: PathHistoryOptions,
+  ): Promise<{ entries: PathHistoryEntry[]; cursor: string | null }> {
+    this.assertOpen();
+    return this.single("pathHistory", async (signal) =>
+      runPathHistory(await this.historyDeps(signal), await this.resolveCommit(ref), path, opts),
+    );
+  }
+
+  /**
+   * Who wrote each line of `path` at `ref` (T10.6). The path history is resolved first (renames
+   * followed) so the reverse-diff has both the revision list and the rename hops; `maxRevisions + 1`
+   * entries are asked for so the cut can be told apart from a history that simply ended.
+   */
+  async blame(ref: string, path: string, opts: BlameRequest): Promise<BlamePayload> {
+    this.assertOpen();
+    return this.single("blame", async (signal) => {
+      const t0 = performance.now();
+      const maxRevisions = Math.max(1, opts.maxRevisions);
+      const deps = await this.historyDeps(signal);
+      const history = await runPathHistory(deps, await this.resolveCommit(ref), path, {
+        follow: true,
+        limit: maxRevisions + 1,
+      });
+      if (history.entries.length === 0)
+        throw new EngineError("REF_NOT_FOUND", `${path} does not exist in ${ref}.`, {
+          hint: "Check the path and the branch",
+        });
+      const historyCapped = history.entries.length > maxRevisions;
+      const out = await runBlame(
+        {
+          db: this.db,
+          entries: history.entries.slice(0, maxRevisions),
+          historyCapped,
+          readWorktree: (p) => this.readWorktreeBytes(p),
+          onProgress: (done, total) => this.progress({ phase: "blame", done, total }),
+          signal,
+        },
+        ref,
+        path,
+        opts,
+      );
+      for (const w of out.warnings) RepoSession.emitWarning(this.sink, w);
+      this.progress({
+        phase: "blame",
+        done: out.payload.revisions,
+        total: out.payload.revisions,
+        durationMs: performance.now() - t0,
+      });
+      return out.payload;
+    });
+  }
+
+  /** The working-tree bytes of a tracked path, or null when it is gone or unreadable. */
+  private async readWorktreeBytes(path: string): Promise<Uint8Array | null> {
+    try {
+      return await this.fs.readFile(`/${path}`);
+    } catch (e) {
+      const code = errorCode(e);
+      if (code === "ENOENT" || code === "EISDIR" || code === "ENOTDIR") return null;
+      throw e;
+    }
   }
 
   private async applyRenames(comp: DiffComputation, signal: AbortSignal): Promise<FileDiff[]> {
@@ -1256,6 +1365,8 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     for (const ac of this.conflictAborts.values()) ac.abort();
     this.conflictAborts.clear();
     this.singleFlight.clear();
+    for (const ac of this.singleAborts.values()) ac.abort();
+    this.singleAborts.clear();
     this.stopStats();
     this.current = null;
     this.db.dropCaches(true);

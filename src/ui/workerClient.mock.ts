@@ -5,10 +5,11 @@
  * remote refs) under those handle names, computes hunks from deterministic texts, pushes stats over
  * the sink in batches, and exposes `mutate()` so `probe()` signatures change.
  */
-import type { ConflictPayload, FileStats, ProgressSink } from "../engine/api";
+import type { BlameRequest, ConflictPayload, FileStats, ProgressSink } from "../engine/api";
 import { isWorktreeSource, sourceRefs } from "../engine/diffSource";
 import type {
   AheadBehind,
+  BlamePayload,
   BranchRow,
   CommitDetails,
   CommitSummary,
@@ -18,6 +19,7 @@ import type {
   HiddenEntry,
   Oid,
   PathExplanation,
+  PathHistoryEntry,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -92,6 +94,14 @@ interface RecordedV2 {
   branches: BranchRow[];
   aheadBehind: Record<string, AheadBehind>;
   reachable: Record<Oid, boolean>;
+  /** T10.6: the follow-renames history per path, and one blame per path and `-w` setting. */
+  pathHistories: Record<string, PathHistoryEntry[]>;
+  blames: Record<string, BlamePayload>;
+}
+
+/** `blames` is keyed by path, `w:` prefixed for the `-w` recording (see `scripts/record-fixtures.ts`). */
+function blameKey(path: string, opts: BlameRequest): string {
+  return opts.ignoreWhitespace ? `w:${path}` : path;
 }
 
 /**
@@ -461,6 +471,36 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       for (const oid of oids) out[oid] = v2.reachable[oid] ?? false;
       return out;
     },
+    async pathHistory(_ref, path, opts) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      // The recording is the whole (followed) history; `follow: false` stops at the first rename
+      // hop, which is exactly what `git log -- <path>` does.
+      const all = v2.pathHistories[path] ?? [];
+      const followed = opts.follow
+        ? all
+        : all.slice(0, all.findIndex((e) => e.renamedFrom !== null) + 1 || all.length);
+      const from = opts.cursor ? Number.parseInt(opts.cursor, 10) : 0;
+      const start = Number.isFinite(from) && from > 0 ? from : 0;
+      const end = Math.min(start + Math.max(1, opts.limit), followed.length);
+      return {
+        entries: followed.slice(start, end),
+        cursor: end < followed.length ? String(end) : null,
+      };
+    },
+    async blame(ref, path, opts) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const recorded = v2.blames[blameKey(path, opts)] ?? v2.blames[path];
+      if (!recorded) throw err("REF_NOT_FOUND", `${path} has no recorded blame.`);
+      sink?.onProgress({
+        phase: "blame",
+        done: recorded.revisions,
+        total: recorded.revisions,
+        durationMs: 1,
+      });
+      return { ...recorded, ref };
+    },
     async fileBytes(gen, id, side) {
       const files = requireGen(gen);
       const f = files.find((x) => x.id === id);
@@ -544,6 +584,8 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         branches: [],
         aheadBehind: {},
         reachable: {},
+        pathHistories: {},
+        blames: {},
       }
     );
   }

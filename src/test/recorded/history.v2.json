@@ -1051,7 +1051,7 @@
     {
       "path": "expected",
       "kind": "ignored-dir",
-      "count": 30
+      "count": 35
     }
   ],
   "explanations": {},
@@ -2748,6 +2748,11 @@
               "from": 0,
               "to": 1,
               "kind": "merge"
+            },
+            {
+              "from": 1,
+              "to": 1,
+              "kind": "straight"
             }
           ]
         },
@@ -6069,6 +6074,11 @@
               "from": 0,
               "to": 0,
               "kind": "straight"
+            },
+            {
+              "from": 2,
+              "to": 2,
+              "kind": "straight"
             }
           ]
         },
@@ -6288,6 +6298,11 @@
               "from": 2,
               "to": 0,
               "kind": "merge"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
             }
           ]
         },
@@ -6851,17 +6866,7 @@
     }
   },
   "commitStats": {
-    "82bc6c6d1bc309b9e6463af370ec95aa4866a78c": {
-      "files": 1,
-      "additions": 1,
-      "deletions": 1
-    },
     "fb9edcd9be63538ff6d425970ceaaaf27e1009ee": {
-      "files": 1,
-      "additions": 5,
-      "deletions": 0
-    },
-    "8295928b1c222c2877dbcf442573effe40d97e5a": {
       "files": 1,
       "additions": 5,
       "deletions": 0
@@ -6871,7 +6876,22 @@
       "additions": 5,
       "deletions": 0
     },
+    "82bc6c6d1bc309b9e6463af370ec95aa4866a78c": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 1
+    },
+    "8295928b1c222c2877dbcf442573effe40d97e5a": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
     "87a3a12b31ee4268cf84cfed8254425a12658c7a": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
+    "10f27d53c19de4ea66ac966ec37d30d9871abc64": {
       "files": 1,
       "additions": 5,
       "deletions": 0
@@ -6880,11 +6900,6 @@
       "files": 1,
       "additions": 1,
       "deletions": 1
-    },
-    "10f27d53c19de4ea66ac966ec37d30d9871abc64": {
-      "files": 1,
-      "additions": 5,
-      "deletions": 0
     },
     "2e318a86392b07c04747e14483e9b76e60a88775": {
       "files": 1,
@@ -6896,20 +6911,20 @@
       "additions": 5,
       "deletions": 0
     },
-    "261e0b9d0d06bbc309a69590239e4a2efc139807": {
+    "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e": {
       "files": 1,
-      "additions": 5,
-      "deletions": 0
+      "additions": 1,
+      "deletions": 1
     },
     "70703c5dfb94774c4c7b8f293b409a2fb02132c8": {
       "files": 1,
       "additions": 5,
       "deletions": 0
     },
-    "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e": {
+    "261e0b9d0d06bbc309a69590239e4a2efc139807": {
       "files": 1,
-      "additions": 1,
-      "deletions": 1
+      "additions": 5,
+      "deletions": 0
     },
     "931eea0f815b84e93b40772ca7b237f5b808c2ab": {
       "files": 1,
@@ -6921,12 +6936,12 @@
       "additions": 5,
       "deletions": 0
     },
-    "b92c2756a82e15f54285d7c209da3ac886e1579b": {
+    "0bea629635c4eaad5fe5f84fe29aba700a92a71a": {
       "files": 1,
       "additions": 5,
       "deletions": 0
     },
-    "0bea629635c4eaad5fe5f84fe29aba700a92a71a": {
+    "b92c2756a82e15f54285d7c209da3ac886e1579b": {
       "files": 1,
       "additions": 5,
       "deletions": 0
@@ -6936,12 +6951,17 @@
       "additions": 1,
       "deletions": 1
     },
+    "472d458ef31d9f36fe8e65576019fd18c4b39c16": {
+      "files": 1,
+      "additions": 5,
+      "deletions": 0
+    },
     "d35a4cf95b7a15a449ee6d4d96a94008ac892e70": {
       "files": 1,
       "additions": 5,
       "deletions": 0
     },
-    "472d458ef31d9f36fe8e65576019fd18c4b39c16": {
+    "8946f98688375397a15dda82801f07072ede8813": {
       "files": 1,
       "additions": 5,
       "deletions": 0
@@ -6950,11 +6970,6 @@
       "files": 1,
       "additions": 1,
       "deletions": 1
-    },
-    "8946f98688375397a15dda82801f07072ede8813": {
-      "files": 1,
-      "additions": 5,
-      "deletions": 0
     },
     "760c968a61db48a810deaef5c1269fb71028c560": {
       "files": 1,
@@ -6966,14 +6981,19 @@
       "additions": 6,
       "deletions": 0
     },
+    "82bed6085338e895515daf7061e4673c169013f8": {
+      "files": 1,
+      "additions": 23,
+      "deletions": 0
+    },
     "8d363ef7d323c8bb14e88374f1634419182050ed": {
       "files": 1,
       "additions": 23,
       "deletions": 0
     },
-    "82bed6085338e895515daf7061e4673c169013f8": {
+    "e8e51a9f9cb74aedca494962f36f4c62ed11e4aa": {
       "files": 1,
-      "additions": 23,
+      "additions": 19,
       "deletions": 0
     },
     "d591508ac3ec5664601a26ca15a46723da472ebc": {
@@ -6981,10 +7001,10 @@
       "additions": 1,
       "deletions": 1
     },
-    "e8e51a9f9cb74aedca494962f36f4c62ed11e4aa": {
+    "5e1b4e4a113a32ba74d89164599dae0b17753511": {
       "files": 1,
-      "additions": 19,
-      "deletions": 0
+      "additions": 1,
+      "deletions": 2
     },
     "f2b242b4531fc6ac3862a72cb4dfdca84b276cf1": {
       "files": 1,
@@ -6995,11 +7015,6 @@
       "files": 1,
       "additions": 12,
       "deletions": 12
-    },
-    "5e1b4e4a113a32ba74d89164599dae0b17753511": {
-      "files": 1,
-      "additions": 1,
-      "deletions": 2
     },
     "52052fc357c12a45a641e38d1d910fdec75f4241": {
       "files": 1,
@@ -7031,7 +7046,7 @@
       "additions": 1,
       "deletions": 0
     },
-    "9807480733153c750a21ae2e14cfc4504fd1dbea": {
+    "cd5a8be34254f0597f6774523d9bd8d7e4a5acea": {
       "files": 1,
       "additions": 1,
       "deletions": 0
@@ -7041,7 +7056,7 @@
       "additions": 1,
       "deletions": 0
     },
-    "cd5a8be34254f0597f6774523d9bd8d7e4a5acea": {
+    "9807480733153c750a21ae2e14cfc4504fd1dbea": {
       "files": 1,
       "additions": 1,
       "deletions": 0
@@ -7056,6 +7071,11 @@
       "additions": 1,
       "deletions": 0
     },
+    "4c3adf69902138dd6e67c8fba441b24bb59f36d5": {
+      "files": 1,
+      "additions": 1,
+      "deletions": 0
+    },
     "e66b609e02b02ed9f25fe0e3a039d9060474638c": {
       "files": 1,
       "additions": 1,
@@ -7066,9 +7086,9 @@
       "additions": 1,
       "deletions": 0
     },
-    "4c3adf69902138dd6e67c8fba441b24bb59f36d5": {
-      "files": 1,
-      "additions": 1,
+    "9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7": {
+      "files": 2,
+      "additions": 5,
       "deletions": 0
     },
     "d9459d1a6e53815426c4992b3591dad1408a3e27": {
@@ -7077,11 +7097,6 @@
       "deletions": 0
     },
     "e93098bc65bfabd2c6beaecda4692b479dfd305f": {
-      "files": 2,
-      "additions": 5,
-      "deletions": 0
-    },
-    "9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7": {
       "files": 2,
       "additions": 5,
       "deletions": 0
@@ -7101,14 +7116,19 @@
       "additions": 8,
       "deletions": 0
     },
-    "ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e": {
-      "files": 1,
-      "additions": 3,
+    "6b9edc8d680b71f414fa56cc589f9f91c6d84860": {
+      "files": 2,
+      "additions": 8,
       "deletions": 0
     },
     "a0a0c78717004cb71945e9cf659e16b81d062eb7": {
       "files": 2,
       "additions": 8,
+      "deletions": 0
+    },
+    "ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e": {
+      "files": 1,
+      "additions": 3,
       "deletions": 0
     },
     "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f": {
@@ -7126,27 +7146,27 @@
       "additions": 7,
       "deletions": 0
     },
-    "c86003e71f1ae4869664db372ac422b8c684818c": {
+    "c513f47f486d0b567c61b5b4db80b2c5e451193f": {
       "files": 1,
-      "additions": 6,
-      "deletions": 0
-    },
-    "6b9edc8d680b71f414fa56cc589f9f91c6d84860": {
-      "files": 2,
-      "additions": 8,
-      "deletions": 0
+      "additions": 1,
+      "deletions": 1
     },
     "ff4cd35f709efdf6d6de27099e01f72eb6bbb539": {
       "files": 1,
       "additions": 3,
       "deletions": 3
     },
-    "c513f47f486d0b567c61b5b4db80b2c5e451193f": {
+    "c86003e71f1ae4869664db372ac422b8c684818c": {
       "files": 1,
-      "additions": 1,
-      "deletions": 1
+      "additions": 6,
+      "deletions": 0
     },
     "1b64210831f4bd1984875c179e4e804cc91c33e2": {
+      "files": 1,
+      "additions": 3,
+      "deletions": 3
+    },
+    "aefdbcf01a4ecdb7049699de6ae4e79b1551623b": {
       "files": 1,
       "additions": 3,
       "deletions": 3
@@ -7155,11 +7175,6 @@
       "files": 7,
       "additions": 97,
       "deletions": 0
-    },
-    "aefdbcf01a4ecdb7049699de6ae4e79b1551623b": {
-      "files": 1,
-      "additions": 3,
-      "deletions": 3
     },
     "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a": {
       "files": 1,
@@ -7352,5 +7367,1443 @@
     "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a": true,
     "aefdbcf01a4ecdb7049699de6ae4e79b1551623b": true,
     "1b64210831f4bd1984875c179e4e804cc91c33e2": true
+  },
+  "pathHistories": {
+    "src/hot.txt": [
+      {
+        "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+        "subject": "c29: rework the middle of hot.txt",
+        "author": {
+          "name": "Grace Hopper",
+          "email": "grace@example.com",
+          "timestamp": 1706850000000,
+          "tzOffsetMin": 0
+        },
+        "path": "src/hot.txt",
+        "renamedFrom": null,
+        "whitespaceOnly": false,
+        "status": "modified"
+      },
+      {
+        "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+        "subject": "c05: rework the top of hot.txt",
+        "author": {
+          "name": "Ada Lovelace",
+          "email": "ada@example.com",
+          "timestamp": 1704517200000,
+          "tzOffsetMin": 0
+        },
+        "path": "src/hot.txt",
+        "renamedFrom": null,
+        "whitespaceOnly": false,
+        "status": "modified"
+      },
+      {
+        "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+        "subject": "c00: root commit",
+        "author": {
+          "name": "Ada Lovelace",
+          "email": "ada@example.com",
+          "timestamp": 1704067200000,
+          "tzOffsetMin": 0
+        },
+        "path": "src/hot.txt",
+        "renamedFrom": null,
+        "whitespaceOnly": false,
+        "status": "added"
+      }
+    ],
+    "src/indent.txt": [
+      {
+        "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+        "subject": "c31: reindent indent.txt (whitespace only)",
+        "author": {
+          "name": "Grace Hopper",
+          "email": "grace@example.com",
+          "timestamp": 1707030000000,
+          "tzOffsetMin": 0
+        },
+        "path": "src/indent.txt",
+        "renamedFrom": null,
+        "whitespaceOnly": true,
+        "status": "modified"
+      },
+      {
+        "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+        "subject": "c00: root commit",
+        "author": {
+          "name": "Ada Lovelace",
+          "email": "ada@example.com",
+          "timestamp": 1704067200000,
+          "tzOffsetMin": 0
+        },
+        "path": "src/indent.txt",
+        "renamedFrom": null,
+        "whitespaceOnly": false,
+        "status": "added"
+      }
+    ],
+    "src/renamed-to.txt": [
+      {
+        "oid": "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb",
+        "subject": "c40: extend mod1",
+        "author": {
+          "name": "Ada Lovelace",
+          "email": "ada@example.com",
+          "timestamp": 1707840000000,
+          "tzOffsetMin": 0
+        },
+        "path": "src/renamed-to.txt",
+        "renamedFrom": null,
+        "whitespaceOnly": false,
+        "status": "modified"
+      },
+      {
+        "oid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+        "subject": "c30: git mv renamed-from.txt and touch one line",
+        "author": {
+          "name": "Ada Lovelace",
+          "email": "ada@example.com",
+          "timestamp": 1706940000000,
+          "tzOffsetMin": 0
+        },
+        "path": "src/renamed-to.txt",
+        "renamedFrom": "src/renamed-from.txt",
+        "whitespaceOnly": false,
+        "status": "renamed"
+      },
+      {
+        "oid": "375ca4ebf9753133a1a89486cf4ee1305bf77fef",
+        "subject": "c12: iterate on modules and the guide",
+        "author": {
+          "name": "Grace Hopper",
+          "email": "grace@example.com",
+          "timestamp": 1705147200000,
+          "tzOffsetMin": 0
+        },
+        "path": "src/renamed-from.txt",
+        "renamedFrom": null,
+        "whitespaceOnly": false,
+        "status": "modified"
+      },
+      {
+        "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+        "subject": "c00: root commit",
+        "author": {
+          "name": "Ada Lovelace",
+          "email": "ada@example.com",
+          "timestamp": 1704067200000,
+          "tzOffsetMin": 0
+        },
+        "path": "src/renamed-from.txt",
+        "renamedFrom": null,
+        "whitespaceOnly": false,
+        "status": "added"
+      }
+    ]
+  },
+  "blames": {
+    "src/hot.txt": {
+      "path": "src/hot.txt",
+      "ref": "HEAD",
+      "lines": [
+        {
+          "line": 1,
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "origLine": 1,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 2,
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "origLine": 2,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 3,
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "origLine": 3,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 4,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 4,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 5,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 5,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 6,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 6,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 7,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 7,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 8,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 8,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 9,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 9,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 10,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 10,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 11,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 11,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 12,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 12,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 13,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 13,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 14,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 14,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 15,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 15,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 16,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 16,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 17,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 17,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 18,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 18,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 19,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 19,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 20,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 20,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 21,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 21,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 22,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 22,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 23,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 23,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 24,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 24,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 25,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 25,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 26,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 26,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 27,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 27,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 28,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 28,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 29,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 29,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 30,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 30,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 31,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 31,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 32,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 32,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 33,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 33,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 34,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 34,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 35,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 35,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 36,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 36,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 37,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 37,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 38,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 38,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 39,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 39,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 40,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 40,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 41,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 41,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 42,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 42,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 43,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 43,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 44,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 44,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 45,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 45,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 46,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 46,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 47,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 47,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 48,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 48,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 49,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 49,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 50,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 50,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 51,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 51,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 52,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 52,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 53,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 53,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 54,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 54,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 55,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 55,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 56,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 56,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 57,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 57,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 58,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 58,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 59,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 59,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 60,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 60,
+          "origPath": "src/hot.txt"
+        }
+      ],
+      "commits": {
+        "a73418042de715a7bef7e9bc59a8a2fadd8eb920": {
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706850000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c29: rework the middle of hot.txt"
+        },
+        "ff4cd35f709efdf6d6de27099e01f72eb6bbb539": {
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704517200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c05: rework the top of hot.txt"
+        },
+        "5772d43fe1036c123baac6d6792d31986659a515": {
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c00: root commit"
+        }
+      },
+      "revisions": 3,
+      "capped": false
+    },
+    "w:src/hot.txt": {
+      "path": "src/hot.txt",
+      "ref": "HEAD",
+      "lines": [
+        {
+          "line": 1,
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "origLine": 1,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 2,
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "origLine": 2,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 3,
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "origLine": 3,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 4,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 4,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 5,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 5,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 6,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 6,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 7,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 7,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 8,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 8,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 9,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 9,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 10,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 10,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 11,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 11,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 12,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 12,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 13,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 13,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 14,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 14,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 15,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 15,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 16,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 16,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 17,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 17,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 18,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 18,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 19,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 19,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 20,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 20,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 21,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 21,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 22,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 22,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 23,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 23,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 24,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 24,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 25,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 25,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 26,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 26,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 27,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 27,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 28,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 28,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 29,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 29,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 30,
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "origLine": 30,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 31,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 31,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 32,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 32,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 33,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 33,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 34,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 34,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 35,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 35,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 36,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 36,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 37,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 37,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 38,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 38,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 39,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 39,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 40,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 40,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 41,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 41,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 42,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 42,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 43,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 43,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 44,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 44,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 45,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 45,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 46,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 46,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 47,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 47,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 48,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 48,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 49,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 49,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 50,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 50,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 51,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 51,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 52,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 52,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 53,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 53,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 54,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 54,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 55,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 55,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 56,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 56,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 57,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 57,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 58,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 58,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 59,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 59,
+          "origPath": "src/hot.txt"
+        },
+        {
+          "line": 60,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 60,
+          "origPath": "src/hot.txt"
+        }
+      ],
+      "commits": {
+        "a73418042de715a7bef7e9bc59a8a2fadd8eb920": {
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1706850000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c29: rework the middle of hot.txt"
+        },
+        "ff4cd35f709efdf6d6de27099e01f72eb6bbb539": {
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704517200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c05: rework the top of hot.txt"
+        },
+        "5772d43fe1036c123baac6d6792d31986659a515": {
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c00: root commit"
+        }
+      },
+      "revisions": 3,
+      "capped": false
+    },
+    "src/indent.txt": {
+      "path": "src/indent.txt",
+      "ref": "HEAD",
+      "lines": [
+        {
+          "line": 1,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 1,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 2,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 2,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 3,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 3,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 4,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 4,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 5,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 5,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 6,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 6,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 7,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 7,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 8,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 8,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 9,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 9,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 10,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 10,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 11,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 11,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 12,
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "origLine": 12,
+          "origPath": "src/indent.txt"
+        }
+      ],
+      "commits": {
+        "e9f12c9567a93eb1b08ee6bda77d394d27255f3f": {
+          "author": {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "timestamp": 1707030000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c31: reindent indent.txt (whitespace only)"
+        }
+      },
+      "revisions": 1,
+      "capped": false
+    },
+    "w:src/indent.txt": {
+      "path": "src/indent.txt",
+      "ref": "HEAD",
+      "lines": [
+        {
+          "line": 1,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 1,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 2,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 2,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 3,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 3,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 4,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 4,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 5,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 5,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 6,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 6,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 7,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 7,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 8,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 8,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 9,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 9,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 10,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 10,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 11,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 11,
+          "origPath": "src/indent.txt"
+        },
+        {
+          "line": 12,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 12,
+          "origPath": "src/indent.txt"
+        }
+      ],
+      "commits": {
+        "5772d43fe1036c123baac6d6792d31986659a515": {
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c00: root commit"
+        }
+      },
+      "revisions": 2,
+      "capped": false
+    },
+    "src/renamed-to.txt": {
+      "path": "src/renamed-to.txt",
+      "ref": "HEAD",
+      "lines": [
+        {
+          "line": 1,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 1,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 2,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 2,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 3,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 3,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 4,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 4,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 5,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 5,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 6,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 6,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 7,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 7,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 8,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 8,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 9,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 9,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 10,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 10,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 11,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 11,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 12,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 12,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 13,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 13,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 14,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 14,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 15,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 15,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 16,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 16,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 17,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 17,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 18,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 18,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 19,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 19,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 20,
+          "oid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+          "origLine": 20,
+          "origPath": "src/renamed-to.txt"
+        },
+        {
+          "line": 21,
+          "oid": "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb",
+          "origLine": 21,
+          "origPath": "src/renamed-to.txt"
+        }
+      ],
+      "commits": {
+        "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb": {
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707840000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c40: extend mod1"
+        },
+        "5e1b4e4a113a32ba74d89164599dae0b17753511": {
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706940000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c30: git mv renamed-from.txt and touch one line"
+        },
+        "5772d43fe1036c123baac6d6792d31986659a515": {
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c00: root commit"
+        }
+      },
+      "revisions": 4,
+      "capped": false
+    },
+    "w:src/renamed-to.txt": {
+      "path": "src/renamed-to.txt",
+      "ref": "HEAD",
+      "lines": [
+        {
+          "line": 1,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 1,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 2,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 2,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 3,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 3,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 4,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 4,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 5,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 5,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 6,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 6,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 7,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 7,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 8,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 8,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 9,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 9,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 10,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 10,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 11,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 11,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 12,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 12,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 13,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 13,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 14,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 14,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 15,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 15,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 16,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 16,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 17,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 17,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 18,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 18,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 19,
+          "oid": "5772d43fe1036c123baac6d6792d31986659a515",
+          "origLine": 19,
+          "origPath": "src/renamed-from.txt"
+        },
+        {
+          "line": 20,
+          "oid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+          "origLine": 20,
+          "origPath": "src/renamed-to.txt"
+        },
+        {
+          "line": 21,
+          "oid": "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb",
+          "origLine": 21,
+          "origPath": "src/renamed-to.txt"
+        }
+      ],
+      "commits": {
+        "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb": {
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1707840000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c40: extend mod1"
+        },
+        "5e1b4e4a113a32ba74d89164599dae0b17753511": {
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1706940000000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c30: git mv renamed-from.txt and touch one line"
+        },
+        "5772d43fe1036c123baac6d6792d31986659a515": {
+          "author": {
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "timestamp": 1704067200000,
+            "tzOffsetMin": 0
+          },
+          "subject": "c00: root commit"
+        }
+      },
+      "revisions": 4,
+      "capped": false
+    }
   }
 }

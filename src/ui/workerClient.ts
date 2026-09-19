@@ -8,6 +8,7 @@
  */
 import * as Comlink from "comlink";
 import type {
+  BlameRequest,
   ConflictPayload,
   EngineApi,
   EngineMetrics,
@@ -16,11 +17,13 @@ import type {
   FileStats,
   InvalidateScope,
   OpenOptions,
+  PathHistoryOptions,
   ProbeTier,
   ProgressSink,
 } from "../engine/api";
 import type {
   AheadBehind,
+  BlamePayload,
   BranchRow,
   CommitDetails,
   DiffResult,
@@ -28,6 +31,7 @@ import type {
   HiddenEntry,
   Oid,
   PathExplanation,
+  PathHistoryEntry,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -115,6 +119,14 @@ export interface WorkerClient {
   ): Promise<Record<string, Pick<BranchRow, "vsUpstream" | "vsDefault" | "merged">>>;
   /** Which commits are reachable from any ref — the reflog's `unreachable` badge (T10.5). */
   markReachable(oids: Oid[]): Promise<Record<Oid, boolean>>;
+  /** `git log [--follow] -- <path>`, newest first, for the card's History mode (T10.6). */
+  pathHistory(
+    ref: string,
+    path: string,
+    opts: PathHistoryOptions,
+  ): Promise<{ entries: PathHistoryEntry[]; cursor: string | null }>;
+  /** Who wrote each line of one file, renames followed (T10.6); progress phase `"blame"`. */
+  blame(ref: string, path: string, opts: BlameRequest): Promise<BlamePayload>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
   prioritise(ids: string[]): Promise<void>;
   probe(tier: ProbeTier): Promise<string>;
@@ -263,6 +275,8 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     branchOverview: () => call((r) => r.branchOverview(), "branchOverview"),
     branchCells: (fullNames) => call((r) => r.branchCells(fullNames), "branchCells"),
     markReachable: (oids) => call((r) => r.markReachable(oids), "markReachable"),
+    pathHistory: (ref, path, opts) => call((r) => r.pathHistory(ref, path, opts), "pathHistory"),
+    blame: (ref, path, opts) => call((r) => r.blame(ref, path, opts), "blame"),
     fileBytes: (generation, id, side) =>
       call((r) => r.fileBytes(generation, id, side), "fileBytes"),
     prioritise: (ids) => call((r) => r.prioritise(ids), "prioritise"),

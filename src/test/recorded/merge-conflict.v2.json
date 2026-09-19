@@ -339,7 +339,7 @@
     {
       "path": "expected",
       "kind": "ignored-dir",
-      "count": 8
+      "count": 13
     }
   ],
   "explanations": {},
@@ -505,6 +505,11 @@
               "from": 1,
               "to": 0,
               "kind": "merge"
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "straight"
             }
           ]
         },
@@ -687,5 +692,7 @@
     "16f51344344e6f834075a8271c0288be58add6cf": true,
     "33f345808dac1bafebdd232f563009133043fa79": true,
     "fa386080e5fe2f64967f9c18fbe8d2e505dcb812": true
-  }
+  },
+  "pathHistories": {},
+  "blames": {}
 }

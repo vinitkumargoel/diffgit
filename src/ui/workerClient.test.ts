@@ -529,3 +529,86 @@ describe("mock worker client: history, lanes and branches (T10.5)", () => {
     expect(await client.branchOverview()).toEqual([]);
   });
 });
+
+describe("mock worker client: file history and blame (T10.6)", () => {
+  it("pages the recorded path history and stops at the rename hop without follow", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "history" }, sink());
+
+    const followed = await client.pathHistory("HEAD", "src/renamed-to.txt", {
+      follow: true,
+      limit: 100,
+    });
+    expect(followed.entries.map((e) => [e.status, e.path, e.renamedFrom])).toEqual([
+      ["modified", "src/renamed-to.txt", null],
+      ["renamed", "src/renamed-to.txt", "src/renamed-from.txt"],
+      ["modified", "src/renamed-from.txt", null],
+      ["added", "src/renamed-from.txt", null],
+    ]);
+    expect(followed.cursor).toBeNull();
+
+    const plain = await client.pathHistory("HEAD", "src/renamed-to.txt", {
+      follow: false,
+      limit: 100,
+    });
+    expect(plain.entries.map((e) => e.oid)).toEqual(followed.entries.slice(0, 2).map((e) => e.oid));
+
+    const first = await client.pathHistory("HEAD", "src/renamed-to.txt", {
+      follow: true,
+      limit: 2,
+    });
+    expect(first.entries.length).toBe(2);
+    const rest = await client.pathHistory("HEAD", "src/renamed-to.txt", {
+      follow: true,
+      limit: 2,
+      cursor: first.cursor as string,
+    });
+    expect([...first.entries, ...rest.entries].map((e) => e.oid)).toEqual(
+      followed.entries.map((e) => e.oid),
+    );
+    expect(rest.cursor).toBeNull();
+  });
+
+  it("serves blame per path, with a separate -w attribution and a progress message", async () => {
+    const client = createMockWorkerClient();
+    const s = sink();
+    const progress: string[] = [];
+    await client.open({ name: "history" }, { ...s, onProgress: (p) => progress.push(p.phase) });
+
+    const blame = await client.blame("main", "src/renamed-to.txt", {
+      ignoreWhitespace: false,
+      includeWorktree: false,
+      maxRevisions: 500,
+    });
+    expect(blame.ref).toBe("main");
+    expect(blame.lines.length).toBe(21);
+    expect(blame.capped).toBe(false);
+    expect(blame.lines.every((l) => l.oid !== null)).toBe(true);
+    // The oldest lines keep the name the file had before the rename.
+    expect(blame.lines[0]?.origPath).toBe("src/renamed-from.txt");
+    expect(blame.lines[20]?.origPath).toBe("src/renamed-to.txt");
+    expect(Object.keys(blame.commits).length).toBe(3);
+    expect(progress).toContain("blame");
+
+    const plain = await client.blame("main", "src/indent.txt", {
+      ignoreWhitespace: false,
+      includeWorktree: false,
+      maxRevisions: 500,
+    });
+    const ignored = await client.blame("main", "src/indent.txt", {
+      ignoreWhitespace: true,
+      includeWorktree: false,
+      maxRevisions: 500,
+    });
+    expect(Object.values(plain.commits)[0]?.subject).toContain("reindent");
+    expect(Object.values(ignored.commits)[0]?.subject).toContain("root commit");
+
+    await expect(
+      client.blame("main", "nope.txt", {
+        ignoreWhitespace: false,
+        includeWorktree: false,
+        maxRevisions: 500,
+      }),
+    ).rejects.toMatchObject({ code: "REF_NOT_FOUND" });
+  });
+});
