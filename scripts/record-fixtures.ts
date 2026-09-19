@@ -30,6 +30,10 @@
  * T10.9 adds `insights`: the whole-history (`sinceMs` unset) pass, so T11.12 can build the Insights
  * mode against real activity, contributors and hotspots.
  *
+ * T10.11 adds `bisect` (the engine's answer for every round of a replayed bisect, "the midpoint was
+ * good" plus one round with a skip) and `preflights` (one report per `<branch> onto <onto>` pair),
+ * so T11.13 can build the bisect strip and the preflight panel without a repository on disk.
+ *
  * T10.5 adds `walks` (the whole history per variant — default, first-parent, all, per path — which
  * the mock pages itself), `commits` (`CommitDetails`), `commitStats`, `branches` (the Branches
  * table with its cells filled), `aheadBehind` and `reachable`, plus the `octopus` fixture so the
@@ -43,6 +47,8 @@ import { searchKey } from "../src/engine/search/query";
 import { RepoSession } from "../src/engine/session";
 import type {
   AheadBehind,
+  BisectState,
+  BisectStep,
   BlamePayload,
   BranchRow,
   CommitDetails,
@@ -52,6 +58,7 @@ import type {
   Oid,
   PathExplanation,
   PathHistoryEntry,
+  PreflightResult,
   RangeSource,
   RepoOperation,
   ResolvedRevision,
@@ -155,6 +162,27 @@ const AHEAD_BEHIND: Record<string, [string, string][]> = {
     ["main", "preflight/a"],
     ["preflight/a", "main"],
   ],
+};
+
+/**
+ * T10.11: the rebase preflights the mock serves, by fixture. `preflight/a onto main` is the crafted
+ * likely / possible / clean trio; `main onto preflight/base` replays the merge of `topic`, so the
+ * panel has a `--rebase-merges` command to show.
+ */
+const PREFLIGHTS: Record<string, [string, string][]> = {
+  history: [
+    ["preflight/a", "main"],
+    ["main", "preflight/base"],
+  ],
+};
+
+/**
+ * T10.11: the bisects the mock replays, by fixture. Each entry is `[good, bad]`; the replay answers
+ * "the midpoint was good" at every round, which is what `expected/rev-list-bisect.txt` records git
+ * doing, and one extra round marks the first midpoint skipped instead.
+ */
+const BISECTS: Record<string, [string, string][]> = {
+  history: [["main~47", "main"]],
 };
 
 /** Replaces the operation's real mtime with the fixed clock so re-recording is a no-op. */
@@ -292,6 +320,38 @@ async function record(name: string, v2: boolean): Promise<void> {
       searches[searchKey(req)] = { ...(await session.search(req)), durationMs: 0 };
     }
 
+    // ---- T10.11: the bisect replay and the rebase preflights ---------------------------------
+    const bisect: { state: BisectState; step: BisectStep }[] = [];
+    for (const [goodRef, badRef] of BISECTS[name] ?? []) {
+      const bad = (await session.resolveRevision(badRef)).oid as Oid;
+      const state: BisectState = {
+        good: [(await session.resolveRevision(goodRef)).oid as Oid],
+        bad,
+        skipped: [],
+      };
+      let step = await session.bisectStep(state);
+      bisect.push({ state, step });
+      // One round with the first midpoint skipped, so T11.13 has a `skip` answer to render.
+      if (step.candidate) {
+        const skippedState: BisectState = { ...state, skipped: [step.candidate] };
+        bisect.push({ state: skippedState, step: await session.bisectStep(skippedState) });
+      }
+      // ...then "the midpoint was good" all the way down, git's own replay.
+      let guard = 0;
+      while (step.candidate !== null && guard++ < 64) {
+        const next: BisectState = { good: [step.candidate], bad, skipped: [] };
+        step = await session.bisectStep(next);
+        bisect.push({ state: next, step });
+      }
+    }
+    const preflights: Record<string, PreflightResult> = {};
+    for (const [branchRef, ontoRef] of PREFLIGHTS[name] ?? []) {
+      preflights[`${branchRef} onto ${ontoRef}`] = await session.rebasePreflight(
+        branchRef,
+        ontoRef,
+      );
+    }
+
     const reachable = await session.markReachable([
       ...new Set([...walkedOids, ...(await session.reflog("HEAD", 200)).map((e) => e.newOid)]),
     ]);
@@ -328,6 +388,9 @@ async function record(name: string, v2: boolean): Promise<void> {
       // `sinceMs` is left out because a wall-clock period would break `bun run record`'s
       // byte-idempotency (the result is otherwise a pure function of the repository).
       insights,
+      // T10.11: every round of the replayed bisect, and one report per rebase pair.
+      bisect,
+      preflights,
     };
     writeFileSync(`${OUT}${name}.v2.json`, `${JSON.stringify(payload, null, 2)}\n`);
     console.log(
@@ -339,7 +402,8 @@ async function record(name: string, v2: boolean): Promise<void> {
         `${walks.all?.commits.length ?? 0} commits (graph ${walks.all?.graphAvailable ?? false}), ` +
         `${branches.length} branches, ${Object.keys(pathHistories).length} path histories, ` +
         `${Object.keys(blames).length} blames, ${secrets.length} secret findings, ` +
-        `${Object.keys(searches).length} searches`,
+        `${Object.keys(searches).length} searches, ${bisect.length} bisect rounds, ` +
+        `${Object.keys(preflights).length} preflights`,
       `insights: ${insights.commits} commits / ${insights.authors.length} authors / ` +
         `${insights.hotspots.length} hotspots / ${insights.activity.length} weeks`,
     );

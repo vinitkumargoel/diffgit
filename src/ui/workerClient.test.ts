@@ -781,3 +781,69 @@ describe("mock worker client: insights (T10.9)", () => {
     });
   });
 });
+
+describe("mock worker client: bisect and rebase preflight (T10.11)", () => {
+  it("replays the recorded bisect, including the round with a skip", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "history" }, sink());
+    const root = "5772d43fe1036c123baac6d6792d31986659a515";
+    const bad = "822313f6746d7982943f0d59fc5e09b626769141";
+
+    let state = { good: [root], bad, skipped: [] as string[] };
+    let step = await client.bisectStep(state);
+    expect(step.remaining).toBe(59);
+    expect(step.steps).toBe(6);
+    const first = step.candidate as string;
+
+    const skipped = await client.bisectStep({ ...state, skipped: [first] });
+    expect(skipped.remaining).toBe(58);
+    expect(skipped.candidate).not.toBe(first);
+
+    // "the midpoint was good" all the way down, as the strip does.
+    const seen: number[] = [];
+    let guard = 0;
+    while (step.candidate !== null && guard++ < 16) {
+      seen.push(step.remaining);
+      state = { good: [step.candidate], bad, skipped: [] };
+      step = await client.bisectStep(state);
+    }
+    expect(seen).toEqual([59, 30, 15, 8, 4, 2]);
+    expect(step.remaining).toBe(1);
+    expect(step.firstBad).toBe(bad);
+  });
+
+  it("falls back to a linear midpoint for a state it has no recording for", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "history" }, sink());
+    const page = await client.walkCommits({ from: ["HEAD"], firstParent: false, limit: 20 });
+    const bad = page.commits[0]?.oid as string;
+    const good = page.commits[10]?.oid as string;
+    const step = await client.bisectStep({ good: [good], bad, skipped: [] });
+    expect(step.remaining).toBe(10);
+    expect(step.candidate).toBe(page.commits[5]?.oid as string);
+    expect(step.steps).toBe(4);
+  });
+
+  it("serves the recorded preflight reports, plain and --rebase-merges", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "history" }, sink());
+    const out = await client.rebasePreflight("preflight/a", "main");
+    expect(out.rows.map((r) => r.prediction)).toEqual(["likely", "possible", "clean"]);
+    expect(out.command).toBe("git rebase -i main");
+    expect(out.ontoAdvanced).toBe(55);
+    expect(out.todo.split("\n").filter((l) => l.length > 0)).toHaveLength(3);
+    expect(out.todo.startsWith("pick ")).toBe(true);
+
+    const merges = await client.rebasePreflight("main", "preflight/base");
+    expect(merges.command).toBe("git rebase -i --rebase-merges preflight/base");
+    expect(merges.rows.filter((r) => r.merge)).toHaveLength(1);
+  });
+
+  it("refuses an unrecorded preflight pair rather than inventing one", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "history" }, sink());
+    await expect(client.rebasePreflight("topic", "main")).rejects.toMatchObject({
+      code: "REV_NOT_FOUND",
+    });
+  });
+});

@@ -23,6 +23,8 @@ import type {
 } from "../engine/api";
 import type {
   AheadBehind,
+  BisectState,
+  BisectStep,
   BlamePayload,
   BranchRow,
   CommitDetails,
@@ -34,6 +36,7 @@ import type {
   Oid,
   PathExplanation,
   PathHistoryEntry,
+  PreflightResult,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -138,6 +141,10 @@ export interface WorkerClient {
   search(req: SearchRequest): Promise<SearchResult>;
   /** Activity, contributors and hotspots for the Insights mode (T10.9); progress phase `"insights"`. */
   insights(req: InsightsRequest): Promise<InsightsResult>;
+  /** The next commit to test, from the good/bad/skip marks (T10.11); nothing is written. */
+  bisectStep(state: BisectState): Promise<BisectStep>;
+  /** Which commits a rebase would replay and which would conflict (T10.11); a report only. */
+  rebasePreflight(branchRef: string, ontoRef: string): Promise<PreflightResult>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
   prioritise(ids: string[]): Promise<void>;
   probe(tier: ProbeTier): Promise<string>;
@@ -291,6 +298,9 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     scanSecrets: (generation) => call((r) => r.scanSecrets(generation), "scanSecrets"),
     search: (req) => call((r) => r.search(req), "search"),
     insights: (req) => call((r) => r.insights(req), "insights"),
+    bisectStep: (state) => call((r) => r.bisectStep(state), "bisectStep"),
+    rebasePreflight: (branchRef, ontoRef) =>
+      call((r) => r.rebasePreflight(branchRef, ontoRef), "rebasePreflight"),
     fileBytes: (generation, id, side) =>
       call((r) => r.fileBytes(generation, id, side), "fileBytes"),
     prioritise: (ids) => call((r) => r.prioritise(ids), "prioritise"),

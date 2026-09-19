@@ -1055,7 +1055,7 @@
     {
       "path": "expected",
       "kind": "ignored-dir",
-      "count": 64
+      "count": 65
     }
   ],
   "explanations": {},
@@ -10826,5 +10826,667 @@
     "walked": 48,
     "capped": false,
     "bots": 8
+  },
+  "bisect": [
+    {
+      "state": {
+        "good": ["5772d43fe1036c123baac6d6792d31986659a515"],
+        "bad": "822313f6746d7982943f0d59fc5e09b626769141",
+        "skipped": []
+      },
+      "step": {
+        "candidate": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+        "remaining": 59,
+        "steps": 6,
+        "firstBad": null
+      }
+    },
+    {
+      "state": {
+        "good": ["5772d43fe1036c123baac6d6792d31986659a515"],
+        "bad": "822313f6746d7982943f0d59fc5e09b626769141",
+        "skipped": ["a73418042de715a7bef7e9bc59a8a2fadd8eb920"]
+      },
+      "step": {
+        "candidate": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+        "remaining": 58,
+        "steps": 6,
+        "firstBad": null
+      }
+    },
+    {
+      "state": {
+        "good": ["a73418042de715a7bef7e9bc59a8a2fadd8eb920"],
+        "bad": "822313f6746d7982943f0d59fc5e09b626769141",
+        "skipped": []
+      },
+      "step": {
+        "candidate": "0bea629635c4eaad5fe5f84fe29aba700a92a71a",
+        "remaining": 30,
+        "steps": 5,
+        "firstBad": null
+      }
+    },
+    {
+      "state": {
+        "good": ["0bea629635c4eaad5fe5f84fe29aba700a92a71a"],
+        "bad": "822313f6746d7982943f0d59fc5e09b626769141",
+        "skipped": []
+      },
+      "step": {
+        "candidate": "31891cde0399736142305af8b7fadea68c479e59",
+        "remaining": 15,
+        "steps": 4,
+        "firstBad": null
+      }
+    },
+    {
+      "state": {
+        "good": ["31891cde0399736142305af8b7fadea68c479e59"],
+        "bad": "822313f6746d7982943f0d59fc5e09b626769141",
+        "skipped": []
+      },
+      "step": {
+        "candidate": "87a3a12b31ee4268cf84cfed8254425a12658c7a",
+        "remaining": 8,
+        "steps": 3,
+        "firstBad": null
+      }
+    },
+    {
+      "state": {
+        "good": ["87a3a12b31ee4268cf84cfed8254425a12658c7a"],
+        "bad": "822313f6746d7982943f0d59fc5e09b626769141",
+        "skipped": []
+      },
+      "step": {
+        "candidate": "fb9edcd9be63538ff6d425970ceaaaf27e1009ee",
+        "remaining": 4,
+        "steps": 2,
+        "firstBad": null
+      }
+    },
+    {
+      "state": {
+        "good": ["fb9edcd9be63538ff6d425970ceaaaf27e1009ee"],
+        "bad": "822313f6746d7982943f0d59fc5e09b626769141",
+        "skipped": []
+      },
+      "step": {
+        "candidate": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+        "remaining": 2,
+        "steps": 1,
+        "firstBad": null
+      }
+    },
+    {
+      "state": {
+        "good": ["82bc6c6d1bc309b9e6463af370ec95aa4866a78c"],
+        "bad": "822313f6746d7982943f0d59fc5e09b626769141",
+        "skipped": []
+      },
+      "step": {
+        "candidate": null,
+        "remaining": 1,
+        "steps": 0,
+        "firstBad": "822313f6746d7982943f0d59fc5e09b626769141"
+      }
+    }
+  ],
+  "preflights": {
+    "preflight/a onto main": {
+      "branch": "preflight/a",
+      "onto": "main",
+      "mergeBase": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "ontoAdvanced": 55,
+      "rows": [
+        {
+          "oid": "1b64210831f4bd1984875c179e4e804cc91c33e2",
+          "subject": "p1: rewrite the top of hot.txt (collides with main)",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [
+            {
+              "path": "src/hot.txt",
+              "prediction": "likely",
+              "theirs": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539"
+            }
+          ],
+          "prediction": "likely"
+        },
+        {
+          "oid": "aefdbcf01a4ecdb7049699de6ae4e79b1551623b",
+          "subject": "p2: edit hot.txt far from main's hunks (same file, disjoint)",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [
+            {
+              "path": "src/hot.txt",
+              "prediction": "possible",
+              "theirs": "a73418042de715a7bef7e9bc59a8a2fadd8eb920"
+            }
+          ],
+          "prediction": "possible"
+        },
+        {
+          "oid": "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a",
+          "subject": "p3: add a file nothing else touches (clean)",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        }
+      ],
+      "command": "git rebase -i main",
+      "todo": "pick 1b64210 p1: rewrite the top of hot.txt (collides with main)\npick aefdbcf p2: edit hot.txt far from main's hunks (same file, disjoint)\npick b6327e4 p3: add a file nothing else touches (clean)\n"
+    },
+    "main onto preflight/base": {
+      "branch": "main",
+      "onto": "preflight/base",
+      "mergeBase": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "ontoAdvanced": 0,
+      "rows": [
+        {
+          "oid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+          "subject": "c05: rework the top of hot.txt",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e",
+          "subject": "c06: add the guide (second email, mapped by .mailmap)",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "c513f47f486d0b567c61b5b4db80b2c5e451193f",
+          "subject": "c07: chore(deps): bump manifest to 0.0.2",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "6b9edc8d680b71f414fa56cc589f9f91c6d84860",
+          "subject": "c08: iterate on modules and the guide",
+          "files": 2,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "0e378a89244273883b77045fa7bd450a9ed62a5a",
+          "subject": "c09: iterate on modules and the guide",
+          "files": 2,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "c1b0f387ee5a621cb043e9e492443d65f310a947",
+          "subject": "c10: iterate on modules and the guide",
+          "files": 2,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "a0a0c78717004cb71945e9cf659e16b81d062eb7",
+          "subject": "c11: iterate on modules and the guide",
+          "files": 2,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "375ca4ebf9753133a1a89486cf4ee1305bf77fef",
+          "subject": "c12: iterate on modules and the guide",
+          "files": 3,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7",
+          "subject": "c13: iterate on modules and the guide",
+          "files": 2,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "e93098bc65bfabd2c6beaecda4692b479dfd305f",
+          "subject": "c14: iterate on modules and the guide",
+          "files": 2,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "d9459d1a6e53815426c4992b3591dad1408a3e27",
+          "subject": "c15: iterate on modules and the guide",
+          "files": 2,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "2c4af75c3df7f2f713740f7086ed97d7283480ff",
+          "subject": "t16: topic step 1",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "d29703910e3581fa1987e540f5b48f5f45d73fe2",
+          "subject": "t17: topic step 2",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "4c3adf69902138dd6e67c8fba441b24bb59f36d5",
+          "subject": "t18: topic step 3",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "e66b609e02b02ed9f25fe0e3a039d9060474638c",
+          "subject": "t19: topic step 4",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "fba339099e3d24125c08ae25235e9c303aa7dd0a",
+          "subject": "t20: topic step 5",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "9807480733153c750a21ae2e14cfc4504fd1dbea",
+          "subject": "t21: topic step 6",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "88627217351413ba56dd5a30493e4e089a044bbc",
+          "subject": "t22: topic step 7",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "cd5a8be34254f0597f6774523d9bd8d7e4a5acea",
+          "subject": "t23: topic step 8",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "3bf1ccf595aafafd8d44503b9050f08ba6d05c6b",
+          "subject": "t24: topic step 9",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "2abe1b494d3d24ebecf81201a27bc0bcc6c8cd04",
+          "subject": "t25: topic step 10",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "140a173073d8dabbb1e161bd77ca4b5856ae0994",
+          "subject": "t26: topic step 11",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81",
+          "subject": "t27: topic step 12",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "52052fc357c12a45a641e38d1d910fdec75f4241",
+          "subject": "c28: merge topic into main",
+          "files": 1,
+          "merge": true,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+          "subject": "c29: rework the middle of hot.txt",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+          "subject": "c30: git mv renamed-from.txt and touch one line",
+          "files": 2,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+          "subject": "c31: reindent indent.txt (whitespace only)",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "f2b242b4531fc6ac3862a72cb4dfdca84b276cf1",
+          "subject": "c32: chore(deps): bump manifest to 0.0.3",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "d591508ac3ec5664601a26ca15a46723da472ebc",
+          "subject": "c33: chore(deps): bump manifest to 0.0.4",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "e8e51a9f9cb74aedca494962f36f4c62ed11e4aa",
+          "subject": "c34: extend mod4",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "82bed6085338e895515daf7061e4673c169013f8",
+          "subject": "c35: extend mod1",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "8d363ef7d323c8bb14e88374f1634419182050ed",
+          "subject": "c36: extend mod2",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "760c968a61db48a810deaef5c1269fb71028c560",
+          "subject": "c37: extend mod3",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "9ee57b46b805e7ec6462a3f188941f63c08821a2",
+          "subject": "c38: chore(deps): bump manifest to 0.0.5",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "8946f98688375397a15dda82801f07072ede8813",
+          "subject": "c39: extend mod4",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb",
+          "subject": "c40: extend mod1",
+          "files": 2,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "d35a4cf95b7a15a449ee6d4d96a94008ac892e70",
+          "subject": "c41: extend mod2",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "472d458ef31d9f36fe8e65576019fd18c4b39c16",
+          "subject": "c42: extend mod3",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "69859eaeb61a4527e0c886cd669b5fc6cf4d39f9",
+          "subject": "c43: chore(deps): bump manifest to 0.0.6",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "0bea629635c4eaad5fe5f84fe29aba700a92a71a",
+          "subject": "c44: extend mod4",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "b92c2756a82e15f54285d7c209da3ac886e1579b",
+          "subject": "c45: extend mod1",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "931eea0f815b84e93b40772ca7b237f5b808c2ab",
+          "subject": "c46: extend mod2",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1",
+          "subject": "c47: extend mod3",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e",
+          "subject": "c48: chore(deps): bump manifest to 0.0.7",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "70703c5dfb94774c4c7b8f293b409a2fb02132c8",
+          "subject": "c49: extend mod4",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "261e0b9d0d06bbc309a69590239e4a2efc139807",
+          "subject": "c50: extend mod1",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "31891cde0399736142305af8b7fadea68c479e59",
+          "subject": "c51: extend mod2",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "2e318a86392b07c04747e14483e9b76e60a88775",
+          "subject": "c52: extend mod3",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "155507f9515dc6d19d859bcaa7570cf884303719",
+          "subject": "c53: chore(deps): bump manifest to 0.0.8",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+          "subject": "c54: extend mod4",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "87a3a12b31ee4268cf84cfed8254425a12658c7a",
+          "subject": "c55: extend mod1",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "8295928b1c222c2877dbcf442573effe40d97e5a",
+          "subject": "c56: extend mod2",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "fb9edcd9be63538ff6d425970ceaaaf27e1009ee",
+          "subject": "c57: extend mod3",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+          "subject": "c58: chore(deps): bump manifest to 0.0.9",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        },
+        {
+          "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+          "subject": "c59: extend mod4",
+          "files": 1,
+          "merge": false,
+          "signed": false,
+          "overlaps": [],
+          "prediction": "clean"
+        }
+      ],
+      "command": "git rebase -i --rebase-merges preflight/base",
+      "todo": "pick ff4cd35 c05: rework the top of hot.txt\npick ae9b4a4 c06: add the guide (second email, mapped by .mailmap)\npick c513f47 c07: chore(deps): bump manifest to 0.0.2\npick 6b9edc8 c08: iterate on modules and the guide\npick 0e378a8 c09: iterate on modules and the guide\npick c1b0f38 c10: iterate on modules and the guide\npick a0a0c78 c11: iterate on modules and the guide\npick 375ca4e c12: iterate on modules and the guide\npick 9c0a0ea c13: iterate on modules and the guide\npick e93098b c14: iterate on modules and the guide\npick d9459d1 c15: iterate on modules and the guide\npick 2c4af75 t16: topic step 1\npick d297039 t17: topic step 2\npick 4c3adf6 t18: topic step 3\npick e66b609 t19: topic step 4\npick fba3390 t20: topic step 5\npick 9807480 t21: topic step 6\npick 8862721 t22: topic step 7\npick cd5a8be t23: topic step 8\npick 3bf1ccf t24: topic step 9\npick 2abe1b4 t25: topic step 10\npick 140a173 t26: topic step 11\npick d1d9c0c t27: topic step 12\npick 52052fc c28: merge topic into main\npick a734180 c29: rework the middle of hot.txt\npick 5e1b4e4 c30: git mv renamed-from.txt and touch one line\npick e9f12c9 c31: reindent indent.txt (whitespace only)\npick f2b242b c32: chore(deps): bump manifest to 0.0.3\npick d591508 c33: chore(deps): bump manifest to 0.0.4\npick e8e51a9 c34: extend mod4\npick 82bed60 c35: extend mod1\npick 8d363ef c36: extend mod2\npick 760c968 c37: extend mod3\npick 9ee57b4 c38: chore(deps): bump manifest to 0.0.5\npick 8946f98 c39: extend mod4\npick bfdc9b7 c40: extend mod1\npick d35a4cf c41: extend mod2\npick 472d458 c42: extend mod3\npick 69859ea c43: chore(deps): bump manifest to 0.0.6\npick 0bea629 c44: extend mod4\npick b92c275 c45: extend mod1\npick 931eea0 c46: extend mod2\npick 6a7fd24 c47: extend mod3\npick 2c6f8fe c48: chore(deps): bump manifest to 0.0.7\npick 70703c5 c49: extend mod4\npick 261e0b9 c50: extend mod1\npick 31891cd c51: extend mod2\npick 2e318a8 c52: extend mod3\npick 155507f c53: chore(deps): bump manifest to 0.0.8\npick 10f27d5 c54: extend mod4\npick 87a3a12 c55: extend mod1\npick 8295928 c56: extend mod2\npick fb9edcd c57: extend mod3\npick 82bc6c6 c58: chore(deps): bump manifest to 0.0.9\npick 822313f c59: extend mod4\n"
+    }
   }
 }

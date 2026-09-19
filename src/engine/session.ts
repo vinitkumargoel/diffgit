@@ -33,6 +33,7 @@ import { EngineError, type EngineErrorJSON, errorCode, isPublicCode } from "./er
 import type { DirHandleLike } from "./fs/dirHandleLike";
 import { createFsaFs, type FsaFs } from "./fs/fsaFs";
 import { GitAttributes } from "./git/attributes";
+import { bisectStep as computeBisectStep } from "./git/bisect";
 import { branchCells, branchOverview } from "./git/branches";
 import { CommitGraph } from "./git/commitGraph";
 import { commitDetails, commitStats } from "./git/commits";
@@ -46,6 +47,7 @@ import { MAILMAP_FILE, Mailmap } from "./git/mailmap";
 import { ObjectDb } from "./git/objectDb";
 import { detectOperation, OPERATION_FILES } from "./git/operation";
 import { pathHistory as runPathHistory } from "./git/pathHistory";
+import { rebasePreflight as computePreflight } from "./git/preflight";
 import { readReflog } from "./git/reflog";
 import { loadRefs } from "./git/refStore";
 import { resolveRevision } from "./git/revisions";
@@ -79,6 +81,8 @@ import type { SearchOutcome } from "./search/query";
 import { searchWorktree } from "./search/worktree";
 import {
   type AheadBehind,
+  type BisectState,
+  type BisectStep,
   type BlamePayload,
   type BranchRow,
   type CommitDetails,
@@ -92,6 +96,7 @@ import {
   type Oid,
   type PathExplanation,
   type PathHistoryEntry,
+  type PreflightResult,
   type ReflogEntry,
   type RefSnapshot,
   type RepoCapabilities,
@@ -1168,6 +1173,57 @@ export class RepoSession implements Omit<EngineApi, "open"> {
         durationMs: performance.now() - t0,
       });
       return out.result;
+    });
+  }
+
+  // ---- bisect and rebase preflight (T10.11) ----------------------------------------------------
+
+  /**
+   * The next commit to test (atlas tab 15). The marks arrive as oids, but any revision expression
+   * resolves too, so the UI may hand over what the user typed. Nothing is written (D16).
+   */
+  async bisectStep(state: BisectState): Promise<BisectStep> {
+    this.assertOpen();
+    return this.single("bisectStep", async (signal) => {
+      const deps = {
+        reader: await this.commitReader(),
+        warn: (w: RepoWarning) => RepoSession.emitWarning(this.sink, w),
+        signal,
+      };
+      return computeBisectStep(deps, {
+        bad: await this.resolveCommit(state.bad),
+        good: await Promise.all(state.good.map((g) => this.resolveCommit(g))),
+        skipped: await Promise.all(state.skipped.map((s) => this.resolveCommit(s))),
+      });
+    });
+  }
+
+  /** What a `git rebase branchRef onto ontoRef` would replay, and where it would stop (tab 16). */
+  async rebasePreflight(branchRef: string, ontoRef: string): Promise<PreflightResult> {
+    this.assertOpen();
+    return this.single("rebasePreflight", async (signal) => {
+      const branch = await resolveRevision(this.db, this.refs, branchRef);
+      const onto = await resolveRevision(this.db, this.refs, ontoRef);
+      if (branch.oid === null || onto.oid === null)
+        throw new EngineError(
+          "REV_NOT_FOUND",
+          `Cannot plan a rebase of "${branchRef}" onto "${ontoRef}".`,
+          { hint: "Both sides must be commits." },
+        );
+      return computePreflight(
+        {
+          db: this.db,
+          reader: await this.commitReader(),
+          warn: (w: RepoWarning) => RepoSession.emitWarning(this.sink, w),
+          signal,
+          ...(this.cfg.diff.renames !== undefined ? { renames: this.cfg.diff.renames } : {}),
+          ...(this.cfg.diff.renameLimit !== undefined
+            ? { renameLimit: this.cfg.diff.renameLimit }
+            : {}),
+        },
+        { oid: branch.oid, display: branch.display },
+        { oid: onto.oid, display: onto.display },
+      );
     });
   }
 
