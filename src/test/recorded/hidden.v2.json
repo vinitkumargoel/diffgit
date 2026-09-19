@@ -371,5 +371,23 @@
     "walked": 1,
     "capped": false,
     "bots": 0
+  },
+  "summary": {
+    "headBranch": "main",
+    "headDisplay": "main",
+    "counts": {
+      "staged": 0,
+      "unstaged": 1,
+      "untracked": 1,
+      "conflict": 0
+    },
+    "vsUpstream": null,
+    "lastCommit": {
+      "oid": "c5d61a4e4036296631abfb307bfc988db8e3d062",
+      "subject": "c1: tracked files including an 11 MB one",
+      "timestamp": 1704067200000
+    },
+    "operation": null,
+    "indexMtimeMs": 0
   }
 }

@@ -544,3 +544,23 @@ export interface InsightsResult {
   capped: boolean;
   bots: number;
 }
+
+// ---- v2 repository summary (T10.10, docs/v2-contracts.md, atlas tab 11) ------------------------
+
+/**
+ * One card on the multi-repo dashboard: what `git status -sb` would say about a repository, cheaply
+ * enough to run across twenty of them. `counts` are file counts per layer (a path that is both
+ * staged and unstaged is counted in both, exactly as `git status --porcelain=v2` reports it in its
+ * two columns); `vsUpstream` is the checked-out branch against its upstream, null when there is no
+ * branch or it tracks nothing. `lastCommit.timestamp` is the **committer** date in epoch ms, which
+ * is what "last activity" means after a rebase. `indexMtimeMs` is the dashboard's cache key.
+ */
+export interface RepoSummary {
+  headBranch: string | null;
+  headDisplay: string;
+  counts: { staged: number; unstaged: number; untracked: number; conflict: number };
+  vsUpstream: AheadBehind | null;
+  lastCommit: { oid: Oid; subject: string; timestamp: number } | null;
+  operation: RepoOperation | null;
+  indexMtimeMs: number;
+}

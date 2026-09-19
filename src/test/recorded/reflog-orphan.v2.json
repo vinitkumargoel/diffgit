@@ -518,5 +518,23 @@
     "walked": 3,
     "capped": false,
     "bots": 0
+  },
+  "summary": {
+    "headBranch": "main",
+    "headDisplay": "main",
+    "counts": {
+      "staged": 0,
+      "unstaged": 0,
+      "untracked": 0,
+      "conflict": 0
+    },
+    "vsUpstream": null,
+    "lastCommit": {
+      "oid": "443c8b1ef40ab22b2638ea630b6b9c5e1cb43752",
+      "subject": "c5: work after the reset",
+      "timestamp": 1704067200000
+    },
+    "operation": null,
+    "indexMtimeMs": 0
   }
 }

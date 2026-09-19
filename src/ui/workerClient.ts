@@ -37,6 +37,7 @@ import type {
   ReflogEntry,
   RepoInfo,
   RepoOperation,
+  RepoSummary,
   ResolvedRevision,
   SearchRequest,
   SearchResult,
@@ -138,6 +139,10 @@ export interface WorkerClient {
   search(req: SearchRequest): Promise<SearchResult>;
   /** Activity, contributors and hotspots for the Insights mode (T10.9); progress phase `"insights"`. */
   insights(req: InsightsRequest): Promise<InsightsResult>;
+  /** The current diff as one `git apply`-compatible patch (T10.10); `ids` null = every row. */
+  patchText(generation: number, ids: string[] | null): Promise<string>;
+  /** The dashboard card for this repository (T10.10); never disturbs an open diff generation. */
+  summarise(): Promise<RepoSummary>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
   prioritise(ids: string[]): Promise<void>;
   probe(tier: ProbeTier): Promise<string>;
@@ -293,6 +298,8 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     insights: (req) => call((r) => r.insights(req), "insights"),
     fileBytes: (generation, id, side) =>
       call((r) => r.fileBytes(generation, id, side), "fileBytes"),
+    patchText: (generation, ids) => call((r) => r.patchText(generation, ids), "patchText"),
+    summarise: () => call((r) => r.summarise(), "summarise"),
     prioritise: (ids) => call((r) => r.prioritise(ids), "prioritise"),
     probe: (tier) => call((r) => r.probe(tier), "probe"),
     invalidate: (scope, paths) => call((r) => r.invalidate(scope, paths), "invalidate"),

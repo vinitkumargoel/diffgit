@@ -58,6 +58,16 @@ export interface ScannerOptions {
   streamAbove?: number; // default 8 MB
 }
 
+/**
+ * Per-call tuning for one `scan()` (T10.10). `hashes: false` is the dashboard's counts-only pass:
+ * an untracked file is stat'ed but never hashed, so `UntrackedInfo.oid` is null for all of them.
+ * The unstaged pass is untouched — git's own racy-clean stat check already settles most entries,
+ * and the ones it cannot settle have to be hashed or the counts would be wrong.
+ */
+export interface ScanOptions {
+  hashes?: boolean;
+}
+
 const MODE_SYMLINK = 0o120000;
 
 /** T10.4: most rows the Hidden group ever gets; beyond it the list is cut and `HIDDEN_CAPPED` warns. */
@@ -224,8 +234,11 @@ export class WorktreeScanner {
     index: IndexSnapshot,
     headTree: FlatTree | null,
     signal?: AbortSignal,
+    scanOpts: ScanOptions = {},
   ): Promise<WorktreeStatus> {
     const t0 = performance.now();
+    // T10.10: `hashes: false` is the same walk with the untracked hash budget set to nothing.
+    const hashUntrackedUpTo = scanOpts.hashes === false ? -1 : this.opts.hashUntrackedUpTo;
     if (index.hasSplitIndex) {
       throw new EngineError(
         "SPLIT_INDEX",
@@ -356,7 +369,7 @@ export class WorktreeScanner {
               try {
                 const f = await this.fs.openFile(path);
                 const oid =
-                  f.size <= this.opts.hashUntrackedUpTo
+                  f.size <= hashUntrackedUpTo
                     ? await hashBlob(new Uint8Array(await f.arrayBuffer()))
                     : null;
                 if (oid) stats.hashed++;
