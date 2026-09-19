@@ -28,6 +28,14 @@ export default function RepoScreen() {
       setPref("viewMode", prefs.viewMode === "split" ? "unified" : "split");
     },
     "?": () => setHelpOpen(true),
+    // Design §14.7: `g` / `x` mark the commit under test **while a bisect runs**, in any mode —
+    // the strip lives in History, but the marks are the store's and the keys follow them.
+    g: () => {
+      if (useStore.getState().bisect?.candidate) void useStore.getState().markBisect("good");
+    },
+    x: () => {
+      if (useStore.getState().bisect?.candidate) void useStore.getState().markBisect("bad");
+    },
     "1": () => useStore.getState().setMode("files"),
     "2": () => useStore.getState().setMode("history"),
     "3": () => useStore.getState().setMode("branches"),

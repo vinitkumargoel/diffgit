@@ -25,7 +25,7 @@ import {
   WORKING_TREE_HIT,
   widenLabel,
 } from "../search";
-import { selectVisibleFiles, useStore } from "../store";
+import { selectPreflightPair, selectVisibleFiles, useStore } from "../store";
 import { filePathOf } from "../treeModel";
 import { MODES } from "./ModeSwitch";
 
@@ -93,6 +93,11 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
   const widenSearch = useStore((s) => s.widenSearch);
   const cancelSearch = useStore((s) => s.cancelSearch);
   const showCommit = useStore((s) => s.showCommit);
+  const startBisect = useStore((s) => s.startBisect);
+  const stopBisect = useStore((s) => s.stopBisect);
+  const bisecting = useStore((s) => s.bisect !== null);
+  const runPreflight = useStore((s) => s.runPreflight);
+  const preflightPair = useStore(useShallow(selectPreflightPair));
   const ref = useRef<HTMLDialogElement>(null);
   const returnTo = useRef<HTMLElement | null>(null);
   const [search, setSearch] = useState("");
@@ -226,6 +231,24 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
         run: () => void scanSecrets({ announce: true }),
       },
       {
+        // T11.13: the bisect strip and the preflight panel are reached from here or from a row
+        // `…` menu — never from the bars (Design §14.1's last paragraph).
+        id: "bisect",
+        label: bisecting ? "Stop the bisect" : "Start bisect…",
+        keywords: ["bisect", "regression", "broke", "midpoint", "git bisect"],
+        run: () => void (bisecting ? stopBisect() : startBisect()),
+      },
+      ...(preflightPair
+        ? [
+            {
+              id: "preflight",
+              label: `Preflight rebase of ${preflightPair.branch} onto ${preflightPair.onto}`,
+              keywords: ["rebase", "conflict", "replay", "todo", "preflight"],
+              run: () => void runPreflight(preflightPair.branch, preflightPair.onto),
+            },
+          ]
+        : []),
+      {
         id: "help",
         label: "Show keyboard shortcuts",
         keywords: ["help", "keys"],
@@ -256,6 +279,11 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
     scanSecrets,
     addToast,
     onHelp,
+    bisecting,
+    startBisect,
+    stopBisect,
+    runPreflight,
+    preflightPair,
   ]);
 
   // Pre-narrowed so a 5,000-file diff never renders 5,000 rows; cmdk ranks the survivors.

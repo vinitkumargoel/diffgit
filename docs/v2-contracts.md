@@ -812,6 +812,38 @@ maths and the copy. `TopBar` now hides the `StatsRow` in Insights as well as Bra
 §14.1's "in Branches and Insights the row is replaced by the page's own header"; `ModePlaceholder`
 was deleted with the last placeholder mode it existed for.
 
+<!-- T11.13 --> `StoreState.bisect` is now the real thing and the `PendingEngineType = never` alias
+T11.1 left is **gone** — it stood in for the last engine type a phase-10 task still owed. The field
+is `BisectSlice | null` (`src/ui/bisect.ts`), which is the contract's `BisectState & BisectStep`
+plus three fields the strip owns and the engine never sees: `picking: "good" | "bad" | null` (the
+two-step start of Design §14.5, during which `bad` is `""` — the one value `Oid` cannot hold — so
+`bisectState(slice)` is the only thing that ever reaches `bisectStep`), `loading` and `error`.
+`StoreState` also gained `preflight: PreflightState` (`branch`, `onto`, `result`, `loading`,
+`error`; `branch !== null` **is** "the panel is open", so there is no second flag to keep in step).
+Actions `startBisect(ends?)`, `markBisect(mark, oid?)`, `stopBisect()`, `restoreBisect()`,
+`runPreflight(branchRef, ontoRef)` and `closePreflight()`; selector `selectPreflightPair(s)` — the
+compare side while it is a plain branch, plus `selectBranchBase`'s base, both as **display** names
+because they are also what the engine writes into `git rebase -i <onto>`. `closeRepo` resets both.
+
+**Bisect.** `bisectStepNow()` is the one place that calls the engine: it writes the marks to
+`diffgit-derived` under `bisect:<repoId>` *before* the call (they are the user's work and survive a
+reload whatever the engine answers), drops an answer whose marks are no longer the ones on screen,
+sends `STALE` / `CANCELLED` through `ignoreStale`, and **selects the candidate** (`showCommit`), so
+the diff under the strip is the commit under test. Good marks **accumulate**, as git's
+`refs/bisect/good-*` do: in a merge-heavy range a newer good is not necessarily a descendant of an
+older one, so dropping the older mark would put commits that are already known good back into the
+count. The recorded replay marks one good per round, and the mock answers an accumulated state from
+its linear fallback with the same candidate and the same `remaining` at all seven rounds (59 → 30 →
+15 → 8 → 4 → 2 → 1, first bad `822313f`), which is what `components/bisect.test.tsx` asserts.
+
+**Preflight.** `PreflightResult` carries no `capped` flag, so the cap is read off the report
+(`isCapped`: either side at `PREFLIGHT_COMMIT_CAP`) rather than off the one-shot `HISTORY_CAPPED`
+warning the next recompute replaces — T11.7's rule for `HISTORY_DEGRADED` again. New pure modules
+`src/ui/bisect.ts` (`BisectSlice`, `BisectMark`, `bisectState`, `isArmed`, `pickingSlice`,
+`withGood`/`withBad`/`withSkip`, `markOf`, `MARK_TITLE` and every string) and `src/ui/preflight.ts`
+(`PREDICTION_LABEL`/`PREDICTION_TITLE`, `countPredictions`, `panelTitle`, `summaryLine`,
+`touchesLabel`, `overlapLabel`, `todoLines`, `mergeNote`, `signedNote`, `isCapped` and the notes).
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).

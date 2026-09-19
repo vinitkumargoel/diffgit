@@ -39,6 +39,7 @@ import { Badge } from "./Badge";
 import { CenteredColumn } from "./CenteredColumn";
 import { MenuItem } from "./MenuItem";
 import { Notice } from "./Notice";
+import { PreflightPanel } from "./PreflightPanel";
 
 const SEGMENT_CLASS = "rounded-[6px] px-[7px] py-[2px] text-[11px] leading-4 font-medium";
 /**
@@ -139,6 +140,7 @@ function RowMenu({
   const setSource = useStore((s) => s.setSource);
   const setTarget = useStore((s) => s.setTarget);
   const compareBranchWithBase = useStore((s) => s.compareBranchWithBase);
+  const runPreflight = useStore((s) => s.runPreflight);
   const addToast = useStore((s) => s.addToast);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -206,7 +208,16 @@ function RowMenu({
             title={isBase ? "This branch is the base." : undefined}
             onClick={() => run(() => compareBranchWithBase(row.ref.fullName))}
           />
-          <MenuItem label={`Preflight rebase onto ${base?.display ?? "base"}`} pending="T11.13" />
+          <MenuItem
+            label={`Preflight rebase onto ${base?.display ?? "base"}`}
+            disabled={isBase || base === null}
+            title={
+              isBase
+                ? "This branch is the base."
+                : `Report what git rebase -i ${base?.display ?? "base"} would replay`
+            }
+            onClick={() => run(() => void runPreflight(row.ref.name, base?.display ?? ""))}
+          />
           <MenuItem label={copied ? "Copied" : "Copy name"} onClick={() => void copyName()} />
         </div>
       )}
@@ -509,6 +520,8 @@ export function BranchesView({ now = Date.now() }: { now?: number } = {}) {
   const loadBranches = useStore((s) => s.loadBranches);
   const loadPickerSources = useStore((s) => s.loadPickerSources);
   const setBranchFilter = useStore((s) => s.setBranchFilter);
+  // T11.13: the preflight report is a panel in this body, not a mode (Design §14.6).
+  const preflightOpen = useStore((s) => s.preflight.branch !== null);
 
   // One overview and one tag listing per repository. A ref rather than `rows === null`, so a call
   // that fails asks once and stops instead of re-firing on every render (as `HistoryView` does).
@@ -555,7 +568,9 @@ export function BranchesView({ now = Date.now() }: { now?: number } = {}) {
         </p>
       )}
       <div id="diff" className="min-h-0 flex-1 overflow-y-auto">
-        {error !== null ? (
+        {preflightOpen ? (
+          <PreflightPanel />
+        ) : error !== null ? (
           <CenteredColumn as="section" label="Branches">
             <Notice detail={describeError(error.code).message} code={error.code}>
               Couldn’t list the branches of this repository

@@ -34,6 +34,7 @@ export function CommitCard({ oid }: { oid: string }) {
   const loadCommitDetails = useStore((s) => s.loadCommitDetails);
   const showCommit = useStore((s) => s.showCommit);
   const compareCommitWithBase = useStore((s) => s.compareCommitWithBase);
+  const markBisect = useStore((s) => s.markBisect);
   const baseName = useStore((s) => s.compareBase?.display ?? "base");
   const [expanded, setExpanded] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -237,8 +238,22 @@ export function CommitCard({ oid }: { oid: string }) {
                 label={copied === "cherry" ? "Copied" : "Copy cherry-pick command"}
                 onClick={() => void copy(cherryPickCommand(oid), "cherry")}
               />
-              <MenuItem label="Bisect: mark good" pending="T11.13" />
-              <MenuItem label="Bisect: mark bad" pending="T11.13" />
+              <MenuItem
+                label="Bisect: mark good"
+                title="Start or narrow a bisect with this commit as the good end"
+                onClick={() => {
+                  setMenu(false);
+                  void markBisect("good", oid);
+                }}
+              />
+              <MenuItem
+                label="Bisect: mark bad"
+                title="Start or narrow a bisect with this commit as the bad end"
+                onClick={() => {
+                  setMenu(false);
+                  void markBisect("bad", oid);
+                }}
+              />
               <MenuItem label="Blame here" onClick={() => void blameHere()} />
             </div>
           )}

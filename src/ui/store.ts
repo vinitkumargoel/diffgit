@@ -26,6 +26,7 @@ import {
 } from "../engine/diffSource";
 import type { WarningCode } from "../engine/errors";
 import type {
+  BisectState,
   BlamePayload,
   BranchesSource,
   BranchRow,
@@ -39,6 +40,7 @@ import type {
   Oid,
   PathExplanation,
   PathHistoryEntry,
+  PreflightResult,
   RangeSource,
   ReflogEntry,
   RepoInfo,
@@ -52,6 +54,16 @@ import type {
   TagInfo,
   WalkRequest,
 } from "../engine/types";
+import {
+  type BisectAction,
+  type BisectSlice,
+  bisectState,
+  isArmed,
+  pickingSlice,
+  withBad,
+  withGood,
+  withSkip,
+} from "./bisect";
 import { BLAME_REVISIONS, blameCacheKey, PATH_HISTORY_PAGE, pathHistoryCacheKey } from "./blame";
 import { BRANCH_CELL_BATCH, type BranchCells, type BranchFilter } from "./branches";
 import type { CompareSpec } from "./compareHash";
@@ -69,7 +81,7 @@ import {
 } from "./history";
 import { EMPTY_RESULT, INSIGHTS_LIMIT, sinceMsFor } from "./insights";
 import { Lru } from "./lru";
-import { derivedKey, getDerived, setDerived } from "./persistence/derived";
+import { clearDerived, derivedKey, getDerived, setDerived } from "./persistence/derived";
 import { revisionOfRef } from "./refGroups";
 import { nextWiden, PICKAXE_COMMITS, SEARCH_HIT_LIMIT, type SearchScope } from "./search";
 import { foundNote, hasUncommittedLayer, NO_FINDINGS_NOTE, NOTHING_TO_SCAN_NOTE } from "./secrets";
@@ -337,13 +349,11 @@ export interface OpenOptions {
 }
 
 /**
- * Stands in for an engine type that `docs/v2-contracts.md` names but a later phase-10 task still
- * has to add to `src/engine/types.ts` (`BisectState & BisectStep` T10.11 — `RepoOperation` was
- * widened by T11.3, `HiddenEntry` by T11.4, `CommitSummary` by T11.5 and `SecretFinding` by T11.9).
- * `never` keeps the field honest: it exists and the shell can switch on it, but nothing can put
- * data in it until the task that owns the type widens this one annotation.
+ * T11.1's `PendingEngineType = never` stood in for an engine type a later phase-10 task still had
+ * to add. T11.13 widened the last one (`bisect`, `BisectState & BisectStep`), so the alias is gone:
+ * `RepoOperation` was widened by T11.3, `HiddenEntry` by T11.4, `CommitSummary` by T11.5 and
+ * `SecretFinding` by T11.9. Every v2 field now carries the type `docs/v2-contracts.md` names.
  */
-type PendingEngineType = never;
 
 /** History-mode state (Design §14.5). */
 export interface HistoryState {
@@ -528,6 +538,70 @@ export const INITIAL_INSIGHTS: InsightsState = {
   walked: 0,
 };
 
+/**
+ * Rebase-preflight state (T11.13, Design §14.6). One report at a time, because the panel shows
+ * one: `branch` / `onto` say which question `result` answers, so a second `Preflight rebase onto …`
+ * visibly replaces the first instead of leaving the old table under a new title. `branch !== null`
+ * is what "the panel is open" means — there is no second `open` flag to keep in step with it.
+ */
+export interface PreflightState {
+  branch: string | null;
+  onto: string | null;
+  result: PreflightResult | null;
+  loading: boolean;
+  error: UiError | null;
+}
+
+export const INITIAL_PREFLIGHT: PreflightState = {
+  branch: null,
+  onto: null,
+  result: null,
+  loading: false,
+  error: null,
+};
+
+/**
+ * T11.13: one `bisectStep(state)` for the marks the strip currently holds, then the answer.
+ *
+ * Module-level rather than a closure helper so the whole slice stays one contiguous block. It is
+ * the only place that calls the engine for a bisect, so every entry point — the strip's buttons,
+ * `g` / `x`, the CommitCard menu, the restore from `diffgit-derived` — narrows the same way:
+ *
+ * - the marks are written to `diffgit-derived` before the call, because they are the user's work
+ *   and survive a reload whatever the engine answers;
+ * - an answer whose marks are no longer the ones on screen is dropped (the user can press `g`
+ *   twice faster than the worker replies), and `STALE` / `CANCELLED` go through `ignoreStale`;
+ * - a candidate is *selected*, which makes the source `parent…candidate`, so the commit under
+ *   test is the diff on screen — the atlas's "you can often answer without running anything".
+ */
+async function bisectStepNow(): Promise<void> {
+  const { bisect: slice, repoId } = useStore.getState();
+  if (!isArmed(slice)) return;
+  const asked = bisectState(slice);
+  const key = JSON.stringify(asked);
+  useStore.setState({ bisect: { ...slice, loading: true, error: null } });
+  if (repoId !== null) void setDerived(derivedKey.bisect(repoId), asked);
+  /** The marks this call answers; a mark made while it was in flight makes it stale. */
+  const current = (): BisectSlice | null => {
+    const cur = useStore.getState().bisect;
+    return cur !== null && JSON.stringify(bisectState(cur)) === key ? cur : null;
+  };
+  try {
+    const step = await client().bisectStep(asked);
+    const cur = current();
+    if (!cur) return;
+    useStore.setState({ bisect: { ...cur, ...step, loading: false, error: null } });
+    if (step.candidate !== null) void useStore.getState().showCommit(step.candidate);
+  } catch (e) {
+    const err = toUiError(e);
+    const stale = err.code === "STALE" || err.code === "CANCELLED";
+    if (stale) ignoreStale(e);
+    const cur = current();
+    if (!cur) return;
+    useStore.setState({ bisect: { ...cur, loading: false, error: stale ? null : err } });
+  }
+}
+
 export interface StoreState {
   screen: Screen;
   repo: RepoInfo | null;
@@ -608,8 +682,12 @@ export interface StoreState {
    * the user chose, not the parent the last click put there.
    */
   compareBase: { expr: string; display: string } | null;
-  /** Running bisect (T11.13). */
-  bisect: PendingEngineType | null;
+  /**
+   * Running bisect (T11.13, Design §14.5): the contract's `BisectState & BisectStep` plus the
+   * strip's own `picking` / `loading` / `error` (`src/ui/bisect.ts`). Null = no bisect. It lives
+   * in the store, so it survives every mode switch, and in `diffgit-derived` per repository.
+   */
+  bisect: BisectSlice | null;
   /** Command palette open (Design §14.1). */
   palette: boolean;
   /** Firefox/Safari read-once mode: the folder was read once and cannot refresh (T11.15). */
@@ -626,6 +704,8 @@ export interface StoreState {
   search: SearchState;
   /** Insights mode (T11.12, Design §14.6). */
   insights: InsightsState;
+  /** The rebase-preflight report, which replaces the Branches table while it is open (T11.13). */
+  preflight: PreflightState;
 
   // actions
   openRepo(handle: unknown, opts?: OpenOptions): Promise<void>;
@@ -810,6 +890,34 @@ export interface StoreState {
   setInsightsPeriod(period: InsightsPeriod): void;
   /** Clicking a hotspot: filter Files mode down to that path (T11.12 Deliverables). */
   showHotspot(path: string): void;
+
+  // ---- Bisect and rebase preflight (T11.13, Design §14.5 / §14.6) ------------------------------
+  /**
+   * Starts a bisect. With no argument it is the palette's `Start bisect…`: the strip becomes the
+   * two-step prompt of Design §14.5 and the next two clicks in the commit list are the good and
+   * the bad end. With both ends given it arms straight away and asks for the first midpoint.
+   * Nothing is written: `git bisect` is never run (D16), only `bisectStep` is asked.
+   */
+  startBisect(ends?: { good: Oid; bad: Oid }): Promise<void>;
+  /**
+   * Marks one commit `good` / `bad` / `skip` — the strip's buttons, the `g` / `x` keys and the
+   * CommitCard menu all land here. `oid` defaults to the commit under test. A mark made while no
+   * bisect runs starts one and asks for the other end; otherwise the marks go to `bisectStep` and
+   * the candidate it answers with is selected in the list.
+   */
+  markBisect(mark: BisectAction, oid?: Oid): Promise<void>;
+  /** `Stop`: forgets the marks here and in `diffgit-derived`. The repository is untouched. */
+  stopBisect(): Promise<void>;
+  /** Reads the marks this repository was left bisecting with and re-asks for the midpoint. */
+  restoreBisect(): Promise<void>;
+  /**
+   * `rebasePreflight(branch, onto)` for the Branches row menu and the palette. Read-only: the
+   * report names the commits `git rebase -i <onto>` would replay and where the two sides overlap.
+   * `STALE` / `CANCELLED` drop through `ignoreStale`, as everywhere else.
+   */
+  runPreflight(branchRef: string, ontoRef: string): Promise<void>;
+  /** Closes the panel and puts the Branches table back. */
+  closePreflight(): void;
 }
 
 let toastSeq = 0;
@@ -1205,6 +1313,7 @@ export const useStore = create<StoreState>()((set, get) => {
     branches: INITIAL_BRANCHES,
     search: INITIAL_SEARCH,
     insights: INITIAL_INSIGHTS,
+    preflight: INITIAL_PREFLIGHT,
 
     async openRepo(handle, opts = {}) {
       await get().closeRepo();
@@ -1373,6 +1482,7 @@ export const useStore = create<StoreState>()((set, get) => {
         branches: INITIAL_BRANCHES,
         search: INITIAL_SEARCH,
         insights: INITIAL_INSIGHTS,
+        preflight: INITIAL_PREFLIGHT,
       });
       pickerSources = null;
       commitStatsQueue.clear();
@@ -2531,6 +2641,120 @@ export const useStore = create<StoreState>()((set, get) => {
       get().setFilter(path);
       get().setMode("files");
     },
+
+    // ---- Bisect and rebase preflight (T11.13, Design §14.5 / §14.6) -----------------------------
+
+    async startBisect(ends) {
+      const { repo } = get();
+      if (!repo) return;
+      get().setMode("history");
+      if (!ends) {
+        // Design §14.5: `Start bisect…` is a prompt, and the next two clicks in the list are the ends.
+        set({ bisect: pickingSlice("good") });
+        return;
+      }
+      set({ bisect: withBad(withGood(pickingSlice(null), ends.good), ends.bad) });
+      await bisectStepNow();
+    },
+
+    async markBisect(mark, oid) {
+      const current = get().bisect;
+      const target = oid ?? current?.candidate ?? null;
+      if (target === null) return;
+      // No bisect yet (the CommitCard menu's `Bisect: mark good` / `mark bad`): this mark is one
+      // end and the strip asks for the other. `skip` on its own means nothing, so it is ignored.
+      if (current === null) {
+        if (mark === "skip") return;
+        get().setMode("history");
+        const seeded =
+          mark === "good"
+            ? withGood(pickingSlice("bad"), target)
+            : withBad(pickingSlice("good"), target);
+        set({ bisect: seeded });
+        return;
+      }
+      if (current.picking !== null) {
+        if (mark === "skip") return;
+        const marked = mark === "good" ? withGood(current, target) : withBad(current, target);
+        const other = mark === "good" ? "bad" : "good";
+        const complete = marked.good.length > 0 && marked.bad !== "";
+        set({ bisect: { ...marked, picking: complete ? null : other } });
+        if (complete) await bisectStepNow();
+        return;
+      }
+      const next =
+        mark === "good"
+          ? withGood(current, target)
+          : mark === "bad"
+            ? withBad(current, target)
+            : withSkip(current, target);
+      set({ bisect: next });
+      await bisectStepNow();
+    },
+
+    async stopBisect() {
+      const { repoId } = get();
+      if (get().bisect === null) return;
+      set({ bisect: null });
+      if (repoId !== null) await clearDerived(derivedKey.bisect(repoId));
+    },
+
+    async restoreBisect() {
+      const { repoId, bisect } = get();
+      if (repoId === null || bisect !== null) return;
+      const saved = await getDerived<BisectState>(derivedKey.bisect(repoId));
+      if (!saved || saved.bad === "" || get().bisect !== null) return;
+      set({
+        bisect: {
+          ...saved,
+          candidate: null,
+          remaining: 0,
+          steps: 0,
+          firstBad: null,
+          picking: null,
+          loading: false,
+          error: null,
+        },
+      });
+      await bisectStepNow();
+    },
+
+    async runPreflight(branchRef, ontoRef) {
+      if (!get().repo) return;
+      get().setMode("branches");
+      set({ preflight: { ...INITIAL_PREFLIGHT, branch: branchRef, onto: ontoRef, loading: true } });
+      /** The pair this call answers; a second `Preflight rebase…` makes it stale. */
+      const current = () => {
+        const p = get().preflight;
+        return p.branch === branchRef && p.onto === ontoRef;
+      };
+      try {
+        const result = await client().rebasePreflight(branchRef, ontoRef);
+        if (!current()) return;
+        set({
+          preflight: { branch: branchRef, onto: ontoRef, result, loading: false, error: null },
+        });
+      } catch (e) {
+        const err = toUiError(e);
+        const stale = err.code === "STALE" || err.code === "CANCELLED";
+        if (stale) ignoreStale(e);
+        if (!current()) return;
+        set({
+          preflight: {
+            branch: branchRef,
+            onto: ontoRef,
+            result: null,
+            loading: false,
+            error: stale ? null : err,
+          },
+        });
+      }
+    },
+
+    closePreflight() {
+      if (get().preflight === INITIAL_PREFLIGHT) return;
+      set({ preflight: INITIAL_PREFLIGHT });
+    },
   };
 });
 
@@ -2550,6 +2774,22 @@ export function selectInsightsAnchor(
   for (const c of s.history.commits) newest = Math.max(newest, c.author.timestamp);
   for (const r of s.branches.rows ?? []) newest = Math.max(newest, r.lastCommit?.timestamp ?? 0);
   return newest > 0 ? newest : now;
+}
+
+/**
+ * T11.13: the pair the palette's `Preflight rebase of compare onto base` would ask about — the
+ * compare side while it is a plain branch, and `selectBranchBase`'s base. Null when the compare
+ * side is a range, a tag or a stash (there is no branch to rebase), or when the two are the same
+ * branch. Both sides are the **display** names, because they are also what the engine puts into
+ * `git rebase -i <onto>`: `refs/heads/main` there would be a command nobody types.
+ */
+export function selectPreflightPair(
+  s: Pick<StoreState, "repo" | "compareBase" | "diffSource">,
+): { branch: string; onto: string } | null {
+  const base = selectBranchBase(s);
+  const src = s.diffSource;
+  if (base === null || src === null || src.kind !== "branches") return null;
+  return src.source === base.display ? null : { branch: src.source, onto: base.display };
 }
 
 // ---- Selectors (memoised on input identity) ----

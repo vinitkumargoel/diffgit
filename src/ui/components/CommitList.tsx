@@ -2,6 +2,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
+import { markOf } from "../bisect";
 import { ROW_H } from "../history";
 import { useShortcuts } from "../hooks/useShortcuts";
 import { useSidebarResize } from "../hooks/useSidebarResize";
@@ -121,6 +122,9 @@ function CommitsTab({ initialRect }: { initialRect?: { width: number; height: nu
   const showCommit = useStore((s) => s.showCommit);
   const searchCommits = useStore((s) => s.searchCommits);
   const requestCommitStats = useStore((s) => s.requestCommitStats);
+  // T11.13: the marks live in the store, so they survive every mode switch and every re-walk.
+  const bisect = useStore(useShallow((s) => s.bisect));
+  const markBisect = useStore((s) => s.markBisect);
 
   const [focusIndex, setFocusIndex] = useState(0);
   const [note, setNote] = useState<string | null>(null);
@@ -187,6 +191,13 @@ function CommitsTab({ initialRect }: { initialRect?: { width: number; height: nu
 
   const onSelect = (oid: string, extend: boolean) => {
     setNote(null);
+    // Design §14.5's `Start bisect…`: while the strip is asking for an end, a click in the list is
+    // that mark rather than a selection. The strip says which end it wants, so nothing is implicit.
+    const picking = bisect?.picking ?? null;
+    if (picking !== null) {
+      void markBisect(picking, oid);
+      return;
+    }
     void showCommit(oid, { extend });
   };
 
@@ -315,6 +326,7 @@ function CommitsTab({ initialRect }: { initialRect?: { width: number; height: nu
                     stats={statsMap[commit.oid]}
                     selected={commit.oid === selected}
                     inRange={commit.oid === rangeStart}
+                    mark={markOf(bisect, commit.oid)}
                     focused={v.index === focusIndex}
                     index={v.index}
                     now={now}

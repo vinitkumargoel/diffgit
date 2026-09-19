@@ -28,8 +28,8 @@ export const V2_SHORTCUTS = [
   { key: "4", description: "Insights mode" },
   { key: "b", description: "Blame the active file" },
   { key: "h", description: "History of the active file" },
-  { key: "g", description: "Bisect: mark good", pending: true },
-  { key: "x", description: "Bisect: mark bad", pending: true },
+  { key: "g", description: "Bisect: mark good" },
+  { key: "x", description: "Bisect: mark bad" },
   { key: "e", description: "Export menu", pending: true },
   { key: "H", label: "Shift+H", description: "Show hidden files" },
 ] as const;

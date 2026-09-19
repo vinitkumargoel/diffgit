@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { CommitSummary, RefSnapshot } from "../../engine/types";
+import type { BisectMark } from "../bisect";
 import {
   edgePath,
   incomingLanes,
@@ -13,6 +14,7 @@ import {
   shortOid,
 } from "../history";
 import { timeAgo } from "../timeAgo";
+import { BisectTag } from "./BisectStrip";
 
 const CHIP_CLASS: Record<RefChipKind, string> = {
   head: "bg-badge-head-bg text-badge-head-fg border-badge-head-border",
@@ -119,6 +121,8 @@ export interface CommitRowProps {
   selected: boolean;
   /** The other end of a shift-selected range, highlighted like the selection. */
   inRange: boolean;
+  /** T11.13: `good` / `bad` / `skip` / `test` while a bisect runs (Design §14.5), else undefined. */
+  mark?: BisectMark | null;
   focused: boolean;
   index: number;
   now: number;
@@ -138,6 +142,7 @@ export function CommitRow({
   stats,
   selected,
   inRange,
+  mark,
   focused,
   index,
   now,
@@ -145,11 +150,15 @@ export function CommitRow({
   onFocus,
   style,
 }: CommitRowProps) {
+  // The candidate is the selected commit, so it already wears the selection bar; the `test` tag is
+  // what says *why* (Design §2.1: colour is never the only signal).
   const highlight = selected
     ? "bg-accent-subtle shadow-[inset_2px_0_0_var(--accent)]"
-    : inRange
+    : mark === "test"
       ? "bg-accent-subtle"
-      : "hover:bg-surface-raised";
+      : inRange
+        ? "bg-accent-subtle"
+        : "hover:bg-surface-raised";
   return (
     <div
       role="option"
@@ -170,6 +179,7 @@ export function CommitRow({
     >
       <LaneCell commit={commit} previous={previous} />
       <span className="shrink-0 font-mono text-[11px] text-accent">{shortOid(commit.oid)}</span>
+      {mark && <BisectTag mark={mark} />}
       <span className="min-w-0 flex-1 truncate text-ink" title={commit.subject}>
         {commit.subject}
       </span>

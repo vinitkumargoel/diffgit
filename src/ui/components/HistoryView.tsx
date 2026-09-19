@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useStore } from "../store";
+import { BisectStrip } from "./BisectStrip";
 import { CommitCard } from "./CommitCard";
 import { CommitList } from "./CommitList";
 import { DiffPane } from "./DiffPane";
@@ -15,29 +16,36 @@ export function HistoryView({ initialRect }: { initialRect?: { width: number; he
   const selected = useStore((s) => s.history.selected);
   const repoId = useStore((s) => s.repoId);
   const loadHistory = useStore((s) => s.loadHistory);
+  const restoreBisect = useStore((s) => s.restoreBisect);
   const empty = useStore((s) => s.diff !== null && s.diff.files.length === 0);
 
   // The first page, once per repository. A ref rather than "commits.length === 0", so a walk that
-  // fails asks once and stops instead of re-firing every time `loading` flips back.
+  // fails asks once and stops instead of re-firing every time `loading` flips back. T11.13 restores
+  // the bisect marks this repository was left with on the same beat, for the same reason.
   const asked = useRef<string | null>(null);
   useEffect(() => {
     if (asked.current === repoId) return;
     asked.current = repoId;
     void loadHistory();
-  }, [repoId, loadHistory]);
+    void restoreBisect();
+  }, [repoId, loadHistory, restoreBisect]);
 
   return (
-    <div className="flex min-h-0 flex-1">
-      <CommitList initialRect={initialRect} />
-      <div className="flex min-h-0 flex-1 flex-col">
-        {selected !== null && <CommitCard oid={selected} />}
-        {empty ? (
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <EmptyState />
-          </div>
-        ) : (
-          <DiffPane initialRect={initialRect} />
-        )}
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* Design §14.5: the bisect strip sits above the commit list, and only while one runs. */}
+      <BisectStrip />
+      <div className="flex min-h-0 flex-1">
+        <CommitList initialRect={initialRect} />
+        <div className="flex min-h-0 flex-1 flex-col">
+          {selected !== null && <CommitCard oid={selected} />}
+          {empty ? (
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <EmptyState />
+            </div>
+          ) : (
+            <DiffPane initialRect={initialRect} />
+          )}
+        </div>
       </div>
     </div>
   );

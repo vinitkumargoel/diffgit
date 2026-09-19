@@ -254,10 +254,10 @@ describe("BranchesView rows: history, menu and keyboard", () => {
       "Preflight rebase onto main",
       "Copy name",
     ]);
-    // the action T11.13 owns is listed and disabled, never hidden (the owner's rule)
+    // T11.13 wired the preflight; it is enabled on a row that is not the base itself
     const preflight = within(menu).getByRole("menuitem", { name: "Preflight rebase onto main" });
-    expect((preflight as HTMLButtonElement).disabled).toBe(true);
-    expect(preflight.getAttribute("title")).toBe("coming soon (T11.13)");
+    expect((preflight as HTMLButtonElement).disabled).toBe(false);
+    expect(preflight.getAttribute("title")).toBe("Report what git rebase -i main would replay");
 
     fireEvent.click(within(menu).getByRole("menuitem", { name: "Compare with main" }));
     expect(actions.compareBranchWithBase).toHaveBeenCalledWith("refs/heads/topic");
