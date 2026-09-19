@@ -38,6 +38,1014 @@
     }
   ],
   "stashes": [],
+  "reflog": [
+    {
+      "index": 0,
+      "expr": "HEAD@{0}",
+      "oldOid": "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a",
+      "newOid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "action": "checkout",
+      "message": "checkout: moving from preflight/a to main",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 1,
+      "expr": "HEAD@{1}",
+      "oldOid": "aefdbcf01a4ecdb7049699de6ae4e79b1551623b",
+      "newOid": "b6327e42fd2d74ea1070ef8bc1a6ebbd164e611a",
+      "action": "commit",
+      "message": "commit: p3: add a file nothing else touches (clean)",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1710633600000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 2,
+      "expr": "HEAD@{2}",
+      "oldOid": "1b64210831f4bd1984875c179e4e804cc91c33e2",
+      "newOid": "aefdbcf01a4ecdb7049699de6ae4e79b1551623b",
+      "action": "commit",
+      "message": "commit: p2: edit hot.txt far from main's hunks (same file, disjoint)",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1710630000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 3,
+      "expr": "HEAD@{3}",
+      "oldOid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "newOid": "1b64210831f4bd1984875c179e4e804cc91c33e2",
+      "action": "commit",
+      "message": "commit: p1: rewrite the top of hot.txt (collides with main)",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1710540000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 4,
+      "expr": "HEAD@{4}",
+      "oldOid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "newOid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "action": "checkout",
+      "message": "checkout: moving from main to preflight/a",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 5,
+      "expr": "HEAD@{5}",
+      "oldOid": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+      "newOid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "action": "commit",
+      "message": "commit: c59: extend mod4",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1709550000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 6,
+      "expr": "HEAD@{6}",
+      "oldOid": "fb9edcd9be63538ff6d425970ceaaaf27e1009ee",
+      "newOid": "82bc6c6d1bc309b9e6463af370ec95aa4866a78c",
+      "action": "commit",
+      "message": "commit: c58: chore(deps): bump manifest to 0.0.9",
+      "who": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1709460000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 7,
+      "expr": "HEAD@{7}",
+      "oldOid": "8295928b1c222c2877dbcf442573effe40d97e5a",
+      "newOid": "fb9edcd9be63538ff6d425970ceaaaf27e1009ee",
+      "action": "commit",
+      "message": "commit: c57: extend mod3",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1709370000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 8,
+      "expr": "HEAD@{8}",
+      "oldOid": "87a3a12b31ee4268cf84cfed8254425a12658c7a",
+      "newOid": "8295928b1c222c2877dbcf442573effe40d97e5a",
+      "action": "commit",
+      "message": "commit: c56: extend mod2",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada.lovelace@corp.example.com",
+        "timestamp": 1709280000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 9,
+      "expr": "HEAD@{9}",
+      "oldOid": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+      "newOid": "87a3a12b31ee4268cf84cfed8254425a12658c7a",
+      "action": "commit",
+      "message": "commit: c55: extend mod1",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1709103600000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 10,
+      "expr": "HEAD@{10}",
+      "oldOid": "155507f9515dc6d19d859bcaa7570cf884303719",
+      "newOid": "10f27d53c19de4ea66ac966ec37d30d9871abc64",
+      "action": "commit",
+      "message": "commit: c54: extend mod4",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1709013600000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 11,
+      "expr": "HEAD@{11}",
+      "oldOid": "2e318a86392b07c04747e14483e9b76e60a88775",
+      "newOid": "155507f9515dc6d19d859bcaa7570cf884303719",
+      "action": "commit",
+      "message": "commit: c53: chore(deps): bump manifest to 0.0.8",
+      "who": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1708923600000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 12,
+      "expr": "HEAD@{12}",
+      "oldOid": "31891cde0399736142305af8b7fadea68c479e59",
+      "newOid": "2e318a86392b07c04747e14483e9b76e60a88775",
+      "action": "commit",
+      "message": "commit: c52: extend mod3",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1708833600000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 13,
+      "expr": "HEAD@{13}",
+      "oldOid": "261e0b9d0d06bbc309a69590239e4a2efc139807",
+      "newOid": "31891cde0399736142305af8b7fadea68c479e59",
+      "action": "commit",
+      "message": "commit: c51: extend mod2",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada.lovelace@corp.example.com",
+        "timestamp": 1708743600000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 14,
+      "expr": "HEAD@{14}",
+      "oldOid": "70703c5dfb94774c4c7b8f293b409a2fb02132c8",
+      "newOid": "261e0b9d0d06bbc309a69590239e4a2efc139807",
+      "action": "commit",
+      "message": "commit: c50: extend mod1",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1708653600000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 15,
+      "expr": "HEAD@{15}",
+      "oldOid": "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e",
+      "newOid": "70703c5dfb94774c4c7b8f293b409a2fb02132c8",
+      "action": "commit",
+      "message": "commit: c49: extend mod4",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1708563600000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 16,
+      "expr": "HEAD@{16}",
+      "oldOid": "6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1",
+      "newOid": "2c6f8fea4704db1f9a6665eaeffa1288b1230c3e",
+      "action": "commit",
+      "message": "commit: c48: chore(deps): bump manifest to 0.0.7",
+      "who": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1708473600000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 17,
+      "expr": "HEAD@{17}",
+      "oldOid": "931eea0f815b84e93b40772ca7b237f5b808c2ab",
+      "newOid": "6a7fd2462e45576e8fd01e4684a0eefa5e2aa1b1",
+      "action": "commit",
+      "message": "commit: c47: extend mod3",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1708470000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 18,
+      "expr": "HEAD@{18}",
+      "oldOid": "b92c2756a82e15f54285d7c209da3ac886e1579b",
+      "newOid": "931eea0f815b84e93b40772ca7b237f5b808c2ab",
+      "action": "commit",
+      "message": "commit: c46: extend mod2",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada.lovelace@corp.example.com",
+        "timestamp": 1708380000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 19,
+      "expr": "HEAD@{19}",
+      "oldOid": "0bea629635c4eaad5fe5f84fe29aba700a92a71a",
+      "newOid": "b92c2756a82e15f54285d7c209da3ac886e1579b",
+      "action": "commit",
+      "message": "commit: c45: extend mod1",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1708290000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 20,
+      "expr": "HEAD@{20}",
+      "oldOid": "69859eaeb61a4527e0c886cd669b5fc6cf4d39f9",
+      "newOid": "0bea629635c4eaad5fe5f84fe29aba700a92a71a",
+      "action": "commit",
+      "message": "commit: c44: extend mod4",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1708200000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 21,
+      "expr": "HEAD@{21}",
+      "oldOid": "472d458ef31d9f36fe8e65576019fd18c4b39c16",
+      "newOid": "69859eaeb61a4527e0c886cd669b5fc6cf4d39f9",
+      "action": "commit",
+      "message": "commit: c43: chore(deps): bump manifest to 0.0.6",
+      "who": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1708110000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 22,
+      "expr": "HEAD@{22}",
+      "oldOid": "d35a4cf95b7a15a449ee6d4d96a94008ac892e70",
+      "newOid": "472d458ef31d9f36fe8e65576019fd18c4b39c16",
+      "action": "commit",
+      "message": "commit: c42: extend mod3",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1708020000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 23,
+      "expr": "HEAD@{23}",
+      "oldOid": "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb",
+      "newOid": "d35a4cf95b7a15a449ee6d4d96a94008ac892e70",
+      "action": "commit",
+      "message": "commit: c41: extend mod2",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada.lovelace@corp.example.com",
+        "timestamp": 1707930000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 24,
+      "expr": "HEAD@{24}",
+      "oldOid": "8946f98688375397a15dda82801f07072ede8813",
+      "newOid": "bfdc9b7c1250d0c28337a9521c69d8ed67a060eb",
+      "action": "commit",
+      "message": "commit: c40: extend mod1",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1707840000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 25,
+      "expr": "HEAD@{25}",
+      "oldOid": "9ee57b46b805e7ec6462a3f188941f63c08821a2",
+      "newOid": "8946f98688375397a15dda82801f07072ede8813",
+      "action": "commit",
+      "message": "commit: c39: extend mod4",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1707750000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 26,
+      "expr": "HEAD@{26}",
+      "oldOid": "760c968a61db48a810deaef5c1269fb71028c560",
+      "newOid": "9ee57b46b805e7ec6462a3f188941f63c08821a2",
+      "action": "commit",
+      "message": "commit: c38: chore(deps): bump manifest to 0.0.5",
+      "who": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1707660000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 27,
+      "expr": "HEAD@{27}",
+      "oldOid": "8d363ef7d323c8bb14e88374f1634419182050ed",
+      "newOid": "760c968a61db48a810deaef5c1269fb71028c560",
+      "action": "commit",
+      "message": "commit: c37: extend mod3",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1707570000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 28,
+      "expr": "HEAD@{28}",
+      "oldOid": "82bed6085338e895515daf7061e4673c169013f8",
+      "newOid": "8d363ef7d323c8bb14e88374f1634419182050ed",
+      "action": "commit",
+      "message": "commit: c36: extend mod2",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada.lovelace@corp.example.com",
+        "timestamp": 1707480000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 29,
+      "expr": "HEAD@{29}",
+      "oldOid": "e8e51a9f9cb74aedca494962f36f4c62ed11e4aa",
+      "newOid": "82bed6085338e895515daf7061e4673c169013f8",
+      "action": "commit",
+      "message": "commit: c35: extend mod1",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1707390000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 30,
+      "expr": "HEAD@{30}",
+      "oldOid": "d591508ac3ec5664601a26ca15a46723da472ebc",
+      "newOid": "e8e51a9f9cb74aedca494962f36f4c62ed11e4aa",
+      "action": "commit",
+      "message": "commit: c34: extend mod4",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1707300000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 31,
+      "expr": "HEAD@{31}",
+      "oldOid": "f2b242b4531fc6ac3862a72cb4dfdca84b276cf1",
+      "newOid": "d591508ac3ec5664601a26ca15a46723da472ebc",
+      "action": "commit",
+      "message": "commit: c33: chore(deps): bump manifest to 0.0.4",
+      "who": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1707210000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 32,
+      "expr": "HEAD@{32}",
+      "oldOid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+      "newOid": "f2b242b4531fc6ac3862a72cb4dfdca84b276cf1",
+      "action": "commit",
+      "message": "commit: c32: chore(deps): bump manifest to 0.0.3",
+      "who": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1707120000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 33,
+      "expr": "HEAD@{33}",
+      "oldOid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+      "newOid": "e9f12c9567a93eb1b08ee6bda77d394d27255f3f",
+      "action": "commit",
+      "message": "commit: c31: reindent indent.txt (whitespace only)",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1707030000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 34,
+      "expr": "HEAD@{34}",
+      "oldOid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+      "newOid": "5e1b4e4a113a32ba74d89164599dae0b17753511",
+      "action": "commit",
+      "message": "commit: c30: git mv renamed-from.txt and touch one line",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1706940000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 35,
+      "expr": "HEAD@{35}",
+      "oldOid": "52052fc357c12a45a641e38d1d910fdec75f4241",
+      "newOid": "a73418042de715a7bef7e9bc59a8a2fadd8eb920",
+      "action": "commit",
+      "message": "commit: c29: rework the middle of hot.txt",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1706850000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 36,
+      "expr": "HEAD@{36}",
+      "oldOid": "d9459d1a6e53815426c4992b3591dad1408a3e27",
+      "newOid": "52052fc357c12a45a641e38d1d910fdec75f4241",
+      "action": "merge topic",
+      "message": "merge topic: Merge made by the 'ort' strategy.",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1706760000000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 37,
+      "expr": "HEAD@{37}",
+      "oldOid": "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81",
+      "newOid": "d9459d1a6e53815426c4992b3591dad1408a3e27",
+      "action": "checkout",
+      "message": "checkout: moving from topic to main",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 38,
+      "expr": "HEAD@{38}",
+      "oldOid": "140a173073d8dabbb1e161bd77ca4b5856ae0994",
+      "newOid": "d1d9c0c74e65b6a14eccf7a6c7a0ab108e894a81",
+      "action": "commit",
+      "message": "commit: t27: topic step 12",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1706410800000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 39,
+      "expr": "HEAD@{39}",
+      "oldOid": "2abe1b494d3d24ebecf81201a27bc0bcc6c8cd04",
+      "newOid": "140a173073d8dabbb1e161bd77ca4b5856ae0994",
+      "action": "commit",
+      "message": "commit: t26: topic step 11",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1706320800000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 40,
+      "expr": "HEAD@{40}",
+      "oldOid": "3bf1ccf595aafafd8d44503b9050f08ba6d05c6b",
+      "newOid": "2abe1b494d3d24ebecf81201a27bc0bcc6c8cd04",
+      "action": "commit",
+      "message": "commit: t25: topic step 10",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1706230800000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 41,
+      "expr": "HEAD@{41}",
+      "oldOid": "cd5a8be34254f0597f6774523d9bd8d7e4a5acea",
+      "newOid": "3bf1ccf595aafafd8d44503b9050f08ba6d05c6b",
+      "action": "commit",
+      "message": "commit: t24: topic step 9",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1706140800000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 42,
+      "expr": "HEAD@{42}",
+      "oldOid": "88627217351413ba56dd5a30493e4e089a044bbc",
+      "newOid": "cd5a8be34254f0597f6774523d9bd8d7e4a5acea",
+      "action": "commit",
+      "message": "commit: t23: topic step 8",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1706137200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 43,
+      "expr": "HEAD@{43}",
+      "oldOid": "9807480733153c750a21ae2e14cfc4504fd1dbea",
+      "newOid": "88627217351413ba56dd5a30493e4e089a044bbc",
+      "action": "commit",
+      "message": "commit: t22: topic step 7",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1706047200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 44,
+      "expr": "HEAD@{44}",
+      "oldOid": "fba339099e3d24125c08ae25235e9c303aa7dd0a",
+      "newOid": "9807480733153c750a21ae2e14cfc4504fd1dbea",
+      "action": "commit",
+      "message": "commit: t21: topic step 6",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1705957200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 45,
+      "expr": "HEAD@{45}",
+      "oldOid": "e66b609e02b02ed9f25fe0e3a039d9060474638c",
+      "newOid": "fba339099e3d24125c08ae25235e9c303aa7dd0a",
+      "action": "commit",
+      "message": "commit: t20: topic step 5",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1705867200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 46,
+      "expr": "HEAD@{46}",
+      "oldOid": "4c3adf69902138dd6e67c8fba441b24bb59f36d5",
+      "newOid": "e66b609e02b02ed9f25fe0e3a039d9060474638c",
+      "action": "commit",
+      "message": "commit: t19: topic step 4",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1705777200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 47,
+      "expr": "HEAD@{47}",
+      "oldOid": "d29703910e3581fa1987e540f5b48f5f45d73fe2",
+      "newOid": "4c3adf69902138dd6e67c8fba441b24bb59f36d5",
+      "action": "commit",
+      "message": "commit: t18: topic step 3",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1705687200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 48,
+      "expr": "HEAD@{48}",
+      "oldOid": "2c4af75c3df7f2f713740f7086ed97d7283480ff",
+      "newOid": "d29703910e3581fa1987e540f5b48f5f45d73fe2",
+      "action": "commit",
+      "message": "commit: t17: topic step 2",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1705597200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 49,
+      "expr": "HEAD@{49}",
+      "oldOid": "a0a0c78717004cb71945e9cf659e16b81d062eb7",
+      "newOid": "2c4af75c3df7f2f713740f7086ed97d7283480ff",
+      "action": "commit",
+      "message": "commit: t16: topic step 1",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1705507200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 50,
+      "expr": "HEAD@{50}",
+      "oldOid": "d9459d1a6e53815426c4992b3591dad1408a3e27",
+      "newOid": "a0a0c78717004cb71945e9cf659e16b81d062eb7",
+      "action": "checkout",
+      "message": "checkout: moving from main to topic",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 51,
+      "expr": "HEAD@{51}",
+      "oldOid": "e93098bc65bfabd2c6beaecda4692b479dfd305f",
+      "newOid": "d9459d1a6e53815426c4992b3591dad1408a3e27",
+      "action": "commit",
+      "message": "commit: c15: iterate on modules and the guide",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1705417200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 52,
+      "expr": "HEAD@{52}",
+      "oldOid": "9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7",
+      "newOid": "e93098bc65bfabd2c6beaecda4692b479dfd305f",
+      "action": "commit",
+      "message": "commit: c14: iterate on modules and the guide",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1705327200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 53,
+      "expr": "HEAD@{53}",
+      "oldOid": "375ca4ebf9753133a1a89486cf4ee1305bf77fef",
+      "newOid": "9c0a0ea93efba08fbb2b0b65ab1faaa12e1147b7",
+      "action": "commit",
+      "message": "commit: c13: iterate on modules and the guide",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1705237200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 54,
+      "expr": "HEAD@{54}",
+      "oldOid": "a0a0c78717004cb71945e9cf659e16b81d062eb7",
+      "newOid": "375ca4ebf9753133a1a89486cf4ee1305bf77fef",
+      "action": "commit",
+      "message": "commit: c12: iterate on modules and the guide",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1705147200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 55,
+      "expr": "HEAD@{55}",
+      "oldOid": "c1b0f387ee5a621cb043e9e492443d65f310a947",
+      "newOid": "a0a0c78717004cb71945e9cf659e16b81d062eb7",
+      "action": "commit",
+      "message": "commit: c11: iterate on modules and the guide",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1705057200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 56,
+      "expr": "HEAD@{56}",
+      "oldOid": "0e378a89244273883b77045fa7bd450a9ed62a5a",
+      "newOid": "c1b0f387ee5a621cb043e9e492443d65f310a947",
+      "action": "commit",
+      "message": "commit: c10: iterate on modules and the guide",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1704967200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 57,
+      "expr": "HEAD@{57}",
+      "oldOid": "6b9edc8d680b71f414fa56cc589f9f91c6d84860",
+      "newOid": "0e378a89244273883b77045fa7bd450a9ed62a5a",
+      "action": "commit",
+      "message": "commit: c09: iterate on modules and the guide",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1704877200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 58,
+      "expr": "HEAD@{58}",
+      "oldOid": "c513f47f486d0b567c61b5b4db80b2c5e451193f",
+      "newOid": "6b9edc8d680b71f414fa56cc589f9f91c6d84860",
+      "action": "commit",
+      "message": "commit: c08: iterate on modules and the guide",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1704787200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 59,
+      "expr": "HEAD@{59}",
+      "oldOid": "ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e",
+      "newOid": "c513f47f486d0b567c61b5b4db80b2c5e451193f",
+      "action": "commit",
+      "message": "commit: c07: chore(deps): bump manifest to 0.0.2",
+      "who": {
+        "name": "renovate[bot]",
+        "email": "renovate[bot]@users.noreply.github.com",
+        "timestamp": 1704697200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 60,
+      "expr": "HEAD@{60}",
+      "oldOid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+      "newOid": "ae9b4a4d8748e60209eb088759f47fa1c0a2fb9e",
+      "action": "commit",
+      "message": "commit: c06: add the guide (second email, mapped by .mailmap)",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada.lovelace@corp.example.com",
+        "timestamp": 1704607200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 61,
+      "expr": "HEAD@{61}",
+      "oldOid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "newOid": "ff4cd35f709efdf6d6de27099e01f72eb6bbb539",
+      "action": "commit",
+      "message": "commit: c05: rework the top of hot.txt",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1704517200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 62,
+      "expr": "HEAD@{62}",
+      "oldOid": "910020f5448cd147675c1ce71e2737ae0e1d3cf5",
+      "newOid": "cc269cbc13f6b0b687d7e81ce26fae14f9787b3f",
+      "action": "commit",
+      "message": "commit: c04: add module 4",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1704427200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 63,
+      "expr": "HEAD@{63}",
+      "oldOid": "adb2ec86ec8b4d052cd42a6d85c5f6b1eda3a59a",
+      "newOid": "910020f5448cd147675c1ce71e2737ae0e1d3cf5",
+      "action": "commit",
+      "message": "commit: c03: add module 3",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1704337200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 64,
+      "expr": "HEAD@{64}",
+      "oldOid": "c86003e71f1ae4869664db372ac422b8c684818c",
+      "newOid": "adb2ec86ec8b4d052cd42a6d85c5f6b1eda3a59a",
+      "action": "commit",
+      "message": "commit: c02: add module 2",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1704247200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 65,
+      "expr": "HEAD@{65}",
+      "oldOid": "5772d43fe1036c123baac6d6792d31986659a515",
+      "newOid": "c86003e71f1ae4869664db372ac422b8c684818c",
+      "action": "commit",
+      "message": "commit: c01: add module 1",
+      "who": {
+        "name": "Grace Hopper",
+        "email": "grace@example.com",
+        "timestamp": 1704157200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 66,
+      "expr": "HEAD@{66}",
+      "oldOid": null,
+      "newOid": "5772d43fe1036c123baac6d6792d31986659a515",
+      "action": "commit (initial)",
+      "message": "commit (initial): c00: root commit",
+      "who": {
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    }
+  ],
+  "operation": null,
   "revisions": {
     "HEAD": {
       "expr": "HEAD",

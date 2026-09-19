@@ -24,6 +24,54 @@
       "files": 1
     }
   ],
+  "reflog": [
+    {
+      "index": 0,
+      "expr": "HEAD@{0}",
+      "oldOid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "newOid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "action": "reset",
+      "message": "reset: moving to HEAD",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 1,
+      "expr": "HEAD@{1}",
+      "oldOid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "newOid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "action": "reset",
+      "message": "reset: moving to HEAD",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    },
+    {
+      "index": 2,
+      "expr": "HEAD@{2}",
+      "oldOid": null,
+      "newOid": "2f85b4db8e5c35bcf0cceb3ac70c7cff334cacaa",
+      "action": "commit (initial)",
+      "message": "commit (initial): c1: base",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    }
+  ],
+  "operation": null,
   "revisions": {
     "HEAD": {
       "expr": "HEAD",

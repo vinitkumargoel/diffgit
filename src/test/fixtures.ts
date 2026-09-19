@@ -43,6 +43,12 @@ export function loadExpectedText(name: string, file: string): string {
   return readFileSync(p, "utf8");
 }
 
+/** True when `fixtures/<name>/expected/<file>` was recorded (not every fixture gets every dump). */
+export function hasExpected(name: string, file: string): boolean {
+  const f = file.includes(".") ? file : `${file}.txt`;
+  return existsSync(join(FIXTURES_ROOT, name, "expected", f));
+}
+
 /** `loadExpectedText` split into lines, with the trailing newline and blank lines dropped. */
 export function loadExpectedLines(name: string, file: string): string[] {
   return loadExpectedText(name, file)

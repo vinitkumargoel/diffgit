@@ -44,6 +44,12 @@ export interface RepoInfo {
   defaultRef: RepoRef | null;
   capabilities: RepoCapabilities;
   warnings: RepoWarning[]; // non-fatal: e.g. "sparse index: untracked detection disabled"
+  /** T10.2: what git is in the middle of (Design §14.3 banner); refreshed by `reloadRefs()`. */
+  operation: RepoOperation | null;
+  /** T10.2: a colocated jj repository (`.jj/` beside `.git/`). */
+  jj: boolean;
+  /** T10.2: `.git/objects/info/commit-graph` or a `commit-graphs/commit-graph-chain` exists. */
+  hasCommitGraph: boolean;
 }
 
 /**
@@ -184,4 +190,48 @@ export interface StashInfo {
   untrackedOid: Oid | null; // third parent (`git stash -u`), else null
   /** Files the stash touches; null when not computed (see `countStashFiles`). */
   files: number | null;
+}
+
+// ---- v2 reflog and in-progress operations (T10.2, docs/v2-contracts.md) ------------------------
+
+/**
+ * One line of `.git/logs/HEAD` or `.git/logs/<fullRef>`, newest first.
+ *
+ * `message` is git's `%gs` verbatim (`"rebase (pick): t1: clean commit"`), so the list is byte-equal
+ * to `git reflog --format='%H %gs'`; `action` is the part before the first `:` of that same string
+ * (`"rebase (pick)"`, `"commit"`, `"commit (initial)"`, `"checkout"`, `"reset"`), which is what the
+ * panel groups and filters by. `oldOid` is null for the entry that created the ref (git writes all
+ * zeroes). `reachable` is null until `markReachable` (T10.5) fills it in.
+ */
+export interface ReflogEntry {
+  index: number; // 0 = newest
+  expr: string; // "HEAD@{0}", "main@{3}"
+  oldOid: Oid | null;
+  newOid: Oid;
+  action: string;
+  message: string;
+  who: Signature;
+  reachable: boolean | null;
+}
+
+export type OperationKind = "merge" | "rebase" | "cherry-pick" | "revert" | "bisect";
+
+/**
+ * What git is in the middle of, read from the state files in `.git/` (T10.2). Every field beyond
+ * `kind` and `conflicts` is optional because a layout diffgit does not recognise must still say
+ * "a rebase is in progress" rather than nothing (atlas tab 07, "Risks").
+ */
+export interface RepoOperation {
+  kind: OperationKind;
+  step?: number; // 1-based: `rebase-merge/msgnum` or `rebase-apply/next`
+  total?: number; // `rebase-merge/end` or `rebase-apply/last`
+  onto?: Oid;
+  ontoDisplay?: string; // a ref name pointing at `onto`, else its short oid
+  headName?: string; // the ref being replayed, e.g. "refs/heads/topic"
+  current?: Oid; // the commit being applied (stopped-sha / MERGE_HEAD / CHERRY_PICK_HEAD / REVERT_HEAD)
+  remaining?: Oid[]; // still in `git-rebase-todo`
+  done?: Oid[]; // already in `done`
+  conflicts: number; // paths with a stage > 0 entry in the index
+  startedAt?: number; // epoch ms: mtime of the state file that named the operation
+  interactive?: boolean;
 }

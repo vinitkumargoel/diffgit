@@ -228,3 +228,49 @@ describe("mock worker client: v2 sources (T10.1)", () => {
     await expect(client.resolveRevision("main")).rejects.toMatchObject({ code: "REV_NOT_FOUND" });
   });
 });
+
+describe("mock worker client: reflog and operation (T10.2)", () => {
+  it("serves the recorded rebase banner and HEAD reflog", async () => {
+    const client = createMockWorkerClient();
+    const info = await client.open({ name: "rebase-conflict" }, sink());
+    expect(info.operation).toMatchObject({
+      kind: "rebase",
+      step: 2,
+      total: 3,
+      conflicts: 2,
+      ontoDisplay: "main",
+      headName: "refs/heads/topic",
+      interactive: true,
+    });
+    expect(info.warnings.map((w) => w.code)).toContain("OPERATION_IN_PROGRESS");
+    expect(await client.operation()).toEqual(info.operation);
+
+    const entries = await client.reflog("HEAD", 3);
+    expect(entries.length).toBe(3);
+    expect(entries.map((e) => e.expr)).toEqual(["HEAD@{0}", "HEAD@{1}", "HEAD@{2}"]);
+    expect(entries.map((e) => e.action)).toEqual(["rebase (pick)", "rebase (start)", "checkout"]);
+    expect(entries[0]?.reachable).toBeNull();
+  });
+
+  it("the merge fixture reports a merge with its conflicts", async () => {
+    const client = createMockWorkerClient();
+    const info = await client.open({ name: "merge-conflict" }, sink());
+    expect(info.operation).toMatchObject({ kind: "merge", conflicts: 2 });
+    expect((await client.reflog("HEAD", 50)).length).toBe(5);
+  });
+
+  it("an idle repository has no operation, and an unrecorded ref warns NO_REFLOG", async () => {
+    const warnings: { code: string }[] = [];
+    const client = createMockWorkerClient();
+    const s = sink();
+    const info = await client.open(
+      { name: "history" },
+      { ...s, onWarning: (w) => void warnings.push(w) },
+    );
+    expect(info.operation).toBeNull();
+    expect(await client.operation()).toBeNull();
+    expect((await client.reflog("HEAD", 5)).length).toBe(5);
+    expect(await client.reflog("topic", 5)).toEqual([]);
+    expect(warnings.map((w) => w.code)).toContain("NO_REFLOG");
+  });
+});

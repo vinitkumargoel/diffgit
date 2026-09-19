@@ -39,5 +39,8 @@
     "isWorktreeGitdir": false,
     "hasReftable": false
   },
-  "warnings": []
+  "warnings": [],
+  "operation": null,
+  "jj": false,
+  "hasCommitGraph": false
 }

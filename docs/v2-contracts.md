@@ -56,6 +56,23 @@ untracked files the stash kept; `RepoSession.listStashes()` fills it for the fir
 `resolveRevision` additionally accepts `^{}` and `^{commit}` (no-ops once a tag has been peeled) and
 requires at least 7 hex characters for a SHA prefix.
 
+<!-- T10.2 --> `ReflogEntry.message` is git's `%gs` **verbatim** (`"rebase (pick): t1: clean"`), so a
+list of entries is byte-equal to `git reflog --format='%H %gs'`; `action` is the same string up to
+its first `:` (the whole message when it has none). `ReflogEntry.expr` is built from the text the
+caller passed (`reflog("HEAD")` → `HEAD@{0}`, `reflog("main")` → `main@{0}`), and `oldOid` is null
+for the entry that created the ref (git writes 40 zeroes). `reflog()` resolves a short name as
+branch → remote → tag, and `"stash"` as `logs/refs/stash`; a ref with no log file answers `[]` plus
+one `NO_REFLOG` warning on the sink instead of throwing. `RepoOperation.remaining` / `.done` keep a
+todo file's abbreviated oid when the object cannot be expanded (`git gc` pruned it), so a step is
+never silently dropped; `RepoOperation.startedAt` is the mtime of the state file that named the
+operation. `detectOperation(fs, db, refs?)` takes the already-loaded refs so `ontoDisplay` can be a
+branch name; without them it is the short oid. Detection precedence is rebase (either backend) →
+cherry-pick → revert → merge → bisect, because a rebase that stopped on a conflict also leaves
+`MERGE_HEAD`/`MERGE_MODE` behind. `operation.ts` exports `OPERATION_FILES`, the paths under `.git/`
+that `probe("git")` stats so the banner follows git live. `bun run record` writes `reflog` and
+`operation` into `src/test/recorded/<fixture>.v2.json` and now records `rebase-conflict` and
+`merge-conflict` as well.
+
 ```ts
 export interface ResolvedRevision {
   expr: string; oid: Oid | null;                     // null only for "<root>^" → empty tree

@@ -10,7 +10,9 @@ import type {
   DiffResult,
   DiffSource,
   FileDiff,
+  ReflogEntry,
   RepoInfo,
+  RepoOperation,
   RepoWarning,
   ResolvedRevision,
   StashInfo,
@@ -152,6 +154,14 @@ export interface EngineApi {
   listTags(): Promise<TagInfo[]>;
   /** The stash stack, newest first (T10.1). */
   listStashes(): Promise<StashInfo[]>;
+  /**
+   * The reflog of `expr` ("HEAD", "main", "origin/main", "refs/heads/main", "stash"), newest first
+   * (T10.2). A repository that keeps none yields `[]` and a `NO_REFLOG` warning on the sink.
+   * `ReflogEntry.reachable` is null here; T10.5's `markReachable` fills it in.
+   */
+  reflog(expr: string, limit: number): Promise<ReflogEntry[]>;
+  /** What git is in the middle of, or null (T10.2). Also `RepoInfo.operation` on open/reloadRefs. */
+  operation(): Promise<RepoOperation | null>;
   fileStats(generation: number, ids: string[]): Promise<Record<string, FileStats>>;
   fileDiff(generation: number, id: string, opts: FileDiffOptions): Promise<FileDiffPayload>;
   cancelFileDiff(id: string): Promise<void>;
