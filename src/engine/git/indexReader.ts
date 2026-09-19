@@ -66,7 +66,8 @@ export function readOffsetVarint(
   return { value, next: i };
 }
 
-function emptySnapshot(indexMtimeMs: number): IndexSnapshot {
+/** An index with nothing in it — what an unborn repository (no `.git/index` yet) amounts to. */
+export function emptySnapshot(indexMtimeMs: number): IndexSnapshot {
   return {
     version: 2,
     entries: [],

@@ -11,6 +11,8 @@ import type {
   DiffResult,
   DiffSource,
   FileDiff,
+  HiddenEntry,
+  PathExplanation,
   ReflogEntry,
   RepoInfo,
   RepoOperation,
@@ -23,6 +25,9 @@ import realBasicInfo from "../test/recorded/basic.repoinfo.json";
 import cherryDiff from "../test/recorded/cherry-pick-conflict.diffresult.json";
 import cherryInfo from "../test/recorded/cherry-pick-conflict.repoinfo.json";
 import cherryV2 from "../test/recorded/cherry-pick-conflict.v2.json";
+import hiddenDiff from "../test/recorded/hidden.diffresult.json";
+import hiddenInfo from "../test/recorded/hidden.repoinfo.json";
+import hiddenV2 from "../test/recorded/hidden.v2.json";
 import historyDiff from "../test/recorded/history.diffresult.json";
 import historyInfo from "../test/recorded/history.repoinfo.json";
 import historyV2 from "../test/recorded/history.v2.json";
@@ -65,6 +70,9 @@ interface RecordedV2 {
   operation: RepoOperation | null;
   /** T10.3: file id → the three-way payload of that conflicted file. */
   conflicts: Record<string, ConflictPayload>;
+  /** T10.4: the whole Hidden group, and one explanation per recorded path. */
+  hidden: HiddenEntry[];
+  explanations: Record<string, PathExplanation>;
   revisions: Record<string, ResolvedRevision>;
   ranges: { source: DiffSource; result: DiffResult }[];
 }
@@ -126,6 +134,12 @@ const RECORDED: Record<string, { info: RepoInfo; diff: DiffResult; v2?: Recorded
     info: cherryInfo as RepoInfo,
     diff: cherryDiff as DiffResult,
     v2: cherryV2 as unknown as RecordedV2,
+  },
+  // T10.4: the ignored dir / ignored file / index flags / 11 MB file, for the Hidden group (T11.4)
+  hidden: {
+    info: hiddenInfo as RepoInfo,
+    diff: hiddenDiff as DiffResult,
+    v2: hiddenV2 as unknown as RecordedV2,
   },
   showcase: { info: basicInfo as RepoInfo, diff: basicDiff as DiffResult },
   "showcase-worktree": { info: worktreeInfo as RepoInfo, diff: worktreeDiff as DiffResult },
@@ -340,6 +354,18 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
       await wait(client.latency);
       return { ...recorded, generation: gen };
     },
+    async explainPath(path) {
+      const v2 = requireV2();
+      await wait(client.latency);
+      const p = path.replace(/^\/+|\/+$/g, "");
+      // Anything the recorder did not ask about is a file the mock repository simply shows.
+      return v2.explanations[p] ?? { path: p, shown: true, reasons: [] };
+    },
+    async listHidden() {
+      const v2 = requireV2();
+      await wait(client.latency);
+      return v2.hidden;
+    },
     async fileBytes(gen, id, side) {
       const files = requireGen(gen);
       const f = files.find((x) => x.id === id);
@@ -413,6 +439,8 @@ export function createMockWorkerClient(opts: { latency?: number } = {}): MockWor
         reflog: [],
         operation: null,
         conflicts: {},
+        hidden: [],
+        explanations: {},
         revisions: {},
         ranges: [],
       }

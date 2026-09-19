@@ -1,0 +1,163 @@
+{
+  "tags": [],
+  "stashes": [],
+  "reflog": [
+    {
+      "index": 0,
+      "expr": "HEAD@{0}",
+      "oldOid": null,
+      "newOid": "c5d61a4e4036296631abfb307bfc988db8e3d062",
+      "action": "commit (initial)",
+      "message": "commit (initial): c1: tracked files including an 11 MB one",
+      "who": {
+        "name": "test",
+        "email": "test@example.com",
+        "timestamp": 1704067200000,
+        "tzOffsetMin": 0
+      },
+      "reachable": null
+    }
+  ],
+  "operation": null,
+  "conflicts": {},
+  "hidden": [
+    {
+      "path": ".DS_Store",
+      "kind": "ignored"
+    },
+    {
+      "path": ".env.local",
+      "kind": "ignored"
+    },
+    {
+      "path": "big.txt",
+      "kind": "too-large"
+    },
+    {
+      "path": "dist",
+      "kind": "ignored-dir",
+      "count": 3
+    },
+    {
+      "path": "expected",
+      "kind": "ignored-dir",
+      "count": 8
+    },
+    {
+      "path": "src/assumed.txt",
+      "kind": "assume-unchanged"
+    },
+    {
+      "path": "src/skipped.txt",
+      "kind": "skip-worktree"
+    }
+  ],
+  "explanations": {
+    "dist": {
+      "path": "dist",
+      "shown": false,
+      "reasons": [
+        {
+          "kind": "ignored",
+          "source": ".gitignore",
+          "line": 1,
+          "pattern": "dist/",
+          "command": "git check-ignore -v dist"
+        }
+      ]
+    },
+    "dist/bundle.js": {
+      "path": "dist/bundle.js",
+      "shown": false,
+      "reasons": [
+        {
+          "kind": "ignored",
+          "source": ".gitignore",
+          "line": 1,
+          "pattern": "dist/",
+          "command": "git check-ignore -v dist/bundle.js"
+        }
+      ]
+    },
+    ".env.local": {
+      "path": ".env.local",
+      "shown": false,
+      "reasons": [
+        {
+          "kind": "ignored",
+          "source": ".gitignore",
+          "line": 2,
+          "pattern": ".env.local",
+          "command": "git check-ignore -v .env.local"
+        }
+      ]
+    },
+    ".DS_Store": {
+      "path": ".DS_Store",
+      "shown": false,
+      "reasons": [
+        {
+          "kind": "ignored",
+          "source": "(built-in excludes)",
+          "line": 1,
+          "pattern": ".DS_Store",
+          "command": "git check-ignore -v .DS_Store"
+        }
+      ]
+    },
+    "src/skipped.txt": {
+      "path": "src/skipped.txt",
+      "shown": false,
+      "reasons": [
+        {
+          "kind": "skip-worktree",
+          "command": "git update-index --no-skip-worktree src/skipped.txt"
+        }
+      ]
+    },
+    "src/assumed.txt": {
+      "path": "src/assumed.txt",
+      "shown": false,
+      "reasons": [
+        {
+          "kind": "assume-unchanged",
+          "command": "git update-index --no-assume-unchanged src/assumed.txt"
+        }
+      ]
+    },
+    "big.txt": {
+      "path": "big.txt",
+      "shown": false,
+      "reasons": [
+        {
+          "kind": "too-large"
+        }
+      ]
+    },
+    "src/app.txt": {
+      "path": "src/app.txt",
+      "shown": false,
+      "reasons": [
+        {
+          "kind": "clean"
+        }
+      ]
+    },
+    "README.md": {
+      "path": "README.md",
+      "shown": false,
+      "reasons": [
+        {
+          "kind": "clean"
+        }
+      ]
+    },
+    "notes.txt": {
+      "path": "notes.txt",
+      "shown": true,
+      "reasons": []
+    }
+  },
+  "revisions": {},
+  "ranges": []
+}

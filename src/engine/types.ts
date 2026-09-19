@@ -235,3 +235,45 @@ export interface RepoOperation {
   startedAt?: number; // epoch ms: mtime of the state file that named the operation
   interactive?: boolean;
 }
+
+// ---- v2 "why is this file hidden" (T10.4, docs/v2-contracts.md, Design §14.3/§14.4) ------------
+
+/**
+ * Why a path is (or is not) in the diff, for the popover behind a Hidden row.
+ *
+ * `shown` is true only when the path has a row in the current diff *and* nothing hides its content;
+ * everything `listHidden` returns therefore answers `shown: false`. `reasons` is ordered most
+ * decisive first (`ignored`, `sparse`, `skip-worktree`, `assume-unchanged`, `too-large`), with the
+ * explanatory `generated` last and `clean` (tracked, unchanged, nothing hiding it) on its own.
+ * `source` / `line` / `pattern` are filled for `ignored` and read exactly like `git check-ignore -v`;
+ * `command` is the copyable command that undoes the reason, where one exists.
+ */
+export interface PathExplanation {
+  path: string;
+  shown: boolean;
+  reasons: {
+    kind:
+      | "ignored"
+      | "skip-worktree"
+      | "assume-unchanged"
+      | "sparse"
+      | "too-large"
+      | "generated"
+      | "clean";
+    source?: string;
+    line?: number;
+    pattern?: string;
+    command?: string;
+  }[];
+}
+
+/**
+ * One row of the sidebar's Hidden group (`listHidden`). An ignored directory is a single
+ * `ignored-dir` row carrying `count` — the number of entries directly inside it — and is never
+ * descended into, so `node_modules` costs one row rather than a hundred thousand.
+ */
+export interface HiddenEntry {
+  path: string;
+  kind: "ignored-dir" | "ignored" | "skip-worktree" | "assume-unchanged" | "too-large" | "sparse";
+  count?: number;
+}

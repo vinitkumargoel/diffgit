@@ -386,6 +386,14 @@
       }
     }
   },
+  "hidden": [
+    {
+      "path": "expected",
+      "kind": "ignored-dir",
+      "count": 8
+    }
+  ],
+  "explanations": {},
   "revisions": {},
   "ranges": []
 }

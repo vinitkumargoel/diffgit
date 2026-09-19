@@ -110,6 +110,14 @@
   ],
   "operation": null,
   "conflicts": {},
+  "hidden": [
+    {
+      "path": "expected",
+      "kind": "ignored-dir",
+      "count": 8
+    }
+  ],
+  "explanations": {},
   "revisions": {
     "HEAD": {
       "expr": "HEAD",

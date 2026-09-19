@@ -343,3 +343,71 @@ describe("mock worker client: conflict payloads (T10.3)", () => {
     });
   });
 });
+
+describe("mock worker client: why hidden (T10.4)", () => {
+  it("serves the recorded Hidden group, with ignored directories collapsed to one row", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "hidden" }, sink());
+    const hidden = await client.listHidden();
+    expect(hidden.map((h) => h.path)).toEqual([...hidden.map((h) => h.path)].sort());
+    expect(hidden.find((h) => h.path === "dist")).toEqual({
+      path: "dist",
+      kind: "ignored-dir",
+      count: 3,
+    });
+    expect(hidden.some((h) => h.path.startsWith("dist/"))).toBe(false);
+    expect(hidden.find((h) => h.path === "src/skipped.txt")?.kind).toBe("skip-worktree");
+    expect(hidden.find((h) => h.path === "src/assumed.txt")?.kind).toBe("assume-unchanged");
+    expect(hidden.find((h) => h.path === "big.txt")?.kind).toBe("too-large");
+  });
+
+  it("explains a path with the rule that matched and the command that undoes it", async () => {
+    const client = createMockWorkerClient();
+    await client.open({ name: "hidden" }, sink());
+    expect(await client.explainPath(".env.local")).toEqual({
+      path: ".env.local",
+      shown: false,
+      reasons: [
+        {
+          kind: "ignored",
+          source: ".gitignore",
+          line: 2,
+          pattern: ".env.local",
+          command: "git check-ignore -v .env.local",
+        },
+      ],
+    });
+    expect((await client.explainPath("src/skipped.txt")).reasons[0]).toEqual({
+      kind: "skip-worktree",
+      command: "git update-index --no-skip-worktree src/skipped.txt",
+    });
+    expect((await client.explainPath("big.txt")).reasons).toEqual([{ kind: "too-large" }]);
+    expect(await client.explainPath("notes.txt")).toEqual({
+      path: "notes.txt",
+      shown: true,
+      reasons: [],
+    });
+    // a fixture with no recording behaves like a repository that hides nothing
+    expect(await client.explainPath("/never/recorded.txt")).toEqual({
+      path: "never/recorded.txt",
+      shown: true,
+      reasons: [],
+    });
+  });
+
+  it("passes the builtinExcludes preference through the real client's open()", async () => {
+    const seen: unknown[] = [];
+    const client = createWorkerClient(
+      () =>
+        new FakeWorker({
+          async open(_h, _s, o) {
+            seen.push(o);
+            return basicInfo as RepoInfo;
+          },
+        }) as unknown as Worker,
+    );
+    await client.open({ name: "x" }, sink(), { builtinExcludes: false });
+    expect(seen).toEqual([{ builtinExcludes: false }]);
+    client.terminate();
+  });
+});
