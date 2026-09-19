@@ -4,6 +4,7 @@ import type { FileDiff } from "../../engine/types";
 import type { SidebarLayout } from "../store";
 import { filePathOf, type LayerCodeInfo } from "../treeModel";
 import { LayerCode } from "./LayerCode";
+import { SecretTag } from "./SecretTag";
 import { StatusIcon } from "./StatusIcon";
 
 export interface FileRowProps {
@@ -15,6 +16,8 @@ export interface FileRowProps {
   stats: FileDiff["stats"];
   /** D4: git's XY code, when this row should carry one (`layerCode`); null renders nothing. */
   code?: LayerCodeInfo | null;
+  /** T11.9: findings in this file — the `secret` chip goes after the XY code (Design §14.3). */
+  secrets?: number;
   /** The file's diff request errored — the row shows the red `retry` mark (S3). */
   failed?: boolean;
   onRetry?: () => void;
@@ -117,6 +120,7 @@ export function FileRow({
   viewed,
   stats,
   code,
+  secrets,
   failed,
   onRetry,
   onActivate,
@@ -167,6 +171,7 @@ export function FileRow({
         {base}
       </span>
       {code ? <LayerCode code={code} /> : null}
+      {secrets ? <SecretTag count={secrets} /> : null}
       <RowStats file={file} stats={stats} failed={failed} onRetry={onRetry} />
       <input
         type="checkbox"

@@ -501,6 +501,35 @@ newest = `--heat5`), which is its age quintile from five revisions up. New pure 
 `heatClass`, `ageOrder`, `heatOf`, `blameRows`, `revisionsLabel`, `cappedLine`, `renamedFromLabel`,
 `splitLines`, the two key builders and every label) owns the maths and the copy.
 
+<!-- T11.9 --> `StoreState.secrets` is now the real `SecretFinding[] | null` (the
+`PendingEngineType` annotation T11.1 left is gone). `null` means "this diff has not been scanned",
+`[]` is a real answer, and the two are different things: an export (T11.10) must treat `null` as
+unknown, not as clean. Every `recompute()` resets it to `null` and arms the scan for that
+generation; the scan fires from the **stats sink** once that generation's stats have settled — the
+scan and the stats pump both read file content in the engine, so the banner waits for the counts
+instead of racing them — and immediately when the result already carried every `FileStats`.
+"Settled" is `statsSettled(files, stats)`: every row has an answer (a number, or the explicit
+`null` the engine streams for a file it could not count) or is one that never gets a `+n −m`
+(binary, over the gate), so one unreadable file cannot hold a safety check back forever. A diff with no `staged`/`unstaged` row never reaches the engine at all: the new action
+`scanSecrets(opts?: { announce?: boolean })` answers `[]` itself, which is the "not called for
+committed-only diffs" rule. `announce` is the palette's `Re-scan for secrets`, which toasts all
+three outcomes (found / nothing to scan / `NO_FINDINGS_NOTE`); `STALE` and `CANCELLED` go through
+`ignoreStale` and leave the banner alone. Selectors: `selectSecrets`, `selectSecretCounts`
+(file id → count, the sidebar chip), `selectFileSecrets(s, id)` (one card, memoised on the list)
+and **`selectSecretGate`** → `{ scanned, findings, count, total }`, which is the gate T11.10's
+export flow calls before it writes anything; `total` reads `SECRETS_FOUND.detail`, so it counts
+past the 500-finding cap. `SECRETS_FOUND` is filtered out of `WarningBanners` (like
+`OPERATION_IN_PROGRESS` and `BLAME_CAPPED`): the `SecretBanner` is the surface, and the cap
+sentence is printed inside its finding list. `src/ui/scrollBus.ts` gained an optional new-side
+line: `requestScrollTo(id, line?)` plus `takePendingLine(id)`, which the card claims when it mounts
+after the jump (the pane is virtualised, so the target card is usually not mounted yet). New pure
+module `src/ui/secrets.ts` (`SECRET_TAG`, `ALLOW_LINE_COMMENT`, `ALLOWLIST_FILE`, `RULESET_DATE`,
+`hasUncommittedLayer`, `bannerCopy`, `cappedLine`, `byLine`, `entropyLabel`, `whereLine`,
+`whyFlagged`, `findingLabel`, `locationLabel`, `displayValue`, `rotateChecklist`, `RULES_HELP`,
+`NO_FINDINGS_NOTE`, `NOTHING_TO_SCAN_NOTE`, `foundNote`, `redactFindings`) owns every string; it
+imports `ALLOW_COMMENT` / `SECRET_ALLOWLIST_FILE` / `RULESET_DATE` from
+`src/engine/scan/secretRules.ts` (pure data, no imports of its own) so the spellings cannot drift.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).

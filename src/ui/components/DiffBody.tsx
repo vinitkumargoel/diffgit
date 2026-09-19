@@ -13,6 +13,8 @@ import {
   Decoration,
   Diff,
   expandFromRawCode,
+  findChangeByNewLineNumber,
+  getChangeKey,
   Hunk,
   type HunkData,
   type HunkTokens,
@@ -22,10 +24,13 @@ import {
   type ViewType,
 } from "react-diff-view";
 import type { FileDiffPayload, HunkModel } from "../../engine/api";
-import type { FileDiff } from "../../engine/types";
+import type { FileDiff, SecretFinding } from "../../engine/types";
 import { diffTypeFor, lineCount, toHunkData } from "../diff/toHunkData";
 import { tokenizeHunks } from "../highlight/highlightClient";
+import { onScrollRequest, takePendingLine } from "../scrollBus";
+import { byLine } from "../secrets";
 import { filePathOf } from "../treeModel";
+import { SecretMarker } from "./SecretPopover";
 
 /** Lines revealed by one `↑` / `↓` click (GitHub uses 20). */
 const EXPAND_STEP = 20;
@@ -123,13 +128,34 @@ export interface DiffBodyProps {
   expandAllToken: number;
   /** Overrides the region's accessible name (T11.3: one card holds three of these). */
   label?: string;
+  /** T11.9: this file's secret findings, keyed to their new-side line numbers. */
+  secrets?: readonly SecretFinding[];
+}
+
+/** Class marking the flagged line; `src/index.css` paints its 3 px `--danger` left rule. */
+const SECRET_LINE_CLASS = "dg-secret-line";
+
+/**
+ * T11.9: `Diff` keys its widgets by change key in unified view and by the *pair* of keys in split
+ * view (`keyForPair`: `"00"` stands in for a missing side). Registering the widget under every
+ * shape a single change can produce keeps one marker per finding in both view types.
+ */
+function widgetKeys(key: string): string[] {
+  return [key, `00${key}`, `${key}00`, `${key}${key}`];
 }
 
 /**
  * The diff table (ADR-001): react-diff-view over our `HunkModel`, expand context from the full
  * old text, tokens (syntax + word-level marks) from the highlight worker.
  */
-export function DiffBody({ file, payload, viewType, expandAllToken, label }: DiffBodyProps) {
+export function DiffBody({
+  file,
+  payload,
+  viewType,
+  expandAllToken,
+  label,
+  secrets,
+}: DiffBodyProps) {
   const initial = useMemo(() => toHunkData(payload.hunks), [payload.hunks]);
   // Expanded hunks are keyed to the payload they came from: a new payload (e.g. whitespace toggle)
   // renders its own hunks in the same frame, with no effect-driven re-sync (T7.5 review).
@@ -207,9 +233,48 @@ export function DiffBody({ file, payload, viewType, expandAllToken, label }: Dif
     requestAnimationFrame(() => performance.mark(`dg:painted:${file.id}`));
   }, [file.id]);
 
+  // T11.9: one marker per flagged line, plus the class that paints its `--danger` left rule.
+  // Recomputed with `hunks` so expanding context cannot orphan a marker.
+  const { widgets, flagged } = useMemo(() => {
+    const w: Record<string, ReactNode> = {};
+    const keys = new Set<string>();
+    for (const [line, findings] of byLine(secrets ?? [])) {
+      const change = findChangeByNewLineNumber(hunks, line);
+      if (!change) continue;
+      const key = getChangeKey(change);
+      keys.add(key);
+      const marker = <SecretMarker line={line} findings={findings} />;
+      for (const k of widgetKeys(key)) w[k] = marker;
+    }
+    return { widgets: w, flagged: keys };
+  }, [hunks, secrets]);
+
+  const rootRef = useRef<HTMLElement>(null);
+  /** A jump that arrived before this card mounted (the pane is virtualised). */
+  const [focusLine, setFocusLine] = useState<number | null>(() => takePendingLine(file.id));
+  useEffect(
+    () =>
+      onScrollRequest((id, line) => {
+        if (id === file.id && line !== undefined) setFocusLine(line);
+      }),
+    [file.id],
+  );
+  useEffect(() => {
+    if (focusLine === null) return;
+    const el = rootRef.current?.querySelector<HTMLElement>(`[data-secret-line="${focusLine}"]`);
+    if (!el) return;
+    setFocusLine(null);
+    el.scrollIntoView?.({ block: "center" });
+    el.focus();
+  }, [focusLine]);
+
   const path = filePathOf(file);
   return (
-    <section className="dg-diff overflow-x-auto" aria-label={label ?? `Diff of ${path}`}>
+    <section
+      ref={rootRef}
+      className="dg-diff overflow-x-auto"
+      aria-label={label ?? `Diff of ${path}`}
+    >
       <Diff
         viewType={viewType}
         diffType={diffTypeFor(file.status)}
@@ -217,6 +282,13 @@ export function DiffBody({ file, payload, viewType, expandAllToken, label }: Dif
         tokens={tokens}
         renderToken={renderToken}
         renderGutter={renderGutter}
+        widgets={widgets}
+        generateLineClassName={({ changes, defaultGenerate }) => {
+          const base = defaultGenerate();
+          // Split view passes `[oldChange, newChange]`, either of which may be absent.
+          const hit = changes.filter(Boolean).some((c) => flagged.has(getChangeKey(c)));
+          return hit ? `${base} ${SECRET_LINE_CLASS}` : base;
+        }}
         optimizeSelection
       >
         {(hs) =>

@@ -30,6 +30,7 @@ import {
   selectGroupTotals,
   selectHasLayers,
   selectHiddenEntries,
+  selectSecretCounts,
   selectTreeModel,
   selectVisibleFiles,
   useStore,
@@ -114,6 +115,8 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
   const prioritise = useStore((s) => s.prioritise);
   const failedFiles = useStore(useShallow(selectFailedFiles));
   const conflictKinds = useStore(useShallow(selectConflictKinds));
+  /** T11.9: findings per file id; `{}` while nothing has been scanned or found. */
+  const secretCounts = useStore(useShallow(selectSecretCounts));
   const loadFileDiff = useStore((s) => s.loadFileDiff);
   /** T11.4: null while the toggle is off or the listing walk has not answered yet. */
   const hiddenEntries = useStore(selectHiddenEntries);
@@ -738,6 +741,7 @@ export function FileTree({ layout, initialRect }: FileTreeProps) {
         viewed={viewedOf(f)}
         stats={statsOf(f)}
         code={codeOf(f)}
+        secrets={secretCounts[f.id] ?? 0}
         failed={failedFiles.has(f.id)}
         onRetry={() => void loadFileDiff(f.id)}
         onActivate={() => activate(f)}
