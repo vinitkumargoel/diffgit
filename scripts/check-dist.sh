@@ -20,10 +20,35 @@ check "no remote import()/importScripts in dist chunks" -lE 'import\("https?://|
 check "no inline <script> in dist/index.html" -E '<script(?![^>]*\ssrc=)' -P dist/index.html
 check "no remote script/style/link URLs in dist/index.html" -E '(src|href)="https?://' dist/index.html
 
+# T11.14: the installable app. The service worker must be stamped by the build (placeholders gone),
+# must precache exactly the built assets, and must contain no remote URL of any kind — it runs under
+# the same `connect-src 'none'` header as the page and fetches nothing but same-origin files.
+check "no remote URL or importScripts in dist/sw.js" -nE 'https?://|importScripts\(' dist/sw.js
+if [ -f dist/manifest.webmanifest ] && grep -q '"file_handlers"' dist/manifest.webmanifest; then
+  echo "OK   manifest present with file_handlers"
+else echo "FAIL dist/manifest.webmanifest missing or has no file_handlers"; fail=1; fi
+if grep -q '__SW_' dist/sw.js; then echo "FAIL dist/sw.js still holds a build placeholder"; fail=1
+else echo "OK   dist/sw.js stamped by the build"; fi
+sw_list=$(sed -n '/^const PRECACHE = \[/,/^\];/p' dist/sw.js | grep -oE '"/[^"]+"' | tr -d '"' | sort)
+dist_list=$(cd dist && find . -type f \( -name '*.js' -o -name '*.css' -o -name '*.html' -o -name '*.svg' -o -name '*.woff' -o -name '*.woff2' \) | sed 's|^\.||' | grep -v '^/sw\.js$' | grep -v '^/_' | sort)
+if [ "$sw_list" = "$dist_list" ] && [ -n "$sw_list" ]; then
+  echo "OK   sw.js precaches every built asset ($(printf '%s\n' "$sw_list" | wc -l | tr -d ' ') files)"
+else
+  echo "FAIL sw.js precache list differs from dist/"; diff <(printf '%s\n' "$sw_list") <(printf '%s\n' "$dist_list") | head -10; fail=1
+fi
+
 if cmp -s public/_headers dist/_headers; then echo "OK   dist/_headers identical to public/_headers"
 else echo "FAIL dist/_headers differs from public/_headers"; fail=1; fi
-if grep -q "connect-src 'none'" dist/_headers; then echo "OK   CSP has connect-src 'none'"
-else echo "FAIL CSP lacks connect-src 'none'"; fail=1; fi
+if [ "$(sed -n '/^\/\*$/,/^$/p' dist/_headers | grep -c "connect-src 'none'")" = "1" ]; then
+  echo "OK   page CSP has connect-src 'none'"
+else echo "FAIL page CSP lacks connect-src 'none'"; fail=1; fi
+# T11.14: the worker's own block must detach that policy and allow same-origin fetches, or no
+# service worker can run at all (it unregisters itself if this is missing; see public/sw.js).
+sw_block=$(sed -n '/^\/sw\.js$/,/^$/p' dist/_headers)
+if printf '%s' "$sw_block" | grep -q "! Content-Security-Policy" &&
+   printf '%s' "$sw_block" | grep -q "connect-src 'self'"; then
+  echo "OK   /sw.js block detaches the page CSP and allows connect-src 'self'"
+else echo "FAIL /sw.js header block missing or wrong"; fail=1; fi
 [ -f dist/_redirects ] && echo "OK   _redirects present" || { echo "FAIL _redirects missing"; fail=1; }
 if grep -qE 'name="build-id" content="[0-9a-f]{7,}"' dist/index.html; then echo "OK   build id meta present ($(grep -oE 'name="build-id" content="[^"]+"' dist/index.html | sed 's/.*content="//; s/"$//'))"
 else echo "FAIL build id meta missing or not a commit id (dev build?)"; fail=1; fi

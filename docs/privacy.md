@@ -22,6 +22,7 @@ diffgit is a static page. Everything it does with your repository happens inside
 | IndexedDB `diffgit-repos` | Up to 20 recent repositories: the directory **handle** (an opaque browser token, not a path), the folder name, the last source/target branch names, last-opened time | The "Recent" list on the home screen. The browser re-asks for read permission the next time you open one. |
 | IndexedDB `diffgit-viewed` | Keys marking files you ticked as "viewed": repository id, refs, file id and blob hashes → timestamp, pruned to 5,000 | Viewed marks survive a reload and reset automatically when the file changes. |
 | `localStorage` `diffgit:prefs` | View preferences: split/unified, ignore whitespace, theme, sidebar width and similar | Remember your layout. |
+| Cache Storage `diffgit-<build>` | Copies of diffgit's **own** built files (scripts, styles, the page), as the browser loads them | The installed app opens with the network off (T11.14). No repository content is ever cached; an old build's cache is deleted when a new one activates. |
 
 No file contents, diffs, or hashes of file contents other than the git blob ids inside viewed keys are
 ever stored. Every storage operation is optional: if storage is blocked or full, the app shows one
@@ -50,6 +51,29 @@ ever stored. Every storage operation is optional: if storage is blocked or full,
   embedded in them cannot run; the object URL is revoked when the card unmounts.
 - `.gitignore`, `.gitattributes` and `.git/config` are parsed with hand-written, linear-time parsers;
   `include.path` entries pointing outside the folder are skipped (`CONFIG_INCLUDE_SKIPPED`).
+
+## Installing diffgit, offline use and patch files (T11.14)
+
+- **The page's CSP does not change.** `connect-src 'none'` stays exactly as it was: the page, and
+  every worker it starts, still cannot open a connection to anything, anywhere. What changed is one
+  file. A service worker's policy comes from the headers of **its own script**, and under
+  `connect-src 'none'` a service worker cannot fetch at all — not even to hand the page its own
+  scripts — so `public/_headers` gives `/sw.js` a block of its own with `connect-src 'self'`
+  (verified in Chromium; `scripts/check-dist.sh` and `scripts/check-prod.sh` both assert the two
+  policies). That policy governs nothing but `sw.js`, and `sw.js` drops every request whose origin
+  is not this one before doing anything with it — the file contains no URL at all, which the build
+  gate greps for. If the header ever fails to arrive, the worker notices at install time that it
+  cannot read its own assets and **unregisters itself**, so the app falls back to working exactly
+  as it did before, online.
+- **What is cached** is the list of files this build produced, and nothing else; `scripts/check-dist.sh`
+  asserts that list against `dist/` and fails the deploy on a remote URL anywhere in the worker. A
+  new build is a new worker with a new cache name, and it waits until you reload.
+- **The manifest** registers diffgit as a handler for `.patch` and `.diff` files. Opening one hands
+  the page a file the operating system chose; it is parsed in the worker and rendered, and it is
+  never uploaded or written back. A patch opened this way runs with **no repository**: no folder
+  handle, no File System Access API call, no refresh.
+- **Installing changes one thing for you**: Chrome remembers folder permissions for an installed
+  app, so it stops asking on every visit. It grants diffgit nothing it does not already have.
 
 ## How to clear everything
 

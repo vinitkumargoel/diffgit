@@ -924,6 +924,51 @@ toggle in `localStorage`, and no script beyond one inline function — no worker
 `eval`, nothing remote. `scripts/check-guards.sh` greps the generator for a network call, and
 `export.test.tsx` greps the generated page for one.
 
+<!-- T11.14 --> **Patch-only mode and the installable app** (Design §14.6, atlas tab 17).
+`StoreState.patchOnly` (T11.1's flag) is now written, and one field joins it: `patchSession:
+PatchSessionState` — `{ name, text, loading, error }`, the file's name for the tag, its text for the
+export, and the inline refusal. Actions `openPatchFile(file)`, `openPatchText(text, name)` and
+`dismissPatchError()`. `openPatchText` calls `closeRepo()` **after** a successful `parsePatch`, so a
+patch that does not parse leaves the open repository alone, then builds the session from the answer:
+`diff` is a synthetic `DiffResult` whose `source` is a `range` with the file's name on both sides
+(the sidebar's group reads `Committed on <name>`; nothing resolves those oids), `generation` 0,
+`warnings` the answer's single `PATCH_ONLY`, and `secrets: []` — every row is `["committed"]`, which
+is exactly the diff the scanner skips without being asked, so the export gate is clear. The parsed
+`hunks` are written into `fileDiffs` as `ready` payloads under **both** whitespace keys, so
+`loadFileDiff` never calls an engine that has no repository open; `oldText`/`newText` are null (a
+patch has no file sides, so the cards offer no context expansion) and `language` comes from
+`languageFor(path)`. `setMode` refuses anything but `"files"` while `patchOnly`, which covers the
+`1`–`4` keys and the palette as well as the disabled `ModeSwitch` buttons. The Export menu keeps
+working: one helper in the store answers `patchText()` with `patchSession.text` in this mode, so
+`Save as .patch` writes back the bytes that were opened and the snapshot is built from them; the
+suggested name comes from `patchBaseName(file)`.
+New pure module `src/ui/patch.ts` (`PATCH_EXTENSIONS`, `PATCH_ACCEPT`, `MAX_PATCH_BYTES` = 10 MiB,
+`isPatchName`, `dragHasFiles`, `patchFromTransfer`, `patchBaseName`, `patchTagLabel`,
+`modeDisabledTitle`, `tooLargeMessage` and every string) and `src/ui/pwa.ts` (`installPwa` from
+`main.tsx`, `shouldRegister`, `canInstall`/`useInstallPrompt`/`promptInstall`, `INSTALL_LABEL`,
+`UPDATE_NOTE`). `components/PatchDrop.tsx` is mounted once by `App`: the window-wide drop target,
+the hidden file input behind `openPatchPicker()`, the inline `NOT_A_PATCH` alert (message, hint and
+the engine's `line <n>: …`) and — portalled into the landing page's existing CTA row, the way
+`HomeScreen` portals Recent — the `Open a patch file` and (only while `beforeinstallprompt` is
+pending) `Install diffgit` buttons. Nothing is added to TopBar row 1 or the StatsRow beyond the
+`Patch · <name>` tag that replaces the pickers (Design §14.1's anti-clutter rule; see the CHANGELOG
+for the §14.6 row-1 Install button that was *not* built).
+`public/manifest.webmanifest` (standalone, `launch_handler: navigate-existing`, `file_handlers` for
+`.patch`/`.diff` under `text/x-patch`, `text/x-diff` and `text/plain`, icons from `scripts/icons.ts`)
+and `public/sw.js`, stamped at build time by the `diffgit-sw-precache` plugin in `vite.config.ts`
+(`precacheList(dist)` → every built `.js`/`.css`/`.html`/`.svg`/`.woff*`, asserted against `dist/` by
+`scripts/check-dist.sh`). **The page's CSP is unchanged** — `connect-src 'none'` — but a worker's
+policy comes from its own script's headers, and under `'none'` it cannot fetch at all, not even to
+pass the page its own chunks (verified in Chromium: every lazy chunk fails). `public/_headers`
+therefore gains a `/sw.js` block that detaches the `/*` policy (`! Content-Security-Policy`, the
+documented Cloudflare Pages form, since duplicate headers are *joined*, not replaced) and repeats it
+with `connect-src 'self'`; `previewHeaders(file, block)` serves the same split under `vite preview`
+and `scripts/check-prod.sh` asserts it on the deployed host. The worker precaches the three shell
+files at install and caches the rest as the page loads them (the language grammars are megabytes
+nobody may open); if that install probe fails — a host that merges the two policies — it
+**unregisters itself**, so a missing header costs offline support and nothing else. It never fetches
+cross-origin, never `skipWaiting()`s, and an update is one toast with a Reload action.
+
 ## Persistence additions
 
 - `diffgit.prefs.v1` gains the new `Prefs` keys with validation (T11.1).

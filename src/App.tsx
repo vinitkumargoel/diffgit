@@ -4,6 +4,7 @@ import { BrowserGate } from "./ui/components/BrowserGate";
 import { HomeScreen } from "./ui/components/HomeScreen";
 import { LiveRegion } from "./ui/components/LiveRegion";
 import { LoadingScreen } from "./ui/components/LoadingScreen";
+import { PatchDropZone } from "./ui/components/PatchDrop";
 import { Toasts } from "./ui/components/Toasts";
 import { useStore } from "./ui/store";
 import { applyTheme } from "./ui/theme";
@@ -50,6 +51,8 @@ export function App() {
           <ErrorScreen />
         </Suspense>
       )}
+      {/* T11.14: a .patch dropped anywhere — on Home or on the repo screen — opens patch-only mode. */}
+      <PatchDropZone />
       <Toasts />
       <LiveRegion />
       {debug && (

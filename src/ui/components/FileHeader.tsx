@@ -79,6 +79,7 @@ const COPIED_MS = 1500;
  */
 function FileMenu({ path, id }: { path: string; id: string }) {
   const requestExport = useStore((s) => s.requestExport);
+  const patchOnly = useStore((s) => s.patchOnly);
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
   const [why, setWhy] = useState<PopoverAnchor | null>(null);
@@ -146,18 +147,23 @@ function FileMenu({ path, id }: { path: string; id: string }) {
           aria-label={`More actions for ${path}`}
           className="absolute top-full right-0 z-10 mt-1 w-64 rounded-[6px] border border-line bg-surface py-1 shadow-popover"
         >
-          <MenuItem label="Why is this file shown like this" onClick={openWhy} />
+          {/* T11.14: both of these answer from the repository — why a path is hidden, and the
+              rows of one file re-rendered as a patch. In a patch-only session there is neither,
+              and a patch cannot be sliced back into per-file files, so only Copy path is left. */}
+          {!patchOnly && <MenuItem label="Why is this file shown like this" onClick={openWhy} />}
           <MenuItem
             label={copied === "done" ? "Copied" : copied === "failed" ? "Copy failed" : "Copy path"}
             onClick={() => void copy()}
           />
-          <MenuItem
-            label={EXPORT_LABELS["file-patch"]}
-            onClick={() => {
-              setOpen(false);
-              void requestExport({ kind: "file-patch", ids: [id] });
-            }}
-          />
+          {!patchOnly && (
+            <MenuItem
+              label={EXPORT_LABELS["file-patch"]}
+              onClick={() => {
+                setOpen(false);
+                void requestExport({ kind: "file-patch", ids: [id] });
+              }}
+            />
+          )}
         </div>
       )}
       {why && (

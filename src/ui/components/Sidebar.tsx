@@ -1,5 +1,6 @@
 import { EyeOff } from "lucide-react";
 import { useSidebarResize } from "../hooks/useSidebarResize";
+import { HIDDEN_DISABLED_TITLE } from "../patch";
 import {
   type SidebarGroup,
   type SidebarLayout,
@@ -39,6 +40,7 @@ export function Sidebar({ initialRect }: { initialRect?: { width: number; height
   const visible = useStore(selectVisibleFiles).length;
   const filtering = useStore((s) => s.filter.trim() !== "");
   const showHidden = useStore((s) => s.prefs.showHidden);
+  const patchOnly = useStore((s) => s.patchOnly);
 
   const { shown, handleProps } = useSidebarResize(width, (w) => setPref("sidebarWidth", w));
 
@@ -76,14 +78,16 @@ export function Sidebar({ initialRect }: { initialRect?: { width: number; height
             </button>
           ))}
         </fieldset>
+        {/* T11.14: the Hidden group is a listing of the working tree; a patch file has none. */}
         <button
           type="button"
           aria-pressed={showHidden}
           aria-label="Show hidden files"
-          title="Show hidden files (Shift+H)"
+          disabled={patchOnly}
+          title={patchOnly ? HIDDEN_DISABLED_TITLE : "Show hidden files (Shift+H)"}
           className={`inline-flex size-5 shrink-0 items-center justify-center rounded-[4px] ${
             showHidden ? "pressed" : "text-muted hover:text-ink"
-          }`}
+          } ${patchOnly ? "cursor-not-allowed opacity-50" : ""}`}
           onClick={() => setPref("showHidden", !showHidden)}
         >
           <EyeOff size={13} aria-hidden />
