@@ -54,7 +54,17 @@ export function HelpDialog({ open, onClose }: { open: boolean; onClose: () => vo
   }, [open]);
   // The derived cache (blame, file history, insights, summaries) is measured while the dialog is up.
   useEffect(() => {
-    if (open) void derivedSize().then(setCache);
+    // The size arrives on a promise; a dialog closed (or unmounted) before it answers must not
+    // set state, so the answer is dropped once the effect is cleaned up.
+    let alive = true;
+    if (open) {
+      void derivedSize().then((size) => {
+        if (alive) setCache(size);
+      });
+    }
+    return () => {
+      alive = false;
+    };
   }, [open]);
 
   const v2Rows: Row[] = [

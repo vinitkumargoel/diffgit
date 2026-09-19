@@ -130,6 +130,9 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
   }, []);
 
   useEffect(() => {
+    // The cache size arrives on a promise; a palette closed (or unmounted) before it answers must
+    // not set state, so the answer is dropped once this effect is cleaned up.
+    let alive = true;
     const el = ref.current;
     if (!el) return;
     if (open && !el.open) {
@@ -138,7 +141,9 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
       const active = document.activeElement;
       returnTo.current = active instanceof HTMLElement && !el.contains(active) ? active : null;
       setSearch("");
-      void derivedSize().then(setCache);
+      void derivedSize().then((size) => {
+        if (alive) setCache(size);
+      });
       if (typeof el.showModal === "function") el.showModal();
       else el.setAttribute("open", "");
     } else if (!open && el.open) {
@@ -150,6 +155,9 @@ export function CommandPalette({ onHelp }: { onHelp?: () => void } = {}) {
       (returnTo.current ?? paletteTrigger)?.focus();
       returnTo.current = null;
     }
+    return () => {
+      alive = false;
+    };
   }, [open]);
 
   /**
