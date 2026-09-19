@@ -87,6 +87,33 @@ Earlier per-phase engine numbers (T1–T3, same machine): `flattenTree` on perf-
 index parse 28 ms, worktree scan ≈ 0.5 s cold, probes git 0.2 ms / index 6 ms / untracked 24 ms.
 Rename detection on the `renames` fixture 50–75 ms.
 
+## Search (T10.8, same machine, 2026-09-19)
+
+The three palette scopes on `fixtures/history` (63 commits, 13 tracked files). `scripts/perf.ts`
+prefers `perf-log` (2,000 commits, built by `FIXTURES_PERF=1`) when it exists and falls back to
+`history`, so the numbers below are the small-repo floor — the fixed cost of the walk, the index
+read and the working-tree scan — rather than the atlas's 5k-file estimates.
+
+| Metric | Budget | Measured (`history`) | Where asserted |
+|---|---|---|---|
+| `commits` scope, 60 commits walked, 21 hits | < 2,000 ms | 11–13 ms | `scripts/perf.ts`, strict only |
+| `worktree` scope, 13 files read, 200 hits (limit) | < 3,000 ms | 1–2 ms | strict only |
+| `pickaxe` scope, 48 first-parent commits, 33 hits | < 5,000 ms | 24–26 ms | strict only |
+| `(a+)+$` over 8 files of 200 pathological lines | < 1,000 ms | ≈ 430–480 ms (50 ms per file, then abandoned) | `src/engine/search/search.test.ts` |
+
+The pickaxe dominates because it is the only scope that reads blobs: two per changed file per
+commit, which is why the range size (default 200) and the path filter are mandatory and why the
+scope reports `scanned` so the UI can offer to widen. Commit search pays one `readCommit` for the
+commits whose subject and author did not already match — the body is the only field that needs an
+object read. The working-tree scope pays one `WorktreeScanner.scan` for its file list (the stat
+cache makes a second search on the same session ~free) and then reads at most 1 MB per file.
+
+Regex mode's residual risk is catastrophic backtracking, which no pattern inspection can rule out.
+It is bounded the way atlas tab 05 prescribes — matching runs in the worker, every scope checks its
+`AbortSignal`, the pattern is capped at 200 characters, and each file gets 50 ms before it is
+abandoned and the answer reported as `capped`. A single pathological *line* is bounded only by the
+1 MB file gate; if that ever bites, the fix is a streaming matcher, not a longer budget.
+
 ## Browser-side (Chromium, production build)
 
 | Metric | Budget | Status |

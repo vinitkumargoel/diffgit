@@ -680,3 +680,65 @@ describe("mock worker client: secret scan (T10.7)", () => {
     expect(await clean.scanSecrets(cleanDiff.generation)).toEqual([]);
   });
 });
+
+describe("mock worker client: search (T10.8)", () => {
+  async function openHistory() {
+    const warnings: { code: string; detail?: string }[] = [];
+    const client = createMockWorkerClient();
+    const s = sink();
+    await client.open({ name: "history" }, { ...s, onWarning: (w) => void warnings.push(w) });
+    return { client, warnings };
+  }
+
+  it("runs the commit scope live against the recorded walk", async () => {
+    const { client } = await openHistory();
+    const out = await client.search({ scope: "commits", query: "extend mod", limit: 500 });
+    expect(out.hits.length).toBeGreaterThan(5);
+    expect(out.hits.every((h) => h.kind === "commit" && typeof h.oid === "string")).toBe(true);
+    expect(out.scanned).toBeGreaterThan(50);
+
+    const byAuthor = await client.search({ scope: "commits", query: "[bot]", limit: 500 });
+    expect(byAuthor.hits.length).toBeGreaterThan(0);
+
+    const prefix = out.hits[0]?.oid?.slice(0, 8) as string;
+    const bySha = await client.search({ scope: "commits", query: prefix, limit: 500 });
+    expect(bySha.hits.map((h) => h.oid)).toEqual([out.hits[0]?.oid]);
+  });
+
+  it("caps the commit scope and warns", async () => {
+    const { client, warnings } = await openHistory();
+    const out = await client.search({ scope: "commits", query: "extend mod", limit: 2 });
+    expect(out.hits.length).toBe(2);
+    expect(out.capped).toBe(true);
+    expect(warnings.some((w) => w.code === "SEARCH_CAPPED")).toBe(true);
+  });
+
+  it("serves the recorded worktree and pickaxe answers", async () => {
+    const { client } = await openHistory();
+    const grep = await client.search({ scope: "worktree", query: "guide note", limit: 200 });
+    expect(grep.hits.length).toBe(8);
+    expect(grep.hits.every((h) => h.kind === "file" && h.path === "docs/guide.md")).toBe(true);
+
+    const pickaxe = await client.search({
+      scope: "pickaxe",
+      query: "hot-main",
+      commits: 200,
+      limit: 200,
+    });
+    expect(pickaxe.hits.length).toBe(1);
+    expect(pickaxe.hits[0]?.delta).toBe(3);
+  });
+
+  it("answers an unrecorded query with an empty result rather than throwing", async () => {
+    const { client } = await openHistory();
+    const out = await client.search({ scope: "worktree", query: "never-recorded", limit: 10 });
+    expect(out).toEqual({ hits: [], scanned: 0, capped: false, durationMs: 0 });
+  });
+
+  it("rejects an invalid regex the same way the engine does", async () => {
+    const { client } = await openHistory();
+    await expect(
+      client.search({ scope: "commits", query: "(unclosed", regex: true, limit: 10 }),
+    ).rejects.toMatchObject({ code: "INTERNAL" });
+  });
+});

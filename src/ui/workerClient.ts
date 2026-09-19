@@ -36,6 +36,8 @@ import type {
   RepoInfo,
   RepoOperation,
   ResolvedRevision,
+  SearchRequest,
+  SearchResult,
   SecretFinding,
   StashInfo,
   TagInfo,
@@ -130,6 +132,8 @@ export interface WorkerClient {
   blame(ref: string, path: string, opts: BlameRequest): Promise<BlamePayload>;
   /** Token shapes in the added lines of the uncommitted layers (T10.7); `SECRETS_FOUND` on the sink. */
   scanSecrets(generation: number): Promise<SecretFinding[]>;
+  /** One search in one of the palette's three scopes (T10.8); progress phase `"search"`. */
+  search(req: SearchRequest): Promise<SearchResult>;
   fileBytes(generation: number, id: string, side: "old" | "new"): Promise<Uint8Array | null>;
   prioritise(ids: string[]): Promise<void>;
   probe(tier: ProbeTier): Promise<string>;
@@ -281,6 +285,7 @@ export function createWorkerClient(factory: () => Worker = createWorker): Worker
     pathHistory: (ref, path, opts) => call((r) => r.pathHistory(ref, path, opts), "pathHistory"),
     blame: (ref, path, opts) => call((r) => r.blame(ref, path, opts), "blame"),
     scanSecrets: (generation) => call((r) => r.scanSecrets(generation), "scanSecrets"),
+    search: (req) => call((r) => r.search(req), "search"),
     fileBytes: (generation, id, side) =>
       call((r) => r.fileBytes(generation, id, side), "fileBytes"),
     prioritise: (ids) => call((r) => r.prioritise(ids), "prioritise"),

@@ -23,6 +23,8 @@ import type {
   RepoOperation,
   RepoWarning,
   ResolvedRevision,
+  SearchRequest,
+  SearchResult,
   SecretFinding,
   StashInfo,
   TagInfo,
@@ -45,7 +47,9 @@ export type ProgressPhase =
   /** T10.6: one revision of `blame` (`done`/`total` = revisions reverse-diffed). */
   | "blame"
   /** T10.7: the secret scan (`done`/`total` = files scanned). */
-  | "secrets";
+  | "secrets"
+  /** T10.8: a repository search (`done`/`total` = commits walked or files read). */
+  | "search";
 
 export interface Progress {
   phase: ProgressPhase;
@@ -346,6 +350,15 @@ export interface EngineApi {
    * when a newer `scanSecrets()` supersedes this one. Progress phase `"secrets"`.
    */
   scanSecrets(generation: number): Promise<SecretFinding[]>;
+  /**
+   * One search in one of the palette's three scopes (T10.8, atlas tab 05): commit messages,
+   * authors and object names; `git grep -n` over the working tree; or the pickaxe over the last
+   * `req.commits` commits of the first-parent chain. `req.query` is a literal substring unless
+   * `req.regex` is set, matching is case-insensitive either way, and `req.path` scopes the two
+   * content scopes. A partial answer sets `SearchResult.capped` and raises `SEARCH_CAPPED`.
+   * Progress phase `"search"`; `CANCELLED` when a newer `search()` supersedes this one.
+   */
+  search(req: SearchRequest): Promise<SearchResult>;
   /** Move these files to the front of the background stats queue (visible sidebar rows). */
   prioritise(ids: string[]): Promise<void>;
   /** Cheap change signature per tier for the polling fallback (T6.3). */

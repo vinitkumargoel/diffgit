@@ -268,6 +268,45 @@ escape hatch. Findings are sorted by path, line, rule, masked and capped at `SEC
 `commitStats` now keys its record in the caller's order rather than the order the batch finished
 in, which is what made `bun run record` drift between runs.
 
+<!-- T10.8 --> `search(req)` is one method for the palette's three scopes, each its own module
+under `src/engine/search/`. `SearchRequest.query` is a **literal substring** unless `regex` is set:
+exact mode builds no regular expression at all (`indexOf` on a case-folded copy), so a query full of
+metacharacters is text and there is nothing to inject into. Regex mode is capped at
+`REGEX_MAX_LENGTH` (200), compiled with the `u` flag inside a `try`/`catch`, and given a
+`REGEX_FILE_BUDGET_MS` (50 ms) budget per file in the `worktree` scope — a file that outruns it is
+abandoned and counted as skipped. Matching is **case-insensitive in both modes**, which is why the
+`git grep` oracle is `-in` and the case-sensitive `-n` answer is asserted only as a subset. An
+empty, over-long or uncompilable query is refused with `INTERNAL` plus a hint (phase 10 spells bad
+input that way; there is no public code for "you typed something we cannot use").
+`SearchResult.capped` means the answer is **incomplete** for any reason — the hit limit, the commit
+cap, or a skipped file — and is exactly when `SEARCH_CAPPED` is raised, with the reason in `detail`.
+`scanned` counts commits for `commits`/`pickaxe` and files read for `worktree`.
+
+The `commits` scope asks T10.5's `walkCommits` for **one** capped page (`req.commits`, default
+1,000) and matches, in this order, an object-name prefix (4–40 hex, exact mode only), the subject,
+the author's name and email, and only then `%B` — the one step that costs an object read. It is
+therefore `git log --grep` ∪ `--author` ∪ a SHA lookup in one box, and it reads the **raw** author
+header: `git log`'s own `--author` applies `.mailmap` by default, so the parity oracle passes
+`--no-use-mailmap`; folding the two addresses together is T10.9's, which owns `.mailmap`.
+The `worktree` scope greps the stage-0 index entries that exist on disk plus the untracked files the
+scanner's ignore rules let through (so it is a superset of `git grep`, which only looks at tracked
+files), skipping `generated` rows, binary files and anything over 1 MB; files are read in path order
+in batches of `GREP_BATCH` through the session's stats limiter, so the hit list is already sorted by
+(path, line) and a `limit` keeps the head git would have printed first.
+The `pickaxe` scope walks the **first-parent** chain (`req.commits`, default 200, mandatory in the
+UI), tree-diffs each commit against its first parent restricted to `path`, and reports a commit when
+the occurrence count differs for **at least one** changed file — git's own `diffcore-pickaxe` rule —
+with `delta` as the total change for the row. Under `--first-parent` git diffs a merge against its
+mainline and can report it, and so does this. Two documented divergences from `git log -S`: rename
+detection is not run before the count (a `git mv` is a delete plus an add, which differs only for a
+rename that leaves the count untouched), and binary or over-1-MB blobs are skipped rather than
+byte-counted (each skip sets `capped`). The working tree is one extra hit with **no** `oid` and
+`subject: "Uncommitted changes"` when the uncommitted work changes the count.
+`ProgressPhase` gains `"search"`. `bun run record` writes `searches` (the `worktree` and `pickaxe`
+answers for a few queries per fixture, keyed by `searchKey`, `durationMs` pinned to 0) into
+`<fixture>.v2.json`; the mock runs the `commits` scope live against the recorded walk instead, so
+T11.8 can type anything into the palette.
+
 ```ts
 export interface ResolvedRevision {
   expr: string; oid: Oid | null;                     // null only for "<root>^" → empty tree
@@ -358,7 +397,7 @@ export interface WorktreeInfo { name: string; path: string | null; head: Oid | n
 | `pathHistory(ref: string, path: string, opts: { follow: boolean; limit: number; cursor?: string }): Promise<{ entries: PathHistoryEntry[]; cursor: string \| null }>` | T10.6 | |
 | `blame(ref: string, path: string, opts: { ignoreWhitespace: boolean; includeWorktree: boolean; maxRevisions: number }): Promise<BlamePayload>` | T10.6 | progress phase `"blame"`. |
 | `scanSecrets(generation: number): Promise<SecretFinding[]>` | T10.7 | added lines of staged+unstaged hunks only. |
-| `search(req: SearchRequest): Promise<SearchResult>` | T10.8 | |
+| `search(req: SearchRequest): Promise<SearchResult>` | T10.8 | three scopes, literal by default, `SEARCH_CAPPED` when partial; progress phase `"search"`. |
 | `insights(req: InsightsRequest): Promise<InsightsResult>` | T10.9 | progress phase `"insights"`. |
 | `patchText(generation: number, ids: string[] \| null): Promise<string>` | T10.10 | git-apply-compatible unified diff. |
 | `summarise(): Promise<RepoSummary>` | T10.10 | cheap: refs + index + counts-only scan. |
