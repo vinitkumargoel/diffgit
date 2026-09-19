@@ -30,6 +30,10 @@
  * T10.9 adds `insights`: the whole-history (`sinceMs` unset) pass, so T11.12 can build the Insights
  * mode against real activity, contributors and hotspots.
  *
+ * T10.10 adds `summary`: the `RepoSummary` the multi-repo dashboard draws a card from, with
+ * `indexMtimeMs` and the operation's `startedAt` pinned so re-recording is byte-stable. The patch text is not recorded — the
+ * mock renders it with the engine's own writer off the recorded rows.
+ *
  * T10.5 adds `walks` (the whole history per variant — default, first-parent, all, per path — which
  * the mock pages itself), `commits` (`CommitDetails`), `commitStats`, `branches` (the Branches
  * table with its cells filled), `aheadBehind` and `reachable`, plus the `octopus` fixture so the
@@ -54,6 +58,7 @@ import type {
   PathHistoryEntry,
   RangeSource,
   RepoOperation,
+  RepoSummary,
   ResolvedRevision,
   SearchRequest,
   SearchResult,
@@ -292,6 +297,8 @@ async function record(name: string, v2: boolean): Promise<void> {
       searches[searchKey(req)] = { ...(await session.search(req)), durationMs: 0 };
     }
 
+    const summary: RepoSummary = await session.summarise();
+
     const reachable = await session.markReachable([
       ...new Set([...walkedOids, ...(await session.reflog("HEAD", 200)).map((e) => e.newOid)]),
     ]);
@@ -328,6 +335,8 @@ async function record(name: string, v2: boolean): Promise<void> {
       // `sinceMs` is left out because a wall-clock period would break `bun run record`'s
       // byte-idempotency (the result is otherwise a pure function of the repository).
       insights,
+      // T10.10: the dashboard card. `indexMtimeMs` is the file's mtime, so it is pinned here.
+      summary: { ...summary, operation: pinStartedAt(summary.operation), indexMtimeMs: 0 },
     };
     writeFileSync(`${OUT}${name}.v2.json`, `${JSON.stringify(payload, null, 2)}\n`);
     console.log(
@@ -341,7 +350,10 @@ async function record(name: string, v2: boolean): Promise<void> {
         `${Object.keys(blames).length} blames, ${secrets.length} secret findings, ` +
         `${Object.keys(searches).length} searches`,
       `insights: ${insights.commits} commits / ${insights.authors.length} authors / ` +
-        `${insights.hotspots.length} hotspots / ${insights.activity.length} weeks`,
+        `${insights.hotspots.length} hotspots / ${insights.activity.length} weeks, ` +
+        `${Object.keys(searches).length} searches, ` +
+        `summary ${summary.counts.staged}/${summary.counts.unstaged}/${summary.counts.untracked}` +
+        `/${summary.counts.conflict}`,
     );
   }
   await session.close();

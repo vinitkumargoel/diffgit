@@ -903,5 +903,23 @@
     "walked": 4,
     "capped": false,
     "bots": 0
+  },
+  "summary": {
+    "headBranch": "main",
+    "headDisplay": "main",
+    "counts": {
+      "staged": 0,
+      "unstaged": 0,
+      "untracked": 0,
+      "conflict": 0
+    },
+    "vsUpstream": null,
+    "lastCommit": {
+      "oid": "810e06da6b25e979289dcf8f0b44291a03cff0a7",
+      "subject": "c4: fourth release",
+      "timestamp": 1704067200000
+    },
+    "operation": null,
+    "indexMtimeMs": 0
   }
 }

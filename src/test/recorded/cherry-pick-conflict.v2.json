@@ -630,5 +630,28 @@
     "walked": 2,
     "capped": false,
     "bots": 0
+  },
+  "summary": {
+    "headBranch": "main",
+    "headDisplay": "main",
+    "counts": {
+      "staged": 0,
+      "unstaged": 0,
+      "untracked": 0,
+      "conflict": 1
+    },
+    "vsUpstream": null,
+    "lastCommit": {
+      "oid": "95ec07d57af52aec6119ee26472419a17689b490",
+      "subject": "c2: main edits the same line",
+      "timestamp": 1704067200000
+    },
+    "operation": {
+      "kind": "cherry-pick",
+      "conflicts": 1,
+      "current": "77be65c35b440f0da7050c6b67f1fe1380d5676d",
+      "startedAt": 1704067200000
+    },
+    "indexMtimeMs": 0
   }
 }

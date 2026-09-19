@@ -26,6 +26,7 @@ import { blame as runBlame } from "./diff/blame";
 import { buildConflictPayload } from "./diff/conflict";
 import { loadSide, loadSides } from "./diff/contentLoader";
 import { type DiffComputation, DiffEngine } from "./diff/diffEngine";
+import { type PatchRow, patchText as renderPatch } from "./diff/patchText";
 import { detectRenames } from "./diff/renames";
 import { describeFile, HUGE_FILE_BYTES, LARGE_FILE_BYTES, toPayload } from "./diff/textDiff";
 import { sourceRefs } from "./diffSource";
@@ -33,12 +34,12 @@ import { EngineError, type EngineErrorJSON, errorCode, isPublicCode } from "./er
 import type { DirHandleLike } from "./fs/dirHandleLike";
 import { createFsaFs, type FsaFs } from "./fs/fsaFs";
 import { GitAttributes } from "./git/attributes";
-import { branchCells, branchOverview } from "./git/branches";
+import { branchCells, branchOverview, upstreamOf } from "./git/branches";
 import { CommitGraph } from "./git/commitGraph";
 import { commitDetails, commitStats } from "./git/commits";
 import { type GitConfig, loadGitConfig } from "./git/config";
 import { explainPath } from "./git/explain";
-import { sha1, toHex } from "./git/hash";
+import { hashBlob, sha1, toHex } from "./git/hash";
 import { IgnoreRules } from "./git/ignoreRules";
 import { emptySnapshot, type IndexSnapshot, readIndex } from "./git/indexReader";
 import { checkLayout } from "./git/layoutChecks";
@@ -58,6 +59,7 @@ import {
   type ReachableResult,
   reachableFrom,
   walkCommits as runWalk,
+  subjectOf,
   type WalkState,
   walkRequestKey,
 } from "./git/walk";
@@ -97,6 +99,7 @@ import {
   type RepoCapabilities,
   type RepoInfo,
   type RepoOperation,
+  type RepoSummary,
   type RepoWarning,
   type ResolvedRevision,
   type SearchRequest,
@@ -1168,6 +1171,115 @@ export class RepoSession implements Omit<EngineApi, "open"> {
         durationMs: performance.now() - t0,
       });
       return out.result;
+    });
+  }
+
+  // ---- patch text and repository summary (T10.10, atlas tabs 12 and 11) -----------------------
+
+  /**
+   * The current diff as one git-format unified patch (atlas tab 12). `ids` picks a subset; null is
+   * every row. Output is deterministic: rows always come out in `DiffResult` order, never in the
+   * order the caller listed them, so two exports of the same generation are byte-identical.
+   *
+   * Content is loaded the same way `fileDiff` loads it, and `describeFile` runs with
+   * `loadLarge: true`, so a row the UI gates as `tooLarge` still carries real hunks. A file over
+   * 10 MB (`huge`) has no hunks to carry and is written as a binary row plus a `#` note; git
+   * reconstructs it from the object database when the blob is there. Worktree-layer rows take the
+   * working-tree bytes as the new side, and their blob name is hashed here when the scanner had no
+   * reason to hash it.
+   */
+  async patchText(generation: number, ids: string[] | null): Promise<string> {
+    this.requireGeneration(generation);
+    return this.single("patchText", async (signal) => {
+      const cur = this.requireGeneration(generation);
+      const wanted = new Set(ids ?? []);
+      if (ids !== null) for (const id of ids) this.requireFile(cur, id);
+      const files =
+        ids === null ? cur.result.files : cur.result.files.filter((f) => wanted.has(f.id));
+      const rows: PatchRow[] = [];
+      for (const f of files) {
+        throwIfAborted(signal, "patch");
+        const path = (f.newPath ?? f.oldPath) as string;
+        const loaded = await loadSides(f, cur.comp.sides, { db: this.db, fs: this.fs }, signal);
+        const description = describeFile(f, loaded, {
+          ignoreWhitespace: false,
+          loadLarge: true,
+          attrBinary: await this.attrs.isBinary(path),
+          attrGenerated: await this.attrs.isGenerated(path),
+        });
+        rows.push({
+          file: f,
+          description,
+          oldOid: f.oldOid,
+          newOid: f.newOid ?? (loaded.new ? await hashBlob(loaded.new) : null),
+        });
+      }
+      return renderPatch(rows);
+    });
+  }
+
+  /**
+   * The dashboard card for this repository (atlas tab 11): refs, what git is in the middle of, the
+   * index, a counts-only working-tree scan and ahead/behind for the checked-out branch.
+   *
+   * It deliberately touches **no** diff state: no `computeDiff`, no generation change, no
+   * reassignment of `this.refs`. An open diff keeps resolving its ids while this runs, which is
+   * what lets the dashboard summarise the repository the user already has open.
+   */
+  async summarise(): Promise<RepoSummary> {
+    this.assertOpen();
+    return this.single("summarise", async (signal) => {
+      const refs = await loadRefs(this.db, this.cfg);
+      const operation = await detectOperation(this.fs, this.db, refs.refs);
+      const index = await this.currentIndex();
+      const headTree = refs.headOid ? await this.db.flattenTree(refs.headOid) : null;
+      const status = await this.withRootCheck(() =>
+        this.scanner.scan(index, headTree, signal, { hashes: false }),
+      );
+      for (const w of status.warnings) RepoSession.emitWarning(this.sink, w);
+      throwIfAborted(signal, "summary");
+
+      const upstream =
+        refs.headBranch !== null ? upstreamOf(this.cfg, refs, refs.headBranch) : null;
+      const tracked =
+        upstream !== null ? refs.refs.find((r) => r.name === upstream && !r.synthetic) : undefined;
+      const vsUpstream =
+        refs.headOid !== null && tracked
+          ? await this.memoisedAheadBehind(refs.headOid, tracked.oid, signal)
+          : null;
+
+      let lastCommit: RepoSummary["lastCommit"] = null;
+      if (refs.headOid !== null) {
+        try {
+          const commit = await this.db.readCommit(refs.headOid);
+          lastCommit = {
+            oid: commit.oid,
+            subject: subjectOf(commit.message),
+            timestamp: commit.committer.timestamp * 1000,
+          };
+        } catch (e) {
+          RepoSession.emitWarning(this.sink, {
+            code: "HISTORY_DEGRADED",
+            message: "HEAD points at a commit that could not be read; the card has no last commit.",
+            detail: `IO_ERROR: HEAD ${refs.headOid} (${e instanceof Error ? e.message : String(e)})`,
+          });
+        }
+      }
+
+      return {
+        headBranch: refs.headBranch,
+        headDisplay: refs.headDisplay,
+        counts: {
+          staged: Object.keys(status.staged).length,
+          unstaged: Object.keys(status.unstaged).length,
+          untracked: status.untracked.length,
+          conflict: status.conflicts.length,
+        },
+        vsUpstream,
+        lastCommit,
+        operation,
+        indexMtimeMs: index.indexMtimeMs,
+      };
     });
   }
 

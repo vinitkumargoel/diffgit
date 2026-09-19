@@ -10826,5 +10826,23 @@
     "walked": 48,
     "capped": false,
     "bots": 8
+  },
+  "summary": {
+    "headBranch": "main",
+    "headDisplay": "main",
+    "counts": {
+      "staged": 0,
+      "unstaged": 0,
+      "untracked": 0,
+      "conflict": 0
+    },
+    "vsUpstream": null,
+    "lastCommit": {
+      "oid": "822313f6746d7982943f0d59fc5e09b626769141",
+      "subject": "c59: extend mod4",
+      "timestamp": 1709550000000
+    },
+    "operation": null,
+    "indexMtimeMs": 0
   }
 }
