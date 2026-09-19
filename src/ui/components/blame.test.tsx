@@ -169,8 +169,8 @@ describe("FileHeader mini control (Design §14.1)", () => {
       "Copy path",
       "Export this file as .patch",
     ]);
-    expect((items[2] as HTMLButtonElement).disabled).toBe(true);
-    expect(items[2]?.getAttribute("title")).toBe("coming soon (T11.10)");
+    // T11.10 wired the export row; nothing in this menu is pending any more.
+    expect((items[2] as HTMLButtonElement).disabled).toBe(false);
   });
 });
 

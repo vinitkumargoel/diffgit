@@ -811,6 +811,46 @@ same fact never also takes a banner — `WarningBanners` itself was not touched.
 maths and the copy. `TopBar` now hides the `StatsRow` in Insights as well as Branches, which is
 §14.1's "in Branches and Insights the row is replaced by the page's own header"; `ModePlaceholder`
 was deleted with the last placeholder mode it existed for.
+<!-- T11.10 --> `StoreState.export` is `ExportState` — `{ open, status, generation, ids, patch,
+snapshot, error, pending, confirmed, busy }` — with the actions `setExportOpen(open)`,
+`requestExport(req: ExportRequest)`, `confirmExport()` and `cancelExport()`. `ExportRequest` is
+`{ kind: ExportKind; ids?: string[] | null; oid?: Oid }` and `ids` is `patchText`'s second argument
+verbatim, so `null` is the whole comparison and an array is the current filter, in `DiffResult`
+order (`<!-- T10.10 -->`). **Opening the menu renders the patch once** — that single `patchText`
+call is where every size in the menu comes from, and the snapshot is built from the same bytes, so
+a row that prints a size can always write it; the rows stay disabled until `status === "ready"`.
+`recompute()` resets the slice (keeping `open`), because both the bytes and the gate override
+belong to one generation; `STALE` / `CANCELLED` go through `ignoreStale`.
+
+The gate is `selectSecretGate`: **clear means scanned with nothing found**, and `scanned: false` is
+unknown, not clean — it gates with "not scanned yet" wording. `carriesLines(kind)` is true for
+`copy-patch`, `save-patch`, `snapshot`, `file-patch` and `commit-patch`; those are replaced in the
+menu by a warning row that lists the findings (masked, `locationLabel`) with `Export anyway` /
+`Cancel`, and one asked for elsewhere (the FileHeader row, the CommitCard row, the palette) is
+parked in `export.pending` and asked as a question naming the count. `confirmExport()` records the
+override for that generation. `copy-list` and `copy-stats` are never gated and *are* run through
+`redactFindings`: they are text diffgit authors. The patch and the snapshot body are **not**
+masked — they are the user's own lines, and a masked patch is one `git apply` rejects — so the gate
+is their protection, and a snapshot written past the gate carries `exportedPastGate(gate)` inside it.
+
+New pure modules under `src/ui/export/`: `exportModel.ts` (`ExportKind`, `EXPORT_LABELS`,
+`MENU_KINDS`, `carriesLines`, `scopeLabel`, `gateQuestion`, `gateSummary`, `exportedPastGate`,
+`GATE_CONFIRM`/`GATE_CANCEL`, `sanitiseName`, `isoDate`, `exportFileName`, `filePatchName`,
+`commitPatchName`, `fileListMarkdown`, `statsLine`, `countsOf` and every note), `snapshot.ts`
+(`escapeHtml`, `splitPatch`, `buildSnapshot`, `snapshotFor`), `tokens.ts` (`cssBlock`,
+`designTokens`) and `download.ts` (`PATCH_MIME`, `HTML_MIME`, `byteLength`, `downloadText`,
+`copyText`). Saves go through a Blob URL on a detached `<a download>`: `showSaveFilePicker()` is
+named by Design §14.6 but **cannot be used** — writing through the handle it returns needs the
+write-capable stream call `scripts/check-guards.sh` fails the build on (D16), which is also why the
+task's "never a handle inside the repository" is already guaranteed. The suggested name is
+`<repo> · <from>…<to> · <date>.<ext>`, sanitised.
+
+The snapshot is **one generated HTML string**, not a second Vite entry: it inlines the `:root` /
+`.dark` token blocks lifted out of `src/index.css` with `?raw` (no colour may be re-typed under
+`src/ui`), the patch sections as the diff bodies, a file list, per-file viewed ticks and a theme
+toggle in `localStorage`, and no script beyond one inline function — no worker, no network, no
+`eval`, nothing remote. `scripts/check-guards.sh` greps the generator for a network call, and
+`export.test.tsx` greps the generated page for one.
 
 ## Persistence additions
 

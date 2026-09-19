@@ -58,6 +58,22 @@ import type { CompareSpec } from "./compareHash";
 import { buildSource, isRefExpr, labelOf, revToSide, type SideRev, sideOf } from "./compareSource";
 import { getWorkerClient } from "./engineClient";
 import { LOADING_INLINE_CODES, toUiError, type UiError } from "./errors";
+import { copyText, downloadText, HTML_MIME, PATCH_MIME } from "./export/download";
+import {
+  COPY_FAILED,
+  carriesLines,
+  commitPatchName,
+  copiedNote,
+  type ExportKind,
+  exportedPastGate,
+  exportFailed,
+  exportFileName,
+  fileListMarkdown,
+  filePatchName,
+  savedNote,
+  statsLine,
+} from "./export/exportModel";
+import { snapshotFor } from "./export/snapshot";
 import {
   COMMIT_STATS_BATCH,
   commitRange,
@@ -72,7 +88,13 @@ import { Lru } from "./lru";
 import { derivedKey, getDerived, setDerived } from "./persistence/derived";
 import { revisionOfRef } from "./refGroups";
 import { nextWiden, PICKAXE_COMMITS, SEARCH_HIT_LIMIT, type SearchScope } from "./search";
-import { foundNote, hasUncommittedLayer, NO_FINDINGS_NOTE, NOTHING_TO_SCAN_NOTE } from "./secrets";
+import {
+  foundNote,
+  hasUncommittedLayer,
+  NO_FINDINGS_NOTE,
+  NOTHING_TO_SCAN_NOTE,
+  redactFindings,
+} from "./secrets";
 import {
   buildTree,
   type FileGroup,
@@ -528,6 +550,53 @@ export const INITIAL_INSIGHTS: InsightsState = {
   walked: 0,
 };
 
+/** T11.10: one export the user asked for. `ids` is `patchText`'s second argument verbatim. */
+export interface ExportRequest {
+  kind: ExportKind;
+  /** File ids to render; `null`/absent = the whole comparison (contracts `<!-- T10.10 -->`). */
+  ids?: string[] | null;
+  /** The commit a `commit-patch` names itself after. */
+  oid?: Oid;
+}
+
+/**
+ * T11.10: the Export menu's state (Design §14.6, atlas tab 12). Opening the menu renders the patch
+ * once — that is where the sizes come from, and the items stay disabled until it is `ready` — and
+ * the snapshot is built from the same bytes, so a menu that shows a size can always save it.
+ */
+export interface ExportState {
+  /** The menu in the StatsRow (key `e`). */
+  open: boolean;
+  status: "idle" | "preparing" | "ready" | "failed";
+  /** The generation `patch` belongs to; a recompute makes it stale and it is prepared again. */
+  generation: number | null;
+  /** The ids `patch` covers: `null` is the whole comparison, an array is the current filter. */
+  ids: string[] | null;
+  patch: string;
+  snapshot: string;
+  /** Why the preparation failed, for the menu's one-line message. */
+  error: string | null;
+  /** A request stopped at the secret gate, waiting for `Export anyway` / `Cancel`. */
+  pending: ExportRequest | null;
+  /** The generation the user has already said "export anyway" for; reset by every recompute. */
+  confirmed: number | null;
+  /** An export in flight, so a second click cannot start a second one. */
+  busy: ExportKind | null;
+}
+
+export const INITIAL_EXPORT: ExportState = {
+  open: false,
+  status: "idle",
+  generation: null,
+  ids: null,
+  patch: "",
+  snapshot: "",
+  error: null,
+  pending: null,
+  confirmed: null,
+  busy: null,
+};
+
 export interface StoreState {
   screen: Screen;
   repo: RepoInfo | null;
@@ -626,6 +695,8 @@ export interface StoreState {
   search: SearchState;
   /** Insights mode (T11.12, Design §14.6). */
   insights: InsightsState;
+  /** The Export menu (T11.10, Design §14.6): what it has prepared and what the gate is holding. */
+  export: ExportState;
 
   // actions
   openRepo(handle: unknown, opts?: OpenOptions): Promise<void>;
@@ -810,6 +881,29 @@ export interface StoreState {
   setInsightsPeriod(period: InsightsPeriod): void;
   /** Clicking a hotspot: filter Files mode down to that path (T11.12 Deliverables). */
   showHotspot(path: string): void;
+  // ---- Export (T11.10, Design §14.6) ----
+  /**
+   * Opens or closes the StatsRow's Export menu (key `e`). Opening renders `patchText()` for the
+   * current scope once, which is where every size in the menu comes from; a menu opened on the
+   * same generation and the same scope reuses what it already has.
+   */
+  setExportOpen(open: boolean): void;
+  /**
+   * Runs one export. An export that reproduces the changed lines (`carriesLines`) is stopped at
+   * the secret gate first — `selectSecretGate` clear means *scanned with nothing found*, and
+   * `scanned: false` is unknown, not clean — and is parked in `export.pending` until
+   * `confirmExport()`. Saves go through a Blob URL and an `<a download>`; copies through the
+   * clipboard. Outcomes are toasted, `STALE` / `CANCELLED` are ignored.
+   */
+  requestExport(req: ExportRequest): Promise<void>;
+  /**
+   * `Export anyway`: remembers the override for this generation, and runs the parked request when
+   * there is one. Called with nothing parked it is the menu's own override link, which puts the
+   * three line-carrying rows back in place of the warning block.
+   */
+  confirmExport(): Promise<void>;
+  /** `Cancel`: drops the parked request; nothing is written. */
+  cancelExport(): void;
 }
 
 let toastSeq = 0;
@@ -1205,6 +1299,7 @@ export const useStore = create<StoreState>()((set, get) => {
     branches: INITIAL_BRANCHES,
     search: INITIAL_SEARCH,
     insights: INITIAL_INSIGHTS,
+    export: INITIAL_EXPORT,
 
     async openRepo(handle, opts = {}) {
       await get().closeRepo();
@@ -1373,6 +1468,7 @@ export const useStore = create<StoreState>()((set, get) => {
         branches: INITIAL_BRANCHES,
         search: INITIAL_SEARCH,
         insights: INITIAL_INSIGHTS,
+        export: INITIAL_EXPORT,
       });
       pickerSources = null;
       commitStatsQueue.clear();
@@ -1560,6 +1656,8 @@ export const useStore = create<StoreState>()((set, get) => {
           // T11.9: findings belong to one generation; the new diff is unscanned until the scan
           // below answers, so the banner can never describe a diff that is no longer on screen.
           secrets: null,
+          // T11.10: the prepared patch and the secret-gate override belong to the old generation.
+          export: { ...INITIAL_EXPORT, open: s.export.open },
           screen: s.screen === "loading" || s.screen === "repo" ? "repo" : s.screen,
           refresh: {
             ...s.refresh,
@@ -2530,6 +2628,172 @@ export const useStore = create<StoreState>()((set, get) => {
     showHotspot(path) {
       get().setFilter(path);
       get().setMode("files");
+    },
+
+    // ---- Export (T11.10, Design §14.6, atlas tab 12) ----
+
+    setExportOpen(open) {
+      const s = get();
+      if (!open) {
+        set({ export: { ...s.export, open: false, pending: null } });
+        return;
+      }
+      if (!s.export.open) set({ export: { ...s.export, open: true } });
+      const generation = s.diff?.generation ?? null;
+      if (generation === null) return;
+      // The scope is the current filter: `null` is the whole comparison, an array the rows the
+      // sidebar and the pane are showing (Design §14.6 "this comparison · N files").
+      const ids = s.filter.trim() === "" ? null : selectVisibleFiles(s).map((f) => f.id);
+      const same =
+        s.export.generation === generation &&
+        (s.export.ids === null) === (ids === null) &&
+        (ids === null || (s.export.ids as string[]).join("\u0000") === ids.join("\u0000"));
+      if (same && (s.export.status === "ready" || s.export.status === "preparing")) return;
+      set({
+        export: { ...get().export, status: "preparing", error: null, generation, ids, patch: "" },
+      });
+      void (async () => {
+        try {
+          const patch = await client().patchText(generation, ids);
+          const cur = get();
+          if (cur.diff?.generation !== generation || cur.export.generation !== generation) return;
+          const files = ids === null ? cur.diff.files : selectVisibleFiles(cur);
+          const snapshot = snapshotFor({
+            repo: cur.repo?.name ?? "repository",
+            label: cur.diffSource ? labelOf(cur.diffSource) : "",
+            at: Date.now(),
+            patch,
+            files,
+            statsOf: (f) => cur.stats[f.id] ?? f.stats ?? null,
+            viewedOf: (f) => isViewed(cur, f),
+          });
+          set({ export: { ...get().export, status: "ready", patch, snapshot } });
+        } catch (e) {
+          // A superseded render is normal (one `patchText` in flight per session); a real failure
+          // is printed in the menu instead of leaving the sizes blank forever.
+          ignoreStale(e);
+          const err = toUiError(e);
+          if (err.code === "STALE" || err.code === "CANCELLED") return;
+          if (get().export.generation !== generation) return;
+          set({ export: { ...get().export, status: "failed", error: err.message } });
+        }
+      })();
+    },
+
+    async requestExport(req) {
+      const s = get();
+      if (!s.diff || s.export.busy !== null) return;
+      const generation = s.diff.generation;
+      const gate = selectSecretGate(s);
+      // `scanned: false` is *unknown*, not clean (contracts `<!-- T11.9 -->`): both it and a real
+      // finding stop an export that would carry the lines.
+      const clear = gate.scanned && gate.count === 0;
+      if (carriesLines(req.kind) && !clear && s.export.confirmed !== generation) {
+        set({ export: { ...s.export, open: true, pending: req } });
+        return;
+      }
+      const repo = s.repo?.name ?? "repository";
+      const label = s.diffSource ? labelOf(s.diffSource) : "";
+      const at = Date.now();
+      const scopeIds = s.filter.trim() === "" ? null : selectVisibleFiles(s).map((f) => f.id);
+      const ids = req.ids === undefined ? scopeIds : req.ids;
+      const statsOf = (f: FileDiff) => s.stats[f.id] ?? f.stats ?? null;
+      const viewedOf = (f: FileDiff) => isViewed(s, f);
+      const findings = selectSecrets(s);
+      /** True when the menu already rendered exactly these rows of exactly this generation. */
+      const prepared =
+        s.export.status === "ready" &&
+        s.export.generation === generation &&
+        (s.export.ids === null) === (ids === null) &&
+        (ids === null ||
+          (s.export.ids as string[]).join("\u0000") === (ids as string[]).join("\u0000"));
+      /** The prepared bytes when they cover exactly this request, a fresh render otherwise. */
+      const patchFor = async (): Promise<string> =>
+        prepared ? s.export.patch : await client().patchText(generation, ids);
+      const tell = (ok: boolean, note: string) =>
+        get().addToast(
+          ok ? { level: "info", message: note } : { level: "warning", message: COPY_FAILED },
+        );
+      set({ export: { ...s.export, busy: req.kind, pending: null } });
+      try {
+        switch (req.kind) {
+          case "copy-list": {
+            // Text diffgit writes *about* the diff, so Design §14.3's "masked everywhere including
+            // copy" applies; the patch and the snapshot below are the user's own lines verbatim,
+            // because a masked patch is one `git apply` rejects.
+            const list = fileListMarkdown(selectVisibleFiles(s), statsOf, viewedOf);
+            tell(await copyText(redactFindings(list, findings)), copiedNote(req.kind));
+            break;
+          }
+          case "copy-stats": {
+            const line = statsLine(selectVisibleFiles(s), statsOf);
+            tell(await copyText(redactFindings(line, findings)), copiedNote(req.kind));
+            break;
+          }
+          case "copy-patch": {
+            tell(await copyText(await patchFor()), copiedNote(req.kind));
+            break;
+          }
+          case "save-patch":
+          case "file-patch":
+          case "commit-patch": {
+            const file =
+              req.kind === "file-patch"
+                ? s.diff.files.find((f) => f.id === (ids?.[0] ?? ""))
+                : undefined;
+            const name =
+              req.kind === "commit-patch" && req.oid !== undefined
+                ? commitPatchName(repo, req.oid, at)
+                : file
+                  ? filePatchName(repo, file.newPath ?? file.oldPath ?? file.id, at)
+                  : exportFileName(repo, label, "patch", at);
+            const saved = downloadText(name, await patchFor(), PATCH_MIME);
+            tell(saved, savedNote(name));
+            break;
+          }
+          case "snapshot": {
+            const patch = await patchFor();
+            const files = ids === null ? s.diff.files : selectVisibleFiles(s);
+            const html =
+              prepared && s.export.snapshot !== "" && clear
+                ? s.export.snapshot
+                : snapshotFor({
+                    repo,
+                    label,
+                    at,
+                    patch,
+                    files,
+                    statsOf,
+                    viewedOf,
+                    ...(clear ? {} : { warning: exportedPastGate(gate) }),
+                  });
+            const name = exportFileName(repo, label, "html", at);
+            tell(downloadText(name, html, HTML_MIME), savedNote(name));
+            break;
+          }
+        }
+      } catch (e) {
+        ignoreStale(e);
+        const err = toUiError(e);
+        if (err.code !== "STALE" && err.code !== "CANCELLED")
+          get().addToast({ level: "warning", message: exportFailed(err.message) });
+      } finally {
+        set({ export: { ...get().export, busy: null } });
+      }
+    },
+
+    async confirmExport() {
+      const s = get();
+      if (!s.diff) return;
+      const req = s.export.pending;
+      // With no parked request this is the menu's own `Export anyway` link, which unlocks the three
+      // line-carrying rows for this generation; with one, it also runs it.
+      set({ export: { ...s.export, pending: null, confirmed: s.diff.generation } });
+      if (req) await get().requestExport(req);
+    },
+
+    cancelExport() {
+      set({ export: { ...get().export, pending: null } });
     },
   };
 });

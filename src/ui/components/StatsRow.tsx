@@ -14,6 +14,7 @@ import {
   useStore,
 } from "../store";
 import { parseFilter } from "../treeModel";
+import { ExportMenu } from "./ExportMenu";
 import { FileFilter } from "./FileFilter";
 import { LayerChip } from "./LayerChip";
 import { ViewControls } from "./ViewControls";
@@ -374,6 +375,8 @@ export function StatsRow() {
           onIgnoreWhitespace={(on) => setPref("ignoreWhitespace", on)}
         />
       )}
+      {/* T11.10: Design §14.1's one new StatsRow control, after the whitespace button. */}
+      <ExportMenu />
     </div>
   );
 }
