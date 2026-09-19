@@ -21,7 +21,6 @@ import type {
   Progress,
   ProgressSink,
 } from "./api";
-import { blame as runBlame } from "./diff/blame";
 import { loadSides } from "./diff/contentLoader";
 import { DiffEngine } from "./diff/diffEngine";
 import { parsePatch } from "./diff/parsePatch";
@@ -30,40 +29,19 @@ import { EngineError, errorCode } from "./errors";
 import type { DirHandleLike } from "./fs/dirHandleLike";
 import { createFsaFs, type FsaFs } from "./fs/fsaFs";
 import { GitAttributes } from "./git/attributes";
-import { bisectStep as computeBisectStep } from "./git/bisect";
-import { branchCells, branchOverview, upstreamOf } from "./git/branches";
-import { CommitGraph } from "./git/commitGraph";
-import { commitDetails, commitStats } from "./git/commits";
+import { upstreamOf } from "./git/branches";
 import { type GitConfig, loadGitConfig } from "./git/config";
 import { explainPath } from "./git/explain";
 import { IgnoreRules } from "./git/ignoreRules";
 import { emptySnapshot, type IndexSnapshot, readIndex } from "./git/indexReader";
 import { checkLayout } from "./git/layoutChecks";
-import { MAILMAP_FILE, Mailmap } from "./git/mailmap";
 import { ObjectDb } from "./git/objectDb";
 import { detectOperation } from "./git/operation";
-import { pathHistory as runPathHistory } from "./git/pathHistory";
-import { rebasePreflight as computePreflight } from "./git/preflight";
-import { readReflog } from "./git/reflog";
 import { loadRefs } from "./git/refStore";
-import { resolveRevision } from "./git/revisions";
-import { countStashFiles, listStashes } from "./git/stash";
 import { listSubmodules } from "./git/submodules";
-import { listTags } from "./git/tags";
-import {
-  CommitReader,
-  aheadBehind as computeAheadBehind,
-  MAX_WALK,
-  type ReachableResult,
-  reachableFrom,
-  walkCommits as runWalk,
-  subjectOf,
-  type WalkState,
-  walkRequestKey,
-} from "./git/walk";
+import { subjectOf } from "./git/walk";
 import { WorktreeScanner } from "./git/worktree";
 import { listWorktrees } from "./git/worktrees";
-import { computeInsights } from "./insights/insights";
 import { SECRET_ALLOWLIST_FILE } from "./scan/secretRules";
 import {
   addedLines,
@@ -76,6 +54,7 @@ import {
 } from "./scan/secrets";
 import { DiffRunner } from "./session/diffRunner";
 import { toPublicError } from "./session/errorTranslation";
+import { HistoryCoordinator } from "./session/historyCoordinator";
 import { SearchRunner } from "./session/searchRunner";
 import { StatsQueue } from "./session/statsQueue";
 import {
@@ -86,7 +65,6 @@ import {
   operationWarning,
   requireGeneration,
   type SessionOptions,
-  STASH_FILE_COUNT_LIMIT,
 } from "./session/types";
 import { WatchOrchestrator } from "./session/watchOrchestrator";
 import type {
@@ -144,25 +122,6 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   private jj = false;
   /** T10.2: a commit-graph file or chain exists; T10.5's `CommitReader` decides whether it is used. */
   private hasCommitGraph = false;
-  /** T10.5: parents + commit time, from the commit-graph when there is a usable one. */
-  private reader: CommitReader | null = null;
-  /** T10.5: oid → ref/tag/stash labels for the history badges; rebuilt when refs move. */
-  private refsIndex: Promise<Map<Oid, string[]>> | null = null;
-  /** T10.5: "reachable from any ref", cached per refs snapshot (`markReachable`). */
-  private reachable: { key: string; result: ReachableResult } | null = null;
-  /**
-   * T10.5b S4: the walk state a `WalkPage.cursor` names. The cursor is an opaque token into this
-   * map rather than a serialised frontier (which was ~47 B per commit walked, per page); a token
-   * this session does not hold — a worker restart, a refs change, an evicted older page — answers
-   * `STALE` and the UI restarts the list.
-   */
-  private readonly walkStates = new Map<string, WalkState>();
-  private walkTokens = 0;
-  private readonly walkPrefix = `w${Math.floor(Math.random() * 0x1_0000_0000)
-    .toString(16)
-    .padStart(8, "0")}`;
-  /** T10.5b S3: `aheadBehind` memoised per ordered pair; dropped with the other history caches. */
-  private readonly aheadBehindCache = new Map<string, AheadBehind>();
   /** method name → token of the newest call (one in-flight per method, T10.1). */
   private readonly singleFlight = new Map<string, symbol>();
   /** T10.6: the abort controller of the in-flight call per method name (see `single`). */
@@ -173,6 +132,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   private readonly diffRunner: DiffRunner;
   private readonly searchRunner: SearchRunner;
   private readonly watchOrchestrator: WatchOrchestrator;
+  private readonly historyCoordinator: HistoryCoordinator;
 
   private constructor(
     readonly root: DirHandleLike,
@@ -247,14 +207,33 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       getRefs: () => this.refs,
     });
 
+    this.historyCoordinator = new HistoryCoordinator({
+      fs: this.fs,
+      db: this.db,
+      cfg: this.cfg,
+      getRefs: () => this.refs,
+      statsLimit: this.statsLimit,
+      progress: (p) => this.progress(p),
+      emitWarning: (w) => RepoSession.emitWarning(this.sink, w),
+      onRepoWarning: (w) => {
+        if (!this.repoWarnings.some((x) => x.code === w.code)) this.repoWarnings.push(w);
+        RepoSession.emitWarning(this.sink, w);
+      },
+      withRootCheck: (fn) => this.withRootCheck(fn),
+      assertOpen: () => this.assertOpen(),
+      single: (method, fn) => this.single(method, fn),
+      readWorktreeBytes: (path) => this.readWorktreeBytes(path),
+      readTextOrNull: (path) => this.readTextOrNull(path),
+    });
+
     this.searchRunner = new SearchRunner({
       db: this.db,
       attrs: this.attrs,
       scanner: this.scanner,
       statsLimit: this.statsLimit,
-      commitReader: () => this.commitReader(),
-      refsByCommit: () => this.refsByCommit(),
-      walkSeeds: (req, reader) => this.walkSeeds(req, reader),
+      commitReader: () => this.historyCoordinator.commitReader(),
+      refsByCommit: () => this.historyCoordinator.refsByCommit(),
+      walkSeeds: (req, reader) => this.historyCoordinator.walkSeeds(req, reader),
       currentIndex: () => this.currentIndex(),
       readWorktreeBytes: (path) => this.readWorktreeBytes(path),
       getHeadOid: () => this.refs.headOid,
@@ -275,7 +254,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
       getHeadBranch: () => this.refs.headBranch,
       getLastSource: () => this.lastSource,
       progress: (p) => this.progress(p),
-      dropHistoryCaches: () => this.dropHistoryCaches(),
+      dropHistoryCaches: () => this.historyCoordinator.dropHistoryCaches(),
       assertOpen: () => this.assertOpen(),
     });
   }
@@ -414,7 +393,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     this.fs.invalidatePath("/.git");
     this.refs = await this.withRootCheck(() => loadRefs(this.db, this.cfg, { jj: this.jj }));
     this.engine.updateRefs(this.refs);
-    this.dropHistoryCaches();
+    this.historyCoordinator.dropHistoryCaches();
     await this.refreshOperation();
     this.progress({ phase: "refs", durationMs: performance.now() - t0 });
     return this.buildInfo();
@@ -456,45 +435,19 @@ export class RepoSession implements Omit<EngineApi, "open"> {
   }
 
   async resolveRevision(expr: string): Promise<ResolvedRevision> {
-    this.assertOpen();
-    return this.single("resolveRevision", () => resolveRevision(this.db, this.refs, expr));
+    return this.historyCoordinator.resolveRevision(expr);
   }
 
   async listTags(): Promise<TagInfo[]> {
-    this.assertOpen();
-    return this.single("listTags", () => listTags(this.db));
+    return this.historyCoordinator.listTags();
   }
 
   async listStashes(): Promise<StashInfo[]> {
-    this.assertOpen();
-    return this.single("listStashes", async () => {
-      const stashes = await listStashes(this.fs, this.db);
-      // The picker shows a file count per stash (Design §14.1); it costs two tree flattens each,
-      // so only the stack a human would scroll gets one.
-      for (const s of stashes.slice(0, STASH_FILE_COUNT_LIMIT)) {
-        s.files = await countStashFiles(this.db, s);
-      }
-      return stashes;
-    });
+    return this.historyCoordinator.listStashes();
   }
 
-  /**
-   * The reflog of `expr`, newest first (T10.2). A repository that keeps none answers with `[]` and
-   * a `NO_REFLOG` warning on the sink rather than an error.
-   */
   async reflog(expr: string, limit: number): Promise<ReflogEntry[]> {
-    this.assertOpen();
-    return this.single("reflog", async () => {
-      const out = await readReflog(this.fs, expr, { limit });
-      for (const w of out.warnings) RepoSession.emitWarning(this.sink, w);
-      // T10.5: one batched reachability walk fills every `reachable`, which is what marks the
-      // commit a `git reset` orphaned (Design §14.5: the `unreachable` badge).
-      if (out.entries.length > 0) {
-        const set = await this.reachableSet();
-        for (const e of out.entries) e.reachable = set.oids.has(e.newOid);
-      }
-      return out.entries;
-    });
+    return this.historyCoordinator.reflog(expr, limit);
   }
 
   /** What git is in the middle of, or null (T10.2). Also refreshes `RepoInfo.operation`. */
@@ -521,387 +474,48 @@ export class RepoSession implements Omit<EngineApi, "open"> {
 
   // ---- history, lanes, branches (T10.5) --------------------------------------------------------
 
-  /**
-   * The commit reader, built once per session. A usable commit-graph makes the walk read one static
-   * file instead of inflating every commit object (atlas tab 20); anything wrong with the file is a
-   * `COMMIT_GRAPH_STALE` warning and an object-read fallback, never an error.
-   */
-  private async commitReader(): Promise<CommitReader> {
-    if (this.reader) return this.reader;
-    const load = await this.withRootCheck(() => CommitGraph.load(this.fs));
-    for (const w of load.warnings) {
-      if (!this.repoWarnings.some((x) => x.code === w.code)) this.repoWarnings.push(w);
-      RepoSession.emitWarning(this.sink, w);
-    }
-    this.reader = new CommitReader(this.db, load.graph);
-    return this.reader;
-  }
-
-  /** Everything cached off the refs snapshot; dropped whenever refs or objects may have moved. */
-  private dropHistoryCaches(): void {
-    this.reader = null;
-    this.refsIndex = null;
-    this.reachable = null;
-    // Every outstanding cursor described a walk of refs that have since moved (T10.5b S2/S4).
-    this.walkStates.clear();
-    this.aheadBehindCache.clear();
-  }
-
-  /**
-   * oid → the labels the history rows wear, in badge order: `HEAD`, then branch and remote names in
-   * RefStore's order, then tags, then stash selectors (Design §14.5).
-   */
-  private refsByCommit(): Promise<Map<Oid, string[]>> {
-    this.refsIndex ??= (async () => {
-      const map = new Map<Oid, string[]>();
-      const add = (oid: Oid | null | undefined, label: string) => {
-        if (!oid) return;
-        const list = map.get(oid) ?? [];
-        if (!list.includes(label)) list.push(label);
-        map.set(oid, list);
-      };
-      add(this.refs.headOid, "HEAD");
-      for (const r of this.refs.refs) if (!r.synthetic) add(r.oid, r.name);
-      for (const t of await listTags(this.db)) add(t.targetOid, t.name);
-      for (const s of await listStashes(this.fs, this.db)) add(s.oid, s.expr);
-      return map;
-    })().catch((e) => {
-      this.refsIndex = null;
-      throw e;
-    });
-    return this.refsIndex;
-  }
-
-  /**
-   * The commits `walkCommits` starts from: the request's expressions, then — for `all` — every ref
-   * in the repository followed by HEAD, which is the order `git log --all` seeds its walk in
-   * (`for_each_ref` is ref-name sorted, and `handle_refs(head_ref)` comes after it). The order only
-   * decides ties between commits of the same date, but a fixture built with a fixed
-   * `GIT_COMMITTER_DATE` is nothing but ties.
-   */
-  private async walkSeeds(req: WalkRequest, reader: CommitReader): Promise<Oid[]> {
-    const seeds: Oid[] = [];
-    const taken = new Set<Oid>(); // T10.5b nit 6: O(1) dedup, not `includes` per ref
-    const add = async (oid: Oid | null | undefined): Promise<void> => {
-      if (!oid || taken.has(oid)) return;
-      taken.add(oid);
-      // T10.5b B1: a tag can name a blob or a tree; `git log --all` leaves such a ref out.
-      if (!(await reader.isCommit(oid))) return;
-      seeds.push(oid);
-    };
-    for (const expr of req.from) await add((await resolveRevision(this.db, this.refs, expr)).oid);
-    if (req.all === true) {
-      const named: { fullName: string; oid: Oid }[] = [];
-      for (const r of this.refs.refs) if (!r.synthetic) named.push(r);
-      for (const t of await listTags(this.db)) {
-        if (t.targetType !== "commit") continue;
-        named.push({ fullName: t.fullName, oid: t.targetOid });
-      }
-      for (const s of await listStashes(this.fs, this.db)) {
-        named.push({ fullName: `refs/stash@{${s.index}}`, oid: s.oid });
-      }
-      named.sort((a, b) => (a.fullName < b.fullName ? -1 : a.fullName > b.fullName ? 1 : 0));
-      for (const r of named) await add(r.oid);
-      await add(this.refs.headOid);
-    }
-    if (seeds.length === 0) await add(this.refs.headOid); // an unborn branch has no history
-    return seeds;
-  }
-
-  /** The number of walk cursors the session keeps alive; older ones answer `STALE`. */
-  private static readonly WALK_STATES = 8;
-  private static readonly WALK_TOKEN = /^w[0-9a-f]{8}\.[1-9][0-9]*$/;
-
-  /**
-   * T10.5b S2/S4: the cursor is a token this session issued. A token it never issued, or one it
-   * has dropped (refs moved, worker restarted, eight pages ago), is `STALE` — the UI restarts the
-   * list, which is the only safe answer while refs move. Anything that is not a token at all is a
-   * caller bug and answers `INTERNAL`.
-   */
-  private resumeWalk(cursor: string, key: string): WalkState {
-    if (!RepoSession.WALK_TOKEN.test(cursor))
-      throw new EngineError("INTERNAL", "The history cursor is not a cursor this engine issued.", {
-        detail: cursor.slice(0, 64),
-      });
-    const state = this.walkStates.get(cursor);
-    if (!state)
-      throw new EngineError("STALE", "The history cursor is no longer valid.", {
-        hint: "Reload the history list",
-        detail: cursor,
-      });
-    if (state.key !== key) {
-      this.walkStates.delete(cursor);
-      throw new EngineError("STALE", "The history cursor belongs to a different query.", {
-        hint: "Reload the history list",
-        detail: cursor,
-      });
-    }
-    return state;
-  }
-
-  private issueWalkToken(state: WalkState): string {
-    this.walkTokens += 1;
-    const token = `${this.walkPrefix}.${this.walkTokens}`;
-    this.walkStates.set(token, state);
-    while (this.walkStates.size > RepoSession.WALK_STATES) {
-      const oldest = this.walkStates.keys().next().value as string;
-      this.walkStates.delete(oldest);
-    }
-    return token;
-  }
-
   async walkCommits(req: WalkRequest): Promise<WalkPage> {
-    this.assertOpen();
-    return this.single("walkCommits", async (signal) => {
-      const t0 = performance.now();
-      const reader = await this.commitReader();
-      const seeds = await this.walkSeeds(req, reader);
-      const refsByCommit = await this.refsByCommit();
-      const key = walkRequestKey(req, seeds);
-      const resume = req.cursor === undefined ? null : this.resumeWalk(req.cursor, key);
-      if (req.cursor !== undefined) this.walkStates.delete(req.cursor);
-      const out = await runWalk(
-        {
-          db: this.db,
-          reader,
-          refsByCommit,
-          signal,
-          // T10.5b S5: a long walk reports as it goes instead of once, at the end.
-          onProgress: (walked) => this.progress({ phase: "history", done: walked }),
-        },
-        req,
-        seeds,
-        resume,
-      );
-      for (const w of out.warnings) RepoSession.emitWarning(this.sink, w);
-      const page: WalkPage = {
-        ...out.page,
-        cursor: out.state === null ? null : this.issueWalkToken(out.state),
-      };
-      this.progress({
-        phase: "history",
-        done: page.commits.length,
-        durationMs: performance.now() - t0,
-      });
-      return page;
-    });
-  }
-
-  /** Shared by `commitStats`, `commitDetails` and the history rows' `+n −m`. */
-  private async statsDeps(signal?: AbortSignal) {
-    return {
-      db: this.db,
-      reader: await this.commitReader(),
-      limit: this.statsLimit,
-      warn: (w: RepoWarning) => RepoSession.emitWarning(this.sink, w),
-      ...(signal ? { signal } : {}),
-      ...(this.cfg.diff.renames !== undefined ? { renames: this.cfg.diff.renames } : {}),
-      ...(this.cfg.diff.renameLimit !== undefined
-        ? { renameLimit: this.cfg.diff.renameLimit }
-        : {}),
-    };
+    return this.historyCoordinator.walkCommits(req);
   }
 
   async commitDetails(oid: Oid): Promise<CommitDetails> {
-    this.assertOpen();
-    return this.single("commitDetails", async (signal) =>
-      commitDetails(
-        { ...(await this.statsDeps(signal)), refsByCommit: await this.refsByCommit() },
-        (await resolveRevision(this.db, this.refs, oid)).oid ?? oid,
-      ),
-    );
+    return this.historyCoordinator.commitDetails(oid);
   }
 
   async commitStats(oids: Oid[]): Promise<Record<Oid, CommitDetails["stats"]>> {
-    this.assertOpen();
-    return this.single("commitStats", async (signal) =>
-      commitStats(await this.statsDeps(signal), oids),
-    );
+    return this.historyCoordinator.commitStats(oids);
   }
 
   async aheadBehind(a: string, b: string): Promise<AheadBehind> {
-    this.assertOpen();
-    return this.single("aheadBehind", async (signal) => {
-      const left = await resolveRevision(this.db, this.refs, a);
-      const right = await resolveRevision(this.db, this.refs, b);
-      if (left.oid === null || right.oid === null)
-        throw new EngineError("REV_NOT_FOUND", `Cannot compare "${a}" with "${b}".`, {
-          hint: "Both sides must be commits.",
-        });
-      return this.memoisedAheadBehind(left.oid, right.oid, signal);
-    });
-  }
-
-  /**
-   * T10.5b S3: one `(a, b)` pair is walked once per refs generation. `branchCells` asks for two
-   * comparisons per row and a 50-branch table shares almost all of that work.
-   */
-  private async memoisedAheadBehind(a: Oid, b: Oid, signal?: AbortSignal): Promise<AheadBehind> {
-    const key = `${a}|${b}`;
-    const hit = this.aheadBehindCache.get(key);
-    if (hit) return hit;
-    const out = await computeAheadBehind(
-      this.db,
-      await this.commitReader(),
-      a,
-      b,
-      signal ? { signal } : {},
-    );
-    this.aheadBehindCache.set(key, out);
-    // The mirror image is free, and `branchCells` asks for it whenever two branches track each other.
-    this.aheadBehindCache.set(`${b}|${a}`, {
-      ahead: out.behind,
-      behind: out.ahead,
-      mergeBase: out.mergeBase,
-      capped: out.capped,
-    });
-    return out;
-  }
-
-  /** The shared `BranchDeps`: refs, config, the memoised comparison and the warning sink. */
-  private async branchDeps(signal?: AbortSignal) {
-    return {
-      db: this.db,
-      reader: await this.commitReader(),
-      cfg: this.cfg,
-      refs: this.refs,
-      warn: (w: RepoWarning) => RepoSession.emitWarning(this.sink, w),
-      aheadBehind: (a: Oid, b: Oid) => this.memoisedAheadBehind(a, b, signal),
-      ...(signal ? { signal } : {}),
-    };
+    return this.historyCoordinator.aheadBehind(a, b);
   }
 
   async branchOverview(): Promise<BranchRow[]> {
-    this.assertOpen();
-    return this.single("branchOverview", async (signal) =>
-      branchOverview(await this.branchDeps(signal), await listTags(this.db)),
-    );
+    return this.historyCoordinator.branchOverview();
   }
 
   async branchCells(
     fullNames: string[],
   ): Promise<Record<string, Pick<BranchRow, "vsUpstream" | "vsDefault" | "merged">>> {
-    this.assertOpen();
-    return this.single("branchCells", async (signal) =>
-      branchCells(await this.branchDeps(signal), fullNames),
-    );
+    return this.historyCoordinator.branchCells(fullNames);
   }
 
   async markReachable(oids: Oid[]): Promise<Record<Oid, boolean>> {
-    this.assertOpen();
-    return this.single("markReachable", async (signal) => {
-      const set = await this.reachableSet(signal);
-      const out: Record<Oid, boolean> = {};
-      for (const oid of oids) out[oid] = set.oids.has(oid);
-      return out;
-    });
-  }
-
-  /** One walk from every ref (`git rev-list --all`), cached until the refs snapshot changes. */
-  private async reachableSet(signal?: AbortSignal): Promise<ReachableResult> {
-    const key = `${this.refs.headOid ?? "-"}|${this.refs.refs.map((r) => `${r.fullName}=${r.oid}`).join(",")}`;
-    if (this.reachable?.key === key) return this.reachable.result;
-    const reader = await this.commitReader();
-    const tips: Oid[] = [];
-    const taken = new Set<Oid>(); // T10.5b nit 6
-    const add = (oid: Oid | null | undefined) => {
-      if (!oid || taken.has(oid)) return;
-      taken.add(oid);
-      tips.push(oid);
-    };
-    add(this.refs.headOid);
-    for (const r of this.refs.refs) if (!r.synthetic) add(r.oid);
-    // T10.5b B1: a tag on a blob or a tree is not a tip `rev-list --all` would ever walk.
-    for (const t of await listTags(this.db)) if (t.targetType === "commit") add(t.targetOid);
-    for (const s of await listStashes(this.fs, this.db)) add(s.oid);
-    const result = await reachableFrom(reader, tips, MAX_WALK, signal);
-    if (result.capped) {
-      RepoSession.emitWarning(this.sink, {
-        code: "HISTORY_CAPPED",
-        message: `Reachability was computed from the newest ${MAX_WALK.toLocaleString("en")} commits only; older entries may be marked unreachable.`,
-      });
-    }
-    this.reachable = { key, result };
-    return result;
+    return this.historyCoordinator.markReachable(oids);
   }
 
   // ---- file history and blame (T10.6) ----------------------------------------------------------
 
-  /** What `pathHistory` and the rename-follow step need; the rename limit is git's own config. */
-  private async historyDeps(signal: AbortSignal) {
-    return {
-      db: this.db,
-      reader: await this.commitReader(),
-      ...(this.cfg.diff.renameLimit !== undefined
-        ? { renameLimit: this.cfg.diff.renameLimit }
-        : {}),
-      signal,
-    };
-  }
-
-  private async resolveCommit(ref: string): Promise<Oid> {
-    const resolved = await resolveRevision(this.db, this.refs, ref);
-    if (resolved.oid === null)
-      throw new EngineError("REV_NOT_FOUND", `"${ref}" does not name a commit.`, {
-        hint: "Pick a branch, tag or commit",
-      });
-    return resolved.oid;
-  }
-
-  /** `git log [--follow] -- <path>` for one path, newest first (T10.6). */
   async pathHistory(
     ref: string,
     path: string,
     opts: PathHistoryOptions,
   ): Promise<{ entries: PathHistoryEntry[]; cursor: string | null }> {
-    this.assertOpen();
-    return this.single("pathHistory", async (signal) =>
-      runPathHistory(await this.historyDeps(signal), await this.resolveCommit(ref), path, opts),
-    );
+    return this.historyCoordinator.pathHistory(ref, path, opts);
   }
 
-  /**
-   * Who wrote each line of `path` at `ref` (T10.6). The path history is resolved first (renames
-   * followed) so the reverse-diff has both the revision list and the rename hops; `maxRevisions + 1`
-   * entries are asked for so the cut can be told apart from a history that simply ended.
-   */
   async blame(ref: string, path: string, opts: BlameRequest): Promise<BlamePayload> {
-    this.assertOpen();
-    return this.single("blame", async (signal) => {
-      const t0 = performance.now();
-      const maxRevisions = Math.max(1, opts.maxRevisions);
-      const deps = await this.historyDeps(signal);
-      const history = await runPathHistory(deps, await this.resolveCommit(ref), path, {
-        follow: true,
-        limit: maxRevisions + 1,
-      });
-      if (history.entries.length === 0)
-        throw new EngineError("REF_NOT_FOUND", `${path} does not exist in ${ref}.`, {
-          hint: "Check the path and the branch",
-        });
-      const historyCapped = history.entries.length > maxRevisions;
-      const out = await runBlame(
-        {
-          db: this.db,
-          entries: history.entries.slice(0, maxRevisions),
-          historyCapped,
-          readWorktree: (p) => this.readWorktreeBytes(p),
-          onProgress: (done, total) => this.progress({ phase: "blame", done, total }),
-          signal,
-        },
-        ref,
-        path,
-        opts,
-      );
-      for (const w of out.warnings) RepoSession.emitWarning(this.sink, w);
-      this.progress({
-        phase: "blame",
-        done: out.payload.revisions,
-        total: out.payload.revisions,
-        durationMs: performance.now() - t0,
-      });
-      return out.payload;
-    });
+    return this.historyCoordinator.blame(ref, path, opts);
   }
 
   // ---- secret scan (T10.7, atlas tab 14) -------------------------------------------------------
@@ -974,43 +588,8 @@ export class RepoSession implements Omit<EngineApi, "open"> {
 
   // ---- insights (T10.9, atlas tab 13) ----------------------------------------------------------
 
-  /**
-   * Activity, contributors and hotspots from one first-parent walk of `HEAD` (`src/engine/insights`).
-   *
-   * `.mailmap` is re-read on every call, as `scanSecrets` re-reads its allowlist: it is a
-   * working-tree file the user may be editing, and it costs one small read. The walk itself goes
-   * through `walkCommits`, so it shares the commit-graph reader, the cap and the cancellation the
-   * history list already has; only the per-commit path-level tree diff is new work.
-   */
   async insights(req: InsightsRequest): Promise<InsightsResult> {
-    this.assertOpen();
-    return this.single("insights", async (signal) => {
-      const t0 = performance.now();
-      const reader = await this.commitReader();
-      const seeds = await this.walkSeeds({ from: ["HEAD"], firstParent: true, limit: 1 }, reader);
-      const mailmap = Mailmap.parse(await this.readTextOrNull(MAILMAP_FILE));
-      this.progress({ phase: "insights", done: 0 });
-      const out = await computeInsights(
-        {
-          db: this.db,
-          reader,
-          mailmap,
-          refsByCommit: await this.refsByCommit(),
-          signal,
-          onProgress: (walked) => this.progress({ phase: "insights", done: walked }),
-        },
-        seeds,
-        req,
-      );
-      for (const w of out.warnings) RepoSession.emitWarning(this.sink, w);
-      this.progress({
-        phase: "insights",
-        done: out.result.walked,
-        total: out.result.walked,
-        durationMs: performance.now() - t0,
-      });
-      return out.result;
-    });
+    return this.historyCoordinator.insights(req);
   }
 
   // ---- patch text and repository summary (T10.10, atlas tabs 12 and 11) -----------------------
@@ -1046,7 +625,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
         upstream !== null ? refs.refs.find((r) => r.name === upstream && !r.synthetic) : undefined;
       const vsUpstream =
         refs.headOid !== null && tracked
-          ? await this.memoisedAheadBehind(refs.headOid, tracked.oid, signal)
+          ? await this.historyCoordinator.memoisedAheadBehind(refs.headOid, tracked.oid, signal)
           : null;
 
       let lastCommit: RepoSummary["lastCommit"] = null;
@@ -1086,53 +665,12 @@ export class RepoSession implements Omit<EngineApi, "open"> {
 
   // ---- bisect and rebase preflight (T10.11) ----------------------------------------------------
 
-  /**
-   * The next commit to test (atlas tab 15). The marks arrive as oids, but any revision expression
-   * resolves too, so the UI may hand over what the user typed. Nothing is written (D16).
-   */
   async bisectStep(state: BisectState): Promise<BisectStep> {
-    this.assertOpen();
-    return this.single("bisectStep", async (signal) => {
-      const deps = {
-        reader: await this.commitReader(),
-        warn: (w: RepoWarning) => RepoSession.emitWarning(this.sink, w),
-        signal,
-      };
-      return computeBisectStep(deps, {
-        bad: await this.resolveCommit(state.bad),
-        good: await Promise.all(state.good.map((g) => this.resolveCommit(g))),
-        skipped: await Promise.all(state.skipped.map((s) => this.resolveCommit(s))),
-      });
-    });
+    return this.historyCoordinator.bisectStep(state);
   }
 
-  /** What a `git rebase branchRef onto ontoRef` would replay, and where it would stop (tab 16). */
   async rebasePreflight(branchRef: string, ontoRef: string): Promise<PreflightResult> {
-    this.assertOpen();
-    return this.single("rebasePreflight", async (signal) => {
-      const branch = await resolveRevision(this.db, this.refs, branchRef);
-      const onto = await resolveRevision(this.db, this.refs, ontoRef);
-      if (branch.oid === null || onto.oid === null)
-        throw new EngineError(
-          "REV_NOT_FOUND",
-          `Cannot plan a rebase of "${branchRef}" onto "${ontoRef}".`,
-          { hint: "Both sides must be commits." },
-        );
-      return computePreflight(
-        {
-          db: this.db,
-          reader: await this.commitReader(),
-          warn: (w: RepoWarning) => RepoSession.emitWarning(this.sink, w),
-          signal,
-          ...(this.cfg.diff.renames !== undefined ? { renames: this.cfg.diff.renames } : {}),
-          ...(this.cfg.diff.renameLimit !== undefined
-            ? { renameLimit: this.cfg.diff.renameLimit }
-            : {}),
-        },
-        { oid: branch.oid, display: branch.display },
-        { oid: onto.oid, display: onto.display },
-      );
-    });
+    return this.historyCoordinator.rebasePreflight(branchRef, ontoRef);
   }
 
   // ---- submodules, worktrees and patch parsing (T10.12) ---------------------------------------
@@ -1373,7 +911,7 @@ export class RepoSession implements Omit<EngineApi, "open"> {
     this.current = null;
     this.db.dropCaches(true);
     this.fs.invalidateAll();
-    this.dropHistoryCaches();
+    this.historyCoordinator.dropHistoryCaches();
   }
 
   get isClosed(): boolean {
