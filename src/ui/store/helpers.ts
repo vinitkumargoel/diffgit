@@ -6,11 +6,12 @@ import type {
   FileDiff,
   RepoInfo,
   RepoRef,
+  RepoWarning,
   TagInfo,
 } from "../../engine/types";
 import type { SideRev } from "../compareSource";
 import { toUiError } from "../errors";
-import type { StoreState } from "./types";
+import { SNAPSHOT_WARNING, type StoreState } from "./types";
 
 export function findRef(repo: RepoInfo, nameOrRef: string): RepoRef | null {
   return (
@@ -79,4 +80,28 @@ export function statsSettled(
   stats: Record<string, FileStats>,
 ): boolean {
   return files.every((f) => f.id in stats || f.stats !== null || f.binary || f.tooLarge);
+}
+
+export function collectDiffStats(
+  files: readonly FileDiff[],
+  generation: number,
+  pending: Map<number, Record<string, FileStats>>,
+): { stats: Record<string, FileStats>; complete: boolean } {
+  const stats: Record<string, FileStats> = {};
+  for (const f of files) if (f.stats) stats[f.id] = f.stats;
+  Object.assign(stats, pending.get(generation));
+  for (const g of pending.keys()) if (g <= generation) pending.delete(g);
+  return { stats, complete: files.every((f) => stats[f.id] !== undefined) };
+}
+
+export function mergeWarnings(
+  current: Pick<StoreState, "repo" | "snapshotMode">,
+  resultWarnings: RepoWarning[],
+): RepoWarning[] {
+  const repoWarnings = current.repo?.warnings ?? [];
+  const merged: RepoWarning[] = [...repoWarnings];
+  if (current.snapshotMode && !merged.some((w) => w.code === "SNAPSHOT_MODE"))
+    merged.push(SNAPSHOT_WARNING);
+  for (const w of resultWarnings) if (!merged.some((x) => x.code === w.code)) merged.push(w);
+  return merged;
 }
